@@ -1,5 +1,6 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { createDeliveryHandler } from "./create-delivery-handler.js";
+import { confirmPickupHandler } from "./confirm-pickup-handler.js";
 import { driverSessionHandler } from "./driver-session-handler.js";
 import { operationsPlanningHandler } from "./operations-planning-handler.js";
 import { readConfig } from "./config.js";
@@ -121,6 +122,18 @@ const server = createServer(async (request, response) => {
       sendNode(response, driverResponse);
       return;
     }
+    const pickupMatch = request.url?.match(/^\/v1\/driver\/rounds\/([0-9a-f-]+)\/pickup$/i);
+    if (request.method === "POST" && pickupMatch) {
+      const webRequest = await toWebRequest(request);
+      const pickupResponse = await confirmPickupHandler(webRequest, pickupMatch[1]!, {
+        identity: gateway,
+        pickup: gateway,
+        uuid: () => crypto.randomUUID(),
+        now: () => new Date(),
+      });
+      sendNode(response, pickupResponse);
+      return;
+    }
     if (request.method === "POST" && request.url === "/v1/deliveries") {
       const webRequest = await toWebRequest(request);
       const deliveryResponse = await createDeliveryHandler(webRequest, {
@@ -135,13 +148,16 @@ const server = createServer(async (request, response) => {
     response.writeHead(404, { "content-type": "application/json" });
     response.end(JSON.stringify({ error: { code: "NOT_FOUND", message: "Route not found" } }));
   } catch (error) {
+    const failure = error && typeof error === "object" ? error as Record<string, unknown> : {};
     console.error(JSON.stringify({
       level: "error",
       event: "api.request_failed",
       trace_id: traceId,
       method: request.method,
       path: request.url,
-      message: error instanceof Error ? error.message : String(error),
+      message: error instanceof Error ? error.message : typeof failure.message === "string" ? failure.message : String(error),
+      ...(typeof failure.code === "string" ? { code: failure.code } : {}),
+      ...(typeof failure.details === "string" ? { details: failure.details } : {}),
     }));
     if (!response.headersSent) {
       const headers: Record<string, string> = { "content-type": "application/json" };

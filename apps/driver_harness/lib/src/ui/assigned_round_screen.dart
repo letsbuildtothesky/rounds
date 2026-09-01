@@ -4,6 +4,7 @@ import '../app/app_strings.dart';
 import '../app/harness_app_controller.dart';
 import '../driver/driver_session.dart';
 import 'navigation_harness_screen.dart';
+import 'pickup_confirmation_screen.dart';
 
 class AssignedRoundScreen extends StatelessWidget {
   const AssignedRoundScreen({
@@ -21,7 +22,7 @@ class AssignedRoundScreen extends StatelessWidget {
     id: 'ROUND-DEMO',
     reference: 'ROUND-DEMO-001',
     serviceDate: '2026-09-01',
-    state: 'approved',
+    state: 'active',
     version: 1,
     tenantName: 'UrbanFlowers',
     pickup: DriverPickupModel(
@@ -34,7 +35,10 @@ class AssignedRoundScreen extends StatelessWidget {
       DriverRoundStopModel(
         id: 'STOP-001',
         sequence: 1,
+        state: 'assigned',
         destinationVersion: 1,
+        manifestId: 'MANIFEST-DEMO-001',
+        manifestVersion: 1,
         deliveryReference: 'UF-DEMO-001',
         recipientName: 'Siriporn',
         recipientPhone: '+66999999999',
@@ -191,10 +195,15 @@ class AssignedRoundScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
                     FilledButton.icon(
-                      key: const Key('start-navigation'),
+                      key: Key(
+                        round.state == 'active'
+                            ? 'start-navigation'
+                            : 'verify-pickup',
+                      ),
                       onPressed: firstStop == null
                           ? null
-                          : () => Navigator.of(context).push(
+                          : round.state == 'active'
+                          ? () => Navigator.of(context).push(
                               MaterialPageRoute<void>(
                                 builder: (_) => NavigationHarnessScreen(
                                   controller: controller,
@@ -203,12 +212,26 @@ class AssignedRoundScreen extends StatelessWidget {
                                   stop: firstStop,
                                 ),
                               ),
+                            )
+                          : () => Navigator.of(context).push(
+                              MaterialPageRoute<void>(
+                                builder: (_) => PickupConfirmationScreen(
+                                  controller: controller,
+                                  round: round,
+                                ),
+                              ),
                             ),
-                      icon: const Icon(Icons.navigation_rounded),
+                      icon: Icon(
+                        round.state == 'active'
+                            ? Icons.navigation_rounded
+                            : Icons.inventory_2_outlined,
+                      ),
                       label: Text(
                         firstStop == null
                             ? 'No Stops assigned'
-                            : 'Start route to Stop 1',
+                            : round.state == 'active'
+                            ? 'Start route to Stop 1'
+                            : 'Verify pickup manifest',
                       ),
                     ),
                   ],

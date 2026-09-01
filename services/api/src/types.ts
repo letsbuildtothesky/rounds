@@ -1,4 +1,7 @@
 import type {
+  ConfirmPickupCommand,
+  ConfirmPickupPayload,
+  ConfirmPickupResult,
   CreateDeliveryCommand,
   CreateDeliveryPayload,
   CreateDeliveryResult,
@@ -42,6 +45,10 @@ export interface RoundGateway {
   planRound(command: PlanRoundCommand, actor: ActorContext): Promise<PlanRoundResult>;
 }
 
+export interface PickupGateway {
+  confirmPickup(command: ConfirmPickupCommand, identity: AuthenticatedIdentity): Promise<ConfirmPickupResult>;
+}
+
 export type CreateDeliveryDependencies = {
   identity: IdentityGateway;
   commands: DeliveryCommandGateway;
@@ -72,3 +79,10 @@ export type DriverSessionDependencies = {
   identity: IdentityGateway;
   uuid: () => string;
 };
+
+export type ConfirmPickupDependencies = DriverSessionDependencies & {
+  pickup: PickupGateway;
+  now: () => Date;
+};
+
+export type ConfirmPickupRequestBody = ConfirmPickupPayload;

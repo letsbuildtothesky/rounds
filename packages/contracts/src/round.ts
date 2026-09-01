@@ -35,6 +35,18 @@ export type OperationsPlanningProjection = {
   tenantId: string;
   drivers: TeamDriverSummary[];
   unplannedDeliveries: UnplannedDeliverySummary[];
+  activeRounds: OperationsRoundSummary[];
+};
+
+export type OperationsRoundSummary = {
+  id: string;
+  reference: string;
+  serviceDate: string;
+  state: RoundState;
+  driverId: string;
+  driverName: string;
+  stopCount: number;
+  custodyStopCount: number;
 };
 
 export type PlanRoundPayload = {
@@ -65,6 +77,46 @@ export type PlanRoundState = {
 };
 
 export type PlanRoundResult = CommandResult<PlanRoundState, RoundApprovedEvent>;
+
+export type PickupStopVerification = {
+  stopId: string;
+  manifestId: string;
+  manifestVersion: number;
+  confirmedLineNumbers: number[];
+};
+
+export type ConfirmPickupPayload = {
+  stops: PickupStopVerification[];
+};
+
+export type ConfirmPickupCommand = CommandEnvelope<"round.confirm_pickup", ConfirmPickupPayload>;
+
+export type PickupConfirmedStop = {
+  stopId: string;
+  deliveryId: string;
+  manifestId: string;
+  manifestVersion: number;
+  verificationId: string;
+  custodyEventId: string;
+  verifiedUnits: number;
+};
+
+export type PickupConfirmedPayload = {
+  roundId: string;
+  driverId: string;
+  stops: PickupConfirmedStop[];
+};
+
+export type PickupConfirmedEvent = DomainEventEnvelope<"round.pickup_confirmed", PickupConfirmedPayload>;
+
+export type ConfirmPickupState = {
+  roundId: string;
+  roundState: "active";
+  driverId: string;
+  stops: PickupConfirmedStop[];
+};
+
+export type ConfirmPickupResult = CommandResult<ConfirmPickupState, PickupConfirmedEvent>;
 
 export type DriverManifestItem = {
   lineNumber: number;

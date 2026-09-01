@@ -34,6 +34,7 @@ const projection: OperationsPlanningProjection = {
     windowEnd: "2026-09-02T04:00:00Z",
     manifestSummary: "1× Flower bouquet",
   }],
+  activeRounds: [],
 };
 const driverSession: DriverSession = {
   user: { id: "auth-user", displayName: "Demo Driver" },

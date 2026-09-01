@@ -1,6 +1,11 @@
 import type { CreateDeliveryCommand, CreateDeliveryPayload } from "./delivery.js";
 import type { LocationBatch, PositionSample } from "./location.js";
-import type { PlanRoundCommand, PlanRoundPayload } from "./round.js";
+import type {
+  ConfirmPickupCommand,
+  ConfirmPickupPayload,
+  PlanRoundCommand,
+  PlanRoundPayload,
+} from "./round.js";
 
 export class ContractError extends Error {}
 
@@ -153,4 +158,50 @@ export function validatePlanRoundCommand(command: PlanRoundCommand): void {
     throw new ContractError("PlanRound expectedVersion must be 0");
   }
   validatePlanRoundPayload(command.payload);
+}
+
+export function validateConfirmPickupPayload(payload: ConfirmPickupPayload): void {
+  if (payload.stops.length === 0) throw new ContractError("stops cannot be empty");
+  if (new Set(payload.stops.map((stop) => stop.stopId)).size !== payload.stops.length) {
+    throw new ContractError("stops cannot contain duplicate stopId values");
+  }
+  if (new Set(payload.stops.map((stop) => stop.manifestId)).size !== payload.stops.length) {
+    throw new ContractError("stops cannot contain duplicate manifestId values");
+  }
+  payload.stops.forEach((stop, index) => {
+    assertUuid(stop.stopId, `stops[${index}].stopId`);
+    assertUuid(stop.manifestId, `stops[${index}].manifestId`);
+    if (!Number.isInteger(stop.manifestVersion) || stop.manifestVersion < 1) {
+      throw new ContractError(`stops[${index}].manifestVersion must be a positive integer`);
+    }
+    if (stop.confirmedLineNumbers.length === 0) {
+      throw new ContractError(`stops[${index}].confirmedLineNumbers cannot be empty`);
+    }
+    if (new Set(stop.confirmedLineNumbers).size !== stop.confirmedLineNumbers.length) {
+      throw new ContractError(`stops[${index}].confirmedLineNumbers cannot contain duplicates`);
+    }
+    stop.confirmedLineNumbers.forEach((lineNumber) => {
+      if (!Number.isInteger(lineNumber) || lineNumber < 1) {
+        throw new ContractError(`stops[${index}].confirmedLineNumbers must contain positive integers`);
+      }
+    });
+  });
+}
+
+export function validateConfirmPickupCommand(command: ConfirmPickupCommand): void {
+  if (command.schemaVersion !== 1 || command.commandType !== "round.confirm_pickup") {
+    throw new ContractError("unsupported ConfirmPickup command envelope");
+  }
+  assertUuid(command.commandId, "commandId");
+  assertUuid(command.traceId, "traceId");
+  assertUuid(command.tenantId, "tenantId");
+  assertUuid(command.aggregateId, "aggregateId");
+  assertNonEmpty(command.idempotencyKey, "idempotencyKey");
+  if (command.idempotencyKey.length > 200) {
+    throw new ContractError("idempotencyKey exceeds 200 characters");
+  }
+  if (!Number.isInteger(command.expectedVersion) || command.expectedVersion < 1) {
+    throw new ContractError("ConfirmPickup expectedVersion must be a positive integer");
+  }
+  validateConfirmPickupPayload(command.payload);
 }

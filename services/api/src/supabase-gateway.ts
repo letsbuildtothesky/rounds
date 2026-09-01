@@ -5,11 +5,14 @@ import type {
   DeliveryCommandGateway,
   IdentityGateway,
   OperationsRole,
+  PickupGateway,
   RoundGateway,
 } from "./types.js";
 import type {
   CreateDeliveryCommand,
   CreateDeliveryResult,
+  ConfirmPickupCommand,
+  ConfirmPickupResult,
   DriverRoundStop,
   DriverSession,
   OperationsLocation,
@@ -64,6 +67,8 @@ type ManifestRow = { id: string; delivery_id: string; version: number };
 type ManifestItemRow = { manifest_id: string; line_number: number; description: string; quantity: number; handling_note: string | null };
 type RoundRow = { id: string; tenant_id: string; reference: string; service_date: string; state: RoundState; version: number };
 type RoundStopRow = { stop_id: string; sequence: number };
+type PlanningRoundStopRow = { round_id: string; stop_id: string };
+type PickupVerificationRow = { round_id: string; stop_id: string };
 
 export function parseDatabasePoint(value: unknown): { latitude: number; longitude: number } | undefined {
   if (value && typeof value === "object" && "coordinates" in value) {
@@ -94,7 +99,7 @@ export function parseDatabasePoint(value: unknown): { latitude: number; longitud
   return undefined;
 }
 
-export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway, RoundGateway {
+export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway, RoundGateway, PickupGateway {
   private readonly admin: SupabaseClient;
 
   constructor(
@@ -330,6 +335,29 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     const promiseByDelivery = new Map(promises.map((promise) => [promise.delivery_id, promise]));
     const manifestByDelivery = new Map(manifests.map((manifest) => [manifest.delivery_id, manifest]));
 
+    const { data: activeRounds, error: activeRoundsError } = await this.admin.from("rounds")
+      .select("id, tenant_id, reference, service_date, state, version, driver_id")
+      .eq("tenant_id", actor.tenantId).in("state", ["approved", "loading", "active"])
+      .is("deleted_at", null).order("service_date").order("created_at")
+      .returns<(RoundRow & { driver_id: string })[]>();
+    if (activeRoundsError) throw activeRoundsError;
+    const activeRoundIds = (activeRounds ?? []).map((round) => round.id);
+    let planningRoundStops: PlanningRoundStopRow[] = [];
+    let pickupVerifications: PickupVerificationRow[] = [];
+    if (activeRoundIds.length) {
+      const [roundStopResult, verificationResult] = await Promise.all([
+        this.admin.from("round_stops").select("round_id, stop_id").in("round_id", activeRoundIds)
+          .returns<PlanningRoundStopRow[]>(),
+        this.admin.from("manifest_verifications").select("round_id, stop_id")
+          .in("round_id", activeRoundIds).eq("stage", "pickup").returns<PickupVerificationRow[]>(),
+      ]);
+      if (roundStopResult.error) throw roundStopResult.error;
+      if (verificationResult.error) throw verificationResult.error;
+      planningRoundStops = roundStopResult.data ?? [];
+      pickupVerifications = verificationResult.data ?? [];
+    }
+    const profileById = new Map(profiles.map((profile) => [profile.id, profile]));
+
     return {
       tenantId: actor.tenantId,
       drivers: profiles.map((profile) => ({
@@ -360,6 +388,19 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
           manifestSummary: summary || "Manifest ready",
         }];
       }),
+      activeRounds: (activeRounds ?? []).map((round) => {
+        const profile = profileById.get(round.driver_id);
+        return {
+          id: round.id,
+          reference: round.reference,
+          serviceDate: round.service_date,
+          state: round.state,
+          driverId: round.driver_id,
+          driverName: profile ? personById.get(profile.person_id)?.display_name ?? "Team driver" : "Team driver",
+          stopCount: planningRoundStops.filter((stop) => stop.round_id === round.id).length,
+          custodyStopCount: pickupVerifications.filter((verification) => verification.round_id === round.id).length,
+        };
+      }),
     };
   }
 
@@ -370,6 +411,22 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     });
     if (error) throw error;
     return data as PlanRoundResult;
+  }
+
+  async confirmPickup(
+    command: ConfirmPickupCommand,
+    identity: AuthenticatedIdentity,
+  ): Promise<ConfirmPickupResult> {
+    const { data: linked, error: linkedError } = await this.admin.from("auth_identities")
+      .select("person_id").eq("auth_user_id", identity.authUserId).maybeSingle<{ person_id: string }>();
+    if (linkedError) throw linkedError;
+    if (!linked) return { status: "rejected", error: { code: "NOT_AUTHORIZED", message: "Driver identity is not linked" } };
+    const { data, error } = await this.admin.rpc("confirm_round_pickup_command", {
+      p_command: command,
+      p_actor_person_id: linked.person_id,
+    });
+    if (error) throw error;
+    return data as ConfirmPickupResult;
   }
 
   async getDriverSession(identity: AuthenticatedIdentity): Promise<DriverSession | null> {

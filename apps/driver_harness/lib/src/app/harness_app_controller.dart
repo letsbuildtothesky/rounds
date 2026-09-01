@@ -91,6 +91,22 @@ class HarnessAppController extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<bool> confirmPickup(DriverRoundModel round) async {
+    _driverLoading = true;
+    _driverError = null;
+    notifyListeners();
+    try {
+      _driverSession = await _driverApi.confirmPickup(round);
+      return true;
+    } catch (error) {
+      _driverError = error.toString();
+      return false;
+    } finally {
+      _driverLoading = false;
+      notifyListeners();
+    }
+  }
+
   Future<void> selectLocale(HarnessLocale locale) async {
     _locale = locale;
     _hasSelectedLanguage = true;

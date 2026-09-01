@@ -77,6 +77,54 @@ class DriverApi {
     _storage.delete(key: _refreshTokenKey),
   ]);
 
+  Future<DriverSessionModel> confirmPickup(DriverRoundModel round) async {
+    var accessToken = await _storage.read(key: _accessTokenKey);
+    if (accessToken == null) {
+      throw const DriverApiException('Sign in again to confirm pickup');
+    }
+    var response = await _sendPickup(round, accessToken);
+    if (response.statusCode == 401) {
+      accessToken = await _refresh();
+      if (accessToken == null) {
+        throw const DriverApiException('Session expired. Sign in again.');
+      }
+      response = await _sendPickup(round, accessToken);
+    }
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw DriverApiException(
+        _message(response, 'Pickup could not be confirmed'),
+      );
+    }
+    return _driverSession(accessToken);
+  }
+
+  Future<http.Response> _sendPickup(
+    DriverRoundModel round,
+    String accessToken,
+  ) => _client.post(
+    Uri.parse('$roundsApiUrl/v1/driver/rounds/${round.id}/pickup'),
+    headers: {
+      'authorization': 'Bearer $accessToken',
+      'content-type': 'application/json',
+      'idempotency-key': 'driver-pickup:${round.id}:v${round.version}',
+      'x-trace-id': DateTime.now().microsecondsSinceEpoch.toString(),
+    },
+    body: jsonEncode({
+      'stops': round.stops
+          .map(
+            (stop) => {
+              'stopId': stop.id,
+              'manifestId': stop.manifestId,
+              'manifestVersion': stop.manifestVersion,
+              'confirmedLineNumbers': stop.manifestItems
+                  .map((item) => item.lineNumber)
+                  .toList(growable: false),
+            },
+          )
+          .toList(growable: false),
+    }),
+  );
+
   Future<DriverSessionModel> _driverSession(String accessToken) async {
     final response = await _client.get(
       Uri.parse('$roundsApiUrl/v1/driver/session'),

@@ -5,8 +5,14 @@ Thin Flutter field harness for validating embedded Google Navigation
 
 The same pilot client now supports an English Slice 1 Team-driver sign-in,
 secure token/refresh-token persistence, authenticated Round retrieval and
-server-provided Stop/manifest rendering. The original no-configuration demo
+server-provided Stop/manifest rendering. Assigned Team drivers can verify every
+physical manifest line and commit pickup through the server-authoritative
+custody command. The original no-configuration demo
 fixture remains available for Phase 0 tests.
+
+The pickup screen never claims custody from local button state. Until the API
+commit succeeds it remains unconfirmed; durable offline outbox support is the
+next Driver reliability checkpoint.
 
 ## Local setup
 

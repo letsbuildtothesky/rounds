@@ -129,6 +129,13 @@ export function DispatchPanel({ accessToken, tenant }: Props) {
   return <div className="dispatch-workspace">
     <section className="page-heading"><div><p className="eyebrow">OWN TEAM · MANUAL PLAN</p><h1>Build a Round</h1><p>Select a small ordered set of deliveries and approve it for one Team driver.</p></div><div className="secure-badge">Server-approved assignment</div></section>
     {error && <div className="alert error" role="alert"><div><strong>Couldn&apos;t continue</strong><span>{error}</span></div></div>}
+    {!!projection?.activeRounds.length && <section className="custody-board">
+      <div className="dispatch-card-heading"><div><p className="eyebrow">DRIVER EXECUTION</p><h2>Assigned Rounds</h2></div><span>{projection.activeRounds.length} live</span></div>
+      <div className="custody-round-list">{projection.activeRounds.map((round) => <article className="custody-round" key={round.id}>
+        <div><strong>{round.reference}</strong><small>{round.driverName} · {round.stopCount} Stop{round.stopCount === 1 ? "" : "s"}</small></div>
+        <div className={`custody-state ${round.state === "active" ? "committed" : ""}`}><b>{round.custodyStopCount} / {round.stopCount}</b><span>{round.state === "active" ? "Driver custody" : "Awaiting pickup"}</span></div>
+      </article>)}</div>
+    </section>}
     <div className="dispatch-grid">
       <section className="form-card stop-pool">
         <div className="dispatch-card-heading"><div><p className="eyebrow">UNPLANNED</p><h2>Delivery pool</h2></div><span>{projection?.unplannedDeliveries.length ?? 0} available</span></div>

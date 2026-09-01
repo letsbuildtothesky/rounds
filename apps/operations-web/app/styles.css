@@ -153,6 +153,16 @@ svg { width: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-l
 
 .dispatch-main { width: min(1240px, calc(100% - 40px)); }
 .dispatch-grid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(330px, .7fr); align-items: start; gap: 18px; }
+.custody-board { margin-bottom: 18px; padding: 20px; border: 1px solid #d8dfda; border-radius: 16px; background: rgba(255,255,255,.82); box-shadow: 0 12px 32px rgba(22,54,45,.05); }
+.custody-round-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; }
+.custody-round { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 16px; border: 1px solid #e0e5e1; border-radius: 12px; background: #fff; }
+.custody-round > div:first-child { display: grid; gap: 4px; }
+.custody-round strong { color: var(--forest); font-size: .8rem; }
+.custody-round small { color: var(--muted); font-size: .67rem; }
+.custody-state { display: grid; min-width: 106px; gap: 2px; padding: 8px 10px; border-radius: 10px; color: #87601e; text-align: right; background: #fff7e8; }
+.custody-state.committed { color: #176246; background: #e8f5ed; }
+.custody-state b { font-size: .75rem; }
+.custody-state span { font-size: .58rem; font-weight: 800; text-transform: uppercase; }
 .dispatch-card-heading { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 18px; }
 .dispatch-card-heading h2, .round-builder h2 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: 1.7rem; font-weight: 500; }
 .dispatch-card-heading > span { padding: 6px 9px; border-radius: 999px; color: var(--forest); background: var(--mint); font-size: .66rem; font-weight: 850; }

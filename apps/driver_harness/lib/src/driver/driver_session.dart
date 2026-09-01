@@ -101,7 +101,10 @@ class DriverRoundStopModel {
   const DriverRoundStopModel({
     required this.id,
     required this.sequence,
+    required this.state,
     required this.destinationVersion,
+    required this.manifestId,
+    required this.manifestVersion,
     required this.deliveryReference,
     required this.recipientName,
     required this.recipientPhone,
@@ -115,7 +118,10 @@ class DriverRoundStopModel {
 
   final String id;
   final int sequence;
+  final String state;
   final int destinationVersion;
+  final String manifestId;
+  final int manifestVersion;
   final String deliveryReference;
   final String recipientName;
   final String recipientPhone;
@@ -130,7 +136,10 @@ class DriverRoundStopModel {
       DriverRoundStopModel(
         id: json['id'] as String,
         sequence: json['sequence'] as int,
+        state: json['state'] as String,
         destinationVersion: json['destinationVersion'] as int,
+        manifestId: json['manifestId'] as String,
+        manifestVersion: json['manifestVersion'] as int,
         deliveryReference: json['deliveryReference'] as String,
         recipientName: json['recipientName'] as String,
         recipientPhone: json['recipientPhone'] as String,
