@@ -52,12 +52,15 @@ represented as motorcycle field evidence.
   deeper native bridge proves sufficient.
 - iOS event delivery remains unverified until Xcode and a physical iPhone are
   available.
-- Samsung bench smoke test initialized the Navigation SDK, rendered the Google
-  map, and delivered LIVE operational GPS samples. Both `TWO_WHEELER` and a
-  deliberate `DRIVING` comparison returned `NavigationRouteStatus.networkError`.
-  The phone had validated internet connectivity and Google telemetry uploads
-  succeeded, so Google Maps Platform account completion/billing propagation is
-  the current external blocker. This is not yet motorcycle field evidence.
+- Samsung bench smoke testing initialized the Navigation SDK, rendered the
+  Google map, and delivered LIVE operational GPS samples. Before Google Maps
+  Platform account activation completed, both `TWO_WHEELER` and a deliberate
+  `DRIVING` comparison returned `NavigationRouteStatus.networkError` despite
+  validated phone connectivity. After billing, Navigation SDK enablement, and
+  the Android key restriction had propagated, a manual `TWO_WHEELER` retry at
+  2026-09-01 16:46 ICT recorded `navigation_started` and displayed
+  `TWO_WHEELER guidance active`. This clears the external routing blocker but
+  is still bench evidence, not motorcycle field evidence.
 - The first field build retried a failed route from every road-snapped location
   callback. Build `83d9b678cc8e0ccef7f9b63bc849b22af9c61ed9` bounds the automatic
   request to one attempt, keeps the map visible, and requires an explicit rider
