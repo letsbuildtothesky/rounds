@@ -211,6 +211,7 @@ class AssignedRoundScreen extends StatelessWidget {
                                   enableNativeNavigation:
                                       enableNativeNavigation,
                                   stop: firstStop,
+                                  stopCount: round.stops.length,
                                 ),
                               ),
                             )

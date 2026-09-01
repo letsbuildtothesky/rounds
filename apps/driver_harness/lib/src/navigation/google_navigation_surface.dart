@@ -18,24 +18,29 @@ class GoogleNavigationSurface extends StatefulWidget {
     required this.strings,
     required this.onOperationalSample,
     required this.onStatus,
+    required this.onRemainingChanged,
     required this.onArrival,
     required this.stopId,
     required this.destinationVersion,
     required this.destinationTitle,
     required this.latitude,
     required this.longitude,
+    required this.bottomOverlayInset,
     super.key,
   });
 
   final AppStrings strings;
   final void Function(DateTime capturedAt) onOperationalSample;
   final void Function(String status) onStatus;
+  final void Function(int remainingSeconds, int remainingMeters)
+  onRemainingChanged;
   final VoidCallback onArrival;
   final String stopId;
   final int destinationVersion;
   final String destinationTitle;
   final double latitude;
   final double longitude;
+  final double bottomOverlayInset;
 
   @override
   State<GoogleNavigationSurface> createState() =>
@@ -52,6 +57,7 @@ class _GoogleNavigationSurfaceState extends State<GoogleNavigationSurface>
   StreamSubscription<RoadSnappedLocationUpdatedEvent>? _roadLocation;
   StreamSubscription<void>? _rerouting;
   StreamSubscription<OnArrivalEvent>? _arrival;
+  StreamSubscription<RemainingTimeOrDistanceChangedEvent>? _remaining;
   GoogleNavigationViewController? _viewController;
   HarnessDatabase? _database;
   HarnessEventLog? _events;
@@ -134,6 +140,15 @@ class _GoogleNavigationSurfaceState extends State<GoogleNavigationSurface>
         );
         widget.onArrival();
       });
+      _remaining =
+          GoogleMapsNavigator.setOnRemainingTimeOrDistanceChangedListener(
+            (event) => widget.onRemainingChanged(
+              event.remainingTime.round(),
+              event.remainingDistance.round(),
+            ),
+            remainingTimeThresholdSeconds: 10,
+            remainingDistanceThresholdMeters: 25,
+          );
 
       final guidanceRunning = await GoogleMapsNavigator.isGuidanceRunning();
       if (guidanceRunning) {
@@ -177,6 +192,10 @@ class _GoogleNavigationSurfaceState extends State<GoogleNavigationSurface>
   Future<void> _onViewCreated(GoogleNavigationViewController controller) async {
     _viewController = controller;
     await controller.setMyLocationEnabled(true);
+    await controller.setNavigationFooterEnabled(false);
+    await controller.setPadding(
+      EdgeInsets.only(bottom: widget.bottomOverlayInset),
+    );
   }
 
   Future<void> _attemptRoute(
@@ -335,6 +354,7 @@ class _GoogleNavigationSurfaceState extends State<GoogleNavigationSurface>
     await _roadLocation?.cancel();
     await _rerouting?.cancel();
     await _arrival?.cancel();
+    await _remaining?.cancel();
     await _uploader.stop();
     await _recorder.stop();
     if (_sessionReady) {
@@ -360,6 +380,21 @@ class _GoogleNavigationSurfaceState extends State<GoogleNavigationSurface>
           onViewCreated: _onViewCreated,
           initialNavigationUIEnabledPreference:
               NavigationUIEnabledPreference.automatic,
+          initialPadding: EdgeInsets.only(bottom: widget.bottomOverlayInset),
+          initialNavigationHeaderStylingOptions:
+              const NavigationHeaderStylingOptions(
+                primaryDayModeBackgroundColor: Color(0xFF172238),
+                secondaryDayModeBackgroundColor: Color(0xFF172238),
+                primaryNightModeBackgroundColor: Color(0xFF172238),
+                secondaryNightModeBackgroundColor: Color(0xFF172238),
+                largeManeuverIconColor: Color(0xFFFF6420),
+                smallManeuverIconColor: Color(0xFFFF6420),
+                nextStepTextColor: Color(0xBFFFFFFF),
+                distanceValueTextColor: Colors.white,
+                distanceUnitsTextColor: Color(0xBFFFFFFF),
+                instructionsTextColor: Colors.white,
+                guidanceRecommendedLaneColor: Color(0xFFFF6420),
+              ),
           initialCameraPosition: CameraPosition(target: _destination, zoom: 15),
         ),
         if (_attemptGate.inFlight)
@@ -373,7 +408,7 @@ class _GoogleNavigationSurfaceState extends State<GoogleNavigationSurface>
           Positioned(
             left: 12,
             right: 12,
-            bottom: 12,
+            bottom: widget.bottomOverlayInset + 12,
             child: Card(
               color: _error == null
                   ? const Color(0xFFE1F2E8)

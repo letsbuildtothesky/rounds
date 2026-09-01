@@ -38,6 +38,10 @@ void main() {
 
     await tester.tap(find.byKey(const Key('start-navigation')));
     await tester.pumpAndSettle();
+    expect(find.byKey(const Key('navigation-back')), findsOneWidget);
+    expect(find.byKey(const Key('navigation-more')), findsOneWidget);
+    expect(find.text('STOP 1 OF 1 · UF-DEMO-001'), findsOneWidget);
+    expect(find.text('Contact Operations'), findsNothing);
     await tester.tap(find.byKey(const Key('arrival-action')));
     await tester.pumpAndSettle();
 
