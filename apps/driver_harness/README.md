@@ -40,6 +40,11 @@ The production Thailand authentication method remains a pre-pilot decision;
 phone OTP can replace the entry method without changing Round contracts or
 assignment state.
 
+Private debug builds may hide the credential fields and expose one pilot
+`Sign in` button by passing `PILOT_DRIVER_EMAIL` and `PILOT_DRIVER_PASSWORD` as
+Dart defines. This convenience is disabled in release builds. Never commit the
+values or distribute an APK that contains them.
+
 The real secret files are ignored by Git. The required APIs are Navigation SDK,
 Maps SDK for Android, and Maps SDK for iOS. iOS requires Xcode, Swift Package
 Manager, and a deployment target of iOS 16 or newer.

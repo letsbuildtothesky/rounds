@@ -28,9 +28,18 @@ class HarnessAppController extends ChangeNotifier {
   bool get hasSelectedLanguage => _hasSelectedLanguage;
   AppStrings get strings => AppStrings(_locale);
   bool get driverConfigured => _driverApi.isConfigured;
+  bool get oneTapPilotSignInConfigured =>
+      !kReleaseMode &&
+      _pilotDriverEmail.isNotEmpty &&
+      _pilotDriverPassword.isNotEmpty;
   DriverSessionModel? get driverSession => _driverSession;
   bool get driverLoading => _driverLoading;
   String? get driverError => _driverError;
+
+  static const _pilotDriverEmail = String.fromEnvironment('PILOT_DRIVER_EMAIL');
+  static const _pilotDriverPassword = String.fromEnvironment(
+    'PILOT_DRIVER_PASSWORD',
+  );
 
   static Future<HarnessAppController> create() async {
     final preferences = await SharedPreferences.getInstance();
@@ -78,6 +87,13 @@ class HarnessAppController extends ChangeNotifier {
       _driverLoading = false;
       notifyListeners();
     }
+  }
+
+  Future<void> signInPilotDriver() {
+    if (!oneTapPilotSignInConfigured) {
+      throw StateError('One-tap pilot sign-in is not configured');
+    }
+    return signInDriver(_pilotDriverEmail, _pilotDriverPassword);
   }
 
   Future<void> refreshDriverSession() async {
