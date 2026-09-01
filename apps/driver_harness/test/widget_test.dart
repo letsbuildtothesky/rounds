@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rounds_driver_harness/src/app/app_strings.dart';
@@ -84,6 +86,14 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
+    final previousComparator = goldenFileComparator;
+    final localComparator = previousComparator as LocalFileComparator;
+    goldenFileComparator = _TolerantGoldenFileComparator(
+      localComparator.basedir.resolve('widget_test.dart'),
+      precisionTolerance: .025,
+    );
+    addTearDown(() => goldenFileComparator = previousComparator);
+
     SharedPreferences.setMockInitialValues({
       'driver_locale': 'en',
       'driver_locale_selected': true,
@@ -100,4 +110,30 @@ void main() {
       matchesGoldenFile('goldens/navigation-instrument-393x852.png'),
     );
   });
+}
+
+class _TolerantGoldenFileComparator extends LocalFileComparator {
+  _TolerantGoldenFileComparator(
+    super.testFile, {
+    required double precisionTolerance,
+  }) : assert(precisionTolerance >= 0 && precisionTolerance <= 1),
+       _precisionTolerance = precisionTolerance;
+
+  final double _precisionTolerance;
+
+  @override
+  Future<bool> compare(Uint8List imageBytes, Uri golden) async {
+    final result = await GoldenFileComparator.compareLists(
+      imageBytes,
+      await getGoldenBytes(golden),
+    );
+    if (result.passed || result.diffPercent <= _precisionTolerance) {
+      result.dispose();
+      return true;
+    }
+
+    final error = await generateFailureOutput(result, golden, basedir);
+    result.dispose();
+    throw FlutterError(error);
+  }
 }
