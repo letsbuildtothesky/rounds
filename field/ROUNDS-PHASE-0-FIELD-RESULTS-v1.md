@@ -10,7 +10,7 @@ represented as motorcycle field evidence.
 
 ## Build
 
-- Commit SHA: `5ab06b7`
+- Commit SHA: Record the exact Git SHA when the physical-device field build is produced.
 - App version: `0.1.0+1` (debug)
 - Android APK checksum: `b444fd292eee8808a0c7bfac13c6cf39c1444bdedd519fca070d415bdf98421c`
 - iOS build identifier:
