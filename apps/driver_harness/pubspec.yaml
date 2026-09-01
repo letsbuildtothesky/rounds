@@ -33,3 +33,10 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   generate: true
+  fonts:
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-Variable.ttf
+    - family: Noto Sans Thai
+      fonts:
+        - asset: assets/fonts/NotoSansThai-Variable.ttf

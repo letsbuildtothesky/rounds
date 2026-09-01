@@ -48,4 +48,56 @@ void main() {
     expect(find.text('Pending sync'), findsOneWidget);
     expect(find.text('Completed'), findsNothing);
   });
+
+  testWidgets('navigation instrument remains usable at narrow large text', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 720);
+    tester.view.devicePixelRatio = 1;
+    tester.platformDispatcher.textScaleFactorTestValue = 1.3;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+
+    SharedPreferences.setMockInitialValues({
+      'driver_locale': 'en',
+      'driver_locale_selected': true,
+    });
+    final controller = await HarnessAppController.create();
+    await tester.pumpWidget(
+      RoundsHarnessApp(controller: controller, enableNativeNavigation: false),
+    );
+    await tester.tap(find.byKey(const Key('start-navigation')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('navigation-back')), findsOneWidget);
+    expect(find.byKey(const Key('navigation-more')), findsOneWidget);
+    expect(find.byKey(const Key('arrival-action')), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('navigation instrument matches its canonical visual baseline', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    SharedPreferences.setMockInitialValues({
+      'driver_locale': 'en',
+      'driver_locale_selected': true,
+    });
+    final controller = await HarnessAppController.create();
+    await tester.pumpWidget(
+      RoundsHarnessApp(controller: controller, enableNativeNavigation: false),
+    );
+    await tester.tap(find.byKey(const Key('start-navigation')));
+    await tester.pumpAndSettle();
+
+    await expectLater(
+      find.byType(MaterialApp),
+      matchesGoldenFile('goldens/navigation-instrument-393x852.png'),
+    );
+  });
 }

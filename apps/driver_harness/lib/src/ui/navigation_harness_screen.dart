@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../app/driver_design_system.dart';
 import '../app/harness_app_controller.dart';
 import '../driver/driver_session.dart';
 import '../navigation/google_navigation_surface.dart';
@@ -44,8 +45,13 @@ class _NavigationHarnessScreenState extends State<NavigationHarnessScreen> {
   @override
   Widget build(BuildContext context) {
     final strings = widget.controller.strings;
+    final showArrivalAction =
+        _nearArrival ||
+        !widget.enableNativeNavigation ||
+        _arrived ||
+        _arrivalPendingSync;
     return Scaffold(
-      backgroundColor: const Color(0xFFEEF2F4),
+      backgroundColor: RoundsColors.canvas,
       body: SafeArea(
         child: Stack(
           children: [
@@ -78,7 +84,7 @@ class _NavigationHarnessScreenState extends State<NavigationHarnessScreen> {
                           '${widget.stop.deliveryReference} · ${widget.stop.recipientName}',
                       latitude: widget.stop.latitude,
                       longitude: widget.stop.longitude,
-                      bottomOverlayInset: 194,
+                      bottomOverlayInset: showArrivalAction ? 274 : 184,
                     )
                   : _NavigationPreview(label: strings.navigationReady),
             ),
@@ -97,11 +103,7 @@ class _NavigationHarnessScreenState extends State<NavigationHarnessScreen> {
                 remainingSeconds: _remainingSeconds,
                 remainingMeters: _remainingMeters,
                 navigationStatus: _navigationStatus,
-                showArrivalAction:
-                    _nearArrival ||
-                    !widget.enableNativeNavigation ||
-                    _arrived ||
-                    _arrivalPendingSync,
+                showArrivalAction: showArrivalAction,
                 arrived: _arrived,
                 arrivalPendingSync: _arrivalPendingSync,
                 submittingArrival: _submittingArrival,
@@ -215,208 +217,230 @@ class _CurrentStopDock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Material(
-    elevation: 10,
-    color: Colors.white,
-    shadowColor: const Color(0x33172238),
+    elevation: 12,
+    color: RoundsColors.surface,
+    shadowColor: const Color(0x3D172238),
     shape: RoundedRectangleBorder(
-      side: const BorderSide(color: Color(0xFFCBD4DC)),
-      borderRadius: BorderRadius.circular(8),
+      side: const BorderSide(color: RoundsColors.lineStrong),
+      borderRadius: BorderRadius.circular(RoundsRadii.surface),
     ),
     clipBehavior: Clip.antiAlias,
-    child: Padding(
-      padding: const EdgeInsets.all(10),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SizedBox(
+          height: 54,
+          child: Row(
             children: [
-              _DockIconButton(
-                key: const Key('navigation-back'),
-                tooltip: 'Back',
-                icon: Icons.arrow_back,
-                onPressed: onBack,
+              Padding(
+                padding: const EdgeInsets.only(left: RoundsSpace.xs),
+                child: _DockIconButton(
+                  key: const Key('navigation-back'),
+                  tooltip: 'Back',
+                  icon: Icons.arrow_back,
+                  onPressed: onBack,
+                ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: RoundsSpace.sm),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            'STOP ${stop.sequence} OF $stopCount · ${stop.deliveryReference}',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: Color(0xFFFF6420),
-                              fontSize: 10.5,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: .55,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        _FreshnessBadge(
-                          freshness: freshness,
-                          controller: controller,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      stop.recipientName,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Color(0xFF172238),
-                        fontSize: 19,
-                        height: 1.05,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -.45,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      stop.rawAddress,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Color(0xFF748094),
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  'STOP ${stop.sequence} OF $stopCount · ${stop.deliveryReference}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: RoundsType.roadKicker,
                 ),
               ),
-              const SizedBox(width: 10),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    _etaLabel,
-                    style: const TextStyle(
-                      color: Color(0xFF172238),
-                      fontSize: 20,
-                      height: 1,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -.7,
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    _distanceLabel,
-                    style: const TextStyle(
-                      color: Color(0xFF748094),
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(width: 8),
-              PopupMenuButton<String>(
-                key: const Key('navigation-more'),
-                tooltip: 'More actions',
-                icon: const Icon(Icons.more_horiz, color: Color(0xFF172238)),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                onSelected: (action) {
-                  final message = action == 'contact'
-                      ? controller.strings.contactOperations
-                      : controller.strings.reportException;
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(SnackBar(content: Text(message)));
-                },
-                itemBuilder: (_) => [
-                  PopupMenuItem(
-                    value: 'contact',
-                    child: Row(
-                      children: [
-                        const Icon(Icons.support_agent, size: 20),
-                        const SizedBox(width: 10),
-                        Text(controller.strings.contactOperations),
-                      ],
-                    ),
-                  ),
-                  PopupMenuItem(
-                    value: 'exception',
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.warning_amber_rounded,
-                          size: 20,
-                          color: Color(0xFFBF4A4A),
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          controller.strings.reportException,
-                          style: const TextStyle(color: Color(0xFFBF4A4A)),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+              const SizedBox(width: RoundsSpace.xs),
+              _FreshnessBadge(freshness: freshness, controller: controller),
+              _NavigationMenu(controller: controller),
             ],
           ),
-          if (showArrivalAction) ...[
-            const SizedBox(height: 10),
-            SizedBox(
-              width: double.infinity,
-              height: 58,
-              child: FilledButton(
-                key: const Key('arrival-action'),
-                onPressed: onArrival,
-                style: FilledButton.styleFrom(
-                  elevation: 0,
-                  backgroundColor: const Color(0xFF168B50),
-                  disabledBackgroundColor: const Color(0xFFD9DFE5),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(7),
+        ),
+        const Divider(height: 1, thickness: 1, color: RoundsColors.line),
+        ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 94),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: RoundsSpace.md,
+              vertical: RoundsSpace.md,
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        stop.recipientName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: RoundsType.destination,
+                      ),
+                      const SizedBox(height: RoundsSpace.xs),
+                      Text(
+                        stop.rawAddress,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: RoundsType.destinationMeta,
+                      ),
+                    ],
                   ),
                 ),
-                child: Text(
-                  arrived
-                      ? controller.strings.podPlaceholder
-                      : submittingArrival
-                      ? 'Confirming with server…'
-                      : arrivalPendingSync
-                      ? 'Pending sync — not arrived'
-                      : 'I’m at Stop ${stop.sequence}',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
+                const SizedBox(width: RoundsSpace.md),
+                Semantics(
+                  label: '$_etaLabel, $_distanceLabel remaining',
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(_etaLabel, style: RoundsType.navigationDistance),
+                      const SizedBox(height: RoundsSpace.xs),
+                      Text(
+                        _distanceLabel,
+                        style: RoundsType.navigationDistanceMeta,
+                      ),
+                    ],
                   ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (showArrivalAction) ...[
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              RoundsSpace.sm,
+              0,
+              RoundsSpace.sm,
+              RoundsSpace.sm,
+            ),
+            child: FilledButton(
+              key: const Key('arrival-action'),
+              onPressed: onArrival,
+              style: FilledButton.styleFrom(
+                elevation: 0,
+                backgroundColor: RoundsColors.green,
+                disabledBackgroundColor: const Color(0xFFD9DFE5),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(RoundsRadii.small),
+                ),
+              ),
+              child: Text(
+                arrived
+                    ? controller.strings.podPlaceholder
+                    : submittingArrival
+                    ? 'Confirming with server…'
+                    : arrivalPendingSync
+                    ? 'Pending sync — not arrived'
+                    : 'I’m at Stop ${stop.sequence}',
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
             ),
-          ],
-          if (arrivalPendingSync) ...[
-            const SizedBox(height: 6),
-            Text(
-              controller.strings.pendingSync,
-              style: const TextStyle(
-                color: Color(0xFF9B5A00),
-                fontSize: 11.5,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            const Text(
-              'Arrival is not committed yet',
-              style: TextStyle(
-                color: Color(0xFF9B5A00),
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
+          ),
         ],
-      ),
+        if (arrivalPendingSync) ...[
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              RoundsSpace.md,
+              0,
+              RoundsSpace.md,
+              RoundsSpace.sm,
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.cloud_off_outlined,
+                  color: RoundsColors.warning,
+                  size: 18,
+                ),
+                const SizedBox(width: RoundsSpace.xs),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        controller.strings.pendingSync,
+                        style: const TextStyle(
+                          color: RoundsColors.warning,
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const Text(
+                        'Arrival is not committed yet',
+                        style: TextStyle(
+                          color: RoundsColors.warning,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ],
     ),
+  );
+}
+
+class _NavigationMenu extends StatelessWidget {
+  const _NavigationMenu({required this.controller});
+
+  final HarnessAppController controller;
+
+  @override
+  Widget build(BuildContext context) => PopupMenuButton<String>(
+    key: const Key('navigation-more'),
+    tooltip: 'More actions',
+    icon: const Icon(Icons.more_horiz, color: RoundsColors.ink, size: 24),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(RoundsRadii.surface),
+    ),
+    onSelected: (action) {
+      final message = action == 'contact'
+          ? controller.strings.contactOperations
+          : controller.strings.reportException;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
+    },
+    itemBuilder: (_) => [
+      PopupMenuItem(
+        value: 'contact',
+        child: Row(
+          children: [
+            const Icon(Icons.support_agent, size: 20),
+            const SizedBox(width: RoundsSpace.sm),
+            Text(controller.strings.contactOperations),
+          ],
+        ),
+      ),
+      PopupMenuItem(
+        value: 'exception',
+        child: Row(
+          children: [
+            const Icon(
+              Icons.warning_amber_rounded,
+              size: 20,
+              color: RoundsColors.red,
+            ),
+            const SizedBox(width: RoundsSpace.sm),
+            Text(
+              controller.strings.reportException,
+              style: const TextStyle(color: RoundsColors.red),
+            ),
+          ],
+        ),
+      ),
+    ],
   );
 }
 
@@ -436,15 +460,15 @@ class _DockIconButton extends StatelessWidget {
   Widget build(BuildContext context) => SizedBox(
     width: 42,
     height: 42,
-    child: OutlinedButton(
+    child: IconButton(
       onPressed: onPressed,
-      style: OutlinedButton.styleFrom(
-        padding: EdgeInsets.zero,
-        foregroundColor: const Color(0xFF172238),
-        side: const BorderSide(color: Color(0xFFCBD4DC)),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+      style: IconButton.styleFrom(
+        foregroundColor: RoundsColors.ink,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(RoundsRadii.small),
+        ),
       ),
-      child: Icon(icon, size: 20, semanticLabel: tooltip),
+      icon: Icon(icon, size: 20, semanticLabel: tooltip),
     ),
   );
 }
@@ -501,9 +525,10 @@ class _FreshnessBadge extends StatelessWidget {
       child: Text(
         _label,
         style: const TextStyle(
-          color: Color(0xFF17453B),
-          fontSize: 9.5,
+          color: RoundsColors.ink,
+          fontSize: 10.5,
           fontWeight: FontWeight.w800,
+          letterSpacing: .25,
         ),
       ),
     ),
