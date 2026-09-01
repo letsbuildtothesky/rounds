@@ -1,6 +1,7 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { createDeliveryHandler } from "./create-delivery-handler.js";
 import { readConfig } from "./config.js";
+import { operationsSessionHandler } from "./operations-session-handler.js";
 import { SupabaseGateway } from "./supabase-gateway.js";
 
 const config = readConfig();
@@ -18,6 +19,14 @@ function sendNode(response: ServerResponse, webResponse: Response): void {
   response.statusCode = webResponse.status;
   webResponse.headers.forEach((value, key) => response.setHeader(key, value));
   void webResponse.arrayBuffer().then((body) => response.end(Buffer.from(body)));
+}
+
+function addOperationsCors(webResponse: Response, origin: string | undefined): Response {
+  if (origin !== config.operationsWebOrigin) return webResponse;
+  webResponse.headers.set("access-control-allow-origin", origin);
+  webResponse.headers.set("access-control-allow-credentials", "true");
+  webResponse.headers.set("vary", "origin");
+  return webResponse;
 }
 
 async function toWebRequest(request: IncomingMessage): Promise<Request> {
@@ -54,14 +63,40 @@ const server = createServer(async (request, response) => {
       sendNode(response, Response.json({ status: ready ? "ready" : "not_ready" }, { status: ready ? 200 : 503 }));
       return;
     }
+    if (request.method === "OPTIONS" && request.url?.startsWith("/v1/")) {
+      const origin = request.headers.origin;
+      if (origin !== config.operationsWebOrigin) {
+        response.writeHead(403).end();
+        return;
+      }
+      response.writeHead(204, {
+        "access-control-allow-origin": origin,
+        "access-control-allow-credentials": "true",
+        "access-control-allow-methods": "GET, POST, OPTIONS",
+        "access-control-allow-headers": "authorization, content-type, idempotency-key, x-rounds-tenant-id, x-trace-id",
+        "access-control-max-age": "600",
+        vary: "origin",
+      }).end();
+      return;
+    }
+    if (request.method === "GET" && request.url === "/v1/operations/session") {
+      const webRequest = await toWebRequest(request);
+      const sessionResponse = await operationsSessionHandler(webRequest, {
+        identity: gateway,
+        uuid: () => crypto.randomUUID(),
+      });
+      sendNode(response, addOperationsCors(sessionResponse, request.headers.origin));
+      return;
+    }
     if (request.method === "POST" && request.url === "/v1/deliveries") {
       const webRequest = await toWebRequest(request);
-      sendNode(response, await createDeliveryHandler(webRequest, {
+      const deliveryResponse = await createDeliveryHandler(webRequest, {
         identity: gateway,
         commands: gateway,
-        uuid: crypto.randomUUID,
+        uuid: () => crypto.randomUUID(),
         now: () => new Date(),
-      }));
+      });
+      sendNode(response, addOperationsCors(deliveryResponse, request.headers.origin));
       return;
     }
     response.writeHead(404, { "content-type": "application/json" });
@@ -75,7 +110,15 @@ const server = createServer(async (request, response) => {
       path: request.url,
       message: error instanceof Error ? error.message : String(error),
     }));
-    if (!response.headersSent) response.writeHead(500, { "content-type": "application/json" });
+    if (!response.headersSent) {
+      const headers: Record<string, string> = { "content-type": "application/json" };
+      if (request.headers.origin === config.operationsWebOrigin) {
+        headers["access-control-allow-origin"] = request.headers.origin;
+        headers["access-control-allow-credentials"] = "true";
+        headers.vary = "origin";
+      }
+      response.writeHead(500, headers);
+    }
     response.end(JSON.stringify({ error: { code: "INTERNAL_ERROR", message: "Request failed" } }));
   } finally {
     console.log(JSON.stringify({

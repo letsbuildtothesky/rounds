@@ -4,6 +4,7 @@ import type {
   CreateDeliveryCommand,
   CreateDeliveryPayload,
   CreateDeliveryResult,
+  OperationsSession,
 } from "@rounds/contracts";
 import { createDeliveryHandler } from "../src/create-delivery-handler.js";
 import type {
@@ -67,6 +68,10 @@ class FakeGateway implements IdentityGateway, DeliveryCommandGateway {
 
   async authorizeTenant(): Promise<ActorContext | null> {
     return this.authorizedActor;
+  }
+
+  async getOperationsSession(): Promise<OperationsSession | null> {
+    return null;
   }
 
   async createDelivery(command: CreateDeliveryCommand, commandActor: ActorContext): Promise<CreateDeliveryResult> {

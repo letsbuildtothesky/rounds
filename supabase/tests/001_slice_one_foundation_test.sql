@@ -2,12 +2,22 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(27);
+select plan(33);
 
 select has_table('public', 'tenants', 'tenants table exists');
 select has_table('public', 'deliveries', 'deliveries table exists');
 select has_table('public', 'command_idempotency', 'command replay ledger exists');
 select has_table('public', 'domain_event_outbox', 'transactional outbox exists');
+
+select ok(has_table_privilege('service_role', 'public.tenants', 'SELECT'), 'API service can resolve tenants');
+select ok(has_table_privilege('service_role', 'public.persons', 'SELECT'), 'API service can resolve person display identity');
+select ok(has_table_privilege('service_role', 'public.auth_identities', 'SELECT'), 'API service can resolve auth identity links');
+select ok(has_table_privilege('service_role', 'public.tenant_memberships', 'SELECT'), 'API service can authorize active memberships');
+select ok(has_table_privilege('service_role', 'public.tenant_locations', 'SELECT'), 'API service can return pickup locations');
+select ok(
+  has_function_privilege('service_role', 'public.create_delivery_command(jsonb,uuid)', 'EXECUTE'),
+  'API service can execute the canonical delivery command'
+);
 
 insert into public.tenants (id, slug, display_name)
 values
@@ -49,7 +59,7 @@ values
     'sukhumvit-39',
     'UrbanFlowers · Sukhumvit 39',
     'Sukhumvit 39, Bangkok',
-    st_setsrid(st_makepoint(100.5731, 13.7378), 4326)::extensions.geography,
+    extensions.st_setsrid(extensions.st_makepoint(100.5731::double precision, 13.7378::double precision), 4326)::extensions.geography,
     'merchant_verified',
     'UrbanFlowers Dispatch',
     '+66000000000'
@@ -60,7 +70,7 @@ values
     'other',
     'Other Merchant',
     'Bangkok',
-    st_setsrid(st_makepoint(100.55, 13.75), 4326)::extensions.geography,
+    extensions.st_setsrid(extensions.st_makepoint(100.55::double precision, 13.75::double precision), 4326)::extensions.geography,
     'merchant_verified',
     'Other Dispatch',
     '+66111111111'

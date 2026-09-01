@@ -15,6 +15,7 @@ It contains:
 ## Current implementation
 
 - `apps/driver_harness` — Phase 0 Flutter navigation + telemetry field harness.
+- `apps/operations-web` — Pilot/Slice 1 authenticated Operations and manual delivery intake.
 - `apps/telemetry_viewer` — Phase 0 live telemetry viewer.
 - `services/location_ingest` — batched location-ingest domain logic.
 - `services/api` — Pilot/Slice 1 authenticated command API foundation.
@@ -34,6 +35,7 @@ Implementation evidence and current gaps are recorded in `field/` and `docs/`.
 ```bash
 npm test
 npm run typecheck
+npm run build --workspace @rounds/operations-web
 npx supabase db lint --linked --schema public --level error --fail-on error
 ```
 

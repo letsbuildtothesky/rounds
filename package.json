@@ -2,6 +2,7 @@
   "name": "rounds",
   "private": true,
   "workspaces": [
+    "apps/operations-web",
     "apps/telemetry_viewer",
     "packages/*",
     "services/*"

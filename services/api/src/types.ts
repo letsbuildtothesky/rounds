@@ -2,9 +2,16 @@ import type {
   CreateDeliveryCommand,
   CreateDeliveryPayload,
   CreateDeliveryResult,
+  OperationsSession,
 } from "@rounds/contracts";
 
-export type OperationsRole = "tenant_owner" | "operations_admin" | "dispatcher" | "viewer";
+export type { OperationsRole } from "@rounds/contracts";
+import type { OperationsRole } from "@rounds/contracts";
+
+export type AuthenticatedIdentity = {
+  authUserId: string;
+  email?: string;
+};
 
 export type ActorContext = {
   authUserId: string;
@@ -14,8 +21,9 @@ export type ActorContext = {
 };
 
 export interface IdentityGateway {
-  authenticate(accessToken: string): Promise<{ authUserId: string } | null>;
+  authenticate(accessToken: string): Promise<AuthenticatedIdentity | null>;
   authorizeTenant(authUserId: string, tenantId: string): Promise<ActorContext | null>;
+  getOperationsSession(identity: AuthenticatedIdentity): Promise<OperationsSession | null>;
 }
 
 export interface DeliveryCommandGateway {
@@ -31,3 +39,8 @@ export type CreateDeliveryDependencies = {
 };
 
 export type CreateDeliveryRequestBody = CreateDeliveryPayload;
+
+export type OperationsSessionDependencies = {
+  identity: IdentityGateway;
+  uuid: () => string;
+};

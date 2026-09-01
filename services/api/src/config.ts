@@ -7,6 +7,7 @@ export type ApiConfig = {
   supabasePublishableKey: string;
   supabaseSecretKey: string;
   healthToken: string;
+  operationsWebOrigin: string;
 };
 
 function required(name: string, env: NodeJS.ProcessEnv): string {
@@ -31,5 +32,6 @@ export function readConfig(env: NodeJS.ProcessEnv = process.env): ApiConfig {
     supabasePublishableKey: required("SUPABASE_PUBLISHABLE_KEY", env),
     supabaseSecretKey: required("SUPABASE_SECRET_KEY", env),
     healthToken: required("ROUNDS_HEALTH_TOKEN", env),
+    operationsWebOrigin: required("ROUNDS_OPERATIONS_WEB_ORIGIN", env),
   };
 }
