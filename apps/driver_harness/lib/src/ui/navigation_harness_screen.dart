@@ -77,6 +77,7 @@ class _NavigationHarnessScreenState extends State<NavigationHarnessScreen> {
             Expanded(
               child: widget.enableNativeNavigation
                   ? GoogleNavigationSurface(
+                      strings: strings,
                       onOperationalSample: (capturedAt) {
                         if (!mounted) return;
                         setState(() => _lastOperationalSample = capturedAt);

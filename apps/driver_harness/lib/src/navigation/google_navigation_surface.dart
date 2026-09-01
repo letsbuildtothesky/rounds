@@ -4,20 +4,24 @@ import 'package:flutter/material.dart';
 import 'package:google_navigation_flutter/google_navigation_flutter.dart';
 import 'package:uuid/uuid.dart';
 
+import '../app/app_strings.dart';
 import '../storage/harness_database.dart';
 import '../storage/harness_event_log.dart';
 import '../storage/sqlite_navigation_intent_store.dart';
 import '../telemetry/operational_location_recorder.dart';
 import 'navigation_intent.dart';
+import 'route_attempt_gate.dart';
 
 class GoogleNavigationSurface extends StatefulWidget {
   const GoogleNavigationSurface({
+    required this.strings,
     required this.onOperationalSample,
     required this.onStatus,
     required this.onArrival,
     super.key,
   });
 
+  final AppStrings strings;
   final void Function(DateTime capturedAt) onOperationalSample;
   final void Function(String status) onStatus;
   final VoidCallback onArrival;
@@ -39,9 +43,11 @@ class _GoogleNavigationSurfaceState extends State<GoogleNavigationSurface>
   HarnessDatabase? _database;
   HarnessEventLog? _events;
   NavigationIntent? _intent;
+  final RouteAttemptGate _attemptGate = RouteAttemptGate();
   bool _sessionReady = false;
-  bool _routeRequested = false;
+  bool _guidanceActive = false;
   String? _error;
+  String? _diagnosticResult;
 
   @override
   void initState() {
@@ -110,7 +116,8 @@ class _GoogleNavigationSurfaceState extends State<GoogleNavigationSurface>
 
       final guidanceRunning = await GoogleMapsNavigator.isGuidanceRunning();
       if (guidanceRunning) {
-        _routeRequested = true;
+        _guidanceActive = true;
+        _attemptGate.restoreActiveNavigation();
         await _attachIntent();
         await _events?.record(
           'navigation_resumed',
@@ -120,8 +127,13 @@ class _GoogleNavigationSurfaceState extends State<GoogleNavigationSurface>
 
       _roadLocation =
           await GoogleMapsNavigator.setRoadSnappedLocationUpdatedListener((_) {
-            if (!_routeRequested && _viewController != null) {
-              unawaited(_setDestinationAndStart());
+            if (!_guidanceActive && _viewController != null) {
+              unawaited(
+                _attemptRoute(
+                  NavigationTravelMode.twoWheeler,
+                  RouteAttemptTrigger.automatic,
+                ),
+              );
             }
           });
 
@@ -146,10 +158,24 @@ class _GoogleNavigationSurfaceState extends State<GoogleNavigationSurface>
     await controller.setMyLocationEnabled(true);
   }
 
-  Future<void> _setDestinationAndStart() async {
-    if (_routeRequested) return;
-    _routeRequested = true;
-    widget.onStatus('Calculating TWO_WHEELER route…');
+  Future<void> _attemptRoute(
+    NavigationTravelMode travelMode,
+    RouteAttemptTrigger trigger,
+  ) async {
+    if (_guidanceActive) return;
+    final claim = trigger == RouteAttemptTrigger.automatic
+        ? _attemptGate.claimAutomatic()
+        : _attemptGate.claimManual(trigger);
+    if (claim == null) return;
+
+    final modeName = _modeName(travelMode);
+    if (mounted) {
+      setState(() {
+        _error = null;
+        _diagnosticResult = null;
+      });
+    }
+    widget.onStatus('Calculating $modeName route…');
     try {
       final attachment = await _attachIntent();
       await _events?.record(
@@ -160,6 +186,9 @@ class _GoogleNavigationSurfaceState extends State<GoogleNavigationSurface>
           'destination_fingerprint': attachment.intent.destinationFingerprint,
           'nav_session_id': attachment.intent.navSessionId,
           'request_kind': attachment.isNew ? 'new' : 'reattached',
+          'attempt_number': claim.number,
+          'attempt_trigger': claim.trigger.name,
+          'travel_mode': modeName,
         },
       );
       final status = await GoogleMapsNavigator.setDestinations(
@@ -173,35 +202,57 @@ class _GoogleNavigationSurfaceState extends State<GoogleNavigationSurface>
           displayOptions: NavigationDisplayOptions(
             showDestinationMarkers: true,
           ),
-          routingOptions: RoutingOptions(
-            travelMode: NavigationTravelMode.twoWheeler,
-          ),
+          routingOptions: RoutingOptions(travelMode: travelMode),
         ),
       );
       if (status != NavigationRouteStatus.statusOk) {
         throw StateError('route status: ${status.name}');
       }
-      await GoogleMapsNavigator.startGuidance();
-      await _events?.record(
-        'navigation_started',
-        payload: {
-          'nav_session_id': attachment.intent.navSessionId,
-          'travel_mode': 'TWO_WHEELER',
-        },
-      );
-      widget.onStatus('TWO_WHEELER guidance active');
+      if (travelMode == NavigationTravelMode.twoWheeler) {
+        await GoogleMapsNavigator.startGuidance();
+        _guidanceActive = true;
+        await _events?.record(
+          'navigation_started',
+          payload: {
+            'nav_session_id': attachment.intent.navSessionId,
+            'travel_mode': modeName,
+            'attempt_number': claim.number,
+          },
+        );
+        widget.onStatus('TWO_WHEELER guidance active');
+      } else {
+        const result =
+            'DRIVING route works. The failure is isolated to TWO_WHEELER.';
+        await _events?.record(
+          'driving_diagnostic_route_available',
+          payload: {
+            'nav_session_id': attachment.intent.navSessionId,
+            'attempt_number': claim.number,
+          },
+        );
+        if (mounted) setState(() => _diagnosticResult = result);
+        widget.onStatus(result);
+      }
     } catch (error) {
       await _events?.record(
         'route_request_error',
         payload: {
           'nav_session_id': _intent?.navSessionId,
+          'attempt_number': claim.number,
+          'attempt_trigger': claim.trigger.name,
+          'travel_mode': modeName,
           'error': error.toString(),
         },
       );
-      _routeRequested = false;
-      _setStatus('Route unavailable: $error', isError: true);
+      _setStatus('$modeName route unavailable: $error', isError: true);
+    } finally {
+      _attemptGate.complete();
+      if (mounted) setState(() {});
     }
   }
+
+  String _modeName(NavigationTravelMode travelMode) =>
+      travelMode == NavigationTravelMode.twoWheeler ? 'TWO_WHEELER' : 'DRIVING';
 
   Future<({NavigationIntent intent, bool isNew})> _attachIntent() async {
     final existing = _intent;
@@ -274,32 +325,87 @@ class _GoogleNavigationSurfaceState extends State<GoogleNavigationSurface>
 
   @override
   Widget build(BuildContext context) {
-    final error = _error;
-    if (error != null) {
-      return ColoredBox(
-        color: const Color(0xFFD7DDD7),
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Text(error, textAlign: TextAlign.center),
-          ),
-        ),
-      );
-    }
     if (!_sessionReady) {
       return const ColoredBox(
         color: Color(0xFFD7DDD7),
         child: Center(child: CircularProgressIndicator()),
       );
     }
-    return GoogleMapsNavigationView(
-      onViewCreated: _onViewCreated,
-      initialNavigationUIEnabledPreference:
-          NavigationUIEnabledPreference.automatic,
-      initialCameraPosition: const CameraPosition(
-        target: _destination,
-        zoom: 15,
-      ),
+    final diagnosticMessage = _diagnosticResult ?? _error;
+    return Stack(
+      children: [
+        GoogleMapsNavigationView(
+          onViewCreated: _onViewCreated,
+          initialNavigationUIEnabledPreference:
+              NavigationUIEnabledPreference.automatic,
+          initialCameraPosition: const CameraPosition(
+            target: _destination,
+            zoom: 15,
+          ),
+        ),
+        if (_attemptGate.inFlight)
+          const Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: LinearProgressIndicator(),
+          ),
+        if (!_guidanceActive && diagnosticMessage != null)
+          Positioned(
+            left: 12,
+            right: 12,
+            bottom: 12,
+            child: Card(
+              color: _error == null
+                  ? const Color(0xFFE1F2E8)
+                  : const Color(0xFFFFE8DF),
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      diagnosticMessage,
+                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      widget.strings.routeDiagnosticHelp,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                    const SizedBox(height: 10),
+                    FilledButton(
+                      key: const Key('retry-two-wheeler'),
+                      onPressed: _attemptGate.inFlight
+                          ? null
+                          : () => unawaited(
+                              _attemptRoute(
+                                NavigationTravelMode.twoWheeler,
+                                RouteAttemptTrigger.manualTwoWheeler,
+                              ),
+                            ),
+                      child: Text(widget.strings.retryTwoWheeler),
+                    ),
+                    const SizedBox(height: 6),
+                    OutlinedButton(
+                      key: const Key('test-driving-route'),
+                      onPressed: _attemptGate.inFlight
+                          ? null
+                          : () => unawaited(
+                              _attemptRoute(
+                                NavigationTravelMode.driving,
+                                RouteAttemptTrigger.drivingDiagnostic,
+                              ),
+                            ),
+                      child: Text(widget.strings.testDrivingRoute),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

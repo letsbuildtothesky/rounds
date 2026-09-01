@@ -50,6 +50,13 @@ class AppStrings {
   String get navigationReady => isThai
       ? 'Google Navigation · โหมดรถจักรยานยนต์'
       : 'Google Navigation · TWO_WHEELER';
+  String get retryTwoWheeler =>
+      isThai ? 'ลองเส้นทางรถจักรยานยนต์อีกครั้ง' : 'Retry TWO_WHEELER';
+  String get testDrivingRoute =>
+      isThai ? 'ทดสอบเส้นทางรถยนต์' : 'Test DRIVING route';
+  String get routeDiagnosticHelp => isThai
+      ? 'แผนที่ยังใช้งานได้ เลือกลองอีกครั้งหรือทดสอบรถยนต์เพื่อแยกปัญหาของ Google'
+      : 'The map is still available. Retry or test DRIVING to isolate the Google routing failure.';
   String get demoAddress => isThai
       ? 'อาคารอินเตอร์เชนจ์ 21 ถนนสุขุมวิท กรุงเทพมหานคร'
       : 'Interchange 21, Sukhumvit Road, Bangkok';
