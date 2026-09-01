@@ -65,6 +65,12 @@ void main() {
       ),
     );
 
+    expect(find.text('UrbanFlowers'), findsOneWidget);
+    expect(find.text('Studio'), findsNothing);
+    expect(find.text('1 delivery'), findsOneWidget);
+    expect(find.text('Confirm pickup'), findsWidgets);
+    expect(find.text('Confirm\npickup'), findsNothing);
+    expect(find.text('2 packages · physical manifest'), findsOneWidget);
     expect(find.text('0 / 2'), findsOneWidget);
     expect(
       tester

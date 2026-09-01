@@ -117,118 +117,49 @@ class _PickupConfirmationScreenState extends State<PickupConfirmationScreen> {
   @override
   Widget build(BuildContext context) => Scaffold(
     backgroundColor: Colors.white,
-    appBar: AppBar(
-      backgroundColor: Colors.white,
-      title: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'AT PICKUP',
-            style: TextStyle(
-              color: Color(0xFFFF6420),
-              fontSize: 11,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 1,
-            ),
-          ),
-          Text(
-            widget.round.pickup.displayName,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
-          ),
-        ],
-      ),
-      actions: [
-        Padding(
-          padding: const EdgeInsets.only(right: 18),
-          child: Center(
-            child: Text(
-              '${widget.round.stops.length} deliveries',
-              style: const TextStyle(
-                color: Color(0xFF748094),
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ),
-      ],
-    ),
     body: SafeArea(
       child: Column(
         children: [
+          _PickupTopBar(round: widget.round),
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.fromLTRB(18, 22, 18, 20),
+              padding: const EdgeInsets.fromLTRB(18, 24, 18, 20),
               children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Confirm\npickup',
-                      style: TextStyle(
-                        color: Color(0xFF172238),
-                        fontSize: 34,
-                        height: .95,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -1.5,
-                      ),
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          '${_confirmed.length} / $_lineCount',
-                          key: const Key('pickup-progress'),
-                          style: const TextStyle(
-                            color: Color(0xFF172238),
-                            fontSize: 27,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                        const Text(
-                          'confirmed',
-                          style: TextStyle(
-                            color: Color(0xFF748094),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                _PickupHero(
+                  confirmed: _confirmed.length,
+                  lineCount: _lineCount,
+                  unitCount: _unitCount,
                 ),
-                const SizedBox(height: 12),
-                Text(
-                  '$_unitCount package unit${_unitCount == 1 ? '' : 's'} · physical manifest',
-                  style: const TextStyle(
-                    color: Color(0xFF748094),
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 22),
+                const SizedBox(height: 20),
                 Container(
                   decoration: BoxDecoration(
                     border: Border.all(color: const Color(0xFFE1E6EA)),
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(8),
                   ),
+                  clipBehavior: Clip.antiAlias,
                   child: Column(
                     children: [
-                      const Padding(
-                        padding: EdgeInsets.all(14),
-                        child: Row(
+                      Container(
+                        constraints: const BoxConstraints(minHeight: 54),
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                        color: const Color(0xFFFAFBFB),
+                        child: const Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
                               'Collect',
-                              style: TextStyle(fontWeight: FontWeight.w900),
+                              style: TextStyle(
+                                color: Color(0xFF172238),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w800,
+                              ),
                             ),
                             Text(
                               'Tap when physically present',
                               style: TextStyle(
                                 color: Color(0xFF748094),
-                                fontSize: 12,
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
                           ],
@@ -251,17 +182,11 @@ class _PickupConfirmationScreenState extends State<PickupConfirmationScreen> {
                   ),
                 ),
                 const SizedBox(height: 14),
-                OutlinedButton.icon(
+                _PickupProblemButton(
                   key: const Key('pickup-problem'),
                   onPressed: _submitting || _pendingSync
                       ? null
                       : _reportProblem,
-                  icon: const Icon(Icons.warning_amber_rounded),
-                  label: const Text('Pickup problem'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFFBF4A4A),
-                    minimumSize: const Size.fromHeight(54),
-                  ),
                 ),
               ],
             ),
@@ -271,28 +196,236 @@ class _PickupConfirmationScreenState extends State<PickupConfirmationScreen> {
             decoration: const BoxDecoration(
               border: Border(top: BorderSide(color: Color(0xFFE1E6EA))),
             ),
-            child: FilledButton(
-              key: const Key('confirm-pickup'),
-              onPressed: _ready && !_submitting && !_pendingSync
-                  ? _confirm
-                  : null,
-              style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFF168B50),
-                disabledBackgroundColor: const Color(0xFFD9DFE5),
-              ),
-              child: Text(
-                _pendingSync
-                    ? 'Pending sync — not confirmed'
-                    : _submitting
-                    ? 'Sending to server…'
-                    : 'Confirm pickup',
-                style: const TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w900,
+            child: SizedBox(
+              height: 64,
+              child: FilledButton(
+                key: const Key('confirm-pickup'),
+                onPressed: _ready && !_submitting && !_pendingSync
+                    ? _confirm
+                    : null,
+                style: FilledButton.styleFrom(
+                  elevation: 0,
+                  backgroundColor: const Color(0xFF168B50),
+                  disabledBackgroundColor: const Color(0xFFD9DFE5),
+                  disabledForegroundColor: const Color(0xFF85909D),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(7),
+                  ),
+                ),
+                child: Text(
+                  _pendingSync
+                      ? 'Pending sync — not confirmed'
+                      : _submitting
+                      ? 'Sending to server…'
+                      : 'Confirm pickup',
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
               ),
             ),
           ),
+        ],
+      ),
+    ),
+  );
+}
+
+class _PickupTopBar extends StatelessWidget {
+  const _PickupTopBar({required this.round});
+
+  final DriverRoundModel round;
+
+  @override
+  Widget build(BuildContext context) {
+    final deliveryCount = round.stops.length;
+    return Container(
+      height: 60,
+      padding: const EdgeInsets.symmetric(horizontal: 18),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: Color(0xFFE1E6EA))),
+      ),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 42,
+            height: 42,
+            child: OutlinedButton(
+              key: const Key('pickup-back'),
+              onPressed: () => Navigator.of(context).maybePop(),
+              style: OutlinedButton.styleFrom(
+                padding: EdgeInsets.zero,
+                foregroundColor: const Color(0xFF172238),
+                side: const BorderSide(color: Color(0xFFCBD4DC)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(7),
+                ),
+              ),
+              child: const Icon(Icons.arrow_back, size: 21),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'AT PICKUP',
+                  style: TextStyle(
+                    color: Color(0xFFFF6420),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: .88,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  round.tenantName,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFF172238),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            '$deliveryCount ${deliveryCount == 1 ? 'delivery' : 'deliveries'}',
+            style: const TextStyle(
+              color: Color(0xFF748094),
+              fontSize: 12.5,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PickupHero extends StatelessWidget {
+  const _PickupHero({
+    required this.confirmed,
+    required this.lineCount,
+    required this.unitCount,
+  });
+
+  final int confirmed;
+  final int lineCount;
+  final int unitCount;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.only(bottom: 22),
+    decoration: const BoxDecoration(
+      border: Border(bottom: BorderSide(color: Color(0xFFE1E6EA))),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Expanded(
+              child: Text(
+                'Confirm pickup',
+                maxLines: 1,
+                overflow: TextOverflow.fade,
+                softWrap: false,
+                style: TextStyle(
+                  color: Color(0xFF172238),
+                  fontSize: 31,
+                  height: .98,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -1.7,
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  '$confirmed / $lineCount',
+                  key: const Key('pickup-progress'),
+                  style: const TextStyle(
+                    color: Color(0xFF172238),
+                    fontSize: 27,
+                    height: 1,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -1.2,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                const Text(
+                  'confirmed',
+                  style: TextStyle(
+                    color: Color(0xFF748094),
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Text.rich(
+          TextSpan(
+            children: [
+              TextSpan(
+                text: '$unitCount package${unitCount == 1 ? '' : 's'}',
+                style: const TextStyle(
+                  color: Color(0xFF3D4A5D),
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const TextSpan(text: ' · physical manifest'),
+            ],
+          ),
+          style: const TextStyle(
+            color: Color(0xFF748094),
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+class _PickupProblemButton extends StatelessWidget {
+  const _PickupProblemButton({required this.onPressed, super.key});
+
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: double.infinity,
+    height: 56,
+    child: OutlinedButton(
+      onPressed: onPressed,
+      style: OutlinedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        alignment: Alignment.centerLeft,
+        foregroundColor: const Color(0xFFBF4A4A),
+        side: const BorderSide(color: Color(0xFFE6C8C8)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7)),
+      ),
+      child: const Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            'Pickup problem',
+            style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w800),
+          ),
+          Icon(Icons.chevron_right, size: 22),
         ],
       ),
     ),
@@ -445,9 +578,11 @@ class _ManifestLine extends StatelessWidget {
   Widget build(BuildContext context) => InkWell(
     onTap: onTap,
     child: Container(
-      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 13),
-      decoration: const BoxDecoration(
-        border: Border(top: BorderSide(color: Color(0xFFEAEDEF))),
+      constraints: const BoxConstraints(minHeight: 70),
+      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 10),
+      decoration: BoxDecoration(
+        color: checked ? const Color(0xFFFBFEFC) : Colors.white,
+        border: const Border(top: BorderSide(color: Color(0xFFEDEFF2))),
       ),
       child: Row(
         children: [
@@ -507,9 +642,11 @@ class _ManifestLine extends StatelessWidget {
               if (item.handlingNote != null)
                 Text(
                   item.handlingNote!,
-                  style: const TextStyle(
-                    color: Color(0xFFFF6420),
-                    fontSize: 10,
+                  style: TextStyle(
+                    color: item.handlingNote!.toLowerCase().contains('cool')
+                        ? const Color(0xFF3269B7)
+                        : const Color(0xFFFF6420),
+                    fontSize: 10.8,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
