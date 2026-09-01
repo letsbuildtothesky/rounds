@@ -1,9 +1,11 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 
 import '../storage/harness_database.dart';
 import '../storage/telemetry_buffer.dart';
+import 'operational_location_settings.dart';
 import 'position_sample.dart';
 
 class OperationalLocationRecorder {
@@ -39,12 +41,8 @@ class OperationalLocationRecorder {
     final highest = rows.single['highest_sequence'] as int?;
     _nextSequence = (highest ?? 0) + 1;
 
-    const settings = LocationSettings(
-      accuracy: LocationAccuracy.bestForNavigation,
-      distanceFilter: 0,
-    );
     _subscription = Geolocator.getPositionStream(
-      locationSettings: settings,
+      locationSettings: operationalLocationSettings(defaultTargetPlatform),
     ).listen(_queue, onError: onError);
   }
 

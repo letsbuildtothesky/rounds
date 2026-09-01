@@ -9,6 +9,7 @@ import '../storage/harness_database.dart';
 import '../storage/harness_event_log.dart';
 import '../storage/sqlite_navigation_intent_store.dart';
 import '../telemetry/operational_location_recorder.dart';
+import '../telemetry/telemetry_uploader.dart';
 import 'navigation_intent.dart';
 import 'route_attempt_gate.dart';
 
@@ -36,6 +37,7 @@ class _GoogleNavigationSurfaceState extends State<GoogleNavigationSurface>
   static const _destination = LatLng(latitude: 13.7367, longitude: 100.5612);
 
   late final OperationalLocationRecorder _recorder;
+  late final TelemetryUploader _uploader;
   StreamSubscription<RoadSnappedLocationUpdatedEvent>? _roadLocation;
   StreamSubscription<void>? _rerouting;
   StreamSubscription<OnArrivalEvent>? _arrival;
@@ -57,6 +59,10 @@ class _GoogleNavigationSurfaceState extends State<GoogleNavigationSurface>
       onSample: widget.onOperationalSample,
       onError: (error) => _setStatus('Telemetry error: $error'),
     );
+    _uploader = TelemetryUploader(
+      supabaseUrl: const String.fromEnvironment('SUPABASE_URL'),
+      publishableKey: const String.fromEnvironment('SUPABASE_PUBLISHABLE_KEY'),
+    );
     unawaited(_initialize());
   }
 
@@ -72,6 +78,7 @@ class _GoogleNavigationSurfaceState extends State<GoogleNavigationSurface>
 
       widget.onStatus('Requesting precise location…');
       await _recorder.start();
+      await _uploader.start();
 
       var accepted = await GoogleMapsNavigator.areTermsAccepted();
       if (!accepted) {
@@ -314,6 +321,7 @@ class _GoogleNavigationSurfaceState extends State<GoogleNavigationSurface>
     await _roadLocation?.cancel();
     await _rerouting?.cancel();
     await _arrival?.cancel();
+    await _uploader.stop();
     await _recorder.stop();
     if (_sessionReady) {
       // Keep active guidance alive in Android's foreground service. A later

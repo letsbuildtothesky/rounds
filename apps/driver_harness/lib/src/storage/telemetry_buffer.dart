@@ -23,8 +23,9 @@ class TelemetryBuffer {
         limit: limit,
       );
 
-  Future<void> acknowledgeThrough(int watermark) => database.database.delete(
+  Future<void> acknowledgeThrough(int watermark) => database.database.update(
     'position_samples',
+    {'upload_state': 'uploaded'},
     where: 'sequence <= ?',
     whereArgs: [watermark],
   );

@@ -12,6 +12,8 @@ h1 { margin-bottom: 0; font-size: clamp(1.7rem, 3vw, 2.6rem); }
 .eyebrow { margin-bottom: 6px; color: #6c756f; font-size: .72rem; font-weight: 800; letter-spacing: .16em; }
 .connection { padding: 10px 14px; border-radius: 999px; background: white; font-size: .84rem; font-weight: 700; }
 .connection span { display: inline-block; width: 9px; height: 9px; margin-right: 8px; border-radius: 50%; background: #34a66f; }
+.connection:not(.subscribed) span { background: #d99a31; }
+.error-banner { padding: 12px 14px; border: 1px solid #e4b89a; border-radius: 12px; color: #873d12; background: #fff0e7; }
 .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
 .metrics article, aside { border: 1px solid #d9d8d0; border-radius: 16px; background: rgba(255,255,255,.84); }
 .metrics article { padding: 16px; }
