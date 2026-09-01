@@ -10,9 +10,9 @@ represented as motorcycle field evidence.
 
 ## Build
 
-- Commit SHA: Record the exact Git SHA when the physical-device field build is produced.
+- Commit SHA: `83d9b678cc8e0ccef7f9b63bc849b22af9c61ed9`
 - App version: `0.1.0+1` (debug)
-- Android APK checksum: `b444fd292eee8808a0c7bfac13c6cf39c1444bdedd519fca070d415bdf98421c`
+- Android APK checksum: `6ee72f718df6bc43436acdf77c0c10552d4ec128c384a53fc7e7b081e940cedc`
 - iOS build identifier:
 
 ## Device matrix
@@ -20,7 +20,7 @@ represented as motorcycle field evidence.
 | Class | Model | OS | Battery health | Optimization | Location permission | Carrier | Build SHA |
 |---|---|---|---|---|---|---|---|
 | iPhone | Pending | | | | | | |
-| Mainstream Android | Pending | | | | | | |
+| Mainstream Android | Samsung SM-S928B | Android 16 / API 36 | Android reports good | Pending OEM review | Precise while in use | AIS | `83d9b678cc8e0ccef7f9b63bc849b22af9c61ed9` |
 | Aggressive-OEM Android | Pending | | | | | | |
 
 ## Route corpus and field runs
@@ -52,6 +52,16 @@ represented as motorcycle field evidence.
   deeper native bridge proves sufficient.
 - iOS event delivery remains unverified until Xcode and a physical iPhone are
   available.
+- Samsung bench smoke test initialized the Navigation SDK, rendered the Google
+  map, and delivered LIVE operational GPS samples. Both `TWO_WHEELER` and a
+  deliberate `DRIVING` comparison returned `NavigationRouteStatus.networkError`.
+  The phone had validated internet connectivity and Google telemetry uploads
+  succeeded, so Google Maps Platform account completion/billing propagation is
+  the current external blocker. This is not yet motorcycle field evidence.
+- The first field build retried a failed route from every road-snapped location
+  callback. Build `83d9b678cc8e0ccef7f9b63bc849b22af9c61ed9` bounds the automatic
+  request to one attempt, keeps the map visible, and requires an explicit rider
+  action for every retry or diagnostic comparison.
 
 ## Location-source comparison
 
