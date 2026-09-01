@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Rounds — A11 Verification Submitted v4</title>
+<style>
+:root{--canvas:#eef1f4;--paper:#fff;--ink:#172238;--ink2:#3d4a5d;--muted:#748094;--line:#e1e6ea;--orange:#ff6420;--green:#168b50;--green-soft:#eef8f2}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--canvas);color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit;cursor:pointer}button:focus-visible{outline:3px solid rgba(255,100,32,.16);outline-offset:2px}
+body{padding:28px}
+.frame{width:393px;height:852px;margin:0 auto;background:var(--paper);position:relative;overflow:hidden;border:1px solid rgba(23,34,56,.09);border-radius:28px;box-shadow:0 18px 42px rgba(23,34,56,.14)}
+.statusbar{height:28px;padding:0 20px 4px;display:flex;align-items:flex-end;justify-content:space-between;font-size:12px;font-weight:760;background:#fff;position:relative;z-index:40}.sb-right{display:flex;align-items:center;gap:6px}.signal{display:flex;align-items:flex-end;gap:1.5px;height:9px}.signal i{display:block;width:2px;background:currentColor;border-radius:1px}.signal i:nth-child(1){height:3px}.signal i:nth-child(2){height:5px}.signal i:nth-child(3){height:7px}.signal i:nth-child(4){height:9px}.battery{width:20px;height:9px;border:1.5px solid currentColor;border-radius:2px;padding:1px;position:relative}.battery:after{content:"";position:absolute;right:-3px;top:1.5px;width:2px;height:4px;background:currentColor;border-radius:0 1px 1px 0}.battery b{display:block;width:78%;height:100%;background:currentColor;border-radius:1px}
+.top{height:68px;padding:0 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;background:#fff}.brand{display:flex;align-items:flex-end;font-size:24px;line-height:1;font-weight:920;letter-spacing:-.055em}.brand-dot{width:7px;height:7px;border-radius:50%;background:var(--orange);margin-left:3px;margin-bottom:2px}.context{margin-left:auto;font-size:11.5px;line-height:1;font-weight:880;letter-spacing:.09em;text-transform:uppercase;color:var(--orange)}
+.body{position:absolute;inset:96px 0 88px;padding:44px 20px 24px;background:#fff;display:flex;flex-direction:column;overflow-y:auto;scrollbar-width:none}.body::-webkit-scrollbar{display:none}
+.check{width:72px;height:72px;border-radius:50%;background:var(--green-soft);display:grid;place-items:center;color:var(--green);margin-bottom:29px}.check svg{width:34px;height:34px;stroke:currentColor;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.eyebrow{font-size:11.5px;line-height:1;font-weight:900;letter-spacing:.095em;text-transform:uppercase;color:var(--green);margin-bottom:12px}
+h1{margin:0;font-size:44px;line-height:.96;font-weight:880;letter-spacing:-.065em;max-width:345px}.lead{margin:16px 0 0;font-size:16px;line-height:1.42;font-weight:660;color:var(--ink2);max-width:335px}
+.state{margin-top:38px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.row{min-height:66px;display:flex;align-items:center;justify-content:space-between;gap:14px}.row+.row{border-top:1px solid var(--line)}.row span{font-size:14px;font-weight:760;color:var(--muted)}.row b{font-size:14px;font-weight:860;text-align:right}.row b.good{color:var(--green)}.row b.wait{color:var(--orange)}
+.footer{position:absolute;left:0;right:0;bottom:0;padding:10px 20px 18px;background:#fff;border-top:1px solid var(--line)}.primary{width:100%;height:60px;border:0;border-radius:7px;background:var(--ink);color:#fff;font-size:17px;font-weight:860;letter-spacing:-.02em}.primary:active{transform:translateY(1px)}
+@media(max-width:520px){body{padding:0;background:#fff}.frame{width:100vw;height:100dvh;border:0;border-radius:0;box-shadow:none}}
+@media(max-width:340px){.top{padding-left:16px;padding-right:16px}.body{padding:34px 16px 20px}.check{width:64px;height:64px;margin-bottom:24px}.check svg{width:30px;height:30px}h1{font-size:39px}.lead{font-size:14.5px;margin-top:13px}.state{margin-top:30px}.row{min-height:59px}.row span,.row b{font-size:13px}.footer{padding-left:16px;padding-right:16px}.primary{height:58px}}
+@media(max-height:720px){.body{padding-top:28px}.check{width:58px;height:58px;margin-bottom:20px}.check svg{width:27px;height:27px}h1{font-size:37px}.lead{font-size:14px;margin-top:11px}.state{margin-top:24px}.row{min-height:55px}.primary{height:56px}}
+</style>
+</head>
+<body>
+<div class="frame">
+  <div class="statusbar"><div>18:26</div><div class="sb-right"><div class="signal"><i></i><i></i><i></i><i></i></div><div>5G</div><div class="battery"><b></b></div></div></div>
+  <header class="top"><div class="brand">Rounds<span class="brand-dot"></span></div><div class="context">Network</div></header>
+  <main class="body">
+    <div class="check"><svg viewBox="0 0 24 24"><path d="m5 12 4 4 10-10"/></svg></div>
+    <div class="eyebrow">Submitted</div>
+    <h1>Verification submitted</h1>
+    <p class="lead">We’ll notify you when your Network access is ready.</p>
+    <section class="state" aria-label="Verification status">
+      <div class="row"><span>Application</span><b class="good">Received</b></div>
+      <div class="row"><span>Network access</span><b class="wait">In review</b></div>
+    </section>
+  </main>
+  <footer class="footer"><button class="primary" id="homeBtn" type="button">Go to Home</button></footer>
+</div>
+<script>
+document.getElementById('homeBtn').addEventListener('click',()=>{location.href='ROUNDS-B02-HOME-VERIFICATION-PENDING-v5-10OF10.html'});
+</script>
+</body>
+</html>

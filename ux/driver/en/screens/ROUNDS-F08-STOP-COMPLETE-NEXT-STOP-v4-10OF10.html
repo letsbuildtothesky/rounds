@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Rounds — F08 Stop Complete / Next Stop v4</title>
+<style>
+:root{
+  --canvas:#eef1f4;--paper:#fff;--ink:#172238;--ink2:#3d4a5d;--muted:#748094;
+  --line:#e1e6ea;--line2:#cbd4dc;--orange:#ff6420;--green:#168b50;--green-soft:#eef8f2;--red:#bf4a4a;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--canvas);color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+button,a{font:inherit}
+body{padding:28px}
+.frame{width:393px;height:852px;margin:0 auto;background:#eef2f4;position:relative;overflow:hidden;border:1px solid rgba(23,34,56,.09);border-radius:28px;box-shadow:0 18px 42px rgba(23,34,56,.14)}
+.statusbar{height:28px;padding:0 20px 4px;display:flex;align-items:flex-end;justify-content:space-between;font-size:12px;font-weight:760;background:#fff;position:relative;z-index:50}
+.sb-right{display:flex;align-items:center;gap:6px}.signal{display:flex;align-items:flex-end;gap:1.5px;height:9px}.signal i{display:block;width:2px;background:currentColor;border-radius:1px}.signal i:nth-child(1){height:3px}.signal i:nth-child(2){height:5px}.signal i:nth-child(3){height:7px}.signal i:nth-child(4){height:9px}.battery{width:20px;height:9px;border:1.5px solid currentColor;border-radius:2px;padding:1px;position:relative}.battery:after{content:"";position:absolute;right:-3px;top:1.5px;width:2px;height:4px;background:currentColor}.battery b{display:block;width:78%;height:100%;background:currentColor;border-radius:1px}
+.screen{position:absolute;inset:28px 0 0;overflow:hidden;background:#eef2f4}
+
+.complete-bar{position:absolute;left:0;right:0;top:0;height:74px;z-index:30;background:rgba(255,255,255,.99);border-bottom:1px solid var(--line);padding:0 17px;display:flex;align-items:center;gap:12px}
+.complete-check{width:38px;height:38px;border-radius:50%;background:var(--green-soft);color:var(--green);display:grid;place-items:center;flex:0 0 auto}.complete-check svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:2.7;stroke-linecap:round;stroke-linejoin:round}
+.complete-copy{min-width:0;flex:1}.complete-copy b{display:block;font-size:16.5px;line-height:1.05;font-weight:850;letter-spacing:-.025em}.complete-copy span{display:block;margin-top:5px;font-size:11.5px;line-height:1.2;color:var(--muted);font-weight:690;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.complete-progress{flex:0 0 auto;text-align:right}.complete-progress b{display:block;font-size:12.5px;font-weight:810;color:var(--green)}.complete-progress span{display:block;margin-top:4px;font-size:10.5px;color:var(--muted);font-weight:690}
+
+#map,.fallback-map{position:absolute;left:0;right:0;top:74px;bottom:232px}
+#map{z-index:1;background:#eef2f4;display:none}.live-map #map{display:block}.live-map .fallback-map{display:none}
+.fallback-map{z-index:0;background:linear-gradient(180deg,#f7f9fa 0%,#edf2f4 100%);overflow:hidden}.fallback-map .block{position:absolute;background:#e5eaed;border-radius:4px}.fallback-map .park{position:absolute;background:#e2eee5;border-radius:4px}.fallback-map .road{position:absolute;height:8px;background:#fff;box-shadow:0 0 0 1px #dbe2e7;border-radius:999px;transform-origin:left center}.fallback-map .road.major{height:13px}.fallback-place{position:absolute;font-size:10.5px;font-weight:760;color:#8b96a3;letter-spacing:.025em}
+.fallback-route{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}.fallback-route .shadow{fill:none;stroke:#fff;stroke-width:11;stroke-linecap:round;stroke-linejoin:round}.fallback-route .main{fill:none;stroke:var(--ink);stroke-width:5.5;stroke-linecap:round;stroke-linejoin:round}
+.fallback-driver{position:absolute;width:28px;height:34px;filter:drop-shadow(0 5px 10px rgba(23,34,56,.18));z-index:5}.fallback-stop{position:absolute;width:29px;height:29px;border-radius:50%;background:#fff;border:3px solid var(--ink);color:var(--ink);display:grid;place-items:center;font-size:11px;font-weight:860;box-shadow:0 5px 12px rgba(23,34,56,.13);z-index:6}.fallback-stop.current{width:34px;height:34px;background:var(--orange);border-color:#fff;color:#fff;font-size:12px}.fallback-done{position:absolute;width:30px;height:30px;border-radius:50%;background:var(--green);border:3px solid #fff;color:#fff;display:grid;place-items:center;box-shadow:0 5px 12px rgba(22,139,80,.18);z-index:6}.fallback-done svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2.7;stroke-linecap:round;stroke-linejoin:round}
+.mapboxgl-ctrl-logo,.mapboxgl-ctrl-attrib{opacity:.5}.mapboxgl-ctrl-bottom-right{right:7px;bottom:7px}.mapboxgl-canvas{outline:none}
+.loading-note{position:absolute;left:50%;top:88px;z-index:19;transform:translateX(-50%);padding:6px 8px;border:1px solid var(--line);border-radius:5px;background:rgba(255,255,255,.94);font-size:11px;font-weight:720;color:var(--muted);box-shadow:0 5px 14px rgba(23,34,56,.05)}.loading-note.hidden{display:none}
+.map-summary{position:absolute;left:12px;top:88px;z-index:18;background:rgba(255,255,255,.96);border:1px solid var(--line);border-radius:6px;padding:9px 10px;box-shadow:0 7px 18px rgba(23,34,56,.07);backdrop-filter:blur(10px)}.map-summary strong{display:block;font-size:13px;font-weight:820}.map-summary span{display:block;margin-top:3px;font-size:11.5px;color:var(--muted);font-weight:690}
+
+.next-dock{position:absolute;left:0;right:0;bottom:0;height:232px;z-index:20;background:rgba(255,255,255,.994);border-top:1px solid var(--line);box-shadow:0 -12px 30px rgba(23,34,56,.07);padding:17px 18px 13px}
+.next-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:start}.next-kicker{font-size:11px;line-height:1;font-weight:840;letter-spacing:.08em;text-transform:uppercase;color:var(--orange)}.next-name{margin-top:7px;font-size:27px;line-height:.98;font-weight:870;letter-spacing:-.05em}.next-place{margin-top:7px;font-size:12.5px;line-height:1.35;color:var(--muted);font-weight:690}.next-eta{text-align:right;padding-top:13px;white-space:nowrap}.next-eta strong{display:block;font-size:25px;line-height:1;font-weight:860;letter-spacing:-.045em}.next-eta span{display:block;margin-top:6px;font-size:11.5px;color:var(--muted);font-weight:700}
+.task-line{margin-top:12px;display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:750;color:var(--ink2)}.task-line i{width:7px;height:7px;border-radius:50%;background:var(--orange)}
+.primary{width:100%;height:60px;margin-top:13px;border:0;border-radius:7px;background:var(--ink);color:#fff;font-size:16.5px;font-weight:820;cursor:pointer;box-shadow:0 7px 16px rgba(23,34,56,.10)}
+.remaining-btn{width:100%;height:39px;margin-top:7px;border:0;background:#fff;color:var(--ink2);display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 2px;font-size:12.5px;font-weight:760;cursor:pointer}.remaining-btn span:last-child{color:var(--muted);font-size:18px}
+
+.scrim{position:absolute;inset:0;z-index:40;background:rgba(23,34,56,.20);opacity:0;pointer-events:none;transition:opacity .16s ease}.scrim.show{opacity:1;pointer-events:auto}
+.sheet{position:absolute;left:8px;right:8px;bottom:8px;z-index:50;background:#fff;border:1px solid var(--line2);border-radius:12px 12px 8px 8px;box-shadow:0 20px 48px rgba(23,34,56,.20);transform:translateY(calc(100% + 20px));opacity:0;pointer-events:none;transition:transform .22s cubic-bezier(.22,.72,.24,1),opacity .16s ease;overflow:hidden}.sheet.show{transform:none;opacity:1;pointer-events:auto}.sheet-handle{height:22px;display:grid;place-items:center}.sheet-handle:after{content:"";width:38px;height:4px;border-radius:99px;background:#ccd4dc}.sheet-head{padding:4px 16px 14px;border-bottom:1px solid var(--line)}.sheet-head b{font-size:18px;font-weight:850;letter-spacing:-.03em}.sheet-head span{display:block;margin-top:4px;font-size:11.5px;color:var(--muted)}
+.stop-list{max-height:260px;overflow:auto}.stop-row{min-height:67px;padding:10px 16px;display:grid;grid-template-columns:31px minmax(0,1fr) auto;gap:11px;align-items:center;border-bottom:1px solid var(--line)}.stop-row:last-child{border-bottom:0}.stop-num{width:29px;height:29px;border:1px solid var(--line2);border-radius:5px;display:grid;place-items:center;font-size:11.5px;font-weight:830;color:var(--ink2)}.stop-copy{min-width:0}.stop-copy b{display:block;font-size:13.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.stop-copy span{display:block;margin-top:4px;font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.stop-time{text-align:right}.stop-time b{display:block;font-size:12px;font-weight:790}.stop-time span{display:block;margin-top:3px;font-size:11px;color:var(--muted)}
+.driver-marker{width:34px;height:42px;filter:drop-shadow(0 6px 12px rgba(23,34,56,.18))}.driver-marker svg{width:34px;height:42px}.stop-marker{width:29px;height:29px;border-radius:50%;background:#fff;border:3px solid var(--ink);color:var(--ink);display:grid;place-items:center;font-size:11px;font-weight:860;box-shadow:0 5px 12px rgba(23,34,56,.13)}.stop-marker.current{width:35px;height:35px;background:var(--orange);border-color:#fff;color:#fff;font-size:12px}.done-marker{width:30px;height:30px;border-radius:50%;background:var(--green);border:3px solid #fff;color:#fff;display:grid;place-items:center;box-shadow:0 5px 12px rgba(22,139,80,.18)}.done-marker svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2.7;stroke-linecap:round;stroke-linejoin:round}
+
+@media(max-width:520px){body{padding:0}.frame{width:100vw;height:100dvh;border:0;border-radius:0;box-shadow:none}}
+@media(max-width:340px){.complete-bar{padding:0 13px;height:70px}.complete-copy b{font-size:15.5px}.complete-copy span{font-size:10.8px}.complete-progress span{display:none}#map,.fallback-map{top:70px;bottom:225px}.map-summary{top:82px}.loading-note{top:82px}.next-dock{height:225px;padding:15px 14px 10px}.next-name{font-size:24px}.next-eta strong{font-size:22px}.next-place,.task-line,.remaining-btn{font-size:11.7px}.primary{height:56px;font-size:15.5px;margin-top:11px}}
+@media(max-height:720px){.complete-bar{height:66px}#map,.fallback-map{top:66px;bottom:214px}.map-summary,.loading-note{top:78px}.next-dock{height:214px;padding-top:13px}.next-name{font-size:23px}.next-place{margin-top:5px}.task-line{margin-top:8px}.primary{height:54px;margin-top:9px}.remaining-btn{height:34px;margin-top:5px}}
+</style>
+</head>
+<body>
+<div class="frame" id="frame">
+  <div class="statusbar">
+    <div>12:58</div>
+    <div class="sb-right"><div class="signal"><i></i><i></i><i></i><i></i></div><div>5G</div><div class="battery"><b></b></div></div>
+  </div>
+
+  <main class="screen">
+    <header class="complete-bar" aria-label="Completed stop">
+      <div class="complete-check"><svg viewBox="0 0 24 24"><path d="M4.5 12.5 9.5 17 19.5 6.5"/></svg></div>
+      <div class="complete-copy"><b>Stop 1 complete</b><span>K. Nattaporn · 12:58</span></div>
+      <div class="complete-progress"><b>1 of 4</b><span>delivered</span></div>
+    </header>
+
+    <div class="fallback-map" aria-hidden="true">
+      <div class="block" style="left:18px;top:34px;width:82px;height:68px"></div><div class="block" style="left:147px;top:36px;width:78px;height:62px"></div><div class="park" style="right:16px;top:26px;width:112px;height:86px"></div>
+      <div class="block" style="left:30px;bottom:72px;width:84px;height:58px"></div><div class="block" style="left:152px;bottom:42px;width:78px;height:66px"></div><div class="block" style="right:24px;bottom:84px;width:80px;height:58px"></div>
+      <div class="road major" style="left:-25px;top:195px;width:470px;transform:rotate(7deg)"></div><div class="road major" style="left:108px;top:10px;width:390px;transform:rotate(86deg)"></div><div class="road" style="left:22px;top:112px;width:355px;transform:rotate(-3deg)"></div><div class="road" style="left:54px;top:308px;width:330px;transform:rotate(-11deg)"></div>
+      <span class="fallback-place" style="left:18px;top:132px">SUKHUMVIT</span><span class="fallback-place" style="right:18px;top:260px">SATHORN</span>
+      <svg class="fallback-route" viewBox="0 0 393 546" preserveAspectRatio="none"><path class="shadow" d="M66 389 C105 337 120 296 158 252 C194 211 220 147 252 126 C281 108 303 196 300 251 C296 316 326 359 352 402"/><path class="main" d="M66 389 C105 337 120 296 158 252 C194 211 220 147 252 126 C281 108 303 196 300 251 C296 316 326 359 352 402"/></svg>
+      <div class="fallback-done" style="left:12.7%;top:68.5%"><svg viewBox="0 0 24 24"><path d="M4.5 12.5 9.5 17 19.5 6.5"/></svg></div>
+      <div class="fallback-driver" style="left:17.2%;top:68.3%"><svg viewBox="0 0 36 44"><path d="M18 2 33 40 18 34 3 40Z" fill="#172238" stroke="#fff" stroke-width="3" stroke-linejoin="round"/></svg></div>
+      <div class="fallback-stop current" style="left:35.5%;top:42.5%">2</div><div class="fallback-stop" style="left:60%;top:21.3%">3</div><div class="fallback-stop" style="left:83.5%;top:70.5%">4</div>
+    </div>
+    <div id="map" aria-label="Remaining Round route"></div>
+    <div class="loading-note" id="loadingNote">Loading live map…</div>
+    <div class="map-summary"><strong>Stop 2 of 4</strong><span>Next · 16 min</span></div>
+
+    <section class="next-dock" aria-label="Next stop">
+      <div class="next-head">
+        <div><div class="next-kicker">Next stop · 2 of 4</div><div class="next-name">James T.</div><div class="next-place">Sathorn · The Sukhothai Residences</div></div>
+        <div class="next-eta"><strong>16 min</strong><span>5.8 km</span></div>
+      </div>
+      <div class="task-line"><i></i><span>Signature hamper</span></div>
+      <button class="primary" id="navigateBtn">Navigate to Stop 2</button>
+      <button class="remaining-btn" id="remainingBtn"><span>2 stops after this · 12.8 km</span><span>⌃</span></button>
+    </section>
+
+    <div class="scrim" id="scrim"></div>
+    <section class="sheet" id="remainingSheet" role="dialog" aria-modal="true" aria-label="Remaining stops" aria-hidden="true">
+      <div class="sheet-handle"></div>
+      <div class="sheet-head"><b>Remaining stops</b><span>After Stop 2</span></div>
+      <div class="stop-list">
+        <div class="stop-row"><div class="stop-num">3</div><div class="stop-copy"><b>K. Ploy</b><span>Silom · Bouquet + cake</span></div><div class="stop-time"><b>+14 min</b><span>5.1 km</span></div></div>
+        <div class="stop-row"><div class="stop-num">4</div><div class="stop-copy"><b>Anantara Siam</b><span>Ratchadamri · 2 arrangements</span></div><div class="stop-time"><b>+16 min</b><span>7.7 km</span></div></div>
+      </div>
+    </section>
+  </main>
+</div>
+<script>
+const TOKEN='MAPBOX_PUBLIC_TOKEN_REQUIRED';
+const DONE={n:1,name:'K. Nattaporn',coord:[100.5669,13.7246]};
+const DRIVER=[100.5668,13.7248];
+const STOPS=[
+  {n:2,name:'James T.',coord:[100.5332,13.7204],current:true},
+  {n:3,name:'K. Ploy',coord:[100.5297,13.7278]},
+  {n:4,name:'Anantara Siam',coord:[100.5414,13.7405]}
+];
+const params=new URLSearchParams(location.search),frame=document.getElementById('frame'),loadingNote=document.getElementById('loadingNote'),scrim=document.getElementById('scrim'),remainingSheet=document.getElementById('remainingSheet');
+document.getElementById('navigateBtn').addEventListener('click',()=>location.href='ROUNDS-E02-NAVIGATE-TO-CURRENT-STOP-v2-10OF10.html?stop=2');
+function setSheet(open){remainingSheet.classList.toggle('show',open);remainingSheet.setAttribute('aria-hidden',String(!open));scrim.classList.toggle('show',open)}
+document.getElementById('remainingBtn').addEventListener('click',()=>setSheet(true));scrim.addEventListener('click',()=>setSheet(false));document.addEventListener('keydown',e=>{if(e.key==='Escape')setSheet(false)});
+function driverEl(){const el=document.createElement('div');el.className='driver-marker';el.innerHTML='<svg viewBox="0 0 36 44"><path d="M18 2 33 40 18 34 3 40Z" fill="#172238" stroke="#fff" stroke-width="3" stroke-linejoin="round"/></svg>';return el}
+function stopEl(stop){const el=document.createElement('div');el.className='stop-marker'+(stop.current?' current':'');el.textContent=stop.n;return el}
+function doneEl(){const el=document.createElement('div');el.className='done-marker';el.innerHTML='<svg viewBox="0 0 24 24"><path d="M4.5 12.5 9.5 17 19.5 6.5"/></svg>';return el}
+function fallbackRoute(){return {type:'Feature',geometry:{type:'LineString',coordinates:[DRIVER,...STOPS.map(s=>s.coord)]}}}
+async function initMap(){
+  if(!window.mapboxgl){loadingNote.textContent='Offline map';return}
+  try{
+    mapboxgl.accessToken=TOKEN;
+    const map=new mapboxgl.Map({container:'map',style:'mapbox://styles/mapbox/light-v11',center:[100.548,13.729],zoom:12.8,bearing:0,pitch:0,attributionControl:true,interactive:true});
+    map.dragRotate.disable();map.touchZoomRotate.disableRotation();
+    new mapboxgl.Marker({element:doneEl(),anchor:'center'}).setLngLat(DONE.coord).addTo(map);
+    new mapboxgl.Marker({element:driverEl(),anchor:'center'}).setLngLat(DRIVER).addTo(map);
+    STOPS.forEach(s=>new mapboxgl.Marker({element:stopEl(s),anchor:'center'}).setLngLat(s.coord).addTo(map));
+    map.on('load',async()=>{
+      loadingNote.classList.add('hidden');let route=fallbackRoute();
+      try{const coords=[DRIVER,...STOPS.map(s=>s.coord)].map(c=>c.join(',')).join(';');const r=await fetch(`https://api.mapbox.com/directions/v5/mapbox/driving-traffic/${coords}?geometries=geojson&overview=full&steps=false&access_token=${encodeURIComponent(TOKEN)}`);const data=await r.json();if(data.routes&&data.routes[0])route={type:'Feature',geometry:data.routes[0].geometry}}catch(e){}
+      map.addSource('route',{type:'geojson',data:route});map.addLayer({id:'route-shadow',type:'line',source:'route',layout:{'line-join':'round','line-cap':'round'},paint:{'line-color':'#fff','line-width':10,'line-opacity':.96}});map.addLayer({id:'route',type:'line',source:'route',layout:{'line-join':'round','line-cap':'round'},paint:{'line-color':'#172238','line-width':5.2}});
+      const b=new mapboxgl.LngLatBounds();route.geometry.coordinates.forEach(c=>b.extend(c));b.extend(DONE.coord);map.fitBounds(b,{padding:{top:72,bottom:38,left:34,right:34},duration:0,maxZoom:14.5});
+    });
+  }catch(e){useOffline()}
+}
+function useOffline(){frame.classList.remove('live-map');loadingNote.textContent='Offline map';loadingNote.classList.remove('hidden')}
+function loadMapbox(){if(params.get('offline')==='1'){useOffline();return}const css=document.createElement('link');css.rel='stylesheet';css.href='https://api.mapbox.com/mapbox-gl-js/v3.28.0/mapbox-gl.css';document.head.appendChild(css);const script=document.createElement('script');script.src='https://api.mapbox.com/mapbox-gl-js/v3.28.0/mapbox-gl.js';script.async=true;let done=false;const timer=setTimeout(()=>{if(!done)useOffline()},4500);script.onload=()=>{done=true;clearTimeout(timer);frame.classList.add('live-map');initMap()};script.onerror=()=>{done=true;clearTimeout(timer);useOffline()};document.head.appendChild(script)}
+loadMapbox();
+</script>
+</body>
+</html>

@@ -1,0 +1,3 @@
+# Android Studio normally writes sdk.dir to local.properties.
+sdk.dir=/absolute/path/to/your/Android/sdk
+MAPS_API_KEY=replace_with_your_android_google_maps_api_key

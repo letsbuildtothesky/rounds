@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Rounds — N02 Offline / Reconnecting v1</title>
+<style>
+:root{
+  --canvas:#eef1f4;--paper:#fff;--ink:#172238;--ink2:#3d4a5d;--muted:#748094;
+  --line:#e1e6ea;--line2:#cbd4dc;--orange:#ff6420;--green:#168b50;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--canvas);color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit;cursor:pointer}
+body{padding:28px}
+.frame{width:393px;height:852px;margin:0 auto;background:var(--paper);position:relative;overflow:hidden;border:1px solid rgba(23,34,56,.09);border-radius:28px;box-shadow:0 18px 42px rgba(23,34,56,.14)}
+.statusbar{height:28px;padding:0 20px 4px;display:flex;align-items:flex-end;justify-content:space-between;font-size:12px;font-weight:760;background:#fff;position:relative;z-index:20}
+.sb-right{display:flex;align-items:center;gap:6px}.signal{display:flex;align-items:flex-end;gap:1.5px;height:9px}.signal i{display:block;width:2px;background:currentColor;border-radius:1px}.signal i:nth-child(1){height:3px}.signal i:nth-child(2){height:5px}.signal i:nth-child(3){height:7px}.signal i:nth-child(4){height:9px}.battery{width:20px;height:9px;border:1.5px solid currentColor;border-radius:2px;padding:1px;position:relative}.battery:after{content:"";position:absolute;right:-3px;top:1.5px;width:2px;height:4px;background:currentColor;border-radius:0 1px 1px 0}.battery b{display:block;width:78%;height:100%;background:currentColor;border-radius:1px}
+.topbar{height:58px;padding:0 20px;border-bottom:1px solid var(--line);background:#fff;display:flex;align-items:center;justify-content:space-between}.brand{display:flex;align-items:flex-end;font-size:20px;line-height:1;font-weight:900;letter-spacing:-.05em}.brand-dot{width:6px;height:6px;border-radius:50%;background:var(--orange);margin-left:3px;margin-bottom:2px}.status-label{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:840;color:var(--orange)}.status-label i{width:8px;height:8px;border-radius:50%;background:currentColor}
+.main{position:absolute;inset:86px 0 0;display:flex;flex-direction:column;padding:30px 20px 24px;background:#fff}
+.kicker{font-size:12px;line-height:1;font-weight:900;letter-spacing:.095em;text-transform:uppercase;color:var(--orange);margin-bottom:18px}
+.state-icon{width:72px;height:72px;border:1px solid var(--line);border-radius:8px;display:grid;place-items:center;color:var(--orange);margin-bottom:30px}.state-icon svg{width:34px;height:34px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+h1{margin:0;font-size:42px;line-height:.96;font-weight:880;letter-spacing:-.062em;max-width:340px}
+.lead{margin:17px 0 0;font-size:17px;line-height:1.4;font-weight:650;color:var(--ink2);max-width:340px}
+.truth{margin-top:31px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.truth-row{min-height:67px;display:grid;grid-template-columns:30px 1fr auto;align-items:center;gap:12px}.truth-row+.truth-row{border-top:1px solid var(--line)}.truth-icon{width:28px;height:28px;display:grid;place-items:center;color:var(--green)}.truth-icon svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:2.05;stroke-linecap:round;stroke-linejoin:round}.truth-copy b{display:block;font-size:14px;line-height:1.2;font-weight:830;color:var(--ink2)}.truth-copy span{display:block;margin-top:4px;font-size:12.5px;line-height:1.28;font-weight:680;color:var(--muted)}.truth-state{font-size:11.5px;font-weight:820;color:var(--muted);white-space:nowrap}.truth-state.local{color:var(--orange)}.truth-state.good{color:var(--green)}
+.sync-note{margin-top:16px;font-size:12.5px;line-height:1.35;font-weight:700;color:var(--muted)}
+.actions{margin-top:auto}.primary{width:100%;height:62px;border:0;border-radius:7px;background:var(--ink);color:#fff;font-size:17px;font-weight:860;letter-spacing:-.02em}.primary:active{transform:translateY(1px)}.secondary{width:100%;height:49px;border:0;background:#fff;color:var(--muted);font-size:14px;font-weight:790;margin-top:7px}.secondary:active{color:var(--ink)}
+.notice{position:absolute;left:20px;right:20px;bottom:28px;background:var(--ink);color:#fff;padding:13px 14px;border-radius:8px;font-size:13px;font-weight:760;opacity:0;transform:translateY(8px);transition:.18s;pointer-events:none;z-index:50}.notice.show{opacity:1;transform:none}
+.frame.reconnecting .kicker,.frame.reconnecting .status-label,.frame.reconnecting .state-icon{color:var(--orange)}
+.frame.synced .kicker,.frame.synced .status-label,.frame.synced .state-icon{color:var(--green)}
+.frame.synced .truth-state.local{color:var(--green)}
+@media(max-width:520px){body{padding:0;background:#fff}.frame{width:100vw;height:100dvh;border:0;border-radius:0;box-shadow:none}}
+@media(max-width:340px){.topbar{padding-left:16px;padding-right:16px}.main{padding:24px 16px 19px}.state-icon{width:64px;height:64px;margin-bottom:23px}.state-icon svg{width:30px;height:30px}h1{font-size:36px}.lead{font-size:15.5px;margin-top:14px}.truth{margin-top:23px}.truth-row{min-height:59px;grid-template-columns:27px 1fr auto;gap:9px}.truth-icon{width:25px}.truth-copy b{font-size:13.5px}.truth-copy span{font-size:11.8px}.truth-state{font-size:10.8px}.sync-note{margin-top:13px;font-size:11.8px}.primary{height:58px}.secondary{height:44px}}
+@media(max-height:720px){.main{padding-top:22px}.state-icon{width:60px;height:60px;margin-bottom:20px}.state-icon svg{width:28px;height:28px}h1{font-size:34px}.lead{margin-top:13px;font-size:15px}.truth{margin-top:18px}.truth-row{min-height:54px}.truth-copy span{margin-top:2px}.sync-note{margin-top:11px}.primary{height:56px}.secondary{height:42px}}
+</style>
+</head>
+<body>
+<div class="frame" id="frame">
+  <div class="statusbar"><div>16:48</div><div class="sb-right"><div class="signal"><i></i><i></i><i></i><i></i></div><div>5G</div><div class="battery"><b></b></div></div></div>
+  <header class="topbar">
+    <div class="brand">Rounds<span class="brand-dot"></span></div>
+    <div class="status-label" id="statusLabel"><i></i><span>Offline</span></div>
+  </header>
+
+  <main class="main">
+    <div class="kicker" id="kicker">Connection</div>
+    <div class="state-icon" id="stateIcon" aria-hidden="true"></div>
+    <h1 id="title">You’re offline</h1>
+    <p class="lead" id="lead">Your current Round stays available. New work is saved on this phone until Rounds reconnects.</p>
+
+    <section class="truth" id="truth">
+      <div class="truth-row">
+        <div class="truth-icon"><svg viewBox="0 0 24 24"><path d="M4 17 10 11l4 4 6-7"/><path d="M4 7h5"/></svg></div>
+        <div class="truth-copy"><b>Current route</b><span>Last synced route stays available</span></div>
+        <div class="truth-state good">Available</div>
+      </div>
+      <div class="truth-row">
+        <div class="truth-icon"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4z"/><path d="m7 15 3-3 2 2 3-4 2 3"/></svg></div>
+        <div class="truth-copy"><b>Proof & status</b><span id="proofCopy">Saved safely on this phone</span></div>
+        <div class="truth-state local" id="proofState">Local</div>
+      </div>
+      <div class="truth-row">
+        <div class="truth-icon"><svg viewBox="0 0 24 24"><path d="M4 5h16v12H8l-4 3z"/></svg></div>
+        <div class="truth-copy"><b>Messages</b><span id="messageCopy">Queued until connection returns</span></div>
+        <div class="truth-state local" id="messageState">Queued</div>
+      </div>
+    </section>
+
+    <div class="sync-note" id="syncNote">Last synced 16:46 · Rounds will reconnect automatically.</div>
+
+    <div class="actions">
+      <button class="primary" id="primary">Return to Round</button>
+      <button class="secondary" id="secondary">Retry connection</button>
+    </div>
+  </main>
+  <div class="notice" id="notice"></div>
+</div>
+<script>
+const frame=document.getElementById('frame');
+const statusLabel=document.getElementById('statusLabel');
+const stateIcon=document.getElementById('stateIcon');
+const title=document.getElementById('title');
+const lead=document.getElementById('lead');
+const proofState=document.getElementById('proofState');
+const messageState=document.getElementById('messageState');
+const proofCopy=document.getElementById('proofCopy');
+const messageCopy=document.getElementById('messageCopy');
+const syncNote=document.getElementById('syncNote');
+const primary=document.getElementById('primary');
+const secondary=document.getElementById('secondary');
+const notice=document.getElementById('notice');
+const params=new URLSearchParams(location.search);
+let state=params.get('state')||'offline';
+const context=params.get('context')==='network'?'network':'team';
+const returnTarget=params.get('from')==='home'
+  ?(context==='network'?'ROUNDS-B03-HOME-NETWORK-AVAILABLE-v8-10OF10.html':'ROUNDS-B01-TEAM-DRIVER-HOME-v4-10OF10.html')
+  :'ROUNDS-E01-ACTIVE-ROUND-OVERVIEW-v5-10OF10.html';
+const icons={
+  offline:'<svg viewBox="0 0 24 24"><path d="M5 19 19 5"/><path d="M8.5 8.5A8 8 0 0 1 20 10"/><path d="M4 10a8 8 0 0 1 1.8-2.8"/><path d="M8 14a5.7 5.7 0 0 1 6.4-1.1"/><path d="M12 19h.01"/></svg>',
+  reconnecting:'<svg viewBox="0 0 24 24"><path d="M20 7v5h-5"/><path d="M4 17v-5h5"/><path d="M7.8 7.8A7 7 0 0 1 19 10"/><path d="M16.2 16.2A7 7 0 0 1 5 14"/></svg>',
+  synced:'<svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg>'
+};
+function flash(text){notice.textContent=text;notice.classList.add('show');setTimeout(()=>notice.classList.remove('show'),1000)}
+function render(){
+  frame.classList.remove('reconnecting','synced');
+  stateIcon.innerHTML=icons[state]||icons.offline;
+  if(state==='reconnecting'){
+    frame.classList.add('reconnecting');statusLabel.innerHTML='<i></i><span>Reconnecting</span>';
+    title.textContent='Reconnecting';lead.textContent='Connection is back. Saved work is syncing now.';
+    proofState.textContent='Syncing';messageState.textContent='Syncing';proofCopy.textContent='Syncing saved proof to Rounds';messageCopy.textContent='Sending queued messages now';proofState.className='truth-state local';messageState.className='truth-state local';
+    syncNote.textContent='Keep working. Rounds will confirm when everything is synced.';
+    secondary.textContent='Check again';
+  }else if(state==='synced'){
+    frame.classList.add('synced');statusLabel.innerHTML='<i></i><span>Online</span>';
+    title.textContent='Back online';lead.textContent='Saved work is synced. Your Round is current again.';
+    proofState.textContent='Synced';messageState.textContent='Synced';proofCopy.textContent='Saved proof is on Rounds';messageCopy.textContent='Queued messages are sent';proofState.className='truth-state good';messageState.className='truth-state good';
+    syncNote.textContent='All locally saved work is now on Rounds.';
+    secondary.style.display='none';
+  }else{
+    state='offline';statusLabel.innerHTML='<i></i><span>Offline</span>';
+    title.textContent='You’re offline';lead.textContent='Your current Round stays available. New work is saved on this phone until Rounds reconnects.';
+    proofState.textContent='Local';messageState.textContent='Queued';proofCopy.textContent='Saved safely on this phone';messageCopy.textContent='Queued until connection returns';proofState.className='truth-state local';messageState.className='truth-state local';
+    syncNote.textContent='Last synced 16:46 · Rounds will reconnect automatically.';
+    secondary.textContent='Retry connection';secondary.style.display='block';
+  }
+}
+primary.addEventListener('click',()=>{location.href=returnTarget});
+secondary.addEventListener('click',()=>{
+  if(navigator.onLine){state='reconnecting';render();setTimeout(()=>{state='synced';render()},900)}
+  else flash('Still offline · work remains saved');
+});
+window.addEventListener('online',()=>{if(state!=='synced'){state='reconnecting';render();setTimeout(()=>{state='synced';render()},900)}});
+window.addEventListener('offline',()=>{state='offline';render()});
+render();
+</script>
+</body>
+</html>

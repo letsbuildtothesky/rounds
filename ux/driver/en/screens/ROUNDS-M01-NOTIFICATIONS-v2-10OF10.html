@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Rounds — M01 Notifications v2</title>
+<style>
+:root{
+  --canvas:#eef1f4;--paper:#fff;--ink:#172238;--ink2:#3d4a5d;--muted:#748094;
+  --line:#e1e6ea;--line2:#cbd4dc;--orange:#ff6420;--green:#168b50;--red:#c94a47;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--canvas);color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+button,a{font:inherit}button{cursor:pointer}
+body{padding:28px}
+.frame{width:393px;height:852px;margin:0 auto;background:var(--paper);position:relative;overflow:hidden;border:1px solid rgba(23,34,56,.09);border-radius:28px;box-shadow:0 18px 42px rgba(23,34,56,.14)}
+.statusbar{height:28px;padding:0 20px 4px;display:flex;align-items:flex-end;justify-content:space-between;font-size:12px;font-weight:760;background:#fff;position:relative;z-index:40}
+.sb-right{display:flex;align-items:center;gap:6px}.signal{display:flex;align-items:flex-end;gap:1.5px;height:9px}.signal i{display:block;width:2px;background:currentColor;border-radius:1px}.signal i:nth-child(1){height:3px}.signal i:nth-child(2){height:5px}.signal i:nth-child(3){height:7px}.signal i:nth-child(4){height:9px}.battery{width:20px;height:9px;border:1.5px solid currentColor;border-radius:2px;padding:1px;position:relative}.battery:after{content:"";position:absolute;right:-3px;top:1.5px;width:2px;height:4px;background:currentColor;border-radius:0 1px 1px 0}.battery b{display:block;width:78%;height:100%;background:currentColor;border-radius:1px}
+.topbar{height:58px;padding:0 20px;border-bottom:1px solid var(--line);background:#fff;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:35}.brand{display:flex;align-items:flex-end;font-size:20px;line-height:1;font-weight:900;letter-spacing:-.05em}.brand-dot{width:6px;height:6px;border-radius:50%;background:var(--orange);margin-left:3px;margin-bottom:2px}.read-all{height:38px;border:0;border-radius:6px;background:#fff;color:var(--ink2);font-size:12.5px;font-weight:820;padding:0 2px}.read-all:active{color:var(--orange)}.read-all:disabled{color:var(--muted);cursor:default}
+.body{position:absolute;inset:86px 0 76px;background:#fff;overflow-y:auto;scrollbar-width:none}.body::-webkit-scrollbar{display:none}
+.header{padding:24px 20px 20px;border-bottom:1px solid var(--line)}.eyebrow{font-size:11.5px;line-height:1;font-weight:880;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:11px}.title-row{display:flex;align-items:flex-end;justify-content:space-between;gap:14px}.header h1{margin:0;font-size:34px;line-height:1;letter-spacing:-.055em;font-weight:860}.unread-count{font-size:13px;line-height:1;font-weight:830;color:var(--orange);padding-bottom:3px;white-space:nowrap}.unread-count.all{color:var(--muted)}
+.section{padding:22px 20px 0}.section-title{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding-bottom:10px;border-bottom:1px solid var(--line)}.section-title h2{margin:0;font-size:15px;line-height:1;font-weight:870;letter-spacing:-.02em}.section-title span{font-size:12px;font-weight:720;color:var(--muted)}
+.notice{width:100%;min-height:92px;border:0;border-bottom:1px solid var(--line);background:#fff;text-align:left;color:inherit;padding:16px 0;display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:12px;align-items:start;position:relative}.notice:active{background:#fafbfb}.notice.unread:before{content:"";position:absolute;left:-20px;top:0;bottom:0;width:3px;background:var(--orange)}.event-icon{width:28px;height:28px;color:var(--ink2);display:grid;place-items:center}.event-icon.orange{color:var(--orange)}.event-icon.green{color:var(--green)}.event-icon.red{color:var(--red)}.event-icon svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}.notice-copy{min-width:0}.notice-copy b{display:block;font-size:16px;line-height:1.17;font-weight:850;letter-spacing:-.025em}.notice-copy p{margin:7px 0 0;font-size:13.2px;line-height:1.38;font-weight:690;color:var(--muted)}.notice-copy .strong{color:var(--ink2);font-weight:790}.notice-time{font-size:11.5px;line-height:1;font-weight:720;color:var(--muted);padding-top:3px;white-space:nowrap}.notice.unread .notice-time{color:var(--orange)}
+.network-only{display:none}
+.empty{display:none;padding:38px 20px;text-align:center;color:var(--muted);font-size:13.5px;line-height:1.45}.empty.show{display:block}
+.bottomnav{position:absolute;left:0;right:0;bottom:0;height:76px;background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding:7px 4px 9px;z-index:40}.nav-item{color:var(--muted);text-decoration:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-size:11.5px;font-weight:720;border:0;background:#fff}.nav-item svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.scrim{position:absolute;inset:0;background:rgba(10,18,31,.28);opacity:0;pointer-events:none;transition:.18s;z-index:70}.scrim.show{opacity:1;pointer-events:auto}.sheet{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:20px 20px 0 0;transform:translateY(105%);transition:.22s ease;z-index:80;padding:10px 20px calc(20px + env(safe-area-inset-bottom));box-shadow:0 -18px 42px rgba(23,34,56,.15)}.sheet.show{transform:none}.grab{width:38px;height:4px;border-radius:999px;background:#d7dde2;margin:0 auto 18px}.sheet-kicker{font-size:11.5px;line-height:1;font-weight:890;letter-spacing:.09em;text-transform:uppercase;color:var(--orange);margin-bottom:10px}.sheet h3{margin:0;font-size:27px;line-height:1.04;letter-spacing:-.045em;font-weight:860}.sheet-sub{margin-top:8px;font-size:13.5px;line-height:1.4;font-weight:710;color:var(--muted)}.sheet-detail{margin-top:20px;border-top:1px solid var(--line)}.detail-row{min-height:54px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:16px}.detail-row span{font-size:13px;font-weight:710;color:var(--muted)}.detail-row b{font-size:14px;font-weight:830;text-align:right}.sheet-actions{margin-top:18px;display:grid;gap:9px}.primary{height:56px;border:0;border-radius:7px;background:var(--ink);color:#fff;font-size:16px;font-weight:850}.secondary{height:52px;border:1px solid var(--line2);border-radius:7px;background:#fff;color:var(--ink2);font-size:15px;font-weight:820}.toast{position:absolute;left:18px;right:18px;bottom:92px;background:var(--ink);color:#fff;padding:13px 14px;border-radius:8px;font-size:13.5px;font-weight:760;opacity:0;transform:translateY(8px);transition:.18s;pointer-events:none;z-index:90}.toast.show{opacity:1;transform:none}
+@media(max-width:520px){body{padding:0;background:#fff}.frame{width:100vw;height:100dvh;border:0;border-radius:0;box-shadow:none}}
+@media(max-width:340px){.topbar{padding:0 16px}.header{padding:20px 16px 18px}.header h1{font-size:31px}.section{padding:18px 16px 0}.notice{min-height:84px;padding:13px 0;grid-template-columns:26px minmax(0,1fr) auto;gap:9px}.notice.unread:before{left:-16px}.event-icon{width:24px;height:24px}.event-icon svg{width:19px;height:19px}.notice-copy b{font-size:15px}.notice-copy p{margin-top:6px;font-size:12.5px}.notice-time{font-size:11px}.sheet{padding-left:16px;padding-right:16px}.sheet h3{font-size:25px}}
+@media(max-height:720px){.header{padding-top:18px;padding-bottom:16px}.header h1{font-size:30px}.section{padding-top:16px}.notice{min-height:78px;padding:11px 0}.notice-copy p{margin-top:5px}}
+</style>
+</head>
+<body>
+<div class="frame" id="frame">
+  <div class="statusbar">
+    <div>16:41</div>
+    <div class="sb-right"><div class="signal"><i></i><i></i><i></i><i></i></div><div>5G</div><div class="battery"><b></b></div></div>
+  </div>
+
+  <div class="topbar">
+    <div class="brand">Rounds<span class="brand-dot"></span></div>
+    <button class="read-all" id="readAll">Mark all read</button>
+  </div>
+
+  <main class="body">
+    <section class="header">
+      <div class="eyebrow">Activity</div>
+      <div class="title-row"><h1>Notifications</h1><div class="unread-count" id="unreadCount">3 unread</div></div>
+    </section>
+
+    <section class="section" id="attentionSection">
+      <div class="section-title"><h2>Needs attention</h2><span>Today</span></div>
+
+      <button class="notice unread team-notice hybrid-notice" data-target="ROUNDS-E04-E05-E06-LIVE-ROUND-CHANGE-v3-10OF10.html">
+        <span class="event-icon orange"><svg viewBox="0 0 24 24"><path d="M4 7h10"/><path d="m11 4 3 3-3 3"/><path d="M20 17H10"/><path d="m13 14-3 3 3 3"/></svg></span>
+        <span class="notice-copy"><b>Round updated</b><p><span class="strong">Entrance changed</span> · Gate A → Gate B · +2 min</p></span>
+        <span class="notice-time">Now</span>
+      </button>
+
+      <button class="notice unread team-notice hybrid-notice network-work-notice" data-target="ROUNDS-H01-OPERATOR-CHAT-v4-10OF10.html">
+        <span class="event-icon"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/></svg></span>
+        <span class="notice-copy"><b>Operations message</b><p>Leave it with reception. Proof photo is still required.</p></span>
+        <span class="notice-time">3 min</span>
+      </button>
+
+      <button class="notice unread team-notice hybrid-notice" data-target="ROUNDS-B01B-TEAM-HOME-ROUND-ASSIGNED-v3-10OF10.html">
+        <span class="event-icon green"><svg viewBox="0 0 24 24"><path d="M4 7h10v10H4z"/><path d="M14 10h3l3 3v4h-6"/><circle cx="8" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg></span>
+        <span class="notice-copy"><b>Round assigned</b><p>UrbanFlowers · 3 stops · Pickup at Sukhumvit 39</p></span>
+        <span class="notice-time">6 min</span>
+      </button>
+
+      <button class="notice unread network-only" data-target="ROUNDS-C01-SINGLE-DELIVERY-OFFER-v4-10OF10.html">
+        <span class="event-icon orange"><svg viewBox="0 0 24 24"><path d="M12 21s7-4.2 7-10a7 7 0 1 0-14 0c0 5.8 7 10 7 10Z"/><circle cx="12" cy="11" r="2.4"/></svg></span>
+        <span class="notice-copy"><b>New delivery offer</b><p><span class="strong">฿240 guaranteed</span> · 1.2 km to pickup · Thonglor</p></span>
+        <span class="notice-time">Now</span>
+      </button>
+
+      <button class="notice unread network-only" id="availabilityRequest">
+        <span class="event-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg></span>
+        <span class="notice-copy"><b>Availability request</b><p>UrbanFlowers asks if you’re available 18:00–20:00.</p></span>
+        <span class="notice-time">4 min</span>
+      </button>
+    </section>
+
+    <section class="section" id="recentSection">
+      <div class="section-title"><h2>Recent</h2><span>This week</span></div>
+
+      <button class="notice team-notice hybrid-notice network-work-notice" data-target="ROUNDS-H03-CONTACT-HISTORY-v2-10OF10.html">
+        <span class="event-icon green"><svg viewBox="0 0 24 24"><path d="M5 12.5 9.2 17 19 7"/></svg></span>
+        <span class="notice-copy"><b>Pickup verified</b><p>6 packages confirmed in driver custody.</p></span>
+        <span class="notice-time">12:04</span>
+      </button>
+
+      <button class="notice team-notice hybrid-notice" data-target="ROUNDS-J01-MY-ROUNDS-v7-10OF10.html">
+        <span class="event-icon green"><svg viewBox="0 0 24 24"><path d="M4 8h16v10H4z"/><path d="M8 8V5h8v3"/></svg></span>
+        <span class="notice-copy"><b>Round completed</b><p>UrbanFlowers · 4 stops · POD saved</p></span>
+        <span class="notice-time">10:24</span>
+      </button>
+
+      <button class="notice network-only" data-target="ROUNDS-K01-EARNINGS-v3-10OF10.html">
+        <span class="event-icon green"><svg viewBox="0 0 24 24"><path d="M4 7h16v10H4z"/><path d="M8 12h8"/></svg></span>
+        <span class="notice-copy"><b>Payout sent</b><p>฿1,920 sent to PromptPay · •••• 4821</p></span>
+        <span class="notice-time">15:10</span>
+      </button>
+    </section>
+
+    <div class="empty" id="empty">You’re caught up.</div>
+  </main>
+
+  <nav class="bottomnav" aria-label="Primary">
+    <a class="nav-item" id="homeNav" href="ROUNDS-B01-TEAM-DRIVER-HOME-v4-10OF10.html"><svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg><span>Home</span></a>
+    <a class="nav-item" href="ROUNDS-J01-MY-ROUNDS-v7-10OF10.html"><svg viewBox="0 0 24 24"><path d="M12 20s7-3.6 7-9a7 7 0 1 0-14 0c0 5.4 7 9 7 9Z"/><circle cx="12" cy="11" r="2.5"/></svg><span>Jobs</span></a>
+    <a class="nav-item" id="roleNav" href="ROUNDS-K00-TEAM-HOURS-v5-10OF10.html"><svg id="roleIcon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span id="roleLabel">Hours</span></a>
+    <a class="nav-item" href="ROUNDS-L01-DRIVER-PROFILE-v3-10OF10.html"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Profile</span></a>
+  </nav>
+
+  <div class="scrim" id="scrim"></div>
+  <section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <div class="grab"></div>
+    <div class="sheet-kicker">Availability request</div>
+    <h3 id="sheetTitle">UrbanFlowers</h3>
+    <div class="sheet-sub">Can you take Network work from 18:00–20:00?</div>
+    <div class="sheet-detail">
+      <div class="detail-row"><span>Window</span><b>18:00–20:00</b></div>
+      <div class="detail-row"><span>Area</span><b>Sukhumvit / Thonglor</b></div>
+      <div class="detail-row"><span>Commitment</span><b>Availability only</b></div>
+    </div>
+    <div class="sheet-actions"><button class="primary" id="availableBtn">I’m available</button><button class="secondary" id="notNowBtn">Not available</button></div>
+  </section>
+
+  <div class="toast" id="toast"></div>
+</div>
+<script>
+const params=new URLSearchParams(location.search);
+const context=['network','hybrid'].includes(params.get('context'))?params.get('context'):'team';
+const homeNav=document.getElementById('homeNav'),roleNav=document.getElementById('roleNav'),roleLabel=document.getElementById('roleLabel'),roleIcon=document.getElementById('roleIcon');
+function setNetworkNav(){homeNav.href='ROUNDS-B03-HOME-NETWORK-AVAILABLE-v8-10OF10.html';roleNav.href='ROUNDS-K01-EARNINGS-v3-10OF10.html';roleLabel.textContent='Earnings';roleIcon.innerHTML='<path d="M12 2v20"/><path d="M17 6H9.5a3.5 3.5 0 0 0 0 7H14.5a3.5 3.5 0 0 1 0 7H6"/>'}
+if(context==='network')setNetworkNav();
+document.querySelectorAll('.network-only').forEach(el=>el.style.display=context==='network'?'grid':'none');
+document.querySelectorAll('.team-notice').forEach(el=>{if(context==='network')el.style.display='none'});
+document.querySelectorAll('.hybrid-notice').forEach(el=>{if(context==='hybrid')el.style.display='grid'});
+document.querySelectorAll('.network-work-notice').forEach(el=>{if(context==='network')el.style.display='grid'});
+if(context==='hybrid'){
+  // Team obligations remain primary during the active Team shift. Network requests stay out of the main queue here.
+}
+
+const unreadCount=document.getElementById('unreadCount'),readAll=document.getElementById('readAll'),toast=document.getElementById('toast');
+function visibleUnread(){return [...document.querySelectorAll('.notice.unread')].filter(el=>getComputedStyle(el).display!=='none')}
+function updateUnread(){const n=visibleUnread().length;unreadCount.textContent=n?`${n} unread`:'All read';unreadCount.classList.toggle('all',!n);readAll.textContent=n?'Mark all read':'All read';readAll.disabled=!n}
+function showToast(text){toast.textContent=text;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1300)}
+function markRead(row){row.classList.remove('unread');updateUnread()}
+document.querySelectorAll('.notice[data-target]').forEach(row=>row.addEventListener('click',()=>{markRead(row);setTimeout(()=>{location.href=row.dataset.target+(context==='network'?'?context=network':'')},90)}));
+readAll.addEventListener('click',()=>{visibleUnread().forEach(el=>el.classList.remove('unread'));updateUnread();showToast('Notifications marked read')});
+
+const scrim=document.getElementById('scrim'),sheet=document.getElementById('sheet'),availability=document.getElementById('availabilityRequest');
+function openSheet(){if(availability)markRead(availability);scrim.classList.add('show');sheet.classList.add('show')}
+function closeSheet(){scrim.classList.remove('show');sheet.classList.remove('show')}
+availability?.addEventListener('click',openSheet);scrim.addEventListener('click',closeSheet);document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet()});
+document.getElementById('availableBtn').addEventListener('click',()=>{closeSheet();showToast('Availability sent to UrbanFlowers');setTimeout(()=>{location.href='ROUNDS-B03-HOME-NETWORK-AVAILABLE-v8-10OF10.html'},450)});
+document.getElementById('notNowBtn').addEventListener('click',()=>{closeSheet();showToast('Not available sent')});
+updateUnread();
+</script>
+</body>
+</html>

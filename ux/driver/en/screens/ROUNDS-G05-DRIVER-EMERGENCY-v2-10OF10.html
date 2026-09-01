@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Rounds — G05 Driver Emergency v2</title>
+<style>
+:root{
+  --canvas:#eef1f4;--paper:#fff;--ink:#172238;--ink2:#3d4a5d;--muted:#748094;
+  --line:#e1e6ea;--line2:#cbd4dc;--orange:#ff6420;--green:#168b50;--green-soft:#eaf7ef;
+  --red:#bf4040;--red-soft:#fff0f0;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--canvas);color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit}
+body{padding:28px}
+.phone{width:393px;height:852px;margin:0 auto;background:#fff;position:relative;overflow:hidden;border:1px solid rgba(23,34,56,.09);border-radius:28px;box-shadow:0 18px 42px rgba(23,34,56,.14)}
+.statusbar{height:28px;padding:0 20px 4px;display:flex;align-items:flex-end;justify-content:space-between;font-size:12px;font-weight:760;background:#fff;position:relative;z-index:50}
+.sb-right{display:flex;align-items:center;gap:6px}.signal{display:flex;align-items:flex-end;gap:1.5px;height:9px}.signal i{display:block;width:2px;background:currentColor;border-radius:1px}.signal i:nth-child(1){height:3px}.signal i:nth-child(2){height:5px}.signal i:nth-child(3){height:7px}.signal i:nth-child(4){height:9px}
+.battery{width:20px;height:9px;border:1.5px solid currentColor;border-radius:2px;padding:1px;position:relative}.battery:after{content:"";position:absolute;right:-3px;top:1.5px;width:2px;height:4px;background:currentColor}.battery b{display:block;width:78%;height:100%;background:currentColor;border-radius:1px}
+.app{position:absolute;inset:28px 0 0;background:#fff;overflow:hidden}
+.topbar{height:64px;padding:0 22px;display:flex;align-items:center;border-bottom:1px solid var(--line);background:#fff}.topcopy small{display:block;color:var(--red);font-size:10.5px;line-height:1;font-weight:880;letter-spacing:.095em;text-transform:uppercase}.topcopy b{display:block;margin-top:5px;font-size:17px;line-height:1.05;font-weight:850;letter-spacing:-.025em}
+.content{position:absolute;left:0;right:0;top:64px;bottom:0;padding:30px 22px 26px;overflow:auto;background:#fff}.safe .content,.urgent .content{bottom:128px}
+.kicker{display:flex;align-items:center;gap:8px;font-size:11px;line-height:1;font-weight:880;letter-spacing:.1em;text-transform:uppercase;color:var(--red)}.kicker i{width:8px;height:8px;border-radius:50%;background:currentColor}.safe .kicker{color:var(--green)}
+h1{margin:11px 0 0;font-size:42px;line-height:.96;font-weight:900;letter-spacing:-.06em;max-width:330px}.sub{margin-top:13px;font-size:15px;line-height:1.4;color:var(--muted);font-weight:700;max-width:320px}
+.question{margin-top:36px;font-size:12px;font-weight:870;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.safety-list{margin-top:8px;border-top:1px solid var(--line)}.safety{width:100%;min-height:112px;border:0;border-bottom:1px solid var(--line);background:#fff;color:var(--ink);display:grid;grid-template-columns:54px minmax(0,1fr) 18px;gap:15px;align-items:center;text-align:left;padding:0 2px;cursor:pointer}.safety:active{background:#f7f9fa}.safety-icon{width:50px;height:50px;border-radius:50%;display:grid;place-items:center}.safety-icon.safe{background:var(--green-soft);color:var(--green)}.safety-icon.help{background:var(--red-soft);color:var(--red)}.safety-icon svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:2.25;stroke-linecap:round;stroke-linejoin:round}.safety b{display:block;font-size:20px;line-height:1.08;font-weight:870;letter-spacing:-.03em}.safety span{display:block;margin-top:6px;font-size:13px;line-height:1.35;color:var(--muted);font-weight:690}.arrow{width:10px;height:10px;border-top:2px solid #8b96a5;border-right:2px solid #8b96a5;transform:rotate(45deg);justify-self:end;margin-right:4px}.safety.help .arrow{border-color:var(--red)}
+.location-line{margin-top:30px;padding-top:19px;border-top:1px solid var(--line);display:flex;align-items:center;gap:11px;color:var(--ink2)}.location-line svg{width:21px;height:21px;fill:none;stroke:var(--orange);stroke-width:2;flex:0 0 auto}.location-line b{font-size:14.5px;font-weight:830}.location-line span{display:block;margin-top:4px;color:var(--muted);font-size:12.5px;font-weight:680}
+.initial-state,.safe-state,.urgent-state{display:none}.initial .initial-state{display:block}.safe .safe-state{display:block}.urgent .urgent-state{display:block}
+.state-block{margin-top:32px;padding-top:20px;border-top:1px solid var(--line)}.state-block small{display:block;font-size:10.5px;font-weight:880;letter-spacing:.09em;text-transform:uppercase;color:var(--green)}.urgent .state-block small{color:var(--red)}.state-block b{display:block;margin-top:7px;font-size:25px;line-height:1.05;font-weight:890;letter-spacing:-.04em}.state-block span{display:block;margin-top:8px;font-size:14px;line-height:1.42;color:var(--muted);font-weight:690}
+.footer{position:absolute;left:0;right:0;bottom:0;padding:11px 22px calc(17px + env(safe-area-inset-bottom));background:rgba(255,255,255,.98);border-top:1px solid var(--line);z-index:15;display:none}.safe .footer-safe,.urgent .footer-urgent{display:block}.primary{width:100%;height:62px;border:0;border-radius:7px;background:var(--ink);color:#fff;font-size:17px;font-weight:860;cursor:pointer}.primary.red{background:var(--red)}.primary:active{transform:translateY(1px)}.secondary{width:100%;height:48px;margin-top:7px;border:0;background:#fff;color:var(--ink2);font-size:15px;font-weight:820;cursor:pointer}
+.scrim{position:absolute;inset:0;background:rgba(23,34,56,.28);z-index:40;opacity:0;pointer-events:none;transition:.16s}.scrim.show{opacity:1;pointer-events:auto}.sheet{position:absolute;left:10px;right:10px;bottom:10px;z-index:45;background:#fff;border:1px solid var(--line2);border-radius:12px 12px 8px 8px;box-shadow:0 -18px 45px rgba(23,34,56,.2);transform:translateY(calc(100% + 18px));transition:.2s cubic-bezier(.2,.8,.2,1);padding:8px 18px 14px}.sheet.show{transform:none}.sheet-handle{width:42px;height:4px;background:#d9dfe4;border-radius:4px;margin:2px auto 14px}.sheet-head{padding:2px 2px 11px}.sheet-head h2{margin:0;font-size:22px;font-weight:880;letter-spacing:-.035em}.sheet-head p{margin:7px 0 0;color:var(--muted);font-size:13px;line-height:1.35;font-weight:680}.sheet-row{width:100%;min-height:66px;border:0;border-top:1px solid var(--line);background:#fff;color:var(--ink);display:flex;align-items:center;gap:14px;text-align:left;padding:0 2px;font-size:15px;font-weight:830;cursor:pointer}.sheet-row:last-child{border-bottom:1px solid var(--line)}.sheet-row:active{background:#f7f9fa}.sheet-row svg{width:23px;height:23px;fill:none;stroke:var(--red);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.sheet-row div{flex:1}.sheet-row b{display:block;font-size:15px}.sheet-row span{display:block;margin-top:4px;font-size:12px;color:var(--muted);font-weight:680}
+.toast{position:absolute;left:22px;right:22px;bottom:104px;background:var(--ink);color:#fff;border-radius:8px;padding:13px 14px;font-size:13.5px;font-weight:780;z-index:70;opacity:0;transform:translateY(8px);pointer-events:none;transition:.18s}.toast.show{opacity:1;transform:none}
+@media(max-width:520px){body{padding:0}.phone{width:100vw;height:100dvh;border:0;border-radius:0;box-shadow:none}}
+@media(max-width:340px){.topbar{padding:0 17px}.content{padding:23px 17px 20px}h1{font-size:37px}.sub{font-size:14px}.question{margin-top:27px}.safety{min-height:96px;grid-template-columns:48px minmax(0,1fr) 16px;gap:11px}.safety-icon{width:44px;height:44px}.safety-icon svg{width:22px;height:22px}.safety b{font-size:18px}.safety span{font-size:12px}.location-line{margin-top:24px}.footer{padding-left:17px;padding-right:17px}.primary{height:58px}.secondary{height:44px}.safe .content,.urgent .content{bottom:119px}.sheet{left:7px;right:7px;bottom:7px;padding-left:15px;padding-right:15px}.sheet-row{min-height:60px}}
+</style>
+</head>
+<body>
+<div class="phone initial" id="phone">
+  <div class="statusbar"><div>15:04</div><div class="sb-right"><div class="signal"><i></i><i></i><i></i><i></i></div><div>5G</div><div class="battery"><b></b></div></div></div>
+  <main class="app">
+    <header class="topbar"><div class="topcopy"><small>Round paused</small><b>Driver emergency</b></div></header>
+
+    <section class="content">
+      <section class="initial-state">
+        <div class="kicker"><i></i>Emergency</div>
+        <h1>Are you safe?</h1>
+        <div class="question">Safety status</div>
+        <div class="safety-list">
+          <button class="safety" onclick="setSafety('safe')">
+            <div class="safety-icon safe"><svg viewBox="0 0 24 24"><path d="M4 12l5 5 11-11"/></svg></div>
+            <div><b>I’m safe</b><span>I can wait safely while the Round is paused.</span></div><i class="arrow"></i>
+          </button>
+          <button class="safety help" onclick="setSafety('urgent')">
+            <div class="safety-icon help"><svg viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg></div>
+            <div><b>I need urgent help</b><span>Accident, injury or unsafe situation.</span></div><i class="arrow"></i>
+          </button>
+        </div>
+
+        <div class="location-line"><svg viewBox="0 0 24 24"><path d="M12 21s7-5.3 7-12A7 7 0 1 0 5 9c0 6.7 7 12 7 12Z"/><circle cx="12" cy="9" r="2"/></svg><div><b>Current location recorded</b><span>Available to Operations with this emergency event</span></div></div>
+      </section>
+
+      <section class="safe-state">
+        <div class="kicker"><i></i>Safety status</div>
+        <h1>I’m safe</h1>
+        <div class="sub">Operations has been notified. The Round remains paused.</div>
+        <div class="location-line"><svg viewBox="0 0 24 24"><path d="M12 21s7-5.3 7-12A7 7 0 1 0 5 9c0 6.7 7 12 7 12Z"/><circle cx="12" cy="9" r="2"/></svg><div><b>Current location recorded</b><span>Attached to the emergency event</span></div></div>
+        <div class="state-block"><small>Operations</small><b>Round paused</b><span>Operations can reassign work or tell you when to continue.</span></div>
+      </section>
+
+      <section class="urgent-state">
+        <div class="kicker"><i></i>Urgent help</div>
+        <h1>I need urgent help</h1>
+        <div class="sub">Operations has been notified and the active Round is paused.</div>
+        <div class="location-line"><svg viewBox="0 0 24 24"><path d="M12 21s7-5.3 7-12A7 7 0 1 0 5 9c0 6.7 7 12 7 12Z"/><circle cx="12" cy="9" r="2"/></svg><div><b>Current location recorded</b><span>Attached to the emergency event</span></div></div>
+      </section>
+    </section>
+
+    <footer class="footer footer-safe"><button class="primary" onclick="callOperations()">Call Operations</button><button class="secondary" onclick="returnPausedRound()">Return to paused Round</button></footer>
+    <footer class="footer footer-urgent"><button class="primary red" onclick="openSheet('emergencySheet')">Emergency assistance</button><button class="secondary" onclick="callOperations()">Call Operations</button></footer>
+
+    <div class="scrim" id="scrim" onclick="closeAllSheets()"></div>
+    <div class="sheet" id="emergencySheet" role="dialog" aria-modal="true" aria-label="Emergency assistance">
+      <div class="sheet-handle"></div><div class="sheet-head"><h2>Emergency assistance</h2><p>Choose the help you need. Your Round stays paused.</p></div>
+      <button class="sheet-row" onclick="emergencyHandoff('medical')"><svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/></svg><div><b>Medical emergency</b><span>Open the device emergency call handoff</span></div></button>
+      <button class="sheet-row" onclick="emergencyHandoff('danger')"><svg viewBox="0 0 24 24"><path d="M12 3 3 20h18z"/><path d="M12 9v4M12 17h.01"/></svg><div><b>Police / immediate danger</b><span>Open the device emergency call handoff</span></div></button>
+    </div>
+    <div class="toast" id="toast"></div>
+  </main>
+</div>
+<script>
+const phone=document.getElementById('phone'),scrim=document.getElementById('scrim'),toast=document.getElementById('toast');
+const params=new URLSearchParams(location.search);
+function setSafety(state){phone.classList.remove('initial','safe','urgent');phone.classList.add(state);document.querySelector('.content').scrollTop=0;showToast(state==='safe'?'Operations notified':'Urgent status sent to Operations')}
+function callOperations(){showToast('Operations call opened')}
+function returnPausedRound(){location.href='ROUNDS-E01-ACTIVE-ROUND-OVERVIEW-v5-10OF10.html'}
+function emergencyHandoff(type){closeAllSheets();showToast(type==='medical'?'Medical emergency call handoff opened':'Emergency call handoff opened')}
+function openSheet(id){closeAllSheets(false);document.getElementById(id).classList.add('show');scrim.classList.add('show')}
+function closeAllSheets(hide=true){document.querySelectorAll('.sheet').forEach(s=>s.classList.remove('show'));if(hide)scrim.classList.remove('show')}
+function showToast(msg){toast.textContent=msg;toast.classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>toast.classList.remove('show'),1300)}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAllSheets()});
+if(params.get('state')==='safe')setSafety('safe');if(params.get('state')==='urgent')setSafety('urgent');
+</script>
+</body>
+</html>

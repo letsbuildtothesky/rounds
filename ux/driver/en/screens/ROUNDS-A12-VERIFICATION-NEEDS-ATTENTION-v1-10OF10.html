@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Rounds — A12 Verification Needs Attention v1</title>
+<style>
+:root{--canvas:#eef1f4;--paper:#fff;--ink:#172238;--ink2:#3d4a5d;--muted:#748094;--line:#e1e6ea;--line2:#cbd4dc;--orange:#ff6420;--orange-soft:#fff7f2;--green:#168b50;--green-soft:#eef8f2}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--canvas);color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit;cursor:pointer}button:focus-visible,label:focus-visible{outline:3px solid rgba(255,100,32,.16);outline-offset:2px}
+body{padding:28px}
+.frame{width:393px;height:852px;margin:0 auto;background:var(--paper);position:relative;overflow:hidden;border:1px solid rgba(23,34,56,.09);border-radius:28px;box-shadow:0 18px 42px rgba(23,34,56,.14)}
+.statusbar{height:28px;padding:0 20px 4px;display:flex;align-items:flex-end;justify-content:space-between;font-size:12px;font-weight:760;background:#fff;position:relative;z-index:40}.sb-right{display:flex;align-items:center;gap:6px}.signal{display:flex;align-items:flex-end;gap:1.5px;height:9px}.signal i{display:block;width:2px;background:currentColor;border-radius:1px}.signal i:nth-child(1){height:3px}.signal i:nth-child(2){height:5px}.signal i:nth-child(3){height:7px}.signal i:nth-child(4){height:9px}.battery{width:20px;height:9px;border:1.5px solid currentColor;border-radius:2px;padding:1px;position:relative}.battery:after{content:"";position:absolute;right:-3px;top:1.5px;width:2px;height:4px;background:currentColor;border-radius:0 1px 1px 0}.battery b{display:block;width:78%;height:100%;background:currentColor;border-radius:1px}
+.top{height:68px;padding:0 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;background:#fff}.brand{display:flex;align-items:flex-end;font-size:24px;line-height:1;font-weight:920;letter-spacing:-.055em}.brand-dot{width:7px;height:7px;border-radius:50%;background:var(--orange);margin-left:3px;margin-bottom:2px}.context{margin-left:auto;font-size:11.5px;line-height:1;font-weight:880;letter-spacing:.09em;text-transform:uppercase;color:var(--orange)}
+.body{position:absolute;inset:96px 0 88px;padding:38px 20px 24px;background:#fff;display:flex;flex-direction:column;overflow-y:auto;scrollbar-width:none}.body::-webkit-scrollbar{display:none}
+.attention{width:68px;height:68px;border:1px solid #f1d3c3;border-radius:8px;background:var(--orange-soft);display:grid;place-items:center;color:var(--orange);margin-bottom:27px}.attention svg{width:31px;height:31px;stroke:currentColor;fill:none;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}
+.eyebrow{font-size:11.5px;line-height:1;font-weight:900;letter-spacing:.095em;text-transform:uppercase;color:var(--orange);margin-bottom:12px}
+h1{margin:0;font-size:41px;line-height:.97;font-weight:880;letter-spacing:-.063em;max-width:345px}.lead{margin:15px 0 0;font-size:16px;line-height:1.42;font-weight:660;color:var(--ink2);max-width:340px}
+.fix{margin-top:31px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.fix-head{min-height:65px;display:flex;align-items:center;justify-content:space-between;gap:14px}.fix-head span{font-size:13.5px;font-weight:760;color:var(--muted)}.fix-head b{font-size:13.5px;font-weight:860;color:var(--orange);text-align:right}
+.capture-wrap{padding:17px 0 18px;border-top:1px solid var(--line)}.capture{position:relative;width:100%;height:176px;border:1px dashed var(--line2);border-radius:8px;background:#fafbfc;overflow:hidden;display:grid;place-items:center;text-align:center;color:var(--ink2);cursor:pointer}.capture:active{background:#f7f8f9}.capture input{position:absolute;inset:0;opacity:0;cursor:pointer}.capture-empty{padding:18px}.capture-empty svg{width:28px;height:28px;stroke:var(--orange);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;margin-bottom:12px}.capture-empty b{display:block;font-size:15px;font-weight:850}.capture-empty span{display:block;margin-top:6px;font-size:12.8px;line-height:1.35;font-weight:690;color:var(--muted)}.preview{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none}.capture.has-photo{border-style:solid;border-color:#bdd8c8}.capture.has-photo .preview{display:block}.capture.has-photo .capture-empty{display:none}.photo-state{position:absolute;left:10px;right:10px;bottom:10px;min-height:34px;padding:8px 10px;border-radius:5px;background:rgba(255,255,255,.94);display:none;align-items:center;justify-content:space-between;gap:10px;font-size:12px;font-weight:790;color:var(--ink2)}.capture.has-photo .photo-state{display:flex}.photo-state strong{color:var(--green);font-weight:860}.replace{margin-top:10px;width:100%;height:42px;border:0;background:#fff;color:var(--muted);font-size:13.5px;font-weight:800;display:none}.replace.show{display:block}.replace:active{color:var(--ink)}
+.saved{margin-top:19px;display:flex;align-items:center;gap:10px;font-size:13px;line-height:1.35;font-weight:730;color:var(--muted)}.saved svg{width:18px;height:18px;stroke:var(--green);fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
+.success{display:none;margin-top:31px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.success .row{min-height:64px;display:flex;align-items:center;justify-content:space-between;gap:14px}.success span{font-size:13.5px;font-weight:760;color:var(--muted)}.success b{font-size:13.5px;font-weight:860;color:var(--green)}
+.footer{position:absolute;left:0;right:0;bottom:0;padding:10px 20px 18px;background:#fff;border-top:1px solid var(--line)}.primary{width:100%;height:60px;border:0;border-radius:7px;background:#dce2e8;color:#8d98a5;font-size:17px;font-weight:860;letter-spacing:-.02em;cursor:default}.primary.ready{background:var(--ink);color:#fff;cursor:pointer}.primary.ready:active{transform:translateY(1px)}
+.face-action{display:none;margin-top:31px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:18px 0}.face-action b{display:block;font-size:16px;font-weight:850}.face-action span{display:block;margin-top:7px;font-size:13px;line-height:1.4;font-weight:700;color:var(--muted)}
+@media(max-width:520px){body{padding:0;background:#fff}.frame{width:100vw;height:100dvh;border:0;border-radius:0;box-shadow:none}}
+@media(max-width:340px){.top{padding-left:16px;padding-right:16px}.body{padding:29px 16px 20px}.attention{width:60px;height:60px;margin-bottom:22px}.attention svg{width:28px;height:28px}h1{font-size:36px}.lead{font-size:14.5px;margin-top:12px}.fix{margin-top:25px}.fix-head{min-height:57px}.fix-head span,.fix-head b{font-size:12.5px}.capture-wrap{padding-top:14px;padding-bottom:14px}.capture{height:148px}.capture-empty b{font-size:14px}.capture-empty span{font-size:12px}.saved{margin-top:15px;font-size:12.5px}.footer{padding-left:16px;padding-right:16px}.primary{height:58px}}
+@media(max-height:720px){.body{padding-top:24px}.attention{width:56px;height:56px;margin-bottom:18px}.attention svg{width:26px;height:26px}h1{font-size:35px}.lead{font-size:14px;margin-top:10px}.fix{margin-top:21px}.fix-head{min-height:53px}.capture-wrap{padding:12px 0}.capture{height:135px}.saved{margin-top:12px}.primary{height:56px}}
+</style>
+</head>
+<body>
+<div class="frame" id="frame">
+  <div class="statusbar"><div>18:48</div><div class="sb-right"><div class="signal"><i></i><i></i><i></i><i></i></div><div>5G</div><div class="battery"><b></b></div></div></div>
+  <header class="top"><div class="brand">Rounds<span class="brand-dot"></span></div><div class="context">Network</div></header>
+  <main class="body">
+    <div class="attention" id="attentionIcon"><svg viewBox="0 0 24 24"><path d="M12 3 3.8 18h16.4L12 3Z"/><path d="M12 8v5"/><path d="M12 16.5h.01"/></svg></div>
+    <div class="eyebrow" id="eyebrow">Needs attention</div>
+    <h1 id="title">Driver’s license needs a new photo</h1>
+    <p class="lead" id="lead">We couldn’t read the document clearly.</p>
+
+    <section class="fix" id="documentFix" aria-label="Verification correction">
+      <div class="fix-head"><span id="itemLabel">Driver’s license</span><b id="itemState">Replace photo</b></div>
+      <div class="capture-wrap">
+        <label class="capture" id="capture" tabindex="0">
+          <input id="fileInput" type="file" accept="image/*" capture="environment" aria-label="Take a new driver's license photo" />
+          <img class="preview" id="preview" alt="New document photo" />
+          <div class="capture-empty"><svg viewBox="0 0 24 24"><path d="M4 7h4l1.5-2h5L16 7h4v12H4Z"/><circle cx="12" cy="13" r="3.5"/></svg><b>Take new photo</b><span>Make the whole document easy to read.</span></div>
+          <div class="photo-state"><span>New photo</span><strong>Ready</strong></div>
+        </label>
+        <button class="replace" id="replaceBtn" type="button">Replace photo</button>
+      </div>
+    </section>
+
+    <section class="face-action" id="faceFix" aria-label="Face check correction"><b>Live face check</b><span>Redo only the live face check. Your other verification information stays saved.</span></section>
+
+    <div class="saved" id="savedNote"><svg viewBox="0 0 24 24"><path d="m5 12 4 4 10-10"/></svg><span>Everything else stays saved.</span></div>
+    <section class="success" id="success"><div class="row"><span>Correction</span><b>Submitted</b></div></section>
+  </main>
+  <footer class="footer"><button class="primary" id="primary" type="button" disabled>Resubmit verification</button></footer>
+</div>
+<script>
+const params=new URLSearchParams(location.search);
+const issue=['license','id','face'].includes(params.get('issue'))?params.get('issue'):'license';
+const title=document.getElementById('title'),lead=document.getElementById('lead'),itemLabel=document.getElementById('itemLabel'),documentFix=document.getElementById('documentFix'),faceFix=document.getElementById('faceFix'),savedNote=document.getElementById('savedNote'),success=document.getElementById('success'),primary=document.getElementById('primary'),capture=document.getElementById('capture'),fileInput=document.getElementById('fileInput'),preview=document.getElementById('preview'),replaceBtn=document.getElementById('replaceBtn');
+let captured=false,submitted=false;
+function setReady(on){primary.disabled=!on;primary.classList.toggle('ready',on)}
+if(issue==='id'){
+  title.textContent='Thai ID needs a new photo';lead.textContent='We couldn’t read the document clearly.';itemLabel.textContent='Thai ID';fileInput.setAttribute('aria-label','Take a new Thai ID photo');
+}else if(issue==='face'){
+  title.textContent='Face check needs to be redone';lead.textContent='Your live face check needs another capture.';documentFix.style.display='none';faceFix.style.display='block';primary.textContent='Redo face check';setReady(true);
+}
+fileInput.addEventListener('change',()=>{
+  const file=fileInput.files&&fileInput.files[0];if(!file)return;
+  const url=URL.createObjectURL(file);preview.src=url;capture.classList.add('has-photo');replaceBtn.classList.add('show');captured=true;setReady(true);
+});
+replaceBtn.addEventListener('click',()=>fileInput.click());
+primary.addEventListener('click',()=>{
+  if(submitted){location.href='ROUNDS-B02-HOME-VERIFICATION-PENDING-v5-10OF10.html';return}
+  if(issue==='face'){location.href='ROUNDS-A09-LIVE-FACE-CHECK-v5-10OF10.html?return=A12';return}
+  if(!captured)return;
+  submitted=true;documentFix.style.display='none';savedNote.style.display='none';success.style.display='block';document.getElementById('attentionIcon').style.background='var(--green-soft)';document.getElementById('attentionIcon').style.borderColor='#cce4d7';document.getElementById('attentionIcon').style.color='var(--green)';document.getElementById('attentionIcon').innerHTML='<svg viewBox="0 0 24 24"><path d="m5 12 4 4 10-10"/></svg>';document.getElementById('eyebrow').textContent='Submitted';document.getElementById('eyebrow').style.color='var(--green)';title.textContent='Correction submitted';lead.textContent='Your verification is back in review.';primary.textContent='Go to Home';setReady(true);
+});
+</script>
+</body>
+</html>

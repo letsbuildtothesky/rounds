@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Rounds — N03 GPS Unavailable v3</title>
+<style>
+:root{
+  --canvas:#eef1f4;--paper:#fff;--ink:#172238;--ink2:#3d4a5d;--muted:#748094;
+  --line:#e1e6ea;--line2:#cbd4dc;--orange:#ff6420;--green:#168b50;--map:#f5f6f7;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--canvas);color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+button,a{font:inherit}button{cursor:pointer}a{text-decoration:none;color:inherit}
+body{padding:28px}
+.frame{width:393px;height:852px;margin:0 auto;background:var(--paper);position:relative;overflow:hidden;border:1px solid rgba(23,34,56,.09);border-radius:28px;box-shadow:0 18px 42px rgba(23,34,56,.14)}
+.statusbar{height:28px;padding:0 20px 4px;display:flex;align-items:flex-end;justify-content:space-between;font-size:12px;font-weight:760;background:#fff;position:relative;z-index:40}
+.sb-right{display:flex;align-items:center;gap:6px}.signal{display:flex;align-items:flex-end;gap:1.5px;height:9px}.signal i{display:block;width:2px;background:currentColor;border-radius:1px}.signal i:nth-child(1){height:3px}.signal i:nth-child(2){height:5px}.signal i:nth-child(3){height:7px}.signal i:nth-child(4){height:9px}.battery{width:20px;height:9px;border:1.5px solid currentColor;border-radius:2px;padding:1px;position:relative}.battery:after{content:"";position:absolute;right:-3px;top:1.5px;width:2px;height:4px;background:currentColor;border-radius:0 1px 1px 0}.battery b{display:block;width:78%;height:100%;background:currentColor;border-radius:1px}
+.opbar{height:58px;padding:0 16px;border-bottom:1px solid var(--line);background:#fff;display:flex;align-items:center;gap:12px;position:relative;z-index:35}.back{width:38px;height:38px;border:0;border-radius:7px;background:#fff;color:var(--ink);display:grid;place-items:center}.back:active{background:#f6f8f9}.back svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.opcopy{min-width:0}.opcopy b{display:block;font-size:15px;line-height:1.15;font-weight:860}.opcopy span{display:block;margin-top:4px;font-size:12.5px;line-height:1.1;font-weight:700;color:var(--muted)}
+.map{position:absolute;left:0;right:0;top:86px;height:350px;background:var(--map);overflow:hidden;border-bottom:1px solid var(--line)}
+.map-grid{position:absolute;inset:0;background:linear-gradient(to right,rgba(23,34,56,.025) 1px,transparent 1px) 0 0/64px 64px,linear-gradient(to bottom,rgba(23,34,56,.025) 1px,transparent 1px) 0 0/64px 64px}
+.road{position:absolute;height:12px;background:#fff;border:1px solid #edf0f2;transform-origin:left center}.road.a{left:-30px;top:95px;width:470px;transform:rotate(8deg)}.road.b{left:88px;top:-20px;width:470px;transform:rotate(83deg)}.road.c{left:-70px;top:270px;width:520px;transform:rotate(-8deg)}.road.d{left:238px;top:25px;width:370px;transform:rotate(96deg)}
+.route{position:absolute;inset:0}.route path.route-shadow{fill:none;stroke:#fff;stroke-width:10;stroke-linecap:round;stroke-linejoin:round}.route path.route-main{fill:none;stroke:var(--ink);stroke-width:5.5;stroke-linecap:round;stroke-linejoin:round}
+.place{position:absolute;font-size:10.5px;font-weight:810;letter-spacing:.075em;color:#aab2bb}.place.one{left:18px;top:120px}.place.two{right:15px;top:200px}.place.three{left:22px;bottom:24px}
+.last-location{position:absolute;left:94px;bottom:54px;transform:translate(-50%,-50%);width:36px;height:36px;border:2px solid #fff;border-radius:50%;background:#b8c0c8;box-shadow:0 0 0 1px rgba(23,34,56,.08),0 5px 14px rgba(23,34,56,.15)}.last-location:after{content:"";position:absolute;inset:9px;border-radius:50%;background:#fff}.last-tag{position:absolute;left:18px;bottom:18px;background:#fff;border:1px solid var(--line);border-radius:5px;padding:6px 8px;font-size:11px;font-weight:790;color:var(--ink2);box-shadow:0 5px 14px rgba(23,34,56,.06)}
+.stop{position:absolute;right:48px;top:58px;width:38px;height:38px;border-radius:50%;background:var(--orange);border:4px solid #fff;box-shadow:0 0 0 1px rgba(23,34,56,.08),0 6px 16px rgba(23,34,56,.16);display:grid;place-items:center;color:#fff;font-size:13px;font-weight:870}.stop-label{position:absolute;top:43px;right:-24px;white-space:nowrap;background:#fff;border:1px solid var(--line);border-radius:5px;padding:6px 8px;color:var(--ink);font-size:12px;font-weight:800;box-shadow:0 5px 14px rgba(23,34,56,.06)}
+.cache-badge{position:absolute;left:16px;top:16px;background:#fff;border:1px solid var(--line);border-radius:6px;padding:7px 9px;font-size:11px;line-height:1;font-weight:850;letter-spacing:.055em;text-transform:uppercase;color:var(--muted)}
+.panel{position:absolute;left:0;right:0;top:436px;bottom:0;background:#fff;padding:27px 20px 23px;display:flex;flex-direction:column}
+.kicker{font-size:11.5px;line-height:1;font-weight:900;letter-spacing:.095em;text-transform:uppercase;color:var(--orange);margin-bottom:12px}.panel h1{margin:0;font-size:37px;line-height:.98;font-weight:875;letter-spacing:-.058em;max-width:340px}.lead{margin:13px 0 0;font-size:15.5px;line-height:1.38;font-weight:660;color:var(--ink2);max-width:340px}
+.truth{margin-top:22px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.truth-row{min-height:57px;display:flex;align-items:center;justify-content:space-between;gap:14px}.truth-row+.truth-row{border-top:1px solid var(--line)}.truth-row span{font-size:13.5px;font-weight:740;color:var(--muted)}.truth-row b{font-size:13.5px;font-weight:850;color:var(--ink2)}.truth-row b.good{color:var(--green)}.truth-row b.warn{color:var(--orange)}
+.actions{margin-top:auto}.primary{width:100%;height:60px;border:0;border-radius:7px;background:var(--ink);color:#fff;font-size:17px;font-weight:860;letter-spacing:-.02em}.primary:active{transform:translateY(1px)}.secondary{width:100%;height:48px;border:0;background:#fff;color:var(--muted);font-size:14px;font-weight:800;margin-top:6px}.secondary:active{color:var(--ink)}
+.notice{position:absolute;left:18px;right:18px;bottom:25px;background:var(--ink);color:#fff;padding:13px 14px;border-radius:8px;font-size:13px;font-weight:760;opacity:0;transform:translateY(8px);transition:.18s;pointer-events:none;z-index:90}.notice.show{opacity:1;transform:none}
+.scrim{position:absolute;inset:0;background:rgba(10,18,31,.30);opacity:0;pointer-events:none;transition:.18s;z-index:70}.scrim.show{opacity:1;pointer-events:auto}.sheet{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:20px 20px 0 0;transform:translateY(105%);transition:.22s ease;z-index:80;padding:10px 20px calc(20px + env(safe-area-inset-bottom));box-shadow:0 -18px 42px rgba(23,34,56,.15)}.sheet.show{transform:none}.grab{width:38px;height:4px;border-radius:999px;background:#d7dde2;margin:0 auto 18px}.sheet-kicker{font-size:11.5px;line-height:1;font-weight:890;letter-spacing:.09em;text-transform:uppercase;color:var(--orange);margin-bottom:10px}.sheet h2{margin:0;font-size:28px;line-height:1;font-weight:870;letter-spacing:-.05em}.sheet-sub{margin-top:9px;font-size:13px;line-height:1.4;font-weight:700;color:var(--muted)}.settings-path{margin-top:20px;border-top:1px solid var(--line)}.settings-row{padding:14px 0;border-bottom:1px solid var(--line)}.settings-row b{display:block;font-size:13.5px;font-weight:850}.settings-row span{display:block;margin-top:5px;font-size:12.5px;line-height:1.4;font-weight:690;color:var(--muted)}.sheet-primary{width:100%;height:56px;margin-top:18px;border:0;border-radius:7px;background:var(--ink);color:#fff;font-size:16px;font-weight:850}.sheet-secondary{width:100%;height:46px;margin-top:5px;border:0;background:#fff;color:var(--muted);font-size:14px;font-weight:790}
+.frame.permission .last-tag{display:none}.frame.permission .last-location{opacity:.55}
+@media(max-width:520px){body{padding:0;background:#fff}.frame{width:100vw;height:100dvh;border:0;border-radius:0;box-shadow:none}.map{height:41.2vh;max-height:350px}.panel{top:min(436px,calc(28px + 58px + 41.2vh))}}
+@media(max-width:340px){.opbar{padding-left:12px;padding-right:12px}.map{height:38vh}.panel{top:calc(86px + 38vh);padding:22px 16px 18px}.panel h1{font-size:33px}.lead{font-size:14px;margin-top:10px}.truth{margin-top:17px}.truth-row{min-height:50px}.truth-row span,.truth-row b{font-size:12.5px}.primary{height:56px;font-size:16px}.secondary{height:42px}.stop{right:36px;top:48px}.place.two{display:none}.sheet{padding-left:16px;padding-right:16px}.sheet h2{font-size:25px}}
+@media(max-height:720px){.map{height:34vh}.panel{top:calc(86px + 34vh);padding-top:19px}.panel h1{font-size:31px}.lead{font-size:13.5px;margin-top:8px}.truth{margin-top:14px}.truth-row{min-height:46px}.primary{height:54px}.secondary{height:40px}}
+</style>
+</head>
+<body>
+<div class="frame" id="frame">
+  <div class="statusbar"><div>16:56</div><div class="sb-right"><div class="signal"><i></i><i></i><i></i><i></i></div><div>5G</div><div class="battery"><b></b></div></div></div>
+  <header class="opbar">
+    <button class="back" id="backBtn" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+    <div class="opcopy"><b>Navigation paused</b><span>UrbanFlowers · Stop 2</span></div>
+  </header>
+
+  <section class="map" aria-label="Cached route">
+    <div class="map-grid"></div><div class="road a"></div><div class="road b"></div><div class="road c"></div><div class="road d"></div>
+    <svg class="route" viewBox="0 0 393 350" preserveAspectRatio="none" aria-hidden="true"><path class="route-shadow" d="M94 292 C112 250 140 228 164 198 C197 157 222 132 252 103 C281 76 306 59 326 38"/><path class="route-main" d="M94 292 C112 250 140 228 164 198 C197 157 222 132 252 103 C281 76 306 59 326 38"/></svg>
+    <span class="place one">SUKHUMVIT 24</span><span class="place two">PHROM PHONG</span><span class="place three">THE EMPORIO PLACE</span>
+    <div class="cache-badge">Cached route</div>
+    <div class="last-location"></div><div class="last-tag">Last known location</div>
+    <div class="stop">2<span class="stop-label">James T.</span></div>
+  </section>
+
+  <main class="panel">
+    <div class="kicker" id="kicker">GPS signal lost</div>
+    <h1 id="title">Cached route ready</h1>
+    <p class="lead" id="lead">Live position and ETA are paused.</p>
+    <section class="truth">
+      <div class="truth-row"><span>Cached route</span><b class="good">Available</b></div>
+      <div class="truth-row"><span id="positionLabel">Live position</span><b class="warn" id="positionState">Paused</b></div>
+    </section>
+    <div class="actions">
+      <button class="primary" id="primary">Continue with cached route</button>
+      <button class="secondary" id="secondary">Retry GPS</button>
+    </div>
+  </main>
+
+  <div class="scrim" id="scrim"></div>
+  <section class="sheet" id="settingsSheet" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <div class="grab"></div><div class="sheet-kicker">Location settings</div><h2 id="settingsTitle">Turn location back on</h2>
+    <div class="sheet-sub">Use your phone’s settings, then return to Rounds and check again.</div>
+    <div class="settings-path"><div class="settings-row"><b>iPhone</b><span>Settings → Privacy & Security → Location Services → Rounds → While Using the App / Always when required</span></div><div class="settings-row"><b>Android</b><span>Settings → Location → App permissions → Rounds → Allow while using / Allow all the time when required</span></div></div>
+    <button class="sheet-primary" id="checkAgain">Check location access</button><button class="sheet-secondary" id="closeSheet">Not now</button>
+  </section>
+  <div class="notice" id="notice"></div>
+</div>
+<script>
+const params=new URLSearchParams(location.search);
+const state=params.get('state')==='permission'?'permission':'signal';
+const frame=document.getElementById('frame'),kicker=document.getElementById('kicker'),title=document.getElementById('title'),lead=document.getElementById('lead'),positionLabel=document.getElementById('positionLabel'),positionState=document.getElementById('positionState'),primary=document.getElementById('primary'),secondary=document.getElementById('secondary'),notice=document.getElementById('notice'),scrim=document.getElementById('scrim'),sheet=document.getElementById('settingsSheet');
+const cachedTarget='ROUNDS-E02-NAVIGATE-TO-CURRENT-STOP-v2-10OF10.html?offline=1';
+const liveTarget='ROUNDS-E02-NAVIGATE-TO-CURRENT-STOP-v2-10OF10.html';
+function flash(text){notice.textContent=text;notice.classList.add('show');setTimeout(()=>notice.classList.remove('show'),1100)}
+function openSheet(open){scrim.classList.toggle('show',open);sheet.classList.toggle('show',open)}
+function checkLocation(){
+  if(!navigator.geolocation){flash('Location is still unavailable');return}
+  flash('Checking location…');
+  navigator.geolocation.getCurrentPosition(()=>{flash('Location restored');setTimeout(()=>location.href=liveTarget,500)},()=>flash(state==='permission'?'Location access is still off':'GPS is still unavailable'),{enableHighAccuracy:true,timeout:2500,maximumAge:0});
+}
+if(state==='permission'){
+  frame.classList.add('permission');kicker.textContent='Location access off';title.textContent='Turn location back on';lead.textContent='Live navigation is paused.';positionLabel.textContent='Live position';positionState.textContent='Off';primary.textContent='Location settings';secondary.textContent='View cached route';primary.addEventListener('click',()=>openSheet(true));secondary.addEventListener('click',()=>location.href=cachedTarget);
+}else{
+  primary.addEventListener('click',()=>location.href=cachedTarget);secondary.addEventListener('click',checkLocation);
+}
+document.getElementById('backBtn').addEventListener('click',()=>{if(history.length>1)history.back();else location.href='ROUNDS-E01-ACTIVE-ROUND-OVERVIEW-v5-10OF10.html'});
+scrim.addEventListener('click',()=>openSheet(false));document.getElementById('closeSheet').addEventListener('click',()=>openSheet(false));document.getElementById('checkAgain').addEventListener('click',()=>{openSheet(false);setTimeout(checkLocation,120)});document.addEventListener('keydown',e=>{if(e.key==='Escape')openSheet(false)});
+</script>
+</body>
+</html>

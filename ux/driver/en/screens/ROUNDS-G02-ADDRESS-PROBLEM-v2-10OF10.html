@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Rounds — G02 Location Problem v2</title>
+<style>
+:root{
+  --canvas:#eef1f4;--paper:#fff;--ink:#172238;--ink2:#3d4a5d;--muted:#748094;
+  --line:#e1e6ea;--line2:#cbd4dc;--orange:#ff6420;--orange-soft:#fff2eb;
+  --green:#168b50;--green-soft:#eaf7ef;--red:#bf4a4a;--red-soft:#fff0f0;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--canvas);color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+button,a{font:inherit}
+body{padding:28px}
+.phone{width:393px;height:852px;margin:0 auto;background:#fff;position:relative;overflow:hidden;border:1px solid rgba(23,34,56,.09);border-radius:28px;box-shadow:0 18px 42px rgba(23,34,56,.14)}
+.statusbar{height:28px;padding:0 20px 4px;display:flex;align-items:flex-end;justify-content:space-between;font-size:12px;font-weight:760;background:#fff;position:relative;z-index:50}
+.sb-right{display:flex;align-items:center;gap:6px}.signal{display:flex;align-items:flex-end;gap:1.5px;height:9px}.signal i{display:block;width:2px;background:currentColor;border-radius:1px}.signal i:nth-child(1){height:3px}.signal i:nth-child(2){height:5px}.signal i:nth-child(3){height:7px}.signal i:nth-child(4){height:9px}
+.battery{width:20px;height:9px;border:1.5px solid currentColor;border-radius:2px;padding:1px;position:relative}.battery:after{content:"";position:absolute;right:-3px;top:1.5px;width:2px;height:4px;background:currentColor}.battery b{display:block;width:78%;height:100%;background:currentColor;border-radius:1px}
+.app{position:absolute;inset:28px 0 0;background:#fff;overflow:hidden}
+.topbar{height:64px;padding:0 18px;display:grid;grid-template-columns:44px minmax(0,1fr) 44px;gap:10px;align-items:center;border-bottom:1px solid var(--line);background:#fff;position:relative;z-index:12}
+.iconbtn{width:44px;height:44px;border:0;background:#fff;color:var(--ink);display:grid;place-items:center;cursor:pointer;border-radius:6px}.iconbtn:active{background:#f3f5f7}.iconbtn svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.more{font-size:24px;font-weight:900;letter-spacing:2px;line-height:1;padding-bottom:7px}
+.topcopy{min-width:0}.topcopy small{display:block;color:var(--orange);font-size:10.5px;line-height:1;font-weight:850;letter-spacing:.09em;text-transform:uppercase}.topcopy b{display:block;margin-top:5px;font-size:17px;line-height:1.05;font-weight:840;letter-spacing:-.025em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.content{position:absolute;left:0;right:0;top:64px;bottom:112px;padding:27px 22px 26px;overflow:auto;overscroll-behavior:contain;background:#fff}
+.issue-kicker,.state-kicker{display:flex;align-items:center;gap:8px;font-size:11px;line-height:1;font-weight:880;letter-spacing:.095em;text-transform:uppercase;color:var(--red)}
+.issue-kicker i,.state-kicker i{width:8px;height:8px;border-radius:50%;background:currentColor;flex:0 0 auto}.state-kicker{color:var(--orange)}.state-kicker.good{color:var(--green)}
+h1{margin:10px 0 0;font-size:39px;line-height:.98;font-weight:880;letter-spacing:-.055em;max-width:330px}
+.location{margin-top:12px;font-size:15px;line-height:1.35;color:var(--muted);font-weight:700}
+.stop-context{margin-top:25px;padding-top:19px;border-top:1px solid var(--line);display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.stop-context small{display:block;font-size:10.5px;font-weight:850;letter-spacing:.085em;text-transform:uppercase;color:var(--muted)}.stop-context b{display:block;margin-top:6px;font-size:20px;line-height:1.05;font-weight:850;letter-spacing:-.03em}.stop-context span{display:block;margin-top:6px;font-size:13.5px;line-height:1.3;color:var(--muted);font-weight:690}
+.fragile{display:flex;align-items:center;gap:7px;white-space:nowrap;margin-top:2px;font-size:12.5px;font-weight:810;color:var(--ink2)}.fragile i{width:8px;height:8px;border-radius:50%;background:var(--orange)}
+.section{margin-top:29px}.section-title{font-size:12px;font-weight:860;letter-spacing:.085em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+.choice-list{border-top:1px solid var(--line)}
+.choice{width:100%;min-height:69px;border:0;border-bottom:1px solid var(--line);background:#fff;color:var(--ink);display:grid;grid-template-columns:34px minmax(0,1fr) 18px;gap:12px;align-items:center;text-align:left;padding:0 2px;cursor:pointer}.choice:active{background:#f7f9fa}.choice svg{width:23px;height:23px;fill:none;stroke:var(--ink2);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}.choice b{font-size:16px;line-height:1.15;font-weight:820;letter-spacing:-.015em}.choice .arrow{width:9px;height:9px;border-top:2px solid #8b96a5;border-right:2px solid #8b96a5;transform:rotate(45deg);justify-self:end;margin-right:4px}
+.wait-state,.confirmed-state{display:none}.waiting .problem-state,.confirmed .problem-state{display:none}.waiting .wait-state{display:block}.confirmed .confirmed-state{display:block}
+.change{margin-top:28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.change-row{min-height:70px;display:grid;grid-template-columns:minmax(0,1fr) 20px minmax(0,1fr);gap:10px;align-items:center}.change-row .side{min-width:0}.change-row small{display:block;font-size:10.5px;font-weight:850;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}.change-row b{display:block;margin-top:6px;font-size:14.5px;line-height:1.25;font-weight:820}.change-arrow{color:var(--orange);font-size:19px;font-weight:850;text-align:center}
+.wait-copy{margin-top:28px}.wait-copy small{display:block;color:var(--orange);font-size:10.5px;font-weight:880;letter-spacing:.085em;text-transform:uppercase}.wait-copy b{display:block;margin-top:7px;font-size:24px;line-height:1.05;font-weight:880;letter-spacing:-.035em}.sync-note{margin-top:8px;color:var(--muted);font-size:13.5px;font-weight:690;line-height:1.35}
+.confirm-summary{margin-top:27px;border-top:1px solid var(--line);padding-top:20px}.confirm-summary b{display:block;font-size:21px;line-height:1.1;font-weight:850;letter-spacing:-.03em}.confirm-summary span{display:block;margin-top:7px;color:var(--muted);font-size:14px;font-weight:690;line-height:1.35}
+.footer{position:absolute;left:0;right:0;bottom:0;padding:11px 22px calc(17px + env(safe-area-inset-bottom));background:rgba(255,255,255,.98);border-top:1px solid var(--line);z-index:15}.primary{width:100%;height:62px;border:0;border-radius:7px;background:var(--ink);color:#fff;font-size:17px;font-weight:860;cursor:pointer}.primary:active{transform:translateY(1px)}.primary[disabled]{background:#e0e5e9;color:#8e99a7;cursor:default;transform:none}.secondary{width:100%;height:48px;margin-top:7px;border:0;background:#fff;color:var(--ink2);font-size:15px;font-weight:820;cursor:pointer}
+#footerProblem{display:block}.waiting #footerProblem,.confirmed #footerProblem{display:none}#footerWait,#footerConfirmed{display:none}.waiting #footerWait{display:block}.confirmed #footerConfirmed{display:block}
+.scrim{position:absolute;inset:0;background:rgba(23,34,56,.25);z-index:40;opacity:0;pointer-events:none;transition:.16s}.scrim.show{opacity:1;pointer-events:auto}
+.sheet{position:absolute;left:10px;right:10px;bottom:10px;z-index:45;background:#fff;border:1px solid var(--line2);border-radius:12px 12px 8px 8px;box-shadow:0 20px 48px rgba(23,34,56,.20);overflow:hidden;transform:translateY(calc(100% + 18px));opacity:0;pointer-events:none;transition:transform .22s cubic-bezier(.22,.72,.24,1),opacity .16s}.sheet.show{transform:none;opacity:1;pointer-events:auto}.sheet-handle{height:22px;display:grid;place-items:center}.sheet-handle:after{content:"";width:38px;height:4px;border-radius:99px;background:#ccd4dc}.sheet-head{padding:0 18px 13px}.sheet-head h2{margin:0;font-size:23px;line-height:1.02;font-weight:880;letter-spacing:-.04em}.sheet-head p{margin:7px 0 0;color:var(--muted);font-size:13.5px;line-height:1.35;font-weight:680}
+.sheet-row{width:100%;min-height:64px;padding:0 18px;border:0;border-top:1px solid var(--line);background:#fff;color:var(--ink);display:grid;grid-template-columns:30px minmax(0,1fr);gap:12px;align-items:center;text-align:left;font-size:16px;font-weight:810;cursor:pointer}.sheet-row:active{background:#f3f5f7}.sheet-row svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}.sheet-row.problem{color:var(--red)}
+.pin-map{height:160px;margin:0 18px 15px;position:relative;overflow:hidden;border:1px solid var(--line);border-radius:7px;background:linear-gradient(180deg,#f5f7f8,#edf2f4)}.pin-map .road{position:absolute;height:8px;background:#fff;box-shadow:0 0 0 1px #e2e7ea;border-radius:99px;transform-origin:center}.pin-map .block{position:absolute;background:#e3e8ec;border-radius:3px}.pin-map .old,.pin-map .here{position:absolute;width:28px;height:28px;border-radius:50%;border:4px solid #fff;box-shadow:0 5px 12px rgba(23,34,56,.16);display:grid;place-items:center;color:#fff;font-size:11px;font-weight:900}.pin-map .old{left:64%;top:31%;background:#98a3af}.pin-map .here{left:43%;top:62%;background:var(--orange)}.pin-map .you{position:absolute;left:43%;top:calc(62% + 35px);transform:translateX(-50%);font-size:11px;font-weight:800;color:var(--ink2);background:#fff;border:1px solid var(--line);border-radius:4px;padding:4px 6px}
+.pin-action{padding:0 18px 18px}.pin-action .primary{height:58px}.accuracy{margin:0 0 11px;text-align:center;font-size:12px;font-weight:760;color:var(--muted)}
+.toast{position:absolute;left:22px;right:22px;bottom:102px;z-index:70;background:var(--ink);color:#fff;border-radius:8px;padding:13px 14px;font-size:13.5px;font-weight:760;opacity:0;transform:translateY(8px);pointer-events:none;transition:.18s}.toast.show{opacity:1;transform:none}
+@media(max-width:460px){body{padding:0}.phone{width:100vw;height:100dvh;border:0;border-radius:0;box-shadow:none}.statusbar{padding-top:max(12px,env(safe-area-inset-top));height:calc(42px + env(safe-area-inset-top))}.app{inset:calc(42px + env(safe-area-inset-top)) 0 0}}
+@media(max-width:340px){.topbar{padding:0 14px}.content{padding:18px 17px 20px;bottom:105px}h1{font-size:34px}.location{font-size:14px}.stop-context{margin-top:16px;padding-top:13px}.stop-context b{font-size:18px}.section{margin-top:20px}.choice{min-height:56px;grid-template-columns:30px minmax(0,1fr) 15px;gap:9px}.choice b{font-size:14.5px}.choice svg{width:21px;height:21px}.footer{padding-left:17px;padding-right:17px}.primary{height:58px}.secondary{height:44px}.sheet{left:7px;right:7px;bottom:7px}.sheet-head{padding-left:15px;padding-right:15px}.sheet-head h2{font-size:21px}.sheet-row{min-height:59px;padding:0 15px;font-size:14.5px}.pin-map{height:145px;margin-left:15px;margin-right:15px}.pin-action{padding-left:15px;padding-right:15px}.change-row b{font-size:13px}.wait-copy b{font-size:22px}}
+</style>
+</head>
+<body>
+<div class="phone" id="phone">
+  <div class="statusbar"><span>14:44</span><div class="sb-right"><div class="signal"><i></i><i></i><i></i><i></i></div><span>5G</span><div class="battery"><b></b></div></div></div>
+  <main class="app">
+    <header class="topbar">
+      <button class="iconbtn" aria-label="Back" onclick="goBack()"><svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+      <div class="topcopy"><small>Stop 1 of 4</small><b>K. Nattaporn</b></div>
+      <button class="iconbtn more" aria-label="More actions" onclick="openSheet('moreSheet')">•••</button>
+    </header>
+
+    <section class="content">
+      <div class="problem-state">
+        <div class="issue-kicker"><i></i>Delivery problem</div>
+        <h1>Location problem</h1>
+        <div class="location">The Emporio Place · Sukhumvit 24</div>
+
+        <div class="stop-context">
+          <div><small>Current stop</small><b>Tower A lobby</b><span>Pin is set at the main driveway</span></div>
+          <div class="fragile"><i></i>Fragile bouquet</div>
+        </div>
+
+        <section class="section">
+          <div class="section-title">What is wrong?</div>
+          <div class="choice-list">
+            <button class="choice" onclick="openPinSheet()"><svg viewBox="0 0 24 24"><path d="M12 21s6-4.35 6-10a6 6 0 1 0-12 0c0 5.65 6 10 6 10Z"/><circle cx="12" cy="11" r="2"/></svg><b>Pin is wrong</b><i class="arrow"></i></button>
+            <button class="choice" onclick="openSheet('entranceSheet')"><svg viewBox="0 0 24 24"><path d="M4 21V8l8-5 8 5v13"/><path d="M9 21v-7h6v7"/><path d="M3 21h18"/></svg><b>Entrance / access is wrong</b><i class="arrow"></i></button>
+            <button class="choice" onclick="openSheet('addressSheet')"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4z"/><path d="M7 9h10M7 13h7"/></svg><b>Address is wrong</b><i class="arrow"></i></button>
+            <button class="choice" onclick="openSheet('findSheet')"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><b>Can't find location</b><i class="arrow"></i></button>
+          </div>
+        </section>
+      </div>
+
+      <div class="wait-state">
+        <div class="state-kicker"><i></i>Location update</div>
+        <h1 id="waitTitle">Sent to Operations</h1>
+        <div class="location">The Emporio Place · Sukhumvit 24</div>
+        <div class="change"><div class="change-row"><div class="side"><small>Current</small><b id="oldPoint">Tower A lobby</b></div><div class="change-arrow">→</div><div class="side"><small>Proposed</small><b id="newPoint">Current entrance</b></div></div></div>
+        <div class="wait-copy"><small id="waitLabel">Operations review</small><b id="waitHeading">Waiting for confirmation</b><div class="sync-note" id="syncNote">Your current position was attached automatically.</div></div>
+      </div>
+
+      <div class="confirmed-state">
+        <div class="state-kicker good"><i></i>Operations confirmed</div>
+        <h1>Route update ready</h1>
+        <div class="location">The Emporio Place · Sukhumvit 24</div>
+        <div class="change"><div class="change-row"><div class="side"><small>Was</small><b id="confirmOld">Tower A lobby</b></div><div class="change-arrow">→</div><div class="side"><small>Now</small><b id="confirmNew">Building B entrance</b></div></div></div>
+        <div class="confirm-summary"><b id="confirmImpact">+2 min · +350 m</b></div>
+      </div>
+    </section>
+
+    <footer class="footer" id="footerProblem">
+      <button class="secondary" onclick="recordRecipientCall()">Call recipient</button>
+    </footer>
+    <footer class="footer" id="footerWait"><button class="primary" disabled id="waitButton">Waiting for Operations</button></footer>
+    <footer class="footer" id="footerConfirmed"><button class="primary" onclick="reviewUpdate()">Review route update</button></footer>
+
+    <div class="scrim" id="scrim" onclick="closeAllSheets()"></div>
+
+    <div class="sheet" id="pinSheet" role="dialog" aria-modal="true" aria-label="Correct pin">
+      <div class="sheet-handle"></div><div class="sheet-head"><h2>Correct pin</h2></div>
+      <div class="pin-map" aria-label="Expected pin and current driver location">
+        <div class="block" style="left:18px;top:21px;width:72px;height:42px"></div><div class="block" style="right:20px;top:26px;width:80px;height:54px"></div><div class="block" style="left:105px;bottom:20px;width:62px;height:43px"></div>
+        <div class="road" style="left:-24px;top:77px;width:440px;transform:rotate(-11deg)"></div><div class="road" style="left:176px;top:-12px;width:270px;transform:rotate(88deg)"></div>
+        <div class="old">×</div><div class="here">•</div><div class="you">You</div>
+      </div>
+      <div class="pin-action"><div class="accuracy">Current location · ±8 m</div><button class="primary" onclick="submitCandidate('Pin correction','Tower A lobby','Current entrance','+2 min · +350 m')">Send current location</button></div>
+    </div>
+
+    <div class="sheet" id="entranceSheet" role="dialog" aria-modal="true" aria-label="Entrance or access problem">
+      <div class="sheet-handle"></div><div class="sheet-head"><h2>Entrance / access</h2></div>
+      <button class="sheet-row" onclick="submitCandidate('Entrance correction','Tower A lobby','Current entrance','+2 min · +350 m')"><svg viewBox="0 0 24 24"><path d="M4 21V8l8-5 8 5v13"/><path d="M9 21v-7h6v7"/></svg>Wrong entrance</button>
+      <button class="sheet-row" onclick="submitCandidate('Access closed','Main driveway','Alternative entrance','+3 min · +450 m')"><svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5 5 19"/></svg>Access closed</button>
+      <button class="sheet-row" onclick="submitCandidate('Better driveway','Main driveway','Vehicle entrance','+1 min · +180 m')"><svg viewBox="0 0 24 24"><path d="M3 17h4l3-10h4l3 10h4"/><path d="M7 17h10"/></svg>Better driveway</button>
+      <button class="sheet-row" onclick="submitCandidate('Different building','Tower A','Building B','+5 min · +900 m')"><svg viewBox="0 0 24 24"><path d="M4 21V4h7v17M11 9h9v12M7 8h1M7 12h1M15 13h1M15 17h1"/></svg>Different building</button>
+    </div>
+
+    <div class="sheet" id="addressSheet" role="dialog" aria-modal="true" aria-label="Address problem">
+      <div class="sheet-handle"></div><div class="sheet-head"><h2>Address problem</h2></div>
+      <button class="sheet-row" onclick="submitOps('Written address is wrong','Current address','Operations correction')"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4z"/><path d="M7 9h10M7 13h7"/></svg>Written address is wrong</button>
+      <button class="sheet-row" onclick="submitCandidate('Different building','Tower A','Building B','+5 min · +900 m')"><svg viewBox="0 0 24 24"><path d="M4 21V4h7v17M11 9h9v12"/></svg>Different building</button>
+      <button class="sheet-row" onclick="submitOps('Recipient gave new address','Current address','New recipient address')"><svg viewBox="0 0 24 24"><path d="M12 21s6-4.35 6-10a6 6 0 1 0-12 0c0 5.65 6 10 6 10Z"/><path d="M9 11h6"/></svg>Recipient gave new address</button>
+    </div>
+
+    <div class="sheet" id="findSheet" role="dialog" aria-modal="true" aria-label="Can't find location">
+      <div class="sheet-handle"></div><div class="sheet-head"><h2>Can't find location</h2></div>
+      <button class="sheet-row" onclick="recordRecipientCall();closeAllSheets()"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3"/></svg>Call recipient</button>
+      <button class="sheet-row" onclick="submitCandidate('Can’t find location','Expected pin','Current location','Operations review')"><svg viewBox="0 0 24 24"><path d="M12 21s6-4.35 6-10a6 6 0 1 0-12 0c0 5.65 6 10 6 10Z"/><circle cx="12" cy="11" r="2"/></svg>Send my location</button>
+      <button class="sheet-row" onclick="submitOps('Can’t find location','Expected stop','Operations review')"><svg viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg>Contact Operations</button>
+    </div>
+
+    <div class="sheet" id="moreSheet" role="dialog" aria-modal="true" aria-label="Stop actions">
+      <div class="sheet-handle"></div><div class="sheet-head"><h2>Stop actions</h2></div>
+      <button class="sheet-row" onclick="recordRecipientCall();closeAllSheets()"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3"/></svg>Call recipient</button>
+      <button class="sheet-row" onclick="showToast('Operations thread opened');closeAllSheets()"><svg viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg>Message Operations</button>
+      <button class="sheet-row" onclick="goBack()"><svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l-7 7 7 7"/></svg>Return to navigation</button>
+    </div>
+
+    <div class="toast" id="toast"></div>
+  </main>
+</div>
+<script>
+const phone=document.getElementById('phone');
+const scrim=document.getElementById('scrim');
+const toast=document.getElementById('toast');
+const params=new URLSearchParams(location.search);
+const offline=params.get('offline')==='1';
+let resolutionTimer=null;
+let currentChange={old:'Tower A lobby',next:'Current entrance',impact:'+2 min · +350 m'};
+function openSheet(id){closeAllSheets(false);document.getElementById(id).classList.add('show');scrim.classList.add('show')}
+function closeAllSheets(hide=true){document.querySelectorAll('.sheet').forEach(s=>s.classList.remove('show'));if(hide)scrim.classList.remove('show')}
+function openPinSheet(){openSheet('pinSheet')}
+function showToast(msg){toast.textContent=msg;toast.classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>toast.classList.remove('show'),1300)}
+function recordRecipientCall(){showToast('Recipient call recorded')}
+function setWaiting(kind,oldPoint,newPoint,impact,usesLocation){
+  closeAllSheets();clearTimeout(resolutionTimer);currentChange={old:oldPoint,next:newPoint,impact};
+  phone.classList.remove('confirmed');phone.classList.add('waiting');
+  document.getElementById('waitTitle').textContent=offline?'Saved locally':'Sent to Operations';
+  document.getElementById('oldPoint').textContent=oldPoint;document.getElementById('newPoint').textContent=newPoint;
+  document.getElementById('syncNote').textContent=offline?'Will send when Rounds reconnects.':usesLocation?'Your current position was attached automatically.':'Operations has the structured location issue.';
+  document.getElementById('waitLabel').textContent=offline?'Offline':'Operations review';
+  document.getElementById('waitHeading').textContent=offline?'Waiting to sync':'Waiting for confirmation';
+  document.getElementById('waitButton').textContent=offline?'Waiting to sync':'Waiting for Operations';
+  showToast(offline?'Saved locally':'Location issue sent');
+  if(!offline)resolutionTimer=setTimeout(confirmChange,1500);
+}
+function submitCandidate(kind,oldPoint,newPoint,impact){setWaiting(kind,oldPoint,newPoint,impact,true)}
+function submitOps(kind,oldPoint,newPoint){setWaiting(kind,oldPoint,newPoint,'Route will recalculate',false)}
+function confirmChange(){
+  phone.classList.remove('waiting');phone.classList.add('confirmed');
+  document.getElementById('confirmOld').textContent=currentChange.old;
+  document.getElementById('confirmNew').textContent=currentChange.next==='Operations correction'?'Corrected destination':currentChange.next==='New recipient address'?'New destination':currentChange.next;
+  document.getElementById('confirmImpact').textContent=currentChange.impact;
+  showToast('Operations confirmed the change');
+}
+function reviewUpdate(){location.href='ROUNDS-E04-E05-E06-LIVE-ROUND-CHANGE-v3-10OF10.html'}
+function goBack(){location.href='ROUNDS-E02-NAVIGATE-TO-CURRENT-STOP-v2-10OF10.html'}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAllSheets()});
+if(params.get('state')==='confirmed'){currentChange={old:'Tower A lobby',next:'Building B entrance',impact:'+5 min · +900 m'};confirmChange()}
+</script>
+</body>
+</html>

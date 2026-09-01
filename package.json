@@ -1,0 +1,16 @@
+{
+  "name": "rounds",
+  "private": true,
+  "workspaces": [
+    "apps/telemetry_viewer",
+    "packages/*",
+    "services/*"
+  ],
+  "scripts": {
+    "test": "npm run test --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

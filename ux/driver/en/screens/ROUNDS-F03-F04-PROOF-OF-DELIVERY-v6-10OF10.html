@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Rounds — F03/F04 Proof of Delivery v5</title>
+<style>
+  :root{
+    --ink:#172238;
+    --ink2:#3d4a5d;
+    --muted:#748094;
+    --line:#e1e6ea;
+    --line2:#cbd4dc;
+    --navy:#172238;
+    --orange:#ff6420;
+    --green:#168b50;
+    --green-soft:#f1f9f4;
+    --red:#bf4a4a;
+    --surface:#f7f9fa;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%;background:#eef1f3;color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  button,input{font-family:inherit}
+  button{cursor:pointer}
+  body{padding:28px}
+  .stage{display:flex;justify-content:center}
+  .frame{width:393px;height:852px;background:#fff;border:1px solid rgba(23,34,56,.08);border-radius:34px;overflow:hidden;position:relative;box-shadow:0 18px 50px rgba(23,34,56,.16)}
+  .statusbar{height:28px;padding:0 18px 4px;display:flex;align-items:flex-end;justify-content:space-between;background:#fff;font-size:12px;font-weight:700;position:relative;z-index:30}
+  .sb-right{display:flex;align-items:center;gap:6px}.signal{display:flex;align-items:flex-end;gap:1.5px;height:9px}.signal i{display:block;width:2px;background:currentColor;border-radius:1px}.signal i:nth-child(1){height:3px}.signal i:nth-child(2){height:5px}.signal i:nth-child(3){height:7px}.signal i:nth-child(4){height:9px}.battery{width:20px;height:9px;border:1.5px solid currentColor;border-radius:2px;padding:1px;position:relative}.battery:after{content:"";position:absolute;right:-3px;top:1.5px;width:2px;height:4px;background:currentColor;border-radius:0 1px 1px 0}.battery b{display:block;width:78%;height:100%;background:currentColor;border-radius:1px}
+  .screen{position:absolute;inset:28px 0 0;background:#fff;display:flex;flex-direction:column;min-height:0}
+  .topbar{height:62px;flex:0 0 62px;padding:0 18px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--line);background:#fff}
+  .back{width:42px;height:42px;border:1px solid var(--line2);border-radius:7px;background:#fff;display:grid;place-items:center;color:var(--ink)}
+  .back svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}
+  .top-copy{flex:1;min-width:0}.top-copy small{display:block;font-size:11.5px;color:var(--muted);font-weight:720}.top-copy b{display:block;margin-top:3px;font-size:15px;font-weight:810;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.top-meta{font-size:12.5px;font-weight:780;color:var(--ink2);white-space:nowrap}
+  .content{flex:1;min-height:0;overflow:auto;padding:22px 18px 116px;scrollbar-width:none}.content::-webkit-scrollbar{display:none}
+  .hero{padding-bottom:20px;border-bottom:1px solid var(--line)}
+  .hero-row{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}
+  .hero h1{margin:0;font-size:31px;line-height:1.02;font-weight:850;letter-spacing:-.05em}
+  .progress{text-align:right;flex:0 0 auto;padding-top:2px}.progress strong{display:block;font-size:25px;line-height:1;font-weight:820;letter-spacing:-.04em}.progress span{display:block;margin-top:5px;font-size:11.5px;color:var(--muted);font-weight:700}
+  .handoff{margin-top:11px;font-size:13.5px;color:var(--ink2);font-weight:720}.handoff b{font-weight:810;color:var(--ink)}
+  .section{margin-top:22px}.section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:9px}.section-head b{font-size:13px;font-weight:810;color:var(--ink)}.section-state{font-size:11.5px;font-weight:780;color:var(--muted)}.section-state.done{color:var(--green)}
+  .manifest{border:1px solid var(--line);border-radius:8px;background:#fff;overflow:hidden}
+  .manifest-line{width:100%;min-height:78px;padding:12px 13px;border:0;background:#fff;color:inherit;display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:11px;align-items:center;text-align:left}
+  .manifest-line:active{background:#fafbfb}.manifest-line.checked{background:#fbfefc}
+  .check{width:26px;height:26px;border:1px solid var(--line2);border-radius:6px;display:grid;place-items:center;background:#fff}.check svg{width:15px;height:15px;stroke:#fff;fill:none;stroke-width:2.5;opacity:0}.manifest-line.checked .check{background:var(--green);border-color:var(--green)}.manifest-line.checked .check svg{opacity:1}
+  .line-copy{min-width:0}.line-title{display:block;font-size:14px;font-weight:800;line-height:1.25}.line-meta{display:block;margin-top:4px;font-size:11.8px;color:var(--muted);font-weight:670}.line-side{text-align:right}.qty{display:block;font-size:13px;font-weight:820;color:var(--ink2)}.care{display:block;margin-top:5px;font-size:11.3px;font-weight:760;color:var(--orange)}
+  .problem{width:100%;height:44px;margin-top:8px;border:0;background:transparent;color:var(--red);font-size:12.8px;font-weight:780;text-align:left;padding:0 2px}
+  .receiver-row{width:100%;min-height:62px;padding:0 13px;border:1px solid var(--line);border-radius:7px;background:#fff;color:inherit;display:none;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;text-align:left}
+  .receiver-row.show{display:grid}.receiver-copy b{display:block;font-size:13.8px;font-weight:800}.receiver-copy span{display:block;margin-top:4px;font-size:11.8px;color:var(--muted)}.receiver-value{font-size:12.5px;font-weight:760;color:var(--orange);text-align:right}
+  .photo-surface{min-height:188px;border:1px dashed #aeb9c4;border-radius:8px;background:var(--surface);position:relative;overflow:hidden;display:grid;place-items:center;text-align:center;cursor:pointer}
+  .photo-surface:active{background:#f3f5f7}.photo-surface.done{border-style:solid;border-color:#bfdacb;background:#eef5f1}
+  .photo-empty{padding:24px}.camera{width:54px;height:54px;margin:0 auto;border:1px solid var(--line2);border-radius:7px;background:#fff;display:grid;place-items:center;color:var(--orange)}.camera svg{width:25px;height:25px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.photo-empty b{display:block;margin-top:12px;font-size:14.5px;font-weight:810}.photo-empty span{display:block;margin-top:5px;font-size:12.2px;color:var(--muted)}
+  .photo-preview{position:absolute;inset:0;display:none;background:#e9eef1}.photo-preview img{width:100%;height:100%;object-fit:cover;display:block}.photo-surface.done .photo-preview{display:block}.photo-surface.done .photo-empty{display:none}
+  .photo-actions{display:none;position:absolute;left:10px;right:10px;bottom:10px;z-index:4;align-items:center;justify-content:space-between;gap:10px}.photo-surface.done .photo-actions{display:flex}.photo-added{height:34px;padding:0 9px;border-radius:5px;background:rgba(255,255,255,.94);border:1px solid rgba(23,34,56,.12);display:flex;align-items:center;gap:7px;font-size:11.8px;font-weight:800;color:var(--green)}.retake{height:34px;padding:0 10px;border:1px solid rgba(23,34,56,.14);border-radius:5px;background:rgba(255,255,255,.94);color:var(--ink2);font-size:11.8px;font-weight:780}
+  .photo-input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+  .signature-block{display:none}.signature-block.show{display:block}.signature-surface{height:180px;border:1px solid var(--line);border-radius:8px;background:#fff;position:relative;overflow:hidden}.signature-surface canvas{width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}.sign-placeholder{position:absolute;inset:0;display:grid;place-items:center;color:#9aa5b1;font-size:13px;font-weight:700;pointer-events:none}.signature-surface.has-signature .sign-placeholder{display:none}.sign-line{position:absolute;left:18px;right:18px;bottom:29px;height:1px;background:#e3e8ec;pointer-events:none}.clear-sign{position:absolute;right:8px;top:8px;height:32px;padding:0 9px;border:1px solid var(--line);border-radius:5px;background:#fff;color:var(--muted);font-size:11.8px;font-weight:760;z-index:2}
+  .auto-row{margin-top:20px;min-height:44px;padding:0 2px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:12px}.auto-row span{color:var(--muted)}.auto-row b{font-weight:780;color:var(--green);text-align:right}
+  .footer{position:absolute;left:0;right:0;bottom:0;padding:10px 18px 18px;background:rgba(255,255,255,.985);border-top:1px solid var(--line)}
+  .primary{width:100%;height:64px;border:0;border-radius:7px;background:#d9dfe5;color:#85909d;font-size:17px;font-weight:840;cursor:default}.primary.ready{background:var(--green);color:#fff;cursor:pointer;box-shadow:0 8px 18px rgba(22,139,80,.13)}
+  .scrim{position:absolute;inset:0;background:rgba(23,34,56,.32);z-index:40;opacity:0;pointer-events:none;transition:.18s ease}.scrim.show{opacity:1;pointer-events:auto}
+  .sheet{position:absolute;left:0;right:0;bottom:0;z-index:50;background:#fff;border-radius:18px 18px 0 0;border-top:1px solid var(--line2);padding:10px 18px 20px;transform:translateY(105%);transition:transform .22s cubic-bezier(.22,.72,.24,1);box-shadow:0 -18px 42px rgba(23,34,56,.14)}.sheet.show{transform:none}.grip{width:44px;height:4px;border-radius:99px;background:#cbd3da;margin:1px auto 16px}.sheet h2{margin:0 0 12px;font-size:22px;line-height:1.1;font-weight:840;letter-spacing:-.035em}.sheet-list{border-top:1px solid var(--line)}.sheet-action{width:100%;min-height:58px;border:0;border-bottom:1px solid var(--line);background:#fff;color:var(--ink);display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0;text-align:left;font-size:14px;font-weight:790}.sheet-action:active{background:#fafbfb}.sheet-action span:last-child{color:var(--muted);font-weight:700}.cancel{width:100%;height:48px;margin-top:10px;border:1px solid var(--line2);border-radius:7px;background:#fff;color:var(--ink2);font-size:13.5px;font-weight:780}
+  .toast{position:absolute;left:18px;right:18px;bottom:96px;z-index:60;background:var(--navy);color:#fff;border-radius:7px;padding:12px 13px;font-size:12.8px;font-weight:740;opacity:0;transform:translateY(8px);pointer-events:none;transition:.18s ease}.toast.show{opacity:1;transform:none}
+  @media(max-width:520px){body{padding:0}.frame{width:100vw;height:100dvh;border:0;border-radius:0;box-shadow:none}}
+  @media(max-width:340px){.topbar{padding-left:14px;padding-right:14px}.content{padding-left:16px;padding-right:16px}.hero h1{font-size:28px}.progress strong{font-size:23px}.manifest-line{padding-left:11px;padding-right:11px;grid-template-columns:28px minmax(0,1fr) auto;gap:9px}.line-title{font-size:13.5px}.photo-surface{min-height:172px}.signature-surface{height:160px}.footer{padding-left:16px;padding-right:16px}}
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="frame" id="frame">
+    <div class="statusbar">
+      <span>11:26</span>
+      <div class="sb-right"><div class="signal"><i></i><i></i><i></i><i></i></div><span>5G</span><div class="battery"><b></b></div></div>
+    </div>
+
+    <main class="screen">
+      <header class="topbar">
+        <button class="back" id="backBtn" type="button" aria-label="Back">
+          <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        </button>
+        <div class="top-copy"><small>Stop 1</small><b>K. Nattaporn</b></div>
+        <div class="top-meta">1 of 4</div>
+      </header>
+
+      <section class="content">
+        <div class="hero">
+          <div class="hero-row">
+            <h1>Proof of delivery</h1>
+            <div class="progress"><strong id="progressValue">0 / 3</strong><span>required</span></div>
+          </div>
+          <div class="handoff" id="handoffLine"><b>Recipient</b> · K. Nattaporn</div>
+        </div>
+
+        <section class="section">
+          <div class="section-head"><b>Package</b><span class="section-state" id="packageState">Required</span></div>
+          <div class="manifest">
+            <button class="manifest-line" id="manifestLine" type="button">
+              <span class="check"><svg viewBox="0 0 24 24"><path d="M5 12.5 9.2 17 19 7"/></svg></span>
+              <span class="line-copy"><span class="line-title">Midnight Orchid + glass vase</span><span class="line-meta">#8421 · pickup verified</span></span>
+              <span class="line-side"><span class="qty">×1</span><span class="care">Fragile</span></span>
+            </button>
+          </div>
+          <button class="problem" id="packageProblem" type="button">Package problem</button>
+        </section>
+
+        <section class="section" id="receiverSection" hidden>
+          <div class="section-head"><b>Received by</b><span class="section-state" id="receiverState">Required</span></div>
+          <button class="receiver-row show" id="receiverRow" type="button">
+            <span class="receiver-copy"><b>Who received it?</b><span>Choose one</span></span>
+            <span class="receiver-value" id="receiverValue">Choose</span>
+          </button>
+        </section>
+
+        <section class="section">
+          <div class="section-head"><b>Delivery photo</b><span class="section-state" id="photoState">Required</span></div>
+          <div class="photo-surface" id="photoSurface" role="button" tabindex="0" aria-label="Take delivery photo">
+            <input class="photo-input" id="photoInput" type="file" accept="image/*" capture="environment" />
+            <div class="photo-preview" id="photoPreview"><img id="photoImage" alt="Delivery proof preview" /></div>
+            <div class="photo-empty">
+              <div class="camera">
+                <svg viewBox="0 0 24 24"><path d="M4 7h3l2-3h6l2 3h3a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2Z"/><circle cx="12" cy="13" r="4"/></svg>
+              </div>
+              <b id="photoPrompt">Take delivery photo</b>
+              <span>Tap to capture</span>
+            </div>
+            <div class="photo-actions">
+              <div class="photo-added">✓ Photo added</div>
+              <button class="retake" id="retakeBtn" type="button">Retake</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="section signature-block" id="signatureBlock">
+          <div class="section-head"><b>Signature</b><span class="section-state" id="signatureState">Required</span></div>
+          <div class="signature-surface" id="signatureSurface">
+            <canvas id="signatureCanvas"></canvas>
+            <div class="sign-placeholder">Sign here</div>
+            <div class="sign-line"></div>
+            <button class="clear-sign" id="clearSign" type="button">Clear</button>
+          </div>
+        </section>
+
+        <div class="auto-row"><span>GPS + time</span><b>Automatic</b></div>
+      </section>
+
+      <footer class="footer">
+        <button class="primary" id="completeBtn" type="button" disabled>Complete Stop 1</button>
+      </footer>
+
+      <div class="scrim" id="scrim"></div>
+      <section class="sheet" id="receiverSheet" role="dialog" aria-modal="true" aria-label="Received by" aria-hidden="true">
+        <div class="grip"></div>
+        <h2>Received by</h2>
+        <div class="sheet-list">
+          <button class="sheet-action receiver-option" type="button" data-receiver="Reception"><span>Reception</span><span>›</span></button>
+          <button class="sheet-action receiver-option" type="button" data-receiver="Security"><span>Security</span><span>›</span></button>
+          <button class="sheet-action receiver-option" type="button" data-receiver="Family"><span>Family</span><span>›</span></button>
+          <button class="sheet-action receiver-option" type="button" data-receiver="Staff / colleague"><span>Staff / colleague</span><span>›</span></button>
+          <button class="sheet-action receiver-option" type="button" data-receiver="Other"><span>Other</span><span>›</span></button>
+        </div>
+        <button class="cancel" id="cancelSheet" type="button">Cancel</button>
+      </section>
+
+      <div class="toast" id="toast"></div>
+    </main>
+  </div>
+</div>
+<script>
+  const q=new URLSearchParams(location.search);
+  const handoff=q.get('handoff')||'recipient';
+  const left=q.get('left')||'lobby';
+  const requiresSignature=handoff!=='left';
+  const requiresReceiver=handoff==='other';
+
+  const manifestLine=document.getElementById('manifestLine');
+  const packageState=document.getElementById('packageState');
+  const receiverSection=document.getElementById('receiverSection');
+  const receiverRow=document.getElementById('receiverRow');
+  const receiverValue=document.getElementById('receiverValue');
+  const receiverState=document.getElementById('receiverState');
+  const signatureBlock=document.getElementById('signatureBlock');
+  const signatureSurface=document.getElementById('signatureSurface');
+  const signatureState=document.getElementById('signatureState');
+  const canvas=document.getElementById('signatureCanvas');
+  const ctx=canvas.getContext('2d');
+  const photoSurface=document.getElementById('photoSurface');
+  const photoInput=document.getElementById('photoInput');
+  const photoImage=document.getElementById('photoImage');
+  const photoState=document.getElementById('photoState');
+  const retakeBtn=document.getElementById('retakeBtn');
+  const completeBtn=document.getElementById('completeBtn');
+  const progressValue=document.getElementById('progressValue');
+  const scrim=document.getElementById('scrim');
+  const receiverSheet=document.getElementById('receiverSheet');
+  const toast=document.getElementById('toast');
+
+  let packageDone=false,photoDone=false,signatureDone=false,receiverDone=false,drawing=false;
+
+  const leftLabel={reception:'Reception',lobby:'Lobby / entrance',door:'At the door',safe:'Approved place'}[left]||'Approved place';
+  const handoffLine=document.getElementById('handoffLine');
+  if(handoff==='recipient') handoffLine.innerHTML='<b>Recipient</b> · K. Nattaporn';
+  if(handoff==='other') handoffLine.innerHTML='<b>Someone else</b> · receiver required';
+  if(handoff==='left') handoffLine.innerHTML='<b>Left at location</b> · '+leftLabel;
+  if(handoff==='left') document.getElementById('photoPrompt').textContent='Photograph where it was left';
+
+  receiverSection.hidden=!requiresReceiver;
+  signatureBlock.classList.toggle('show',requiresSignature);
+
+  function totalRequired(){return 2+(requiresReceiver?1:0)+(requiresSignature?1:0)}
+  function doneRequired(){return (packageDone?1:0)+(photoDone?1:0)+(requiresReceiver&&receiverDone?1:0)+(requiresSignature&&signatureDone?1:0)}
+  function refresh(){
+    const total=totalRequired(),done=doneRequired();
+    progressValue.textContent=`${done} / ${total}`;
+    const ready=done===total;
+    completeBtn.disabled=!ready;
+    completeBtn.classList.toggle('ready',ready);
+  }
+  function showToast(msg){toast.textContent=msg;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1400)}
+
+  manifestLine.addEventListener('click',()=>{
+    packageDone=!packageDone;
+    manifestLine.classList.toggle('checked',packageDone);
+    packageState.textContent=packageDone?'Verified':'Required';packageState.classList.toggle('done',packageDone);
+    refresh();
+  });
+  document.getElementById('packageProblem').addEventListener('click',()=>{location.href='ROUNDS-G03-PACKAGE-PROBLEM-v3-10OF10.html'});
+
+  function openReceiver(){receiverSheet.classList.add('show');receiverSheet.setAttribute('aria-hidden','false');scrim.classList.add('show')}
+  function closeReceiver(){receiverSheet.classList.remove('show');receiverSheet.setAttribute('aria-hidden','true');scrim.classList.remove('show')}
+  receiverRow.addEventListener('click',openReceiver);scrim.addEventListener('click',closeReceiver);document.getElementById('cancelSheet').addEventListener('click',closeReceiver);
+  document.querySelectorAll('.receiver-option').forEach(btn=>btn.addEventListener('click',()=>{
+    receiverDone=true;receiverValue.textContent=btn.dataset.receiver;receiverState.textContent='Added';receiverState.classList.add('done');closeReceiver();refresh();
+  }));
+
+  function openCamera(){if(!photoDone)photoInput.click()}
+  photoInput.addEventListener('click',e=>e.stopPropagation());
+  photoSurface.addEventListener('click',e=>{if(e.target.closest('#retakeBtn'))return;openCamera()});
+  photoSurface.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&!photoDone){e.preventDefault();openCamera()}});
+  photoInput.addEventListener('change',()=>{
+    const file=photoInput.files&&photoInput.files[0];if(!file)return;
+    photoImage.src=URL.createObjectURL(file);photoDone=true;photoSurface.classList.add('done');photoState.textContent='Added';photoState.classList.add('done');refresh();
+  });
+  retakeBtn.addEventListener('click',e=>{
+    e.stopPropagation();photoDone=false;photoSurface.classList.remove('done');photoState.textContent='Required';photoState.classList.remove('done');photoInput.value='';refresh();setTimeout(()=>photoInput.click(),40);
+  });
+
+  function resizeCanvas(){
+    if(!requiresSignature)return;
+    const rect=canvas.getBoundingClientRect(),dpr=window.devicePixelRatio||1;
+    canvas.width=Math.max(1,Math.round(rect.width*dpr));canvas.height=Math.max(1,Math.round(rect.height*dpr));
+    ctx.setTransform(dpr,0,0,dpr,0,0);ctx.lineWidth=2.3;ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle='#172238';
+  }
+  function point(e){const r=canvas.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}}
+  canvas.addEventListener('pointerdown',e=>{if(!requiresSignature)return;drawing=true;canvas.setPointerCapture(e.pointerId);const p=point(e);ctx.beginPath();ctx.moveTo(p.x,p.y)});
+  canvas.addEventListener('pointermove',e=>{if(!drawing)return;const p=point(e);ctx.lineTo(p.x,p.y);ctx.stroke();if(!signatureDone){signatureDone=true;signatureSurface.classList.add('has-signature');signatureState.textContent='Signed';signatureState.classList.add('done');refresh()}});
+  canvas.addEventListener('pointerup',()=>drawing=false);canvas.addEventListener('pointercancel',()=>drawing=false);
+  document.getElementById('clearSign').addEventListener('click',e=>{e.stopPropagation();ctx.clearRect(0,0,canvas.width,canvas.height);signatureDone=false;signatureSurface.classList.remove('has-signature');signatureState.textContent='Required';signatureState.classList.remove('done');refresh()});
+
+  completeBtn.addEventListener('click',()=>{
+    if(completeBtn.disabled)return;
+    completeBtn.textContent='Stop complete';showToast('Proof saved');setTimeout(()=>{location.href='ROUNDS-F08-STOP-COMPLETE-NEXT-STOP-v4-10OF10.html'},420);
+  });
+  document.getElementById('backBtn').addEventListener('click',()=>{if(history.length>1)history.back();else location.href='ROUNDS-F01-F02-DROPOFF-HANDOFF-v3-10OF10.html'});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeReceiver()});
+  window.addEventListener('resize',resizeCanvas);
+  setTimeout(resizeCanvas,80);refresh();
+</script>
+</body>
+</html>

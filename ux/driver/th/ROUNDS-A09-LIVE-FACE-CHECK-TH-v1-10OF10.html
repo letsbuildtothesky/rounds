@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Rounds — A09 ยืนยันใบหน้า · Thai-first v1</title>
+<style>
+@import url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@7/fonts/LINESeedSansTH/LINESeedSansTH.css');
+:root{--canvas:#eef1f4;--paper:#fff;--ink:#172238;--ink2:#3d4a5d;--muted:#748094;--line:#e1e6ea;--line2:#cbd4dc;--orange:#ff6420;--green:#168b50;--green-soft:#eef8f2;--camera:#263244}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--canvas);color:var(--ink);font-family:'LINE Seed Sans TH',Tahoma,'Noto Sans Thai',sans-serif;-webkit-font-smoothing:antialiased}
+button,input{font:inherit}button{cursor:pointer}button:focus-visible{outline:3px solid rgba(255,100,32,.16);outline-offset:2px}
+body{padding:28px}.frame{width:393px;height:852px;margin:0 auto;background:var(--paper);position:relative;overflow:hidden;border:1px solid rgba(23,34,56,.09);border-radius:28px;box-shadow:0 18px 42px rgba(23,34,56,.14)}
+.statusbar{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;height:28px;padding:0 20px 4px;display:flex;align-items:flex-end;justify-content:space-between;font-size:12px;font-weight:760;background:#fff;position:relative;z-index:40}.sb-right{display:flex;align-items:center;gap:6px}.signal{display:flex;align-items:flex-end;gap:1.5px;height:9px}.signal i{display:block;width:2px;background:currentColor;border-radius:1px}.signal i:nth-child(1){height:3px}.signal i:nth-child(2){height:5px}.signal i:nth-child(3){height:7px}.signal i:nth-child(4){height:9px}.battery{width:20px;height:9px;border:1.5px solid currentColor;border-radius:2px;padding:1px;position:relative}.battery:after{content:"";position:absolute;right:-3px;top:1.5px;width:2px;height:4px;background:currentColor;border-radius:0 1px 1px 0}.battery b{display:block;width:78%;height:100%;background:currentColor;border-radius:1px}
+.top{height:68px;padding:0 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;background:#fff}.back{width:40px;height:40px;border:0;border-radius:7px;background:#fff;color:var(--ink);display:grid;place-items:center;margin-left:-7px}.back:active{background:#f6f8f9}.back svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.brand{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;display:flex;align-items:flex-end;font-size:24px;line-height:1;font-weight:920;letter-spacing:-.055em}.brand-dot{width:7px;height:7px;border-radius:50%;background:var(--orange);margin-left:3px;margin-bottom:2px}.context{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;margin-left:auto;font-size:11.5px;line-height:1;font-weight:880;letter-spacing:.09em;text-transform:uppercase;color:var(--orange)}
+.body{position:absolute;inset:96px 0 92px;padding:30px 20px 20px;overflow-y:auto;scrollbar-width:none}.body::-webkit-scrollbar{display:none}.eyebrow{font-size:12.5px;line-height:1.45;font-weight:800;letter-spacing:0;color:var(--orange);margin-bottom:9px}h1{margin:0;font-size:40px;line-height:1.14;font-weight:800;letter-spacing:0}.lead{margin:9px 0 0;font-size:15.5px;line-height:1.5;font-weight:500;color:var(--ink2)}
+.camera{height:465px;margin-top:25px;border:1px solid rgba(23,34,56,.12);border-radius:8px;background:var(--camera);position:relative;overflow:hidden}.camera video,.camera .snapshot{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none}.camera.live video{display:block}.camera.captured .snapshot{display:block}.camera.captured video{display:none}.camera-matte{position:absolute;inset:0;background:rgba(12,20,34,.18);pointer-events:none}.camera.live .camera-matte,.camera.captured .camera-matte{background:rgba(12,20,34,.06)}
+.guide{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);width:220px;height:294px;border:2px solid rgba(255,255,255,.88);border-radius:48% 48% 44% 44% / 40% 40% 55% 55%;z-index:4;pointer-events:none}.corner{position:absolute;width:31px;height:31px;z-index:5;opacity:.9}.corner.tl{left:34px;top:34px;border-left:2px solid #fff;border-top:2px solid #fff}.corner.tr{right:34px;top:34px;border-right:2px solid #fff;border-top:2px solid #fff}.corner.bl{left:34px;bottom:78px;border-left:2px solid #fff;border-bottom:2px solid #fff}.corner.br{right:34px;bottom:78px;border-right:2px solid #fff;border-bottom:2px solid #fff}.camera.captured .guide,.camera.captured .corner{opacity:.35}
+.scan-line{position:absolute;left:50%;top:27%;width:196px;height:2px;background:var(--orange);transform:translateX(-50%);z-index:6;display:none;pointer-events:none;box-shadow:0 0 0 1px rgba(255,255,255,.22),0 2px 8px rgba(255,100,32,.24)}.camera.live .scan-line{display:block;animation:faceScan 2.35s ease-in-out infinite alternate}.camera.captured .scan-line{display:none}@keyframes faceScan{from{top:27%}to{top:65%}}
+.camera-center{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:3;color:#fff;text-align:center}.camera.live .camera-center,.camera.captured .camera-center{display:none}.camera-center svg{width:34px;height:34px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;margin-bottom:10px}.camera-center b{display:block;font-size:16px;line-height:1.4;font-weight:700}.camera-center span{display:block;margin-top:4px;font-size:12.5px;line-height:1.45;font-weight:500;color:rgba(255,255,255,.7)}
+.state{position:absolute;left:14px;right:14px;bottom:14px;min-height:54px;padding:0 16px;border-radius:6px;background:rgba(255,255,255,.95);display:flex;align-items:center;justify-content:space-between;gap:12px;z-index:7}.state-main{display:flex;align-items:center;gap:9px;min-width:0}.state-dot{width:8px;height:8px;border-radius:50%;background:var(--orange);flex:0 0 auto}.state b{font-size:14px;line-height:1.35;font-weight:700}.state span{font-size:12.5px;line-height:1.35;font-weight:500;color:var(--muted)}.camera.captured .state{background:rgba(239,249,243,.97)}.camera.captured .state-dot{background:var(--green)}.camera.captured .state b{color:var(--green)}.retake{display:none;border:0;background:transparent;color:var(--ink2);font-size:12.5px;font-weight:700;padding:10px 0}.camera.captured .retake{display:block}
+.footer{position:absolute;left:0;right:0;bottom:0;padding:14px 20px calc(18px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid var(--line)}.primary{width:100%;height:62px;border:0;border-radius:7px;background:var(--ink);color:#fff;font-size:17px;font-weight:700;letter-spacing:0}.primary:active{transform:translateY(1px)}.primary.disabled{background:#dce1e5;color:#9aa4ae;cursor:default;transform:none}.file{display:none}.toast{position:absolute;left:18px;right:18px;bottom:96px;background:var(--ink);color:#fff;padding:13px 14px;border-radius:8px;font-size:13.5px;line-height:1.45;font-weight:600;opacity:0;transform:translateY(8px);transition:.18s;pointer-events:none;z-index:90}.toast.show{opacity:1;transform:none}
+@media(max-width:520px){body{padding:0;background:#fff}.frame{width:100vw;height:100dvh;border:0;border-radius:0;box-shadow:none}}
+@media(max-width:340px){.top{padding-left:16px;padding-right:16px}.body{padding:26px 16px 18px}.eyebrow{margin-bottom:8px}h1{font-size:35px;line-height:1.16}.lead{font-size:14.5px;line-height:1.5;margin-top:8px}.camera{height:405px;margin-top:20px}.guide{width:188px;height:252px}.scan-line{width:168px}.corner.tl,.corner.bl{left:24px}.corner.tr,.corner.br{right:24px}.corner.tl,.corner.tr{top:26px}.corner.bl,.corner.br{bottom:72px}.footer{padding-left:16px;padding-right:16px}.primary{height:58px}}
+@media(max-height:720px){.body{padding-top:20px}.eyebrow{margin-bottom:7px}h1{font-size:34px;line-height:1.16}.lead{font-size:13.8px;line-height:1.48;margin-top:7px}.camera{height:355px;margin-top:17px}.guide{width:176px;height:232px}.scan-line{width:156px}.corner.tl,.corner.bl{left:24px}.corner.tr,.corner.br{right:24px}.corner.tl,.corner.tr{top:25px}.corner.bl,.corner.br{bottom:68px}.primary{height:56px}}
+@media(prefers-reduced-motion:reduce){.camera.live .scan-line{animation:none;top:45%}}
+</style>
+</head>
+<body>
+<div class="frame">
+  <div class="statusbar"><div>18:03</div><div class="sb-right"><div class="signal"><i></i><i></i><i></i><i></i></div><div>5G</div><div class="battery"><b></b></div></div></div>
+  <header class="top"><button class="back" id="backBtn" aria-label="ย้อนกลับ"><svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button><div class="brand">Rounds<span class="brand-dot"></span></div><div class="context">Network</div></header>
+  <main class="body">
+    <div class="eyebrow">สำหรับรับงาน Network</div><h1>ยืนยันใบหน้า</h1><p class="lead">มองตรงที่กล้อง</p>
+    <section class="camera" id="camera" aria-label="Live face check camera">
+      <video id="video" playsinline muted></video><img class="snapshot" id="snapshot" alt="Captured face check" />
+      <div class="camera-matte"></div>
+      <div class="camera-center"><div><svg viewBox="0 0 24 24"><path d="M3 8h4l2-3h6l2 3h4v11H3Z"/><circle cx="12" cy="13" r="4"/></svg><b>กล้องหน้า</b><span>กดเริ่มเมื่อพร้อม</span></div></div>
+      <div class="guide"></div><div class="scan-line" aria-hidden="true"></div><span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+      <div class="state"><div class="state-main"><span class="state-dot"></span><div><b id="stateTitle">ยังไม่เปิดกล้อง</b><span id="stateSub"></span></div></div><button class="retake" id="retakeBtn" type="button">ถ่ายใหม่</button></div>
+      <canvas id="canvas" hidden></canvas>
+    </section>
+  </main>
+  <footer class="footer"><button class="primary" id="primaryBtn" type="button">เริ่มยืนยันใบหน้า</button></footer>
+  <input class="file" id="fallbackFile" type="file" accept="image/*" capture="user" />
+  <div class="toast" id="toast"></div>
+</div>
+<script>
+const camera=document.getElementById('camera'),video=document.getElementById('video'),canvas=document.getElementById('canvas'),snapshot=document.getElementById('snapshot'),primaryBtn=document.getElementById('primaryBtn'),stateTitle=document.getElementById('stateTitle'),stateSub=document.getElementById('stateSub'),retakeBtn=document.getElementById('retakeBtn'),fallbackFile=document.getElementById('fallbackFile'),toast=document.getElementById('toast');
+let stream=null,phase='off';
+function flash(t){toast.textContent=t;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1000)}
+function stopStream(){if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}video.srcObject=null}
+function setPhase(next){phase=next;camera.classList.toggle('live',next==='live');camera.classList.toggle('captured',next==='captured');if(next==='off'){stateTitle.textContent='ยังไม่เปิดกล้อง';stateSub.textContent='';primaryBtn.textContent='เริ่มยืนยันใบหน้า';primaryBtn.classList.remove('disabled')}if(next==='live'){stateTitle.textContent='จัดใบหน้าให้อยู่ในกรอบ';stateSub.textContent='อยู่นิ่งสักครู่';primaryBtn.textContent='บันทึกใบหน้า';primaryBtn.classList.remove('disabled')}if(next==='captured'){stateTitle.textContent='บันทึกใบหน้าแล้ว';stateSub.textContent='ไปต่อได้';primaryBtn.textContent='ต่อไป';primaryBtn.classList.remove('disabled')}}
+async function startCamera(){
+  try{
+    if(!navigator.mediaDevices?.getUserMedia)throw new Error('camera unavailable');
+    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});video.srcObject=stream;await video.play();setPhase('live');
+  }catch(e){flash('Use the front camera to continue');setTimeout(()=>fallbackFile.click(),120)}
+}
+function captureVideo(){if(!video.videoWidth||!video.videoHeight){flash('Camera is still starting');return}canvas.width=video.videoWidth;canvas.height=video.videoHeight;canvas.getContext('2d').drawImage(video,0,0);snapshot.src=canvas.toDataURL('image/jpeg',.9);stopStream();setPhase('captured')}
+fallbackFile.addEventListener('change',()=>{const f=fallbackFile.files&&fallbackFile.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{snapshot.src=r.result;stopStream();setPhase('captured')};r.readAsDataURL(f)});
+primaryBtn.addEventListener('click',()=>{if(phase==='off')startCamera();else if(phase==='live')captureVideo();else if(phase==='captured'){flash('บันทึกใบหน้าแล้ว');setTimeout(()=>location.href='ROUNDS-A10-GET-PAID-TH-v1-10OF10.html',350)}});
+retakeBtn.addEventListener('click',()=>{snapshot.removeAttribute('src');fallbackFile.value='';setPhase('off');setTimeout(startCamera,80)});
+document.getElementById('backBtn').addEventListener('click',()=>{stopStream();if(history.length>1)history.back();else location.href='ROUNDS-A08-VERIFY-IDENTITY-TH-v2-10OF10.html'});window.addEventListener('pagehide',stopStream);setPhase('off');
+</script>
+</body>
+</html>

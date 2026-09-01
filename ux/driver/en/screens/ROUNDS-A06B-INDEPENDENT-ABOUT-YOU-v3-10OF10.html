@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Rounds — A06B Independent About You v3</title>
+<style>
+:root{
+  --canvas:#eef1f4;--paper:#fff;--ink:#172238;--ink2:#3d4a5d;--muted:#748094;
+  --line:#e1e6ea;--line2:#cbd4dc;--orange:#ff6420;--green:#168b50;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--canvas);color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible{outline:3px solid rgba(255,100,32,.16);outline-offset:2px}
+body{padding:28px}
+.frame{width:393px;height:852px;margin:0 auto;background:var(--paper);position:relative;overflow:hidden;border:1px solid rgba(23,34,56,.09);border-radius:28px;box-shadow:0 18px 42px rgba(23,34,56,.14)}
+.statusbar{height:28px;padding:0 20px 4px;display:flex;align-items:flex-end;justify-content:space-between;font-size:12px;font-weight:760;background:#fff;position:relative;z-index:40}
+.sb-right{display:flex;align-items:center;gap:6px}.signal{display:flex;align-items:flex-end;gap:1.5px;height:9px}.signal i{display:block;width:2px;background:currentColor;border-radius:1px}.signal i:nth-child(1){height:3px}.signal i:nth-child(2){height:5px}.signal i:nth-child(3){height:7px}.signal i:nth-child(4){height:9px}.battery{width:20px;height:9px;border:1.5px solid currentColor;border-radius:2px;padding:1px;position:relative}.battery:after{content:"";position:absolute;right:-3px;top:1.5px;width:2px;height:4px;background:currentColor;border-radius:0 1px 1px 0}.battery b{display:block;width:78%;height:100%;background:currentColor;border-radius:1px}
+.top{height:68px;padding:0 20px;display:flex;align-items:center;gap:12px;background:#fff}.back{width:40px;height:40px;border:0;border-radius:7px;background:#fff;color:var(--ink);display:grid;place-items:center;margin-left:-7px}.back:active{background:#f6f8f9}.back svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.brand{display:flex;align-items:flex-end;font-size:24px;line-height:1;font-weight:920;letter-spacing:-.055em}.brand-dot{width:7px;height:7px;border-radius:50%;background:var(--orange);margin-left:3px;margin-bottom:2px}.network{margin-left:auto;font-size:11.5px;line-height:1;font-weight:880;letter-spacing:.09em;text-transform:uppercase;color:var(--orange)}
+.body{position:absolute;inset:96px 0 92px;padding:38px 20px 28px;overflow-y:auto;scrollbar-width:none}.body::-webkit-scrollbar{display:none}.eyebrow{font-size:11.5px;line-height:1;font-weight:900;letter-spacing:.11em;text-transform:uppercase;color:var(--orange);margin-bottom:17px}h1{margin:0;font-size:46px;line-height:.94;font-weight:885;letter-spacing:-.065em;max-width:340px}.lead{margin:18px 0 0;font-size:16.5px;line-height:1.4;font-weight:650;color:var(--ink2);max-width:325px}
+.section{margin-top:48px}.label{font-size:12px;line-height:1;font-weight:900;letter-spacing:.095em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}.name-line{height:72px;border-bottom:2px solid var(--ink);display:flex;align-items:flex-end;padding:0 0 13px}.name-line input{width:100%;border:0;outline:0;background:transparent;color:var(--ink);font-size:30px;line-height:1;font-weight:820;letter-spacing:-.035em;padding:0}.name-line input::placeholder{color:#c2c9d0}
+.photo-truth{margin-top:46px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);display:grid;grid-template-columns:68px 1fr;gap:16px;align-items:center;padding:18px 0}.photo-mark{width:62px;height:62px;border:1px solid var(--line2);border-radius:8px;display:grid;place-items:center;color:var(--orange);background:#fff}.photo-mark svg{width:29px;height:29px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}.photo-copy b{display:block;font-size:18px;line-height:1.12;font-weight:860;letter-spacing:-.025em}.photo-copy span{display:block;margin-top:6px;font-size:13.5px;line-height:1.38;font-weight:690;color:var(--muted);max-width:245px}
+.footer{position:absolute;left:0;right:0;bottom:0;padding:14px 20px calc(18px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid var(--line)}.primary{width:100%;height:62px;border:0;border-radius:7px;background:var(--ink);color:#fff;font-size:17px;font-weight:860;letter-spacing:-.02em}.primary:disabled{background:#dce1e5;color:#9aa4ae;cursor:default}.primary:not(:disabled):active{transform:translateY(1px)}
+.toast{position:absolute;left:18px;right:18px;bottom:96px;background:var(--ink);color:#fff;padding:13px 14px;border-radius:8px;font-size:13px;font-weight:760;opacity:0;transform:translateY(8px);transition:.18s;pointer-events:none;z-index:90}.toast.show{opacity:1;transform:none}
+@media(max-width:520px){body{padding:0;background:#fff}.frame{width:100vw;height:100dvh;border:0;border-radius:0;box-shadow:none}}
+@media(max-width:340px){.top{padding-left:16px;padding-right:16px}.body{padding:30px 16px 24px}.eyebrow{margin-bottom:14px}h1{font-size:41px}.lead{font-size:15px;margin-top:15px}.section{margin-top:38px}.name-line{height:64px}.name-line input{font-size:27px}.photo-truth{margin-top:38px;grid-template-columns:58px 1fr;gap:13px;padding:16px 0}.photo-mark{width:54px;height:54px}.photo-mark svg{width:26px;height:26px}.photo-copy b{font-size:16.5px}.photo-copy span{font-size:12.5px}.footer{padding-left:16px;padding-right:16px}.primary{height:58px}}
+@media(max-height:720px){.body{padding-top:28px}.eyebrow{margin-bottom:13px}h1{font-size:39px}.lead{font-size:14.5px;margin-top:13px}.section{margin-top:30px}.name-line{height:58px}.name-line input{font-size:26px}.photo-truth{margin-top:30px;padding:14px 0}.photo-mark{width:52px;height:52px}.photo-copy b{font-size:16px}.photo-copy span{margin-top:4px;font-size:12.5px}.primary{height:56px}}
+</style>
+</head>
+<body>
+<div class="frame">
+  <div class="statusbar"><div>17:46</div><div class="sb-right"><div class="signal"><i></i><i></i><i></i><i></i></div><div>5G</div><div class="battery"><b></b></div></div></div>
+  <header class="top">
+    <button class="back" id="backBtn" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+    <div class="brand">Rounds<span class="brand-dot"></span></div>
+    <div class="network">Network</div>
+  </header>
+  <main class="body">
+    <div class="eyebrow">Independent driver</div>
+    <h1>About you</h1>
+    <p class="lead">Use the name merchants will see when you accept work.</p>
+
+    <section class="section">
+      <div class="label">Your name</div>
+      <div class="name-line"><input id="nameInput" type="text" autocomplete="name" placeholder="Your name" aria-label="Your name" /></div>
+    </section>
+
+    <section class="photo-truth" aria-label="Profile photo information">
+      <div class="photo-mark"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M5 21a7 7 0 0 1 14 0"/></svg></div>
+      <div class="photo-copy"><b>Verified photo comes later</b><span>Your live face check creates the profile photo used for Network work.</span></div>
+    </section>
+  </main>
+  <footer class="footer"><button class="primary" id="continueBtn" disabled>Continue</button></footer>
+  <div class="toast" id="toast"></div>
+</div>
+<script>
+const nameInput=document.getElementById('nameInput'),continueBtn=document.getElementById('continueBtn'),toast=document.getElementById('toast');
+function refresh(){continueBtn.disabled=nameInput.value.trim().length<2}
+function flash(t){toast.textContent=t;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1000)}
+nameInput.addEventListener('input',refresh);
+continueBtn.addEventListener('click',()=>{if(continueBtn.disabled)return;flash('Profile saved');setTimeout(()=>location.href='ROUNDS-A07-YOUR-VEHICLE-v4-10OF10.html?context=network',420)});
+document.getElementById('backBtn').addEventListener('click',()=>{if(history.length>1)history.back();else location.href='ROUNDS-A02-A05-DRIVER-ENTRY-FLOW-v6-10OF10.html?screen=role'});
+</script>
+</body>
+</html>

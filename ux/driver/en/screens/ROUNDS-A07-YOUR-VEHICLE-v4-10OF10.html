@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Rounds — A07 Your Vehicle v4</title>
+<style>
+:root{
+  --canvas:#eef1f4;--paper:#fff;--ink:#172238;--ink2:#3d4a5d;--muted:#748094;
+  --line:#e1e6ea;--line2:#cbd4dc;--orange:#ff6420;--orange-soft:#fff7f2;--green:#168b50;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--canvas);color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible{outline:3px solid rgba(255,100,32,.16);outline-offset:2px}
+body{padding:28px}
+.frame{width:393px;height:852px;margin:0 auto;background:var(--paper);position:relative;overflow:hidden;border:1px solid rgba(23,34,56,.09);border-radius:28px;box-shadow:0 18px 42px rgba(23,34,56,.14)}
+.statusbar{height:28px;padding:0 20px 4px;display:flex;align-items:flex-end;justify-content:space-between;font-size:12px;font-weight:760;background:#fff;position:relative;z-index:40}
+.sb-right{display:flex;align-items:center;gap:6px}.signal{display:flex;align-items:flex-end;gap:1.5px;height:9px}.signal i{display:block;width:2px;background:currentColor;border-radius:1px}.signal i:nth-child(1){height:3px}.signal i:nth-child(2){height:5px}.signal i:nth-child(3){height:7px}.signal i:nth-child(4){height:9px}.battery{width:20px;height:9px;border:1.5px solid currentColor;border-radius:2px;padding:1px;position:relative}.battery:after{content:"";position:absolute;right:-3px;top:1.5px;width:2px;height:4px;background:currentColor;border-radius:0 1px 1px 0}.battery b{display:block;width:78%;height:100%;background:currentColor;border-radius:1px}
+.top{height:68px;padding:0 20px;display:flex;align-items:center;gap:12px;background:#fff;border-bottom:1px solid var(--line)}
+.back{width:40px;height:40px;border:0;border-radius:7px;background:#fff;color:var(--ink);display:grid;place-items:center;margin-left:-7px}.back:active{background:#f6f8f9}.back svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.brand{display:flex;align-items:flex-end;font-size:24px;line-height:1;font-weight:920;letter-spacing:-.055em}.brand-dot{width:7px;height:7px;border-radius:50%;background:var(--orange);margin-left:3px;margin-bottom:2px}
+.context{margin-left:auto;font-size:11.5px;line-height:1;font-weight:880;letter-spacing:.09em;text-transform:uppercase;color:var(--green)}.context.network{color:var(--orange)}
+.body{position:absolute;inset:96px 0 92px;padding:30px 20px 26px;overflow-y:auto;scrollbar-width:none}.body::-webkit-scrollbar{display:none}
+.eyebrow{font-size:11.5px;line-height:1;font-weight:900;letter-spacing:.11em;text-transform:uppercase;color:var(--orange);margin-bottom:15px}
+h1{margin:0;font-size:45px;line-height:.94;font-weight:885;letter-spacing:-.065em;max-width:340px}
+.vehicle-list{margin-top:30px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.vehicle{width:100%;min-height:70px;border:0;border-bottom:1px solid var(--line);background:#fff;color:inherit;padding:10px 4px 10px 0;display:grid;grid-template-columns:48px 1fr 30px;gap:13px;align-items:center;text-align:left;position:relative}.vehicle:last-child{border-bottom:0}.vehicle:active{background:#fafbfb}.vehicle.selected{background:var(--orange-soft)}.vehicle.selected:before{content:"";position:absolute;left:-20px;top:0;bottom:0;width:4px;background:var(--orange)}
+.vehicle-icon{width:44px;height:44px;display:grid;place-items:center;color:var(--ink2)}.vehicle.selected .vehicle-icon{color:var(--orange)}.vehicle-icon svg{width:29px;height:29px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.vehicle-copy{min-width:0}.vehicle-copy b{display:block;font-size:17px;line-height:1.14;font-weight:855;letter-spacing:-.025em}.vehicle-copy span{display:block;margin-top:5px;font-size:12.5px;line-height:1.25;font-weight:690;color:var(--muted)}
+.check{width:25px;height:25px;border:1.5px solid var(--line2);border-radius:50%;display:grid;place-items:center;color:transparent}.vehicle.selected .check{border-color:var(--orange);background:var(--orange);color:#fff}.check svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.plate{margin-top:30px}.label{font-size:12px;line-height:1;font-weight:900;letter-spacing:.095em;text-transform:uppercase;color:var(--muted);margin-bottom:11px}.plate-line{height:61px;border-bottom:2px solid var(--ink);display:flex;align-items:flex-end;padding:0 0 11px}.plate-line input{width:100%;border:0;outline:0;background:transparent;color:var(--ink);font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace;font-size:25px;line-height:1;font-weight:800;letter-spacing:.035em;text-transform:uppercase;padding:0}.plate-line input::placeholder{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:#c2c9d0;letter-spacing:0;text-transform:none;font-weight:700}
+.footer{position:absolute;left:0;right:0;bottom:0;padding:14px 20px calc(18px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid var(--line)}
+.primary{width:100%;height:62px;border:0;border-radius:7px;background:var(--ink);color:#fff;font-size:17px;font-weight:860;letter-spacing:-.02em}.primary:disabled{background:#dce1e5;color:#9aa4ae;cursor:default}.primary:not(:disabled):active{transform:translateY(1px)}
+.toast{position:absolute;left:18px;right:18px;bottom:96px;background:var(--ink);color:#fff;padding:13px 14px;border-radius:8px;font-size:13px;font-weight:760;opacity:0;transform:translateY(8px);transition:.18s;pointer-events:none;z-index:90}.toast.show{opacity:1;transform:none}
+@media(max-width:520px){body{padding:0;background:#fff}.frame{width:100vw;height:100dvh;border:0;border-radius:0;box-shadow:none}}
+@media(max-width:340px){.top{padding-left:16px;padding-right:16px}.body{padding:25px 16px 22px}.eyebrow{margin-bottom:13px}h1{font-size:40px}.vehicle-list{margin-top:24px}.vehicle{min-height:63px;grid-template-columns:42px 1fr 27px;gap:11px;padding-top:8px;padding-bottom:8px}.vehicle.selected:before{left:-16px;width:3px}.vehicle-icon{width:39px;height:39px}.vehicle-icon svg{width:26px;height:26px}.vehicle-copy b{font-size:15.5px}.vehicle-copy span{font-size:11.7px;margin-top:4px}.check{width:23px;height:23px}.plate{margin-top:23px}.plate-line{height:55px}.plate-line input{font-size:22px}.footer{padding-left:16px;padding-right:16px}.primary{height:58px}}
+@media(max-height:720px){.body{padding-top:21px}.eyebrow{margin-bottom:11px}h1{font-size:37px}.vehicle-list{margin-top:20px}.vehicle{min-height:56px;grid-template-columns:37px 1fr 25px;gap:9px;padding-top:6px;padding-bottom:6px}.vehicle-icon{width:35px;height:35px}.vehicle-icon svg{width:24px;height:24px}.vehicle-copy b{font-size:14.5px}.vehicle-copy span{font-size:11.2px;margin-top:3px}.plate{margin-top:18px}.plate-line{height:50px}.plate-line input{font-size:21px}.primary{height:56px}}
+</style>
+</head>
+<body>
+<div class="frame">
+  <div class="statusbar"><div>17:46</div><div class="sb-right"><div class="signal"><i></i><i></i><i></i><i></i></div><div>5G</div><div class="battery"><b></b></div></div></div>
+  <header class="top">
+    <button class="back" id="backBtn" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+    <div class="brand">Rounds<span class="brand-dot"></span></div>
+    <div class="context" id="contextLabel">UrbanFlowers</div>
+  </header>
+
+  <main class="body">
+    <div class="eyebrow" id="eyebrow">Team driver</div>
+    <h1>Your vehicle</h1>
+
+    <section class="vehicle-list" aria-label="Vehicle type">
+      <button class="vehicle" data-vehicle="Motorbike + box" aria-pressed="false">
+        <span class="vehicle-icon"><svg viewBox="0 0 24 24"><circle cx="6" cy="17" r="3"/><circle cx="18" cy="17" r="3"/><path d="M9 17h5l2-6h-5l-2 3H6"/><rect x="13" y="5" width="6" height="5" rx="1"/></svg></span>
+        <span class="vehicle-copy"><b>Motorbike + box</b><span>Standard delivery setup</span></span>
+        <span class="check"><svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg></span>
+      </button>
+      <button class="vehicle" data-vehicle="Tuk-tuk" aria-pressed="false">
+        <span class="vehicle-icon"><svg viewBox="0 0 24 24"><path d="M4 16v-4h10l3 2h2a1 1 0 0 1 1 1v1"/><path d="M6 12V8h7M13 8h4"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg></span>
+        <span class="vehicle-copy"><b>Tuk-tuk</b><span>City cargo and medium loads</span></span>
+        <span class="check"><svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg></span>
+      </button>
+      <button class="vehicle" data-vehicle="Car" aria-pressed="false">
+        <span class="vehicle-icon"><svg viewBox="0 0 24 24"><path d="M4 16v-4l2-5h12l2 5v4M5 16h14"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg></span>
+        <span class="vehicle-copy"><b>Car</b><span>Sedan or SUV</span></span>
+        <span class="check"><svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg></span>
+      </button>
+      <button class="vehicle" data-vehicle="Pickup" aria-pressed="false">
+        <span class="vehicle-icon"><svg viewBox="0 0 24 24"><path d="M3 14V9h8v5M11 14h5l2-3h2a1 1 0 0 1 1 1v2M3 14h18"/><circle cx="7" cy="17" r="2"/><circle cx="18" cy="17" r="2"/></svg></span>
+        <span class="vehicle-copy"><b>Pickup</b><span>Open-bed cargo capacity</span></span>
+        <span class="check"><svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg></span>
+      </button>
+      <button class="vehicle" data-vehicle="Van" aria-pressed="false">
+        <span class="vehicle-icon"><svg viewBox="0 0 24 24"><path d="M3 7h12v10H3Z"/><path d="M15 10h4l2 3v4h-6Z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg></span>
+        <span class="vehicle-copy"><b>Van</b><span>Large deliveries</span></span>
+        <span class="check"><svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg></span>
+      </button>
+    </section>
+
+    <section class="plate">
+      <div class="label">Plate number</div>
+      <div class="plate-line"><input id="plateInput" type="text" maxlength="12" autocomplete="off" placeholder="Enter plate number" aria-label="Plate number" /></div>
+    </section>
+  </main>
+
+  <footer class="footer"><button class="primary" id="continueBtn" disabled>Continue</button></footer>
+  <div class="toast" id="toast"></div>
+</div>
+<script>
+const params=new URLSearchParams(location.search);const network=params.get('context')==='network';
+const contextLabel=document.getElementById('contextLabel'),eyebrow=document.getElementById('eyebrow');
+if(network){contextLabel.textContent='Network';contextLabel.classList.add('network');eyebrow.textContent='Independent driver'}
+const vehicles=[...document.querySelectorAll('.vehicle')],plateInput=document.getElementById('plateInput'),continueBtn=document.getElementById('continueBtn'),toast=document.getElementById('toast');let selectedVehicle='';
+function refresh(){continueBtn.disabled=!(selectedVehicle&&plateInput.value.trim().length>=3)}
+vehicles.forEach(btn=>btn.addEventListener('click',()=>{vehicles.forEach(v=>{v.classList.remove('selected');v.setAttribute('aria-pressed','false')});btn.classList.add('selected');btn.setAttribute('aria-pressed','true');selectedVehicle=btn.dataset.vehicle;refresh()}));
+plateInput.addEventListener('input',()=>{plateInput.value=plateInput.value.toUpperCase();refresh()});
+function flash(t){toast.textContent=t;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),950)}
+continueBtn.addEventListener('click',()=>{if(continueBtn.disabled)return;flash('Vehicle saved');const target=network?'ROUNDS-A08-VERIFY-IDENTITY-v3-10OF10.html':'ROUNDS-N01-PERMISSIONS-v3-10OF10.html';setTimeout(()=>location.href=target,420)});
+document.getElementById('backBtn').addEventListener('click',()=>{if(history.length>1)history.back();else location.href=network?'ROUNDS-A06B-INDEPENDENT-ABOUT-YOU-v3-10OF10.html':'ROUNDS-A06-ABOUT-YOU-v3-10OF10.html'});
+</script>
+</body>
+</html>

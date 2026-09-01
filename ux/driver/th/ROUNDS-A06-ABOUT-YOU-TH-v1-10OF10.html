@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Rounds — A06 โปรไฟล์ของคุณ · Thai-first v1</title>
+<style>
+@import url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@7/fonts/LINESeedSansTH/LINESeedSansTH.css');
+:root{
+  --canvas:#eef1f4;--paper:#fff;--ink:#172238;--ink2:#3d4a5d;--muted:#748094;
+  --line:#e1e6ea;--line2:#cbd4dc;--orange:#ff6420;--green:#168b50;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--canvas);color:var(--ink);font-family:'LINE Seed Sans TH',Tahoma,'Noto Sans Thai',sans-serif;-webkit-font-smoothing:antialiased}
+button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible{outline:3px solid rgba(255,100,32,.16);outline-offset:2px}
+body{padding:28px}
+.frame{width:393px;height:852px;margin:0 auto;background:var(--paper);position:relative;overflow:hidden;border:1px solid rgba(23,34,56,.09);border-radius:28px;box-shadow:0 18px 42px rgba(23,34,56,.14)}
+.statusbar{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;height:28px;padding:0 20px 4px;display:flex;align-items:flex-end;justify-content:space-between;font-size:12px;font-weight:760;background:#fff;position:relative;z-index:40}
+.sb-right{display:flex;align-items:center;gap:6px}.signal{display:flex;align-items:flex-end;gap:1.5px;height:9px}.signal i{display:block;width:2px;background:currentColor;border-radius:1px}.signal i:nth-child(1){height:3px}.signal i:nth-child(2){height:5px}.signal i:nth-child(3){height:7px}.signal i:nth-child(4){height:9px}.battery{width:20px;height:9px;border:1.5px solid currentColor;border-radius:2px;padding:1px;position:relative}.battery:after{content:"";position:absolute;right:-3px;top:1.5px;width:2px;height:4px;background:currentColor;border-radius:0 1px 1px 0}.battery b{display:block;width:78%;height:100%;background:currentColor;border-radius:1px}
+.top{height:68px;padding:0 20px;display:flex;align-items:center;gap:12px;background:#fff}.back{width:40px;height:40px;border:0;border-radius:7px;background:#fff;color:var(--ink);display:grid;place-items:center;margin-left:-7px}.back:active{background:#f6f8f9}.back svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.brand{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;display:flex;align-items:flex-end;font-size:24px;line-height:1;font-weight:920;letter-spacing:-.055em}.brand-dot{width:7px;height:7px;border-radius:50%;background:var(--orange);margin-left:3px;margin-bottom:2px}.team{margin-left:auto;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;font-size:11.5px;line-height:1;font-weight:880;letter-spacing:.08em;text-transform:uppercase;color:var(--green)}
+.body{position:absolute;inset:96px 0 92px;padding:38px 20px 26px;overflow-y:auto;scrollbar-width:none}.body::-webkit-scrollbar{display:none}.eyebrow{font-size:12.5px;line-height:1.45;font-weight:800;letter-spacing:0;color:var(--orange);margin-bottom:12px}h1{margin:0;font-size:40px;line-height:1.14;font-weight:800;letter-spacing:0;max-width:345px}.lead{margin:13px 0 0;font-size:16px;line-height:1.55;font-weight:500;color:var(--ink2);max-width:325px}
+.section{margin-top:38px}.label{font-size:13px;line-height:1.45;font-weight:700;letter-spacing:0;color:var(--muted);margin-bottom:7px}.name-line{height:66px;border-bottom:2px solid var(--ink);display:flex;align-items:flex-end;padding:0 0 11px}.name-line input{width:100%;border:0;outline:0;background:transparent;color:var(--ink);font-size:28px;line-height:1.2;font-weight:700;letter-spacing:0;padding:0}.name-line input::placeholder{color:#c2c9d0}
+.photo-section{margin-top:39px}.photo-row{display:grid;grid-template-columns:126px minmax(0,1fr);gap:16px;align-items:stretch}.photo-box{height:126px;border:1px solid var(--line2);border-radius:8px;background:#f7f8f9;position:relative;overflow:hidden;display:grid;place-items:center}.photo-box svg{width:36px;height:36px;stroke:var(--orange);fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}.photo-box img{display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.photo-box.has-photo img{display:block}.photo-box.has-photo svg{display:none}.photo-copy{display:flex;flex-direction:column;justify-content:center;align-items:flex-start;min-width:0}.photo-copy h2{margin:0;font-size:21px;line-height:1.3;font-weight:750;letter-spacing:0}.photo-copy p{margin:7px 0 0;font-size:13.5px;line-height:1.52;font-weight:500;color:var(--muted)}.photo-action{width:100%;max-width:150px;height:44px;margin-top:13px;padding:0 13px;border:1px solid var(--line2);border-radius:7px;background:#fff;color:var(--ink);font-size:14px;font-weight:700;letter-spacing:0}.photo-action:active{background:#f6f8f9}.photo-action.ready{border-color:#cbe3d5;color:var(--green)}.photo-action.ready:before{content:'✓ ';font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;font-weight:900}
+.footer{position:absolute;left:0;right:0;bottom:0;padding:14px 20px calc(18px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid var(--line)}.primary{width:100%;height:62px;border:0;border-radius:7px;background:var(--ink);color:#fff;font-size:17px;font-weight:700;letter-spacing:0}.primary:disabled{background:#dce1e5;color:#9aa4ae;cursor:default}.primary:not(:disabled):active{transform:translateY(1px)}
+.toast{position:absolute;left:18px;right:18px;bottom:96px;background:var(--ink);color:#fff;padding:13px 14px;border-radius:8px;font-size:13.5px;line-height:1.45;font-weight:600;opacity:0;transform:translateY(8px);transition:.18s;pointer-events:none;z-index:90}.toast.show{opacity:1;transform:none}
+input[type=file]{display:none}
+@media(max-width:520px){body{padding:0;background:#fff}.frame{width:100vw;height:100dvh;border:0;border-radius:0;box-shadow:none}}
+@media(max-width:340px){.top{padding-left:16px;padding-right:16px}.body{padding:31px 16px 22px}.eyebrow{margin-bottom:10px}h1{font-size:35px;line-height:1.16}.lead{font-size:15px;line-height:1.55;margin-top:11px}.section{margin-top:31px}.name-line{height:59px}.name-line input{font-size:25px}.photo-section{margin-top:31px}.photo-row{grid-template-columns:100px minmax(0,1fr);gap:12px}.photo-box{height:100px}.photo-copy h2{font-size:17.5px;line-height:1.32}.photo-copy p{font-size:12.5px;line-height:1.48;margin-top:5px;overflow-wrap:anywhere}.photo-action{height:41px;margin-top:10px;padding:0 10px;font-size:13px}.footer{padding-left:16px;padding-right:16px}.primary{height:58px}}
+@media(max-height:720px){.body{padding-top:27px}h1{font-size:34px}.lead{font-size:14.5px;margin-top:10px}.section{margin-top:27px}.name-line{height:55px}.name-line input{font-size:24px}.photo-section{margin-top:27px}.photo-row{grid-template-columns:96px minmax(0,1fr);gap:12px}.photo-box{height:96px}.photo-copy h2{font-size:17.5px}.photo-copy p{font-size:12px}.photo-action{height:40px;margin-top:9px}.primary{height:56px}}
+</style>
+</head>
+<body>
+<div class="frame">
+  <div class="statusbar"><div>9:41</div><div class="sb-right"><div class="signal"><i></i><i></i><i></i><i></i></div><div>5G</div><div class="battery"><b></b></div></div></div>
+  <header class="top">
+    <button class="back" id="backBtn" aria-label="ย้อนกลับ"><svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+    <div class="brand">Rounds<span class="brand-dot"></span></div>
+    <div class="team">UrbanFlowers</div>
+  </header>
+  <main class="body">
+    <div class="eyebrow">คนขับประจำทีม</div>
+    <h1>โปรไฟล์ของคุณ</h1>
+    <p class="lead">ชื่อและรูปที่ทีมจะเห็น</p>
+
+    <section class="section">
+      <div class="label">ชื่อ</div>
+      <div class="name-line"><input id="nameInput" type="text" autocomplete="name" placeholder="ชื่อ-นามสกุล" aria-label="ชื่อ" /></div>
+    </section>
+
+    <section class="photo-section">
+      <div class="label">รูปโปรไฟล์</div>
+      <div class="photo-row">
+        <div class="photo-box" id="photoBox" role="button" tabindex="0" aria-label="เพิ่มรูปโปรไฟล์">
+          <svg viewBox="0 0 24 24"><path d="M4 7h4l2-2h4l2 2h4v12H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
+          <img id="preview" alt="รูปโปรไฟล์ที่เลือก" />
+        </div>
+        <div class="photo-copy">
+          <h2 id="photoTitle">เพิ่มรูป</h2>
+          <p id="photoNote">ถ่ายรูปใหม่หรือเลือกรูปจากเครื่อง</p>
+          <button class="photo-action" id="photoBtn">เพิ่มรูป</button>
+        </div>
+      </div>
+      <input id="photoInput" type="file" accept="image/*" capture="user" />
+    </section>
+  </main>
+  <footer class="footer"><button class="primary" id="continueBtn" disabled>ต่อไป</button></footer>
+  <div class="toast" id="toast"></div>
+</div>
+<script>
+const nameInput=document.getElementById('nameInput'),photoInput=document.getElementById('photoInput'),photoBtn=document.getElementById('photoBtn'),photoBox=document.getElementById('photoBox'),preview=document.getElementById('preview'),photoTitle=document.getElementById('photoTitle'),photoNote=document.getElementById('photoNote'),continueBtn=document.getElementById('continueBtn'),toast=document.getElementById('toast');
+let photoReady=false;
+function refresh(){continueBtn.disabled=!(nameInput.value.trim().length>=2&&photoReady)}
+function flash(t){toast.textContent=t;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1000)}
+function choosePhoto(){photoInput.click()}
+nameInput.addEventListener('input',refresh);
+photoBtn.addEventListener('click',choosePhoto);photoBox.addEventListener('click',choosePhoto);photoBox.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();choosePhoto()}});
+photoInput.addEventListener('change',()=>{const f=photoInput.files&&photoInput.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{preview.src=r.result;photoBox.classList.add('has-photo');photoReady=true;photoTitle.textContent='รูปพร้อมแล้ว';photoNote.textContent='แตะรูปหรือปุ่มเพื่อเปลี่ยน';photoBtn.textContent='เปลี่ยนรูป';photoBtn.classList.add('ready');refresh()};r.readAsDataURL(f)});
+continueBtn.addEventListener('click',()=>{if(continueBtn.disabled)return;flash('บันทึกโปรไฟล์แล้ว');setTimeout(()=>location.href='ROUNDS-A07-YOUR-VEHICLE-v4-10OF10.html?lang=th',420)});
+document.getElementById('backBtn').addEventListener('click',()=>{if(history.length>1)history.back();else location.href='ROUNDS-A02-A05-DRIVER-ENTRY-FLOW-TH-v2-10OF10.html?screen=invite'});
+</script>
+</body>
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Rounds — A01 Splash Light v5</title>
+<style>
+  :root{
+    --bg:#f7f8fa;
+    --navy:#162033;
+    --orange:#ff6a21;
+    --shadow:0 18px 50px rgba(14,27,43,.14);
+  }
+
+  *{box-sizing:border-box}
+
+  html,body{
+    margin:0;
+    min-height:100%;
+    background:#eef1f4;
+    font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+    color:var(--navy);
+    -webkit-font-smoothing:antialiased;
+  }
+
+  body{padding:28px}
+
+  .stage{
+    min-height:calc(100vh - 56px);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:14px;
+  }
+
+  .controls{
+    display:flex;
+    gap:6px;
+    padding:6px;
+    border:1px solid rgba(22,32,51,.10);
+    border-radius:12px;
+    background:rgba(255,255,255,.9);
+  }
+
+  .controls button{
+    border:0;
+    background:transparent;
+    color:#6f7b8c;
+    font:750 12px/1 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+    padding:8px 11px;
+    border-radius:8px;
+    cursor:pointer;
+  }
+
+  .controls button.active{
+    background:#fff;
+    color:var(--navy);
+    box-shadow:0 2px 7px rgba(22,32,51,.08);
+  }
+
+  .frame{
+    width:393px;
+    height:852px;
+    position:relative;
+    overflow:hidden;
+    border-radius:34px;
+    background:
+      radial-gradient(circle at 50% 50%, rgba(22,32,51,.018), transparent 40%),
+      linear-gradient(180deg,#fbfbfc 0%, #f7f8fa 100%);
+    border:1px solid rgba(22,32,51,.06);
+    box-shadow:var(--shadow);
+  }
+
+  .brand{
+    position:absolute;
+    left:50%;
+    top:50%;
+    transform:translate(-50%,-50%);
+    display:flex;
+    align-items:flex-end;
+    white-space:nowrap;
+  }
+
+  .word{
+    font-size:54px;
+    line-height:.96;
+    font-weight:920;
+    letter-spacing:-.07em;
+    color:var(--navy);
+    opacity:0;
+    transform:translateY(6px);
+    animation:wordIn .38s cubic-bezier(.2,.8,.2,1) .05s forwards;
+  }
+
+  .dot{
+    width:14px;
+    height:14px;
+    border-radius:50%;
+    background:var(--orange);
+    margin-left:5px;
+    margin-bottom:8px;
+    opacity:0;
+    transform:scale(.45);
+    box-shadow:0 6px 16px rgba(255,106,33,.16);
+    animation:
+      dotIn .24s cubic-bezier(.2,.9,.2,1.2) .34s forwards,
+      dotPulse .28s ease .62s 1;
+  }
+
+  .frame.still .word,
+  .frame.still .dot{
+    animation:none !important;
+    opacity:1 !important;
+    transform:none !important;
+  }
+
+  @keyframes wordIn{
+    to{opacity:1;transform:translateY(0)}
+  }
+
+  @keyframes dotIn{
+    to{opacity:1;transform:scale(1)}
+  }
+
+  @keyframes dotPulse{
+    0%{box-shadow:0 6px 16px rgba(255,106,33,.16);transform:scale(1)}
+    50%{box-shadow:0 0 0 7px rgba(255,106,33,.10),0 6px 16px rgba(255,106,33,.16);transform:scale(1.06)}
+    100%{box-shadow:0 6px 16px rgba(255,106,33,.16);transform:scale(1)}
+  }
+
+  @media(max-width:520px){
+    body{padding:0;background:var(--bg)}
+    .stage{min-height:100dvh;gap:0}
+    .controls{display:none}
+    .frame{
+      width:100vw;
+      height:100dvh;
+      border-radius:0;
+      border:0;
+      box-shadow:none;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="stage">
+    <div class="controls">
+      <button class="active" id="playBtn">Play splash</button>
+      <button id="stillBtn">Final frame</button>
+    </div>
+
+    <div class="frame" id="frame">
+      <div class="brand">
+        <div class="word">Rounds</div>
+        <div class="dot" aria-hidden="true"></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const playBtn = document.getElementById('playBtn');
+  const stillBtn = document.getElementById('stillBtn');
+  const frame = document.getElementById('frame');
+  const nextScreen = 'ROUNDS-A01B-CHOOSE-LANGUAGE-v1-10OF10.html';
+  const proceed = () => { location.href = nextScreen; };
+
+  playBtn.addEventListener('click', () => location.reload());
+
+  stillBtn.addEventListener('click', () => {
+    frame.classList.add('still');
+    document.querySelectorAll('.controls button').forEach(b=>b.classList.remove('active'));
+    stillBtn.classList.add('active');
+  });
+
+  frame.addEventListener('click', proceed);
+  if (window.matchMedia('(max-width:520px)').matches) setTimeout(proceed, 1250);
+</script>
+</body>
+</html>

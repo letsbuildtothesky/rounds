@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Rounds — K00 Team Hours v5</title>
+<style>
+  :root{
+    --canvas:#eef1f4;
+    --paper:#ffffff;
+    --ink:#172238;
+    --ink-2:#3d4a5d;
+    --muted:#748094;
+    --line:#e1e6ea;
+    --line-2:#cbd4dc;
+    --orange:#ff6420;
+    --amber:#b87916;
+    --amber-soft:#fff8e8;
+    --green:#168b50;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%;background:var(--canvas);color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  a,button{font:inherit}
+  body{padding:28px}
+  .frame{width:393px;height:852px;margin:0 auto;background:var(--paper);position:relative;overflow:hidden;border:1px solid rgba(23,34,56,.09);border-radius:28px;box-shadow:0 18px 42px rgba(23,34,56,.14)}
+
+  .statusbar{height:28px;padding:0 20px 4px;display:flex;align-items:flex-end;justify-content:space-between;font-size:12px;font-weight:760;background:#fff;position:relative;z-index:20}
+  .sb-right{display:flex;align-items:center;gap:6px}
+  .signal{display:flex;align-items:flex-end;gap:1.5px;height:9px}.signal i{display:block;width:2px;background:currentColor;border-radius:1px}.signal i:nth-child(1){height:3px}.signal i:nth-child(2){height:5px}.signal i:nth-child(3){height:7px}.signal i:nth-child(4){height:9px}
+  .battery{width:20px;height:9px;border:1.5px solid currentColor;border-radius:2px;padding:1px;position:relative}.battery:after{content:"";position:absolute;right:-3px;top:1.5px;width:2px;height:4px;background:currentColor}.battery b{display:block;width:78%;height:100%;background:currentColor;border-radius:1px}
+
+  .topbar{height:58px;padding:0 20px;border-bottom:1px solid var(--line);background:#fff;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:20}
+  .brand{display:flex;align-items:flex-end;font-size:20px;line-height:1;font-weight:900;letter-spacing:-.05em}.brand-dot{width:6px;height:6px;border-radius:50%;background:var(--orange);margin-left:3px;margin-bottom:2px}
+  .icon-btn{width:38px;height:38px;border:0;background:#fff;color:var(--ink-2);display:grid;place-items:center;text-decoration:none;border-radius:7px}.icon-btn:hover{background:#f8f9fa}.icon-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+
+  .body{position:absolute;inset:86px 0 76px;background:#fff;overflow-y:auto;scrollbar-width:none}
+  .body::-webkit-scrollbar{display:none}
+
+  .hero{padding:24px 20px 27px;border-bottom:1px solid var(--line)}
+  .eyebrow{font-size:11.5px;line-height:1;font-weight:850;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+  h1{margin:0;font-size:31px;line-height:1;letter-spacing:-.052em;font-weight:860}
+  .range{margin-top:8px;font-size:14px;color:var(--muted);font-weight:720}
+  .week-total{margin-top:28px;display:flex;align-items:flex-end;justify-content:space-between;gap:16px}
+  .total{font-size:48px;line-height:.92;letter-spacing:-.06em;font-weight:900}
+  .ot{font-size:13px;font-weight:800;color:var(--amber);padding-bottom:5px;white-space:nowrap}
+
+  .chart-section{padding:23px 20px 24px;border-bottom:1px solid var(--line)}
+  .section-label{font-size:11.5px;font-weight:850;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:18px}
+  .chart-head{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px}
+  .chart-head .section-label{margin-bottom:0}
+  .chart-reference{font-size:10.5px;line-height:1;font-weight:760;color:var(--muted);white-space:nowrap}
+  .chart{height:170px;display:flex;align-items:flex-end;justify-content:space-between;gap:7px;padding-top:6px;position:relative}
+  .plot-line{position:absolute;left:0;right:0;bottom:38px;height:112px;pointer-events:none}
+  .target-line{position:absolute;left:0;right:0;bottom:88.9%;border-top:1px dashed var(--line-2)}
+  .day{height:100%;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;min-width:0;position:relative;z-index:2}
+  .value-label{height:20px;margin-bottom:5px;font-size:10.5px;line-height:20px;font-weight:820;color:var(--ink-2);white-space:nowrap;letter-spacing:-.015em}
+  .value-label span{display:inline}.value-label .mins:before{content:" "}
+  .day.today .value-label{color:var(--orange)}
+  .day.future .value-label{color:var(--muted);font-weight:720}
+  .bar-wrap{height:112px;width:100%;display:flex;align-items:flex-end;justify-content:center}
+  .bar{width:20px;background:var(--ink);border-radius:4px 4px 2px 2px;position:relative}
+  .bar.otbar:after{content:"";position:absolute;left:0;right:0;top:0;height:6px;background:var(--amber);border-radius:4px 4px 0 0}
+  .day.today .bar{background:var(--orange)}
+  .day.today .bar.otbar:after{background:var(--amber)}
+  .day.future .bar{display:none}
+  .day-label{margin-top:10px;font-size:11.5px;color:var(--muted);font-weight:760}
+  .day.today .day-label{color:var(--orange);font-weight:850}
+
+  .today-section{padding:23px 20px 22px;border-bottom:1px solid var(--line)}
+  .today-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:18px}
+  .today-total{font-size:28px;line-height:1;font-weight:880;letter-spacing:-.045em}
+  .today-date{font-size:13px;color:var(--muted);font-weight:720;padding-bottom:2px}
+  .log{display:grid;gap:13px}
+  .log-row{display:flex;align-items:center;justify-content:space-between;gap:20px;font-size:14px;color:var(--ink-2);font-weight:730}
+  .log-row strong{font-size:15px;color:var(--ink);font-weight:830}
+  .log-row.overtime span,.log-row.overtime strong{color:var(--amber)}
+
+  .history{padding:23px 20px 30px}
+  .week-row{min-height:54px;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:16px}
+  .week-row:first-of-type{border-top:0}
+  .week-meta{min-width:0}
+  .week-dates{font-size:14px;font-weight:800;color:var(--ink)}
+  .week-sub{font-size:12.5px;color:var(--muted);font-weight:700;margin-top:3px}
+  .week-hours{font-size:16px;font-weight:850;white-space:nowrap}
+
+  .attention-section{padding:0 20px;border-bottom:1px solid var(--line)}
+  .attention-row{width:100%;min-height:68px;border:0;background:#fff;padding:0;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:14px;text-align:left;color:var(--ink);cursor:pointer;border-left:3px solid var(--orange)}
+  .attention-copy{padding-left:13px;min-width:0;display:block;text-align:left}
+  .attention-copy b{display:block;font-size:14.5px;font-weight:840;letter-spacing:-.012em}
+  .attention-copy span{display:block;margin-top:4px;font-size:12.5px;line-height:1.35;color:var(--muted);font-weight:700}
+  .attention-action{padding-right:2px;color:var(--orange);font-size:12.5px;font-weight:830;white-space:nowrap}
+  .attention-row.submitted{border-left-color:var(--green);cursor:default}
+  .attention-row.submitted .attention-action{color:var(--green)}
+
+  .sheet-backdrop{position:absolute;inset:0;background:rgba(23,34,56,.24);z-index:70;opacity:0;pointer-events:none;transition:opacity .16s ease}
+  .sheet-backdrop.open{opacity:1;pointer-events:auto}
+  .sheet{position:absolute;left:0;right:0;bottom:0;z-index:80;background:#fff;border-top:1px solid var(--line-2);transform:translateY(102%);transition:transform .2s ease;max-height:78%;overflow:auto;padding:0 20px calc(20px + env(safe-area-inset-bottom))}
+  .sheet.open{transform:none}
+  .sheet-head{height:68px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:14px}
+  .sheet-kicker{font-size:11.5px;line-height:1;font-weight:850;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+  .sheet-close{width:38px;height:38px;border:0;background:#fff;color:var(--ink-2);display:grid;place-items:center;border-radius:7px;cursor:pointer}
+  .sheet-close:hover{background:#f7f8f9}.sheet-close svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
+  .correction{padding:22px 0 2px}
+  .correction h2{margin:0;font-size:30px;line-height:1.02;letter-spacing:-.05em;font-weight:880}
+  .correction p{margin:9px 0 0;font-size:14px;line-height:1.5;color:var(--muted);font-weight:650}
+  .facts{margin-top:23px;border-top:1px solid var(--line)}
+  .fact{min-height:52px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:20px}
+  .fact span{font-size:13px;color:var(--muted);font-weight:700}.fact b{font-size:14px;font-weight:830}
+  .time-field{margin-top:24px}
+  .time-field label{display:block;font-size:12px;font-weight:820;color:var(--muted);margin-bottom:8px}
+  .time-input{width:100%;height:58px;border:0;border-bottom:2px solid var(--ink);border-radius:0;background:#fff;color:var(--ink);font-size:30px;line-height:1;font-weight:850;letter-spacing:-.035em;outline:0;padding:0 2px}
+  .time-input:focus{border-bottom-color:var(--orange)}
+  .sheet-primary{width:100%;height:58px;margin-top:24px;border:0;border-radius:6px;background:var(--navy);color:#fff;font-size:15px;font-weight:840;cursor:pointer}
+  .sheet-primary:disabled{background:#e3e7eb;color:#929cab;cursor:default}
+  .correction-note{margin-top:12px;font-size:12.5px;line-height:1.45;color:var(--muted);font-weight:650}
+  .submitted-state{display:none;padding:26px 0 6px}
+  .submitted-state.show{display:block}
+  .submitted-mark{width:48px;height:48px;border-radius:7px;background:#eef8f2;color:var(--green);display:grid;place-items:center;margin-bottom:18px}
+  .submitted-mark svg{width:25px;height:25px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+  .submitted-state h2{margin:0;font-size:30px;line-height:1.02;letter-spacing:-.05em;font-weight:880}
+  .submitted-state p{margin:9px 0 0;font-size:14px;line-height:1.5;color:var(--muted);font-weight:650}
+
+  .bottomnav{position:absolute;left:0;right:0;bottom:0;height:76px;background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding:7px 4px 9px;z-index:40}
+  .nav-item{color:var(--muted);text-decoration:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-size:11.5px;font-weight:720;border:0;background:#fff;cursor:pointer}.nav-item svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}.nav-item.active{color:var(--orange)}
+
+  @media(max-width:350px){
+    .hero{padding:21px 20px 24px}
+    .week-total{margin-top:24px;display:block}
+    .total{font-size:43px;line-height:.94;white-space:nowrap}
+    .ot{margin-top:10px;padding-bottom:0}
+    .chart-section{padding-top:21px}
+    .chart{gap:4px}
+    .value-label{height:28px;line-height:13px;margin-bottom:4px;font-size:10px;white-space:normal;text-align:center;display:flex;flex-direction:column;justify-content:flex-end}
+    .value-label span{display:block}.value-label .mins:before{content:""}
+    .bar{width:19px}
+    .chart-reference{font-size:10px}
+  }
+  @media(max-width:460px){body{padding:0;background:#fff}.frame{width:100vw;height:100dvh;border:0;border-radius:0;box-shadow:none}}
+</style>
+</head>
+<body>
+<div class="frame">
+  <div class="statusbar">
+    <span>17:24</span>
+    <div class="sb-right"><div class="signal"><i></i><i></i><i></i><i></i></div><span>5G</span><div class="battery"><b></b></div></div>
+  </div>
+
+  <div class="topbar">
+    <div class="brand">Rounds<span class="brand-dot"></span></div>
+    <a class="icon-btn" href="ROUNDS-M01-NOTIFICATIONS-v2-10OF10.html" aria-label="Notifications">
+      <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 7h18s-3 0-3-7"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+    </a>
+  </div>
+
+  <main class="body">
+    <section class="hero">
+      <div class="eyebrow">This week</div>
+      <h1>Hours</h1>
+      <div class="range">25–31 Aug</div>
+      <div class="week-total">
+        <div class="total">31h 46m</div>
+        <div class="ot">42m overtime</div>
+      </div>
+    </section>
+
+    <section class="chart-section" aria-label="Hours by day">
+      <div class="chart-head"><div class="section-label">Daily hours</div><div class="chart-reference">8h scheduled</div></div>
+      <div class="chart">
+        <div class="plot-line" aria-hidden="true"><div class="target-line"></div></div>
+        <div class="day"><div class="value-label"><span>8h</span><span class="mins">20m</span></div><div class="bar-wrap"><div class="bar otbar" style="height:92.6%"></div></div><div class="day-label">M</div></div>
+        <div class="day"><div class="value-label"><span>7h</span><span class="mins">55m</span></div><div class="bar-wrap"><div class="bar" style="height:88.0%"></div></div><div class="day-label">T</div></div>
+        <div class="day"><div class="value-label"><span>7h</span><span class="mins">09m</span></div><div class="bar-wrap"><div class="bar" style="height:79.4%"></div></div><div class="day-label">W</div></div>
+        <div class="day today"><div class="value-label"><span>8h</span><span class="mins">22m</span></div><div class="bar-wrap"><div class="bar otbar" style="height:93.0%"></div></div><div class="day-label">T</div></div>
+        <div class="day future"><div class="value-label">—</div><div class="bar-wrap"><div class="bar"></div></div><div class="day-label">F</div></div>
+        <div class="day future"><div class="value-label">—</div><div class="bar-wrap"><div class="bar"></div></div><div class="day-label">S</div></div>
+        <div class="day future"><div class="value-label">—</div><div class="bar-wrap"><div class="bar"></div></div><div class="day-label">S</div></div>
+      </div>
+    </section>
+
+    <section class="attention-section" id="clockOutAttention" aria-label="Hours needing attention">
+      <button class="attention-row" id="clockOutRow" type="button" onclick="openClockOutCorrection()">
+        <span class="attention-copy"><b id="clockOutTitle">Wed 20 Aug</b><span id="clockOutSub">Missing clock-out · Add end time</span></span>
+        <span class="attention-action" id="clockOutAction">Fix</span>
+      </button>
+    </section>
+
+    <section class="today-section" aria-label="Today's hours">
+      <div class="section-label">Today</div>
+      <div class="today-head"><div class="today-total">8h 22m</div><div class="today-date">28 Aug</div></div>
+      <div class="log">
+        <div class="log-row"><span>Start</span><strong>08:00</strong></div>
+        <div class="log-row"><span>End</span><strong>17:22</strong></div>
+        <div class="log-row overtime"><span>Overtime</span><strong>22m</strong></div>
+      </div>
+    </section>
+
+    <section class="history" aria-label="Previous weeks">
+      <div class="section-label">Previous weeks</div>
+      <div class="week-row"><div class="week-meta"><div class="week-dates">18–24 Aug</div><div class="week-sub">1h 06m overtime</div></div><div class="week-hours">41h 06m</div></div>
+      <div class="week-row"><div class="week-meta"><div class="week-dates">11–17 Aug</div><div class="week-sub">38m overtime</div></div><div class="week-hours">40h 38m</div></div>
+      <div class="week-row"><div class="week-meta"><div class="week-dates">4–10 Aug</div><div class="week-sub">No overtime</div></div><div class="week-hours">40h 00m</div></div>
+      <div class="week-row"><div class="week-meta"><div class="week-dates">28 Jul–3 Aug</div><div class="week-sub">18m overtime</div></div><div class="week-hours">40h 18m</div></div>
+    </section>
+  </main>
+
+  <div class="sheet-backdrop" id="clockOutBackdrop" onclick="closeClockOutCorrection()"></div>
+  <section class="sheet" id="clockOutSheet" role="dialog" aria-modal="true" aria-labelledby="clockOutSheetTitle">
+    <div class="sheet-head">
+      <div class="sheet-kicker">20 Aug · Hours correction</div>
+      <button class="sheet-close" type="button" onclick="closeClockOutCorrection()" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </div>
+    <div class="correction" id="clockOutForm">
+      <h2 id="clockOutSheetTitle">Missing clock-out</h2>
+      <p>You started at 08:03. Add the time your shift ended.</p>
+      <div class="facts">
+        <div class="fact"><span>Start</span><b>08:03</b></div>
+        <div class="fact"><span>Last delivery</span><b>16:47</b></div>
+      </div>
+      <div class="time-field">
+        <label for="clockOutTime">End time</label>
+        <input class="time-input" id="clockOutTime" type="time" inputmode="numeric" aria-label="Correct end time" oninput="syncClockOutSubmit()" />
+      </div>
+      <button class="sheet-primary" id="clockOutSubmit" type="button" onclick="submitClockOutCorrection()" disabled>Submit correction</button>
+      <div class="correction-note">Dispatch reviews the correction before it becomes part of your final hours.</div>
+    </div>
+    <div class="submitted-state" id="clockOutSubmitted">
+      <div class="submitted-mark"><svg viewBox="0 0 24 24"><path d="m5 12 4 4 10-10"/></svg></div>
+      <h2 id="submittedTitle">Correction submitted</h2>
+      <p id="submittedCopy">20 Aug · your corrected end time has been sent to Dispatch for review.</p>
+      <button class="sheet-primary" type="button" onclick="closeClockOutCorrection()">Done</button>
+    </div>
+  </section>
+
+  <nav class="bottomnav" aria-label="Primary">
+    <a class="nav-item" href="ROUNDS-B01-TEAM-DRIVER-HOME-v4-10OF10.html">
+      <svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg><span>Home</span>
+    </a>
+    <a class="nav-item" href="ROUNDS-J01-MY-ROUNDS-v7-10OF10.html">
+      <svg viewBox="0 0 24 24"><path d="M12 20s7-3.6 7-9a7 7 0 1 0-14 0c0 5.4 7 9 7 9Z"/><circle cx="12" cy="11" r="2.5"/></svg><span>Jobs</span>
+    </a>
+    <a class="nav-item active" href="#" aria-current="page">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Hours</span>
+    </a>
+    <a class="nav-item" href="ROUNDS-L01-DRIVER-PROFILE-v3-10OF10.html">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Profile</span>
+    </a>
+  </nav>
+</div>
+<script>
+  const clockOutSheet=document.getElementById('clockOutSheet');
+  const clockOutBackdrop=document.getElementById('clockOutBackdrop');
+  const clockOutTime=document.getElementById('clockOutTime');
+  const clockOutSubmit=document.getElementById('clockOutSubmit');
+  const clockOutForm=document.getElementById('clockOutForm');
+  const clockOutSubmitted=document.getElementById('clockOutSubmitted');
+  const clockOutRow=document.getElementById('clockOutRow');
+  const storedCorrection=localStorage.getItem('roundsClockOutCorrection-2026-08-20');
+
+  function openClockOutCorrection(){
+    clockOutSheet.classList.add('open');
+    clockOutBackdrop.classList.add('open');
+    if(storedCorrection){showClockOutSubmitted(storedCorrection)}
+    setTimeout(()=>{if(!storedCorrection)clockOutTime.focus()},220);
+  }
+  function closeClockOutCorrection(){clockOutSheet.classList.remove('open');clockOutBackdrop.classList.remove('open')}
+  function syncClockOutSubmit(){clockOutSubmit.disabled=!/^\d{2}:\d{2}$/.test(clockOutTime.value)}
+  function showClockOutSubmitted(value){
+    clockOutForm.style.display='none';
+    clockOutSubmitted.classList.add('show');
+    document.getElementById('submittedCopy').textContent=`20 Aug · ${value} has been sent to Dispatch for review.`;
+    clockOutRow.classList.add('submitted');
+    document.getElementById('clockOutTitle').textContent='Wed 20 Aug';
+    document.getElementById('clockOutSub').textContent=`Correction submitted · ${value}`;
+    document.getElementById('clockOutAction').textContent='Sent';
+    clockOutRow.onclick=openClockOutCorrection;
+  }
+  function submitClockOutCorrection(){
+    const value=clockOutTime.value;
+    if(!/^\d{2}:\d{2}$/.test(value))return;
+    localStorage.setItem('roundsClockOutCorrection-2026-08-20',value);
+    showClockOutSubmitted(value);
+    if(!navigator.onLine){
+      document.getElementById('submittedTitle').textContent='Correction saved';
+      document.getElementById('submittedCopy').textContent=`20 Aug · ${value} is saved on this phone and will send when you are back online.`;
+      document.getElementById('clockOutAction').textContent='Queued';
+    }
+  }
+  if(storedCorrection)showClockOutSubmitted(storedCorrection);
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeClockOutCorrection()});
+</script>
+</body>
+</html>

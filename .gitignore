@@ -1,0 +1,28 @@
+# Secrets
+.env
+.env.*
+!.env.example
+**/local.properties
+**/GoogleService-Info.plist
+**/google-services.json
+
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins*
+.packages
+build/
+coverage/
+**/ios/Pods/
+**/ios/.symlinks/
+
+# JavaScript
+node_modules/
+.next/
+.npm-cache/
+*.tsbuildinfo
+apps/driver_harness/ios/Flutter/Secrets.xcconfig
+
+# Editors / OS
+.DS_Store
+.idea/
+.vscode/

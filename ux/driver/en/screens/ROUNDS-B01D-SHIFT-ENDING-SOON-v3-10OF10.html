@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Rounds — B01D Shift Ending Soon v3</title>
+<style>
+  :root{
+    --canvas:#eef1f4;
+    --paper:#ffffff;
+    --ink:#172238;
+    --ink-2:#3d4a5d;
+    --muted:#748094;
+    --line:#e1e6ea;
+    --line-2:#cbd4dc;
+    --orange:#ff6420;
+    --orange-soft:#fff3ed;
+    --amber:#b87916;
+    --amber-soft:#fff8e8;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%;background:var(--canvas);color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  a,button{font:inherit}
+  body{padding:28px}
+  .frame{width:393px;height:852px;margin:0 auto;background:var(--paper);position:relative;overflow:hidden;border:1px solid rgba(23,34,56,.09);border-radius:28px;box-shadow:0 18px 42px rgba(23,34,56,.14)}
+
+  .statusbar{height:28px;padding:0 20px 4px;display:flex;align-items:flex-end;justify-content:space-between;font-size:12px;font-weight:760;background:#fff;position:relative;z-index:20}
+  .sb-right{display:flex;align-items:center;gap:6px}
+  .signal{display:flex;align-items:flex-end;gap:1.5px;height:9px}.signal i{display:block;width:2px;background:currentColor;border-radius:1px}.signal i:nth-child(1){height:3px}.signal i:nth-child(2){height:5px}.signal i:nth-child(3){height:7px}.signal i:nth-child(4){height:9px}
+  .battery{width:20px;height:9px;border:1.5px solid currentColor;border-radius:2px;padding:1px;position:relative}.battery:after{content:"";position:absolute;right:-3px;top:1.5px;width:2px;height:4px;background:currentColor}.battery b{display:block;width:78%;height:100%;background:currentColor;border-radius:1px}
+
+  .topbar{height:58px;padding:0 20px;border-bottom:1px solid var(--line);background:#fff;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:20}
+  .brand{display:flex;align-items:flex-end;font-size:20px;line-height:1;font-weight:900;letter-spacing:-.05em}.brand-dot{width:6px;height:6px;border-radius:50%;background:var(--orange);margin-left:3px;margin-bottom:2px}
+  .icon-btn{width:38px;height:38px;border:0;background:#fff;color:var(--ink-2);display:grid;place-items:center;text-decoration:none;border-radius:7px}.icon-btn:hover{background:#f8f9fa}.icon-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+
+  .body{position:absolute;inset:86px 0 76px;display:flex;flex-direction:column;background:#fff}
+
+  .hero{padding:31px 20px 29px;border-bottom:1px solid var(--line)}
+  .state-line{display:flex;align-items:center;gap:9px;color:var(--amber);font-size:14px;font-weight:790}
+  .state-dot{width:9px;height:9px;border-radius:50%;background:var(--amber);box-shadow:0 0 0 5px var(--amber-soft)}
+  h1{margin:18px 0 0;font-size:43px;line-height:.98;letter-spacing:-.06em;font-weight:890}
+  .shift-end{margin-top:12px;font-size:17px;line-height:1.2;color:var(--ink-2);font-weight:720}
+
+  .active{padding:26px 20px 24px;border-bottom:1px solid var(--line)}
+  .section-label{font-size:11.5px;font-weight:850;letter-spacing:.09em;text-transform:uppercase;color:var(--orange);margin-bottom:10px}
+  .delivery-row{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}
+  .delivery-copy{min-width:0}
+  .destination{font-size:29px;line-height:1.02;font-weight:860;letter-spacing:-.045em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .area{margin-top:8px;font-size:14px;line-height:1.2;color:var(--muted);font-weight:690}
+  .eta{text-align:right;flex:0 0 auto;padding-top:2px}
+  .eta strong{display:block;font-size:27px;line-height:1;font-weight:850;letter-spacing:-.04em}
+  .eta span{display:block;margin-top:6px;font-size:11.5px;line-height:1;color:var(--muted);font-weight:700}
+  .delivery-meta{margin-top:23px;padding-top:16px;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:13px;font-weight:730;color:var(--ink-2)}
+  .delivery-meta .late{color:var(--amber);font-weight:800}
+
+  .spacer{flex:1 1 auto;min-height:30px}
+
+  .task-footer{padding:16px 20px 16px;border-top:1px solid var(--line);background:#fff;flex:0 0 auto}
+  .task-utility{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:12px;min-height:40px}
+  .dispatch-copy{min-width:0}.dispatch-label{font-size:11.5px;font-weight:850;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}.dispatch-name{font-size:14px;line-height:1.1;font-weight:780}
+  .dispatch-actions{display:flex;gap:7px}.utility{width:40px;height:40px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink-2);display:grid;place-items:center;text-decoration:none}.utility:hover{border-color:var(--line-2);background:#fafbfc}.utility svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+  .primary{min-height:62px;width:100%;border:0;border-radius:7px;background:var(--ink);color:#fff;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:9px;font-size:17px;font-weight:820;letter-spacing:-.01em}.primary:hover{background:#202d45}.primary svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+  .bottomnav{position:absolute;left:0;right:0;bottom:0;height:76px;background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding:7px 4px 9px;z-index:40}
+  .nav-item{color:var(--muted);text-decoration:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-size:11.5px;font-weight:720;border:0;background:#fff;cursor:pointer}.nav-item svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}.nav-item.active{color:var(--orange)}
+
+  @media(max-width:460px){body{padding:0;background:#fff}.frame{width:100vw;height:100dvh;border:0;border-radius:0;box-shadow:none}}
+</style>
+</head>
+<body>
+<div class="frame">
+  <div class="statusbar">
+    <span>16:45</span>
+    <div class="sb-right"><div class="signal"><i></i><i></i><i></i><i></i></div><span>5G</span><div class="battery"><b></b></div></div>
+  </div>
+
+  <div class="topbar">
+    <div class="brand">Rounds<span class="brand-dot"></span></div>
+    <a class="icon-btn" href="ROUNDS-M01-NOTIFICATIONS-v2-10OF10.html" aria-label="Notifications">
+      <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 7h18s-3 0-3-7"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+    </a>
+  </div>
+
+  <main class="body">
+    <section class="hero">
+      <div class="state-line"><span class="state-dot"></span><span>Shift ending soon</span></div>
+      <h1>15 min left</h1>
+      <div class="shift-end">Ends at 17:00 · UrbanFlowers</div>
+    </section>
+
+    <section class="active" aria-label="Current delivery">
+      <div class="section-label">Current delivery</div>
+      <div class="delivery-row">
+        <div class="delivery-copy">
+          <div class="destination">Anantara Siam</div>
+          <div class="area">Ratchadamri</div>
+        </div>
+        <div class="eta"><strong>17:18</strong><span>ETA</span></div>
+      </div>
+      <div class="delivery-meta">
+        <span>Last delivery · 8 of 8</span>
+        <span class="late">18 min past shift</span>
+      </div>
+    </section>
+
+    <div class="spacer"></div>
+
+    <section class="task-footer" aria-label="Current delivery actions">
+      <div class="task-utility">
+        <div class="dispatch-copy">
+          <div class="dispatch-label">Dispatch</div>
+          <div class="dispatch-name">UrbanFlowers</div>
+        </div>
+        <div class="dispatch-actions">
+          <a class="utility" href="ROUNDS-H01-OPERATOR-CHAT-v4-10OF10.html" aria-label="Message dispatch">
+            <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/></svg>
+          </a>
+          <a class="utility" href="ROUNDS-H02-CALL-CONTACT-v2-10OF10.html" aria-label="Call dispatch">
+            <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.89.33 1.76.63 2.59a2 2 0 0 1-.45 2.11L8 9.91a16 16 0 0 0 6.09 6.09l1.49-1.29a2 2 0 0 1 2.11-.45c.83.3 1.7.51 2.59.63A2 2 0 0 1 22 16.92Z"/></svg>
+          </a>
+        </div>
+      </div>
+      <a class="primary" href="ROUNDS-E02-NAVIGATE-TO-CURRENT-STOP-v2-10OF10.html">
+        <span>Return to delivery</span>
+        <svg viewBox="0 0 24 24"><path d="m5 12 14-7-7 14-2-6-5-1Z"/></svg>
+      </a>
+    </section>
+  </main>
+
+  <nav class="bottomnav" aria-label="Primary">
+    <a class="nav-item active" href="#" aria-current="page">
+      <svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg><span>Home</span>
+    </a>
+    <a class="nav-item" href="ROUNDS-J01-MY-ROUNDS-v7-10OF10.html">
+      <svg viewBox="0 0 24 24"><path d="M12 20s7-3.6 7-9a7 7 0 1 0-14 0c0 5.4 7 9 7 9Z"/><circle cx="12" cy="11" r="2.5"/></svg><span>Jobs</span>
+    </a>
+    <a class="nav-item" href="ROUNDS-K00-TEAM-HOURS-v5-10OF10.html">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Hours</span>
+    </a>
+    <a class="nav-item" href="ROUNDS-L01-DRIVER-PROFILE-v3-10OF10.html">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Profile</span>
+    </a>
+  </nav>
+</div>
+</body>
+</html>

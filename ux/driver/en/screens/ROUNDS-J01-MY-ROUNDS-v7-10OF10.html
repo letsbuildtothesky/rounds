@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Rounds — J01 My Rounds v7</title>
+<style>
+:root{
+  --canvas:#eef1f4;--paper:#fff;--ink:#172238;--ink2:#3d4a5d;--muted:#748094;
+  --line:#e1e6ea;--line2:#cbd4dc;--orange:#ff6420;--orange-soft:#fff7f2;
+  --green:#168b50;--green-soft:#eef8f2;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--canvas);color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+button,a{font:inherit}
+button{cursor:pointer}
+body{padding:28px}
+.frame{width:393px;height:852px;margin:0 auto;background:var(--paper);position:relative;overflow:hidden;border:1px solid rgba(23,34,56,.09);border-radius:28px;box-shadow:0 18px 42px rgba(23,34,56,.14)}
+.statusbar{height:28px;padding:0 20px 4px;display:flex;align-items:flex-end;justify-content:space-between;font-size:12px;font-weight:760;background:#fff;position:relative;z-index:40}
+.sb-right{display:flex;align-items:center;gap:6px}.signal{display:flex;align-items:flex-end;gap:1.5px;height:9px}.signal i{display:block;width:2px;background:currentColor;border-radius:1px}.signal i:nth-child(1){height:3px}.signal i:nth-child(2){height:5px}.signal i:nth-child(3){height:7px}.signal i:nth-child(4){height:9px}.battery{width:20px;height:9px;border:1.5px solid currentColor;border-radius:2px;padding:1px;position:relative}.battery:after{content:"";position:absolute;right:-3px;top:1.5px;width:2px;height:4px;background:currentColor;border-radius:0 1px 1px 0}.battery b{display:block;width:78%;height:100%;background:currentColor;border-radius:1px}
+.topbar{height:58px;padding:0 20px;border-bottom:1px solid var(--line);background:#fff;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:35}.brand{display:flex;align-items:flex-end;font-size:20px;line-height:1;font-weight:900;letter-spacing:-.05em}.brand-dot{width:6px;height:6px;border-radius:50%;background:var(--orange);margin-left:3px;margin-bottom:2px}.icon-btn{width:38px;height:38px;border:0;border-radius:7px;background:#fff;color:var(--ink2);display:grid;place-items:center;text-decoration:none}.icon-btn:active{background:#f6f8f9}.icon-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.body{position:absolute;inset:86px 0 76px;background:#fff;overflow-y:auto;scrollbar-width:none}.body::-webkit-scrollbar{display:none}
+.header{padding:24px 20px 22px;border-bottom:1px solid var(--line)}.eyebrow{font-size:11.5px;line-height:1;font-weight:880;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:11px}.header h1{margin:0;font-size:34px;line-height:1;letter-spacing:-.055em;font-weight:860}
+.active{padding:24px 20px 25px;border-bottom:1px solid var(--line);background:#fff;border-left:4px solid var(--orange)}.active-kicker{font-size:11.5px;line-height:1;font-weight:900;letter-spacing:.09em;text-transform:uppercase;color:var(--orange);margin-bottom:12px}.active-merchant{font-size:14px;line-height:1.25;font-weight:790;color:var(--ink2);margin-bottom:7px}.active-main{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}.active h2{margin:0;font-size:37px;line-height:.98;letter-spacing:-.055em;font-weight:870}.next{margin-top:10px;font-size:16px;line-height:1.25;font-weight:790;color:var(--ink2);letter-spacing:-.02em}.eta{text-align:right;flex:0 0 auto;padding-top:3px}.eta b{display:block;font-size:32px;line-height:.95;font-weight:890;letter-spacing:-.055em}.eta span{display:block;margin-top:7px;font-size:12.5px;font-weight:730;color:var(--muted)}
+.active-meta{margin-top:19px;display:flex;align-items:center;gap:10px;font-size:13.5px;line-height:1.3;font-weight:760;color:var(--muted)}.active-meta .sep{width:3px;height:3px;border-radius:50%;background:var(--line2)}.active-meta strong{color:var(--ink2);font-weight:820}
+.primary{width:100%;height:60px;margin-top:21px;border:0;border-radius:7px;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;gap:10px;font-size:17px;font-weight:860;letter-spacing:-.02em}.primary:active{transform:translateY(1px)}.primary svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}
+.completed{padding:23px 20px 28px}.section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;padding-bottom:11px;border-bottom:1px solid var(--line)}.section-head h2{margin:0;font-size:15px;font-weight:880;letter-spacing:-.02em}.section-head span{font-size:12.5px;font-weight:730;color:var(--muted)}
+.round-row{width:100%;min-height:92px;padding:15px 0;border:0;border-bottom:1px solid var(--line);background:#fff;text-align:left;display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;color:inherit}.round-row:active{background:#fafbfb}.row-main{min-width:0}.row-top{display:flex;align-items:center;gap:9px;min-width:0}.row-top b{font-size:17px;line-height:1.15;font-weight:850;letter-spacing:-.025em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.kind{font-size:10.5px;line-height:1;font-weight:890;letter-spacing:.085em;text-transform:uppercase;color:var(--muted);flex:0 0 auto}.kind.network{color:var(--orange)}.row-sub{margin-top:8px;font-size:13px;line-height:1.35;font-weight:720;color:var(--muted)}.row-proof{margin-top:5px;display:flex;align-items:center;gap:7px;font-size:12.5px;line-height:1.25;font-weight:780;color:var(--green)}.proof-dot{width:7px;height:7px;border-radius:50%;background:var(--green);flex:0 0 auto}.row-side{text-align:right;min-width:64px}.row-side b{display:block;font-size:16px;line-height:1;font-weight:870;letter-spacing:-.025em}.row-side .fare{font-size:18px}.row-side span{display:block;margin-top:8px;font-size:11.5px;line-height:1;font-weight:720;color:var(--muted)}
+.bottomnav{position:absolute;left:0;right:0;bottom:0;height:76px;background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding:7px 4px 9px;z-index:40}.nav-item{color:var(--muted);text-decoration:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-size:11.5px;font-weight:720;border:0;background:#fff}.nav-item svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}.nav-item.active{color:var(--orange)}
+.scrim{position:absolute;inset:0;background:rgba(10,18,31,.28);opacity:0;pointer-events:none;transition:.18s;z-index:70}.scrim.show{opacity:1;pointer-events:auto}.sheet{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:20px 20px 0 0;transform:translateY(105%);transition:.22s ease;z-index:80;padding:10px 20px calc(20px + env(safe-area-inset-bottom));box-shadow:0 -18px 42px rgba(23,34,56,.15)}.sheet.show{transform:none}.grab{width:38px;height:4px;border-radius:999px;background:#d7dde2;margin:0 auto 18px}.sheet-kicker{font-size:11.5px;line-height:1;font-weight:890;letter-spacing:.09em;text-transform:uppercase;color:var(--green);margin-bottom:10px}.sheet h3{margin:0;font-size:28px;line-height:1;letter-spacing:-.045em;font-weight:860}.sheet-sub{margin-top:8px;font-size:13.5px;line-height:1.35;font-weight:720;color:var(--muted)}.evidence{margin-top:21px;border-top:1px solid var(--line)}.evidence-row{min-height:55px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:16px}.evidence-row span{font-size:13px;font-weight:720;color:var(--muted)}.evidence-row b{font-size:14px;font-weight:830;text-align:right}.evidence-row .good{color:var(--green)}.sheet-close{width:100%;height:56px;margin-top:18px;border:0;border-radius:7px;background:var(--ink);color:#fff;font-size:16px;font-weight:850}.sheet-close:active{transform:translateY(1px)}
+.toast{position:absolute;left:18px;right:18px;bottom:92px;background:var(--ink);color:#fff;padding:13px 14px;border-radius:8px;font-size:13.5px;font-weight:760;opacity:0;transform:translateY(8px);transition:.18s;pointer-events:none;z-index:90}.toast.show{opacity:1;transform:none}
+@media(max-width:520px){body{padding:0;background:#fff}.frame{width:100vw;height:100dvh;border:0;border-radius:0;box-shadow:none}}
+@media(max-width:340px){.header{padding:20px 16px 18px}.header h1{font-size:31px}.active{padding:20px 16px 22px;background:#fff;border-left:3px solid var(--orange)}.active h2{font-size:33px}.next{font-size:15px}.eta b{font-size:28px}.active-meta{margin-top:16px;font-size:12.5px}.primary{height:56px;margin-top:18px;font-size:16px}.completed{padding:20px 16px 24px}.round-row{min-height:86px;padding:13px 0}.row-top b{font-size:16px}.row-sub{font-size:12.5px;margin-top:7px}.row-proof{font-size:12px}.row-side b{font-size:15px}.row-side .fare{font-size:17px}.sheet{padding-left:16px;padding-right:16px}.sheet h3{font-size:25px}.evidence-row{min-height:52px}}
+@media(max-height:720px){.header{padding-top:18px;padding-bottom:16px}.header h1{font-size:30px}.active{padding-top:18px;padding-bottom:18px}.active-kicker{margin-bottom:9px}.active h2{font-size:31px}.next{margin-top:7px;font-size:14px}.eta b{font-size:27px}.active-meta{margin-top:13px}.primary{height:54px;margin-top:15px}.completed{padding-top:17px}.round-row{min-height:78px;padding:11px 0}.row-sub{margin-top:6px}.row-proof{margin-top:4px}}
+</style>
+</head>
+<body>
+<div class="frame" id="frame">
+  <div class="statusbar">
+    <div>15:41</div>
+    <div class="sb-right"><div class="signal"><i></i><i></i><i></i><i></i></div><div>5G</div><div class="battery"><b></b></div></div>
+  </div>
+
+  <div class="topbar">
+    <div class="brand">Rounds<span class="brand-dot"></span></div>
+    <a class="icon-btn" id="notificationsTop" href="ROUNDS-M01-NOTIFICATIONS-v2-10OF10.html?context=team" aria-label="Notifications">
+      <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 7h18s-3 0-3-7"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+    </a>
+  </div>
+
+  <main class="body">
+    <section class="header">
+      <div class="eyebrow">Work</div>
+      <h1>My Rounds</h1>
+    </section>
+
+    <section class="active" aria-label="Active Round">
+      <div class="active-kicker">Active Round</div>
+      <div class="active-merchant" id="activeMerchant">UrbanFlowers · 4 stops</div>
+      <div class="active-main">
+        <div>
+          <h2 id="activeProgress">Stop 2 of 4</h2>
+          <div class="next" id="activeNext">James T. · Thonglor</div>
+        </div>
+        <div class="eta"><b id="activeEta">16 min</b><span>to stop</span></div>
+      </div>
+      <div class="active-meta"><strong id="remainingStops">3 stops left</strong><span class="sep"></span><span id="remainingDistance">12.4 km remaining</span></div>
+      <button class="primary" id="returnBtn"><span>Return to Round</span><svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></button>
+    </section>
+
+    <section class="completed" aria-label="Completed Rounds">
+      <div class="section-head"><h2>Today</h2><span>3 completed</span></div>
+
+      <button class="round-row" data-round="team-15">
+        <div class="row-main">
+          <div class="row-top"><b>UrbanFlowers</b><span class="kind">Team</span></div>
+          <div class="row-sub">3 stops · 11.2 km</div>
+          <div class="row-proof"><span class="proof-dot"></span><span>POD saved</span></div>
+        </div>
+        <div class="row-side"><b>41 min</b><span>15:06</span></div>
+      </button>
+
+      <button class="round-row" data-round="network-14">
+        <div class="row-main">
+          <div class="row-top"><b>Khao Soi House</b><span class="kind network">Network</span></div>
+          <div class="row-sub">1 stop · 4.8 km</div>
+          <div class="row-proof"><span class="proof-dot"></span><span>POD saved</span></div>
+        </div>
+        <div class="row-side"><b class="fare">฿185</b><span>13:42</span></div>
+      </button>
+
+      <button class="round-row" data-round="team-14">
+        <div class="row-main">
+          <div class="row-top"><b>UrbanFlowers</b><span class="kind">Team</span></div>
+          <div class="row-sub">4 stops · 18.6 km</div>
+          <div class="row-proof"><span class="proof-dot"></span><span>POD saved</span></div>
+        </div>
+        <div class="row-side"><b>58 min</b><span>10:24</span></div>
+      </button>
+    </section>
+  </main>
+
+  <nav class="bottomnav" aria-label="Primary">
+    <a class="nav-item" id="homeNav" href="ROUNDS-B01-TEAM-DRIVER-HOME-v4-10OF10.html">
+      <svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg><span>Home</span>
+    </a>
+    <a class="nav-item active" href="#" aria-current="page">
+      <svg viewBox="0 0 24 24"><path d="M12 20s7-3.6 7-9a7 7 0 1 0-14 0c0 5.4 7 9 7 9Z"/><circle cx="12" cy="11" r="2.5"/></svg><span>Jobs</span>
+    </a>
+    <a class="nav-item" id="roleNav" href="ROUNDS-K00-TEAM-HOURS-v5-10OF10.html">
+      <svg id="roleIcon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span id="roleLabel">Hours</span>
+    </a>
+    <a class="nav-item" href="ROUNDS-L01-DRIVER-PROFILE-v3-10OF10.html">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Profile</span>
+    </a>
+  </nav>
+
+  <div class="scrim" id="scrim"></div>
+  <section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <div class="grab"></div>
+    <div class="sheet-kicker">Completed</div>
+    <h3 id="sheetTitle">UrbanFlowers</h3>
+    <div class="sheet-sub" id="sheetSub">Today · 15:06</div>
+    <div class="evidence" id="evidence"></div>
+    <button class="sheet-close" id="closeSheet">Done</button>
+  </section>
+  <div class="toast" id="toast"></div>
+</div>
+<script>
+const params=new URLSearchParams(location.search);
+const context=params.get('context')==='network'?'network':'team';
+const homeNav=document.getElementById('homeNav');
+const roleNav=document.getElementById('roleNav');
+const roleLabel=document.getElementById('roleLabel');
+const roleIcon=document.getElementById('roleIcon');
+if(context==='network'){
+  document.getElementById('notificationsTop').href='ROUNDS-M01-NOTIFICATIONS-v2-10OF10.html?context=network';
+  homeNav.href='ROUNDS-B03-HOME-NETWORK-AVAILABLE-v8-10OF10.html';
+  roleNav.href='ROUNDS-K01-EARNINGS-v3-10OF10.html';
+  roleLabel.textContent='Earnings';
+  roleIcon.innerHTML='<path d="M12 2v20"/><path d="M17 6H9.5a3.5 3.5 0 0 0 0 7H14.5a3.5 3.5 0 0 1 0 7H6"/>';
+  document.getElementById('activeMerchant').textContent='UrbanFlowers · Network Round';
+}
+
+const toast=document.getElementById('toast');
+function showToast(text){toast.textContent=text;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1200)}
+document.getElementById('returnBtn').addEventListener('click',()=>{
+  showToast('Opening active Round');
+  setTimeout(()=>{location.href='ROUNDS-E01-ACTIVE-ROUND-OVERVIEW-v5-10OF10.html'},260);
+});
+
+const details={
+  'team-15':{title:'UrbanFlowers',sub:'Today · 15:06',rows:[['Stops','3 of 3'],['Distance','11.2 km'],['Duration','41 min'],['Evidence','POD saved']]},
+  'network-14':{title:'Khao Soi House',sub:'Today · 13:42',rows:[['Stops','1 of 1'],['Distance','4.8 km'],['Guaranteed fare','฿185'],['Evidence','POD saved']]},
+  'team-14':{title:'UrbanFlowers',sub:'Today · 10:24',rows:[['Stops','4 of 4'],['Distance','18.6 km'],['Duration','58 min'],['Evidence','POD saved']]}
+};
+const scrim=document.getElementById('scrim'),sheet=document.getElementById('sheet'),sheetTitle=document.getElementById('sheetTitle'),sheetSub=document.getElementById('sheetSub'),evidence=document.getElementById('evidence');
+function openSheet(id){
+  const d=details[id];if(!d)return;
+  sheetTitle.textContent=d.title;sheetSub.textContent=d.sub;
+  evidence.innerHTML=d.rows.map(([k,v])=>`<div class="evidence-row"><span>${k}</span><b class="${k==='Evidence'?'good':''}">${v}</b></div>`).join('');
+  scrim.classList.add('show');sheet.classList.add('show');
+}
+function closeSheet(){scrim.classList.remove('show');sheet.classList.remove('show')}
+document.querySelectorAll('.round-row').forEach(row=>row.addEventListener('click',()=>openSheet(row.dataset.round)));
+document.getElementById('closeSheet').addEventListener('click',closeSheet);scrim.addEventListener('click',closeSheet);document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet()});
+</script>
+</body>
+</html>

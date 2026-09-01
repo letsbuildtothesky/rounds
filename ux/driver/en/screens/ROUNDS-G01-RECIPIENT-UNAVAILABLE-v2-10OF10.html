@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rounds — G01 Recipient Unavailable v2</title>
+<style>
+:root{
+  --ink:#172238; --ink2:#3c4960; --muted:#78859a; --line:#dbe2e9;
+  --orange:#ff6420; --green:#168b50; --red:#c94646;
+  --red-soft:#fff4f3; --green-soft:#eef9f2; --surface:#f7f9fb; --white:#fff;
+  --shadow:0 22px 55px rgba(23,34,56,.15);
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:var(--ink);background:#edf1f4;-webkit-font-smoothing:antialiased}
+button{font:inherit}
+body{padding:14px;display:grid;place-items:center}
+.phone{width:393px;height:852px;background:#fff;border:1px solid #d9e0e6;border-radius:38px;overflow:hidden;position:relative;box-shadow:var(--shadow)}
+.statusbar{height:42px;padding:12px 20px 0;display:flex;justify-content:space-between;align-items:flex-start;font-size:13px;font-weight:850;position:relative;z-index:20;background:#fff}
+.sb-right{display:flex;align-items:center;gap:7px}.signal{display:flex;gap:2px;align-items:flex-end;height:10px}.signal i{width:2.5px;border-radius:2px;background:currentColor}.signal i:nth-child(1){height:4px}.signal i:nth-child(2){height:6px}.signal i:nth-child(3){height:8px}.signal i:nth-child(4){height:10px}.battery{width:23px;height:11px;border:1.8px solid currentColor;border-radius:3px;padding:1.5px;position:relative}.battery:after{content:"";position:absolute;right:-3.6px;top:2.2px;width:2.5px;height:5px;border-radius:0 2px 2px 0;background:currentColor}.battery b{display:block;width:80%;height:100%;background:currentColor;border-radius:1px}
+.app{position:absolute;inset:42px 0 0;display:flex;flex-direction:column;background:#fff;min-height:0}
+.topbar{height:66px;flex:0 0 auto;display:flex;align-items:center;gap:13px;padding:0 20px;border-bottom:1px solid var(--line)}
+.back,.more{width:42px;height:42px;border:0;background:#fff;display:grid;place-items:center;color:var(--ink);cursor:pointer}.back svg{width:25px;height:25px;stroke:currentColor;fill:none;stroke-width:2.2}.topcopy{flex:1;min-width:0}.topcopy small{display:block;font-size:12px;line-height:1.1;color:var(--muted);font-weight:850;letter-spacing:.08em;text-transform:uppercase}.topcopy b{display:block;margin-top:3px;font-size:17px;line-height:1.15;font-weight:900;letter-spacing:-.025em}.more{font-size:24px;font-weight:900;letter-spacing:2px}
+.content{flex:1;min-height:0;overflow:auto;padding:24px 22px 126px}
+.issue-kicker{display:flex;align-items:center;gap:9px;color:var(--red);font-size:12px;font-weight:900;letter-spacing:.13em;text-transform:uppercase}.issue-kicker i{width:9px;height:9px;background:var(--red);border-radius:50%}
+h1{margin:12px 0 0;font-size:39px;line-height:.98;font-weight:950;letter-spacing:-.055em;max-width:310px}.location{margin-top:12px;font-size:16px;line-height:1.35;color:var(--muted);font-weight:750}.recipient{margin-top:27px;padding-top:20px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:flex-start;gap:18px}.recipient small{display:block;font-size:11px;font-weight:900;letter-spacing:.11em;text-transform:uppercase;color:var(--orange);margin-bottom:5px}.recipient b{display:block;font-size:23px;line-height:1.05;font-weight:920;letter-spacing:-.035em}.recipient span{display:block;margin-top:7px;font-size:14px;line-height:1.35;color:var(--muted);font-weight:720}.fragile{font-size:13px;color:var(--ink2);font-weight:800;white-space:nowrap;padding-top:17px}.fragile i{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--orange);margin-right:7px}
+.section{margin-top:29px}.section-title{font-size:13px;font-weight:900;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:9px}.ledger{border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.ledger-empty{min-height:62px;display:flex;align-items:center;color:var(--muted);font-size:14px;font-weight:720}.attempt{min-height:61px;display:grid;grid-template-columns:56px 1fr auto;align-items:center;gap:10px;border-top:1px solid var(--line)}.attempt:first-child{border-top:0}.attempt time{font-size:13px;color:var(--muted);font-weight:800}.attempt b{font-size:14.5px;font-weight:880}.attempt span{font-size:13px;color:var(--muted);font-weight:760}.attempt .bad{color:var(--red);font-weight:850}.attempt .good{color:var(--green);font-weight:850}
+.decision{margin-top:26px;border-top:1px solid var(--line);padding-top:21px;display:none}.decision.show{display:block}.decision .state{display:flex;gap:12px;align-items:flex-start}.decision-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:50%;background:var(--green-soft);color:var(--green);flex:0 0 auto}.decision-icon svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:2.5}.decision small{display:block;color:var(--green);font-size:11px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px}.decision b{display:block;font-size:23px;line-height:1.05;font-weight:920;letter-spacing:-.035em}.decision p{margin:7px 0 0;color:var(--muted);font-size:14px;line-height:1.4;font-weight:700}.wait{margin-top:26px;border-top:1px solid var(--line);padding-top:21px;display:none}.wait.show{display:block}.wait small{display:block;font-size:11px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:var(--orange)}.wait b{display:block;margin-top:6px;font-size:22px;font-weight:920;letter-spacing:-.03em}.wait span{display:block;margin-top:7px;color:var(--muted);font-size:14px;line-height:1.4;font-weight:700}
+.footer{position:absolute;left:0;right:0;bottom:0;padding:11px 22px calc(18px + env(safe-area-inset-bottom));background:rgba(255,255,255,.97);border-top:1px solid var(--line);backdrop-filter:blur(10px);z-index:12}.primary{width:100%;height:62px;border:0;border-radius:7px;background:var(--ink);color:#fff;font-size:17px;font-weight:900;letter-spacing:-.015em;cursor:pointer}.primary:active{transform:translateY(1px)}.secondary{width:100%;height:48px;margin-top:8px;border:0;background:#fff;color:var(--ink2);font-size:15px;font-weight:850;cursor:pointer}.primary[disabled]{background:#dfe4e9;color:#8d98a6;cursor:default;transform:none}
+.sheet-wrap{position:absolute;inset:0;background:rgba(23,34,56,.28);z-index:50;display:none;align-items:flex-end}.sheet-wrap.show{display:flex}.sheet{width:100%;background:#fff;border-radius:22px 22px 0 0;padding:10px 18px calc(18px + env(safe-area-inset-bottom));box-shadow:0 -18px 50px rgba(23,34,56,.18);transform:translateY(14px);animation:rise .18s ease forwards}@keyframes rise{to{transform:none}}.grab{width:42px;height:4px;border-radius:4px;background:#d7dde4;margin:1px auto 18px}.sheet h2{margin:0 4px 12px;font-size:22px;font-weight:920;letter-spacing:-.035em}.sheet-row{width:100%;height:64px;border:0;border-top:1px solid var(--line);background:#fff;display:flex;align-items:center;justify-content:space-between;text-align:left;color:var(--ink);font-size:16px;font-weight:860;cursor:pointer;padding:0 4px}.sheet-row:last-child{border-bottom:1px solid var(--line)}.sheet-row span{color:var(--muted);font-size:13px;font-weight:760}.sheet-row.problem{color:var(--red)}
+.toast{position:absolute;left:22px;right:22px;bottom:104px;background:var(--ink);color:#fff;border-radius:8px;padding:13px 14px;font-size:13.5px;font-weight:780;z-index:70;opacity:0;transform:translateY(8px);pointer-events:none;transition:.18s}.toast.show{opacity:1;transform:none}
+@media(max-width:520px){body{padding:0}.phone{width:100vw;height:100dvh;border:0;border-radius:0;box-shadow:none}.statusbar{padding-top:max(12px,env(safe-area-inset-top));height:calc(42px + env(safe-area-inset-top));}.app{top:calc(42px + env(safe-area-inset-top))}}
+@media(max-width:340px){.topbar{padding:0 14px}.content{padding:20px 17px 122px}h1{font-size:34px}.location{font-size:14px}.recipient{margin-top:22px;padding-top:17px}.recipient b{font-size:20px}.recipient span{font-size:13px}.fragile{font-size:12px}.section{margin-top:24px}.footer{padding-left:17px;padding-right:17px}.primary{height:58px}.secondary{height:44px}.attempt{grid-template-columns:48px 1fr auto}.sheet{padding-left:16px;padding-right:16px}.sheet-row{height:60px;font-size:15px}}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="statusbar"><div>14:36</div><div class="sb-right"><div class="signal"><i></i><i></i><i></i><i></i></div><div>5G</div><div class="battery"><b></b></div></div></div>
+  <main class="app">
+    <header class="topbar">
+      <button class="back" aria-label="Back" onclick="goBack()"><svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+      <div class="topcopy"><small>Stop 1 of 4</small><b>K. Nattaporn</b></div>
+      <button class="more" aria-label="More actions" onclick="openMore()">•••</button>
+    </header>
+
+    <section class="content">
+      <div class="issue-kicker"><i></i>Delivery problem</div>
+      <h1>Recipient unavailable</h1>
+      <div class="location">The Emporio Place · Sukhumvit 24</div>
+
+      <div class="recipient">
+        <div><small>Current stop</small><b>K. Nattaporn</b><span>Lobby entrance · Tower A</span></div>
+        <div class="fragile"><i></i>Fragile bouquet</div>
+      </div>
+
+      <section class="section">
+        <div class="section-title">Contact attempts</div>
+        <div class="ledger" id="ledger"><div class="ledger-empty">No attempts yet</div></div>
+      </section>
+
+      <section class="wait" id="waitState">
+        <small>Operations contacted</small>
+        <b>Waiting for decision</b>
+        <span>Keep the delivery with you until Operations updates this stop.</span>
+      </section>
+
+      <section class="decision" id="decisionState">
+        <div class="state">
+          <div class="decision-icon"><svg viewBox="0 0 24 24"><path d="M4 12l5 5 11-11"/></svg></div>
+          <div><small>Operations approved</small><b>Leave with reception</b><p>Photo required</p></div>
+        </div>
+      </section>
+    </section>
+
+    <footer class="footer">
+      <button class="primary" id="primary" onclick="primaryAction()">Call recipient</button>
+      <button class="secondary" id="secondary" onclick="contactOperations()">Contact Operations</button>
+    </footer>
+
+    <div class="sheet-wrap" id="callSheet" onclick="sheetBackdrop(event,'callSheet')">
+      <div class="sheet" role="dialog" aria-modal="true" aria-label="Call outcome">
+        <div class="grab"></div><h2>Call outcome</h2>
+        <button class="sheet-row" onclick="recordCall('reached')">Reached recipient <span>Return to handoff</span></button>
+        <button class="sheet-row" onclick="recordCall('no-answer')">No answer <span>Record attempt</span></button>
+        <button class="sheet-row" onclick="recordCall('busy')">Busy / declined <span>Record attempt</span></button>
+      </div>
+    </div>
+
+    <div class="sheet-wrap" id="moreSheet" onclick="sheetBackdrop(event,'moreSheet')">
+      <div class="sheet" role="dialog" aria-modal="true" aria-label="More actions">
+        <div class="grab"></div><h2>Stop actions</h2>
+        <button class="sheet-row" onclick="contactOperations();closeSheet('moreSheet')">Message Operations</button>
+        <button class="sheet-row" onclick="location.href='ROUNDS-G02-ADDRESS-PROBLEM-v2-10OF10.html'">Address / entrance problem</button>
+        <button class="sheet-row problem" onclick="showToast('Opening delivery issue');closeSheet('moreSheet')">Report another issue</button>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+  </main>
+</div>
+<script>
+let attempts=[];
+let waiting=false;
+let resolved=false;
+const ledger=document.getElementById('ledger');
+const primary=document.getElementById('primary');
+const secondary=document.getElementById('secondary');
+const waitState=document.getElementById('waitState');
+const decisionState=document.getElementById('decisionState');
+const toast=document.getElementById('toast');
+
+function nowTime(){return attempts.length?'14:'+(36+attempts.length*2):'14:36'}
+function render(){
+  if(!attempts.length){ledger.innerHTML='<div class="ledger-empty">No attempts yet</div>'}
+  else{ledger.innerHTML=attempts.map(a=>`<div class="attempt"><time>${a.time}</time><b>Recipient call</b><span class="${a.outcome==='Reached'?'good':'bad'}">${a.outcome}</span></div>`).join('')}
+  waitState.classList.toggle('show',waiting&&!resolved);
+  decisionState.classList.toggle('show',resolved);
+  if(resolved){primary.textContent='Continue to handoff';primary.disabled=false;secondary.style.display='none'}
+  else if(waiting){primary.textContent='Waiting for Operations';primary.disabled=true;secondary.style.display='none'}
+  else if(attempts.length>=2){primary.textContent='Contact Operations';primary.disabled=false;secondary.style.display='none'}
+  else if(attempts.length===1){primary.textContent='Call recipient again';primary.disabled=false;secondary.style.display='block'}
+  else{primary.textContent='Call recipient';primary.disabled=false;secondary.style.display='block'}
+}
+function primaryAction(){
+  if(resolved){location.href='ROUNDS-F01-F02-DROPOFF-HANDOFF-v3-10OF10.html';return}
+  if(attempts.length>=2){contactOperations();return}
+  openSheet('callSheet');
+}
+function recordCall(type){
+  const outcome=type==='reached'?'Reached':type==='busy'?'Busy / declined':'No answer';
+  attempts.push({time:attempts.length===0?'14:36':'14:38',outcome});
+  closeSheet('callSheet');
+  if(type==='reached'){
+    showToast('Recipient reached');
+    setTimeout(()=>{location.href='ROUNDS-F01-F02-DROPOFF-HANDOFF-v3-10OF10.html'},520);
+  }else{
+    showToast('Call attempt recorded');render();
+  }
+}
+function contactOperations(){
+  if(waiting||resolved)return;
+  waiting=true;render();showToast('Operations contacted');
+  setTimeout(()=>{waiting=false;resolved=true;render();decisionState.scrollIntoView({behavior:'smooth',block:'center'});showToast('Operations updated the stop')},1400);
+}
+function openMore(){openSheet('moreSheet')}
+function openSheet(id){document.getElementById(id).classList.add('show')}
+function closeSheet(id){document.getElementById(id).classList.remove('show')}
+function sheetBackdrop(e,id){if(e.target.id===id)closeSheet(id)}
+function showToast(msg){toast.textContent=msg;toast.classList.add('show');clearTimeout(window._toast);window._toast=setTimeout(()=>toast.classList.remove('show'),1300)}
+function goBack(){location.href='ROUNDS-F01-F02-DROPOFF-HANDOFF-v3-10OF10.html'}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSheet('callSheet');closeSheet('moreSheet')}})
+render();
+</script>
+</body>
+</html>

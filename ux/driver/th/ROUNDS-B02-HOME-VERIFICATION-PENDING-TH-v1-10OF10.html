@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Rounds — B02 กำลังตรวจสอบ · Thai-first v1</title>
+<style>
+@import url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@7/fonts/LINESeedSansTH/LINESeedSansTH.css');
+  :root{
+    --canvas:#eef1f4;
+    --paper:#ffffff;
+    --ink:#172238;
+    --ink-2:#3d4a5d;
+    --muted:#748094;
+    --line:#e1e6ea;
+    --line-2:#cbd4dc;
+    --orange:#ff6420;
+    --orange-soft:#fff3ed;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%;background:var(--canvas);color:var(--ink);font-family:'LINE Seed Sans TH',Tahoma,'Noto Sans Thai',sans-serif;-webkit-font-smoothing:antialiased}
+  a,button{font:inherit}
+  body{padding:28px}
+  .frame{width:393px;height:852px;margin:0 auto;background:var(--paper);position:relative;overflow:hidden;border:1px solid rgba(23,34,56,.09);border-radius:28px;box-shadow:0 18px 42px rgba(23,34,56,.14)}
+
+  .statusbar{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;height:28px;padding:0 20px 4px;display:flex;align-items:flex-end;justify-content:space-between;font-size:12px;font-weight:760;background:#fff;position:relative;z-index:20}
+  .sb-right{display:flex;align-items:center;gap:6px}
+  .signal{display:flex;align-items:flex-end;gap:1.5px;height:9px}.signal i{display:block;width:2px;background:currentColor;border-radius:1px}.signal i:nth-child(1){height:3px}.signal i:nth-child(2){height:5px}.signal i:nth-child(3){height:7px}.signal i:nth-child(4){height:9px}
+  .battery{width:20px;height:9px;border:1.5px solid currentColor;border-radius:2px;padding:1px;position:relative}.battery:after{content:"";position:absolute;right:-3px;top:1.5px;width:2px;height:4px;background:currentColor}.battery b{display:block;width:78%;height:100%;background:currentColor;border-radius:1px}
+
+  .topbar{height:58px;padding:0 20px;border-bottom:1px solid var(--line);background:#fff;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:20}
+  .brand{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;display:flex;align-items:flex-end;font-size:20px;line-height:1;font-weight:900;letter-spacing:-.05em}.brand-dot{width:6px;height:6px;border-radius:50%;background:var(--orange);margin-left:3px;margin-bottom:2px}
+  .icon-btn{width:38px;height:38px;border:0;background:#fff;color:var(--ink-2);display:grid;place-items:center;text-decoration:none;border-radius:7px}.icon-btn:hover{background:#f8f9fa}.icon-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+
+  .body{position:absolute;inset:86px 0 76px;display:flex;flex-direction:column;background:#fff}
+
+  .hero{padding:32px 20px 30px;border-bottom:1px solid var(--line)}
+  .state-line{display:flex;align-items:center;gap:9px;color:var(--orange);font-size:14px;font-weight:790}
+  .state-dot{width:9px;height:9px;border-radius:50%;background:var(--orange);box-shadow:0 0 0 5px var(--orange-soft)}
+  h1{margin:18px 0 0;font-size:46px;line-height:.96;letter-spacing:-.062em;font-weight:890}
+  .hero-sub{margin-top:14px;font-size:17px;line-height:1.2;color:var(--ink-2);font-weight:710}
+
+  .submitted{padding:27px 20px 0}
+  .section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;padding-bottom:18px;border-bottom:1px solid var(--line)}
+  .section-label{font-size:11.5px;font-weight:850;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+  .count{font-size:31px;line-height:.9;font-weight:870;letter-spacing:-.05em}
+  .count span{font-size:12px;line-height:1;color:var(--muted);font-weight:730;letter-spacing:0;margin-left:5px}
+
+  .check-list{margin:0;padding:0;list-style:none}
+  .check-row{min-height:58px;display:flex;align-items:center;justify-content:space-between;gap:16px;border-bottom:1px solid var(--line)}
+  .check-name{display:flex;align-items:center;gap:11px;font-size:14.5px;font-weight:780}
+  .check-icon{width:25px;height:25px;border-radius:50%;border:1.5px solid var(--line-2);display:grid;place-items:center;color:var(--ink-2);flex:0 0 auto}
+  .check-icon svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+
+  .spacer{flex:1 1 auto;min-height:32px}
+
+  .bottomnav{position:absolute;left:0;right:0;bottom:0;height:76px;background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding:7px 4px 9px;z-index:40}
+  .nav-item{color:var(--muted);text-decoration:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-size:11.5px;font-weight:720;border:0;background:#fff;cursor:pointer}.nav-item svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}.nav-item.active{color:var(--orange)}.nav-item.disabled{opacity:.34;cursor:default}
+
+  /* Thai-first composition */
+  .hero{padding:31px 20px 29px}
+  .state-line{font-size:13.5px;line-height:1.45;font-weight:760;letter-spacing:0}
+  h1{margin-top:15px;font-size:39px;line-height:1.13;letter-spacing:0;font-weight:800}
+  .hero-sub{margin-top:10px;font-size:15.5px;line-height:1.5;font-weight:520}
+  .submitted{padding-top:25px}
+  .section-label{font-size:12.5px;line-height:1.45;font-weight:720;letter-spacing:0;text-transform:none}
+  .count{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;font-size:29px;letter-spacing:-.04em}
+  .count span{font-family:'LINE Seed Sans TH',Tahoma,'Noto Sans Thai',sans-serif;font-size:12.5px;font-weight:600;letter-spacing:0}
+  .check-name{font-size:14px;line-height:1.45;font-weight:680;white-space:nowrap}
+  .nav-item{font-size:10.8px;line-height:1.3;font-weight:620;white-space:nowrap}
+  @media(max-width:340px){
+    .hero{padding:27px 16px 25px}.state-line{font-size:12.8px}h1{font-size:35px;line-height:1.15}.hero-sub{font-size:14.5px;line-height:1.5}
+    .submitted{padding:22px 16px 0}.section-head{padding-bottom:15px}.check-row{min-height:55px}.check-name{font-size:13.2px}.bottomnav{padding-left:1px;padding-right:1px}.nav-item{font-size:10.2px}
+  }
+  @media(max-width:460px){body{padding:0;background:#fff}.frame{width:100vw;height:100dvh;border:0;border-radius:0;box-shadow:none}}
+</style>
+</head>
+<body>
+<div class="frame">
+  <div class="statusbar">
+    <span>16:03</span>
+    <div class="sb-right"><div class="signal"><i></i><i></i><i></i><i></i></div><span>5G</span><div class="battery"><b></b></div></div>
+  </div>
+
+  <div class="topbar">
+    <div class="brand">Rounds<span class="brand-dot"></span></div>
+    <a class="icon-btn" href="ROUNDS-M01-NOTIFICATIONS-v2-10OF10.html" aria-label="การแจ้งเตือน">
+      <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 7h18s-3 0-3-7"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+    </a>
+  </div>
+
+  <main class="body">
+    <section class="hero">
+      <div class="state-line"><span class="state-dot"></span><span>ยืนยันตัวตน</span></div>
+      <h1>กำลังตรวจสอบ</h1>
+      <div class="hero-sub">เราจะแจ้งทันทีเมื่อบัญชีพร้อมรับงาน</div>
+    </section>
+
+    <section class="submitted" aria-label="ข้อมูลยืนยันที่ส่งแล้ว">
+      <div class="section-head">
+        <div class="section-label">ส่งครบแล้ว</div>
+        <div class="count">4/4 <span>รายการ</span></div>
+      </div>
+      <ul class="check-list">
+        <li class="check-row">
+          <div class="check-name"><span class="check-icon"><svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg></span><span>ข้อมูลตัวตน</span></div>
+        </li>
+        <li class="check-row">
+          <div class="check-name"><span class="check-icon"><svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg></span><span>ยืนยันใบหน้า</span></div>
+        </li>
+        <li class="check-row">
+          <div class="check-name"><span class="check-icon"><svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg></span><span>รถที่ใช้รับงาน</span></div>
+        </li>
+        <li class="check-row">
+          <div class="check-name"><span class="check-icon"><svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg></span><span>ช่องทางรับเงิน</span></div>
+        </li>
+      </ul>
+    </section>
+
+    <div class="spacer"></div>
+  </main>
+
+  <nav class="bottomnav" aria-label="เมนูหลัก">
+    <a class="nav-item active" href="#" aria-current="page">
+      <svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg><span>หน้าแรก</span>
+    </a>
+    <button class="nav-item disabled" type="button" aria-disabled="true">
+      <svg viewBox="0 0 24 24"><path d="M12 20s7-3.6 7-9a7 7 0 1 0-14 0c0 5.4 7 9 7 9Z"/><circle cx="12" cy="11" r="2.5"/></svg><span>งาน</span>
+    </button>
+    <button class="nav-item disabled" type="button" aria-disabled="true">
+      <svg viewBox="0 0 24 24"><path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7H14.5a3.5 3.5 0 0 1 0 7H6"/></svg><span>รายได้</span>
+    </button>
+    <a class="nav-item" href="ROUNDS-L01-DRIVER-PROFILE-v3-10OF10.html">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>โปรไฟล์</span>
+    </a>
+  </nav>
+</div>
+</body>
+</html>

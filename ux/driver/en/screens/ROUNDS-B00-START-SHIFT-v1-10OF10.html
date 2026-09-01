@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Rounds — B00 Start Shift v1</title>
+<style>
+  :root{
+    --canvas:#eef1f4;
+    --paper:#ffffff;
+    --ink:#172238;
+    --ink-2:#3d4a5d;
+    --muted:#748094;
+    --line:#e1e6ea;
+    --line-2:#cbd4dc;
+    --orange:#ff6420;
+    --orange-soft:#fff3ec;
+  }
+
+  *{box-sizing:border-box}
+  html,body{
+    margin:0;min-height:100%;background:var(--canvas);color:var(--ink);
+    font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  button,a{font:inherit}
+  body{padding:28px}
+
+  .frame{
+    width:393px;height:852px;margin:0 auto;background:var(--paper);position:relative;overflow:hidden;
+    border:1px solid rgba(23,34,56,.09);border-radius:28px;box-shadow:0 18px 42px rgba(23,34,56,.14);
+  }
+
+  .statusbar{
+    height:28px;padding:0 20px 4px;display:flex;align-items:flex-end;justify-content:space-between;
+    font-size:12px;font-weight:760;background:#fff;position:relative;z-index:30;
+  }
+  .sb-right{display:flex;align-items:center;gap:6px}
+  .signal{display:flex;align-items:flex-end;gap:1.5px;height:9px}
+  .signal i{display:block;width:2px;background:currentColor;border-radius:1px}
+  .signal i:nth-child(1){height:3px}.signal i:nth-child(2){height:5px}.signal i:nth-child(3){height:7px}.signal i:nth-child(4){height:9px}
+  .battery{width:20px;height:9px;border:1.5px solid currentColor;border-radius:2px;padding:1px;position:relative}
+  .battery:after{content:"";position:absolute;right:-3px;top:1.5px;width:2px;height:4px;background:currentColor;border-radius:0 1px 1px 0}
+  .battery b{display:block;width:78%;height:100%;background:currentColor;border-radius:1px}
+
+  .topbar{
+    height:56px;padding:0 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;
+    justify-content:space-between;background:#fff;position:relative;z-index:30;
+  }
+  .brand{display:flex;align-items:flex-end;font-size:20px;line-height:1;font-weight:900;letter-spacing:-.05em}
+  .brand-dot{width:6px;height:6px;border-radius:50%;background:var(--orange);margin-left:3px;margin-bottom:2px}
+  .icon-btn{
+    width:40px;height:40px;border:1px solid transparent;background:#fff;color:var(--ink-2);display:grid;
+    place-items:center;border-radius:7px;cursor:pointer;text-decoration:none;
+  }
+  .icon-btn:hover{border-color:var(--line)}
+  .icon-btn svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+
+  .body{position:absolute;inset:84px 0 76px;background:#fff;display:flex;flex-direction:column;overflow:hidden}
+
+  .hero{padding:24px 20px 25px;border-bottom:1px solid var(--line);flex:0 0 auto}
+  .state-line{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:800;color:var(--muted);margin-bottom:10px}
+  .state-dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+  .hero h1{margin:0;font-size:31px;line-height:1.01;letter-spacing:-.055em;font-weight:790}
+
+  .shift{padding:29px 20px 30px;border-bottom:1px solid var(--line);flex:0 0 auto}
+  .section-title{font-size:11.5px;line-height:1;font-weight:850;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:13px}
+  .shift-time{font-size:39px;line-height:.98;letter-spacing:-.055em;font-weight:840;color:var(--ink)}
+  .shift-meta{margin-top:13px;display:flex;align-items:center;justify-content:space-between;gap:16px;font-size:13.5px;font-weight:730;color:var(--muted)}
+  .shift-meta strong{color:var(--ink-2);font-weight:800}
+
+  .breathing-space{flex:1 1 auto;min-height:32px}
+
+  .dispatch{padding:0 20px;border-top:1px solid var(--line);flex:0 0 auto;background:#fff}
+  .dispatch-row{min-height:82px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+  .dispatch-copy{min-width:0}
+  .dispatch-label{font-size:11.5px;line-height:1;font-weight:850;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+  .dispatch-name{font-size:16px;line-height:1.12;font-weight:820;letter-spacing:-.02em}
+  .dispatch-actions{display:flex;gap:7px;flex:0 0 auto}
+  .utility{
+    width:44px;height:44px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink-2);
+    display:grid;place-items:center;text-decoration:none;cursor:pointer;
+  }
+  .utility:hover{border-color:var(--line-2);background:#fafbfc}
+  .utility svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+
+  .start-wrap{padding:14px 20px 18px;flex:0 0 auto;background:#fff}
+  .primary{
+    width:100%;height:62px;border:0;border-radius:8px;background:var(--orange);color:#fff;
+    display:flex;align-items:center;justify-content:center;gap:9px;text-decoration:none;cursor:pointer;
+    font-size:17px;font-weight:820;letter-spacing:-.015em;
+  }
+  .primary:hover{filter:brightness(.98)}
+  .primary:active{transform:translateY(1px)}
+  .primary svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+
+  .bottomnav{
+    position:absolute;left:0;right:0;bottom:0;height:76px;background:#fff;border-top:1px solid var(--line);
+    display:grid;grid-template-columns:repeat(4,1fr);padding:7px 4px 9px;z-index:40;
+  }
+  .nav-item{
+    color:var(--muted);text-decoration:none;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:5px;font-size:11.5px;font-weight:720;border:0;background:#fff;cursor:pointer;
+  }
+  .nav-item svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+  .nav-item.active{color:var(--orange)}
+
+  @media(max-width:460px){
+    body{padding:0;background:#fff}
+    .frame{width:100vw;height:100dvh;border:0;border-radius:0;box-shadow:none}
+  }
+</style>
+</head>
+<body>
+<div class="frame">
+  <div class="statusbar">
+    <span>07:52</span>
+    <div class="sb-right"><div class="signal"><i></i><i></i><i></i><i></i></div><span>5G</span><div class="battery"><b></b></div></div>
+  </div>
+
+  <div class="topbar">
+    <div class="brand">Rounds<span class="brand-dot"></span></div>
+    <a class="icon-btn" href="ROUNDS-M01-NOTIFICATIONS-v2-10OF10.html" aria-label="Notifications">
+      <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 7h18s-3 0-3-7"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+    </a>
+  </div>
+
+  <main class="body">
+    <section class="hero">
+      <div class="state-line"><span class="state-dot"></span><span>Off shift · UrbanFlowers</span></div>
+      <h1>Starts in 8 min</h1>
+    </section>
+
+    <section class="shift" aria-label="Today's shift">
+      <div class="section-title">Today</div>
+      <div class="shift-time">08:00–17:00</div>
+      <div class="shift-meta"><span><strong>9h</strong> scheduled</span><span>Team shift</span></div>
+    </section>
+
+    <div class="breathing-space" aria-hidden="true"></div>
+
+    <section class="dispatch" aria-label="Dispatch contact">
+      <div class="dispatch-row">
+        <div class="dispatch-copy">
+          <div class="dispatch-label">Dispatch</div>
+          <div class="dispatch-name">UrbanFlowers</div>
+        </div>
+        <div class="dispatch-actions">
+          <a class="utility" href="ROUNDS-H01-OPERATOR-CHAT-v4-10OF10.html" aria-label="Message dispatch">
+            <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/></svg>
+          </a>
+          <a class="utility" href="ROUNDS-H02-CALL-CONTACT-v2-10OF10.html" aria-label="Call dispatch">
+            <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.89.33 1.76.63 2.59a2 2 0 0 1-.45 2.11L8 9.91a16 16 0 0 0 6.09 6.09l1.49-1.29a2 2 0 0 1 2.11-.45c.83.3 1.7.51 2.59.63A2 2 0 0 1 22 16.92Z"/></svg>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <div class="start-wrap">
+      <a class="primary" href="ROUNDS-B01-TEAM-DRIVER-HOME-v4-10OF10.html" aria-label="Start shift">
+        <svg viewBox="0 0 24 24"><path d="M12 3v18"/><path d="m6.5 8.5 5.5-5.5 5.5 5.5"/></svg>
+        <span>Start shift</span>
+      </a>
+    </div>
+  </main>
+
+  <nav class="bottomnav" aria-label="Primary">
+    <a class="nav-item active" href="#" aria-current="page">
+      <svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg><span>Home</span>
+    </a>
+    <a class="nav-item" href="ROUNDS-J01-MY-ROUNDS-v7-10OF10.html">
+      <svg viewBox="0 0 24 24"><path d="M12 20s7-3.6 7-9a7 7 0 1 0-14 0c0 5.4 7 9 7 9Z"/><circle cx="12" cy="11" r="2.5"/></svg><span>Jobs</span>
+    </a>
+    <a class="nav-item" href="ROUNDS-K00-TEAM-HOURS-v5-10OF10.html">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Hours</span>
+    </a>
+    <a class="nav-item" href="ROUNDS-L01-DRIVER-PROFILE-v3-10OF10.html">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Profile</span>
+    </a>
+  </nav>
+</div>
+</body>
+</html>

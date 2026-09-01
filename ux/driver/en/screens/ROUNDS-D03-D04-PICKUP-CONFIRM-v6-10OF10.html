@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Rounds — D03/D04 Pickup Confirmation v6</title>
+<style>
+  :root{
+    --canvas:#eef1f4;
+    --paper:#fff;
+    --ink:#172238;
+    --ink-2:#3d4a5d;
+    --muted:#748094;
+    --line:#e1e6ea;
+    --line-2:#cbd4dc;
+    --orange:#ff6420;
+    --orange-soft:#fff5ef;
+    --green:#168b50;
+    --green-soft:#f1f9f4;
+    --amber:#aa701d;
+    --amber-soft:#fff9ed;
+    --red:#bf4a4a;
+    --red-soft:#fff5f5;
+    --navy:#172238;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%;background:var(--canvas);color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  button{font:inherit}
+  body{padding:28px}
+  .frame{width:393px;height:852px;margin:0 auto;background:var(--paper);position:relative;overflow:hidden;border:1px solid rgba(23,34,56,.09);border-radius:28px;box-shadow:0 18px 42px rgba(23,34,56,.14)}
+
+  .statusbar{height:28px;padding:0 20px 4px;display:flex;align-items:flex-end;justify-content:space-between;font-size:12px;font-weight:760;background:#fff;position:relative;z-index:30}
+  .sb-right{display:flex;align-items:center;gap:6px}
+  .signal{display:flex;align-items:flex-end;gap:1.5px;height:9px}.signal i{display:block;width:2px;background:currentColor;border-radius:1px}.signal i:nth-child(1){height:3px}.signal i:nth-child(2){height:5px}.signal i:nth-child(3){height:7px}.signal i:nth-child(4){height:9px}
+  .battery{width:20px;height:9px;border:1.5px solid currentColor;border-radius:2px;padding:1px;position:relative}.battery:after{content:"";position:absolute;right:-3px;top:1.5px;width:2px;height:4px;background:currentColor}.battery b{display:block;width:78%;height:100%;background:currentColor;border-radius:1px}
+
+  .screen{position:absolute;inset:28px 0 0;background:#fff;display:flex;flex-direction:column}
+  .topbar{height:60px;flex:0 0 auto;padding:0 18px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--line)}
+  .back{width:42px;height:42px;border:1px solid var(--line-2);border-radius:7px;background:#fff;display:grid;place-items:center;color:var(--ink);cursor:pointer}
+  .back svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}
+  .top-copy{flex:1;min-width:0}.top-copy small{display:block;font-size:11px;font-weight:850;letter-spacing:.08em;text-transform:uppercase;color:var(--orange)}.top-copy b{display:block;margin-top:4px;font-size:15px;font-weight:810;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .top-meta{font-size:12.5px;font-weight:760;color:var(--muted);white-space:nowrap}
+
+  .content{flex:1;min-height:0;overflow:auto;padding:24px 18px 118px;scrollbar-width:none}.content::-webkit-scrollbar{display:none}
+  .hero{padding-bottom:22px;border-bottom:1px solid var(--line)}
+  .hero-row{display:flex;align-items:flex-end;justify-content:space-between;gap:16px}
+  .hero h1{margin:0;font-size:31px;line-height:.98;font-weight:900;letter-spacing:-.055em}
+  .progress{text-align:right;flex:0 0 auto}.progress strong{display:block;font-size:27px;line-height:1;font-weight:880;letter-spacing:-.045em}.progress span{display:block;margin-top:5px;font-size:11.5px;color:var(--muted);font-weight:720}
+  .summary{margin-top:12px;font-size:13px;font-weight:730;color:var(--muted)}.summary b{color:var(--ink-2);font-weight:790}
+
+  .manifest{margin-top:20px;border:1px solid var(--line);border-radius:8px;background:#fff;overflow:hidden}
+  .manifest-head{min-height:54px;padding:0 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fafbfb;border-bottom:1px solid var(--line)}
+  .manifest-head b{font-size:13px;font-weight:820}.manifest-head span{font-size:11.5px;color:var(--muted);font-weight:700}
+  .manifest-line{width:100%;min-height:70px;padding:10px 13px;border:0;border-bottom:1px solid #edf0f2;background:#fff;color:inherit;display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:11px;align-items:center;text-align:left;cursor:pointer}
+  .manifest-line:last-child{border-bottom:0}
+  .manifest-line:active{background:#fafbfb}
+  .manifest-line.checked{background:#fbfefc}
+  .check{width:28px;height:28px;border:2px solid var(--line-2);border-radius:6px;background:#fff;display:grid;place-items:center;color:#fff;transition:.12s ease}
+  .check svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.8;stroke-linecap:round;stroke-linejoin:round;opacity:0}
+  .manifest-line.checked .check{background:var(--green);border-color:var(--green)}.manifest-line.checked .check svg{opacity:1}
+  .line-copy{min-width:0}.line-title{font-size:14.5px;line-height:1.22;font-weight:810;letter-spacing:-.012em}.line-meta{margin-top:5px;font-size:11.8px;color:var(--muted);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .line-side{text-align:right;min-width:46px}.qty{font-size:15px;font-weight:860;color:var(--ink)}.care{display:block;margin-top:5px;font-size:10.8px;font-weight:800;color:var(--orange);white-space:nowrap}.care.cool{color:#3269b7}
+
+  .problem{width:100%;min-height:56px;margin-top:14px;border:1px solid #e6c8c8;border-radius:7px;background:#fff;color:var(--red);display:flex;align-items:center;justify-content:space-between;padding:0 14px;font-size:13.5px;font-weight:800;cursor:pointer}
+  .problem span:last-child{font-size:20px;font-weight:500;line-height:1}
+
+  .footer{position:absolute;left:0;right:0;bottom:0;padding:10px 18px 18px;background:rgba(255,255,255,.985);border-top:1px solid var(--line);z-index:40}
+  .primary{width:100%;height:64px;border:0;border-radius:7px;background:#d9dfe5;color:#85909d;font-size:17px;font-weight:840;cursor:default;transition:.14s ease}
+  .primary.ready{background:var(--green);color:#fff;cursor:pointer;box-shadow:0 8px 18px rgba(22,139,80,.13)}
+
+  .scrim{position:absolute;inset:0;background:rgba(23,34,56,.28);z-index:60;opacity:0;pointer-events:none;transition:.18s ease}.scrim.show{opacity:1;pointer-events:auto}
+  .sheet{position:absolute;left:0;right:0;bottom:0;z-index:70;background:#fff;border-top:1px solid var(--line-2);border-radius:16px 16px 0 0;padding:10px 18px 22px;transform:translateY(104%);transition:transform .22s cubic-bezier(.22,.72,.24,1);box-shadow:0 -18px 46px rgba(23,34,56,.14)}
+  .sheet.show{transform:none}
+  .grip{width:40px;height:4px;border-radius:3px;background:#ccd4db;margin:0 auto 16px}
+  .sheet h2{margin:0;font-size:22px;line-height:1.05;font-weight:880;letter-spacing:-.04em}
+  .sheet-list{margin-top:16px;border-top:1px solid var(--line)}
+  .sheet-action{width:100%;min-height:58px;border:0;border-bottom:1px solid var(--line);background:#fff;color:var(--ink);display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;font-size:14px;font-weight:790;cursor:pointer}
+  .sheet-action.problem-action{color:var(--red)}
+  .sheet-action span:last-child{color:var(--muted);font-size:19px;font-weight:500}
+  .cancel{width:100%;height:48px;margin-top:8px;border:0;background:#fff;color:var(--muted);font-size:13.5px;font-weight:760;cursor:pointer}
+
+  .toast{position:absolute;left:18px;right:18px;bottom:100px;z-index:90;background:var(--navy);color:#fff;border-radius:7px;padding:12px 14px;font-size:13px;font-weight:740;line-height:1.4;box-shadow:0 12px 28px rgba(23,34,56,.19);opacity:0;transform:translateY(8px);pointer-events:none;transition:.18s ease}.toast.show{opacity:1;transform:none}
+
+  @media(max-width:350px){
+    .content{padding-left:16px;padding-right:16px}.hero h1{font-size:28px}.progress strong{font-size:24px}.manifest-line{min-height:66px;padding-left:11px;padding-right:11px;grid-template-columns:28px minmax(0,1fr) auto;gap:9px}.line-title{font-size:13.5px}.line-meta{font-size:11px}.footer{padding-left:16px;padding-right:16px}
+  }
+  @media(max-width:460px){body{padding:0;background:#fff}.frame{width:100vw;height:100dvh;border:0;border-radius:0;box-shadow:none}}
+</style>
+</head>
+<body>
+<div class="frame">
+  <div class="statusbar">
+    <span>11:12</span>
+    <div class="sb-right"><div class="signal"><i></i><i></i><i></i><i></i></div><span>5G</span><div class="battery"><b></b></div></div>
+  </div>
+
+  <main class="screen">
+    <header class="topbar">
+      <button class="back" type="button" aria-label="Back" onclick="history.back()">
+        <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      </button>
+      <div class="top-copy"><small>At pickup</small><b>UrbanFlowers</b></div>
+      <div class="top-meta">4 deliveries</div>
+    </header>
+
+    <section class="content">
+      <div class="hero">
+        <div class="hero-row">
+          <h1>Confirm pickup</h1>
+          <div class="progress"><strong id="progressValue">0 / 5</strong><span>confirmed</span></div>
+        </div>
+        <div class="summary"><b>6 packages</b> · physical manifest</div>
+      </div>
+
+      <div class="manifest" aria-label="Pickup manifest">
+        <div class="manifest-head"><b>Collect</b><span>Tap when physically present</span></div>
+
+        <button class="manifest-line" type="button" data-key="orchid">
+          <span class="check"><svg viewBox="0 0 24 24"><path d="M5 12.5 9.2 17 19 7"/></svg></span>
+          <span class="line-copy"><span class="line-title">Midnight Orchid + glass vase</span><span class="line-meta">#8421 · K. Nattaporn</span></span>
+          <span class="line-side"><span class="qty">×1</span><span class="care">Fragile</span></span>
+        </button>
+
+        <button class="manifest-line" type="button" data-key="hamper">
+          <span class="check"><svg viewBox="0 0 24 24"><path d="M5 12.5 9.2 17 19 7"/></svg></span>
+          <span class="line-copy"><span class="line-title">Signature hamper</span><span class="line-meta">#8422 · James T.</span></span>
+          <span class="line-side"><span class="qty">×1</span></span>
+        </button>
+
+        <button class="manifest-line" type="button" data-key="bouquet">
+          <span class="check"><svg viewBox="0 0 24 24"><path d="M5 12.5 9.2 17 19 7"/></svg></span>
+          <span class="line-copy"><span class="line-title">Bouquet</span><span class="line-meta">#8423 · K. Ploy</span></span>
+          <span class="line-side"><span class="qty">×1</span><span class="care">Fragile</span></span>
+        </button>
+
+        <button class="manifest-line" type="button" data-key="cake">
+          <span class="check"><svg viewBox="0 0 24 24"><path d="M5 12.5 9.2 17 19 7"/></svg></span>
+          <span class="line-copy"><span class="line-title">1 lb cake</span><span class="line-meta">#8423 · K. Ploy</span></span>
+          <span class="line-side"><span class="qty">×1</span><span class="care cool">Keep cool</span></span>
+        </button>
+
+        <button class="manifest-line" type="button" data-key="arrangements">
+          <span class="check"><svg viewBox="0 0 24 24"><path d="M5 12.5 9.2 17 19 7"/></svg></span>
+          <span class="line-copy"><span class="line-title">Floral arrangements</span><span class="line-meta">#8424 · Anantara Siam</span></span>
+          <span class="line-side"><span class="qty">×2</span><span class="care">Fragile</span></span>
+        </button>
+      </div>
+
+      <button class="problem" id="problemButton" type="button"><span>Pickup problem</span><span>›</span></button>
+    </section>
+
+    <footer class="footer">
+      <button class="primary" id="confirmButton" type="button" disabled>Confirm pickup</button>
+    </footer>
+  </main>
+
+  <div class="scrim" id="scrim"></div>
+  <section class="sheet" id="issueSheet" role="dialog" aria-modal="true" aria-label="Pickup problem">
+    <div class="grip"></div>
+    <h2>Pickup problem</h2>
+    <div class="sheet-list">
+      <button class="sheet-action problem-action" type="button" data-problem="Missing item"><span>Missing item</span><span>›</span></button>
+      <button class="sheet-action problem-action" type="button" data-problem="Wrong item"><span>Wrong item</span><span>›</span></button>
+      <button class="sheet-action problem-action" type="button" data-problem="Damaged item"><span>Damaged item</span><span>›</span></button>
+    </div>
+    <button class="cancel" id="cancelSheet" type="button">Cancel</button>
+  </section>
+
+  <div class="toast" id="toast"></div>
+</div>
+<script>
+  const lines=[...document.querySelectorAll('.manifest-line')];
+  const progressValue=document.getElementById('progressValue');
+  const confirmButton=document.getElementById('confirmButton');
+  const problemButton=document.getElementById('problemButton');
+  const issueSheet=document.getElementById('issueSheet');
+  const scrim=document.getElementById('scrim');
+  const cancelSheet=document.getElementById('cancelSheet');
+  const checked=new Set();
+
+  function update(){
+    progressValue.textContent=`${checked.size} / ${lines.length}`;
+    const ready=checked.size===lines.length;
+    confirmButton.disabled=!ready;
+    confirmButton.classList.toggle('ready',ready);
+  }
+  lines.forEach(line=>line.addEventListener('click',()=>{
+    const key=line.dataset.key;
+    if(checked.has(key)) checked.delete(key); else checked.add(key);
+    line.classList.toggle('checked',checked.has(key));
+    update();
+  }));
+
+  function openSheet(){issueSheet.classList.add('show');scrim.classList.add('show')}
+  function closeSheet(){issueSheet.classList.remove('show');scrim.classList.remove('show')}
+  problemButton.addEventListener('click',openSheet);
+  cancelSheet.addEventListener('click',closeSheet);
+  scrim.addEventListener('click',closeSheet);
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet()});
+
+  document.querySelectorAll('[data-problem]').forEach(btn=>btn.addEventListener('click',()=>{
+    location.href='ROUNDS-G03-PACKAGE-PROBLEM-v3-10OF10.html';
+  }));
+
+  confirmButton.addEventListener('click',()=>{
+    if(confirmButton.disabled) return;
+    confirmButton.textContent='Pickup confirmed';
+    setTimeout(()=>{location.href='ROUNDS-E01-ACTIVE-ROUND-OVERVIEW-v5-10OF10.html'},280);
+  });
+  update();
+</script>
+</body>
+</html>
