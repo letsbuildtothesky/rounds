@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../app/app_strings.dart';
+import '../app/driver_design_system.dart';
+import '../app/generated/driver_ui_metrics.g.dart';
 import '../app/harness_app_controller.dart';
 import '../driver/driver_session.dart';
+import 'components/round_overview_map.dart';
 import 'navigation_harness_screen.dart';
 import 'pickup_confirmation_screen.dart';
 
@@ -61,41 +64,11 @@ class AssignedRoundScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final strings = controller.strings;
     final round =
         session?.currentRound ??
         (controller.driverConfigured ? null : _demoRound);
-    final firstStop = round?.stops.firstOrNull;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Rounds.',
-          style: TextStyle(fontWeight: FontWeight.w900),
-        ),
-        actions: [
-          if (controller.driverConfigured)
-            IconButton(
-              tooltip: 'Refresh assigned work',
-              onPressed: controller.refreshDriverSession,
-              icon: const Icon(Icons.refresh),
-            ),
-          IconButton(
-            tooltip: strings.chooseLanguage,
-            onPressed: () => controller.selectLocale(
-              controller.locale == HarnessLocale.thai
-                  ? HarnessLocale.english
-                  : HarnessLocale.thai,
-            ),
-            icon: const Icon(Icons.language),
-          ),
-          if (controller.driverConfigured)
-            IconButton(
-              tooltip: 'Sign out',
-              onPressed: controller.signOutDriver,
-              icon: const Icon(Icons.logout),
-            ),
-        ],
-      ),
+      backgroundColor: RoundsColors.canvas,
       body: SafeArea(
         child: round == null
             ? _WaitingForRound(
@@ -104,234 +77,551 @@ class AssignedRoundScreen extends StatelessWidget {
                     ? controller.refreshDriverSession
                     : null,
               )
-            : Padding(
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const Row(
-                      children: [
-                        _LiveDot(),
-                        SizedBox(width: 8),
-                        Text(
-                          'ROUND ASSIGNED',
-                          style: TextStyle(
-                            color: Color(0xFF26725C),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 1,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      firstStop == null ? 'Round ready' : 'Delivery next',
-                      style: Theme.of(context).textTheme.headlineMedium
-                          ?.copyWith(
-                            color: const Color(0xFF15382F),
-                            fontWeight: FontWeight.w800,
-                          ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      round.reference,
-                      style: const TextStyle(color: Color(0xFF69766F)),
-                    ),
-                    const SizedBox(height: 18),
-                    Card(
-                      color: const Color(0xFF17453B),
-                      child: Padding(
-                        padding: const EdgeInsets.all(18),
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Icons.local_shipping_outlined,
-                              color: Colors.white,
-                            ),
-                            const SizedBox(width: 13),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'TEAM ROUND',
-                                    style: TextStyle(
-                                      color: Colors.white70,
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w800,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 3),
-                                  Text(
-                                    round.tenantName,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w800,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Text(
-                              '${round.stops.length} stop${round.stops.length == 1 ? '' : 's'}',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    Expanded(
-                      child: ListView.separated(
-                        itemCount: round.stops.length,
-                        separatorBuilder: (_, _) => const SizedBox(height: 8),
-                        itemBuilder: (context, index) =>
-                            _StopCard(stop: round.stops[index]),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    FilledButton.icon(
-                      key: Key(
-                        round.state == 'active'
-                            ? 'start-navigation'
-                            : 'verify-pickup',
-                      ),
-                      onPressed: firstStop == null
-                          ? null
-                          : round.state == 'active'
-                          ? () => Navigator.of(context).push(
-                              MaterialPageRoute<void>(
-                                builder: (_) => NavigationHarnessScreen(
-                                  controller: controller,
-                                  enableNativeNavigation:
-                                      enableNativeNavigation,
-                                  stop: firstStop,
-                                  stopCount: round.stops.length,
-                                ),
-                              ),
-                            )
-                          : () => Navigator.of(context).push(
-                              MaterialPageRoute<void>(
-                                builder: (_) => PickupConfirmationScreen(
-                                  controller: controller,
-                                  round: round,
-                                ),
-                              ),
-                            ),
-                      icon: Icon(
-                        round.state == 'active'
-                            ? Icons.navigation_rounded
-                            : Icons.inventory_2_outlined,
-                      ),
-                      label: Text(
-                        firstStop == null
-                            ? 'No Stops assigned'
-                            : round.state == 'active'
-                            ? 'Start route to Stop 1'
-                            : 'Verify pickup manifest',
-                      ),
-                    ),
-                  ],
-                ),
+            : _ActiveRoundOverview(
+                controller: controller,
+                round: round,
+                enableNativeNavigation: enableNativeNavigation,
               ),
       ),
     );
   }
 }
 
-class _LiveDot extends StatelessWidget {
-  const _LiveDot();
+class _ActiveRoundOverview extends StatelessWidget {
+  const _ActiveRoundOverview({
+    required this.controller,
+    required this.round,
+    required this.enableNativeNavigation,
+  });
+
+  final HarnessAppController controller;
+  final DriverRoundModel round;
+  final bool enableNativeNavigation;
 
   @override
-  Widget build(BuildContext context) => Container(
-    width: 9,
-    height: 9,
-    decoration: const BoxDecoration(
-      color: Color(0xFF27A87A),
-      shape: BoxShape.circle,
+  Widget build(BuildContext context) {
+    final compact =
+        MediaQuery.sizeOf(context).width <
+        DriverReferenceViewport.compactBreakpoint;
+    final dockHeight = compact
+        ? DriverE01Metrics.compactDockHeight
+        : DriverE01Metrics.dockHeight;
+    final firstStop = round.stops.first;
+    return MediaQuery.withNoTextScaling(
+      child: Stack(
+        children: [
+          Positioned(
+            key: const Key('e01-map'),
+            left: 0,
+            right: 0,
+            top: DriverE01Metrics.topBarHeight,
+            bottom: dockHeight,
+            child: RoundOverviewMap(
+              round: round,
+              enableNativeMap: enableNativeNavigation,
+            ),
+          ),
+          _RoundTopBar(controller: controller, round: round, compact: compact),
+          Positioned(
+            key: const Key('e01-map-summary'),
+            left: compact
+                ? DriverE01Metrics.compactMapSummaryLeft
+                : DriverE01Metrics.mapSummaryLeft,
+            top: compact
+                ? DriverE01Metrics.compactMapSummaryTop
+                : DriverE01Metrics.mapSummaryTop,
+            child: _MapSummary(round: round),
+          ),
+          Positioned(
+            key: const Key('e01-next-dock'),
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: dockHeight,
+            child: _NextStopDock(
+              round: round,
+              stop: firstStop,
+              compact: compact,
+              onPrimary: () => _openPrimary(context, firstStop),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _openPrimary(BuildContext context, DriverRoundStopModel firstStop) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => round.state == 'active'
+            ? NavigationHarnessScreen(
+                controller: controller,
+                enableNativeNavigation: enableNativeNavigation,
+                stop: firstStop,
+                stopCount: round.stops.length,
+              )
+            : PickupConfirmationScreen(controller: controller, round: round),
+      ),
+    );
+  }
+}
+
+class _RoundTopBar extends StatelessWidget {
+  const _RoundTopBar({
+    required this.controller,
+    required this.round,
+    required this.compact,
+  });
+
+  final HarnessAppController controller;
+  final DriverRoundModel round;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    final buttonSize = compact
+        ? DriverE01Metrics.compactTopButtonSize
+        : DriverE01Metrics.topButtonSize;
+    final padding = compact
+        ? DriverE01Metrics.compactTopBarPaddingHorizontal
+        : DriverE01Metrics.topBarPaddingHorizontal;
+    final gap = compact
+        ? DriverE01Metrics.compactTopColumnGap
+        : DriverE01Metrics.topColumnGap;
+    return Positioned(
+      key: const Key('e01-topbar'),
+      left: 0,
+      right: 0,
+      top: 0,
+      height: DriverE01Metrics.topBarHeight,
+      child: DecoratedBox(
+        decoration: const BoxDecoration(
+          color: Color(0xFCFFFFFF),
+          border: Border(bottom: BorderSide(color: RoundsColors.line)),
+        ),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: padding),
+          child: Row(
+            children: [
+              _TopButton(
+                size: buttonSize,
+                icon: Icons.arrow_back,
+                tooltip: 'Back',
+                onPressed: () => Navigator.of(context).maybePop(),
+              ),
+              SizedBox(width: gap),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: DriverE01Metrics.topStateDotSize,
+                          height: DriverE01Metrics.topStateDotSize,
+                          decoration: const BoxDecoration(
+                            color: RoundsColors.green,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: DriverE01Metrics.topStateGap),
+                        Text(
+                          round.state == 'active'
+                              ? 'ROUND ACTIVE'
+                              : 'PICKUP READY',
+                          key: const Key('e01-round-state'),
+                          style: _e01Style(
+                            color: RoundsColors.green,
+                            size: DriverE01Metrics.topStateSize,
+                            height: DriverE01Metrics.topStateHeight,
+                            weight: DriverE01Metrics.topStateWeight,
+                            tracking: DriverE01Metrics.topStateTracking,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: DriverE01Metrics.topTitleGap),
+                    Text(
+                      '${round.tenantName} · ${round.stops.length} ${round.stops.length == 1 ? 'stop' : 'stops'}',
+                      key: const Key('e01-round-title'),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: _e01Style(
+                        color: RoundsColors.ink,
+                        size: compact
+                            ? DriverE01Metrics.compactTopTitleSize
+                            : DriverE01Metrics.topTitleSize,
+                        height: DriverE01Metrics.topTitleHeight,
+                        weight: DriverE01Metrics.topTitleWeight,
+                        tracking: DriverE01Metrics.topTitleTracking,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(width: gap),
+              SizedBox(
+                width: buttonSize,
+                height: buttonSize,
+                child: PopupMenuButton<String>(
+                  key: const Key('e01-round-actions'),
+                  tooltip: 'Round actions',
+                  padding: EdgeInsets.zero,
+                  icon: const Icon(
+                    Icons.more_horiz,
+                    size: DriverE01Metrics.topIconSize,
+                  ),
+                  onSelected: (value) => _onAction(value),
+                  itemBuilder: (_) => [
+                    const PopupMenuItem(
+                      value: 'refresh',
+                      child: Text('Refresh Round'),
+                    ),
+                    PopupMenuItem(
+                      value: 'language',
+                      child: Text(controller.strings.chooseLanguage),
+                    ),
+                    if (controller.driverConfigured)
+                      const PopupMenuItem(
+                        value: 'signout',
+                        child: Text('Sign out'),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _onAction(String value) {
+    if (value == 'refresh') controller.refreshDriverSession();
+    if (value == 'language') {
+      controller.selectLocale(
+        controller.locale == HarnessLocale.thai
+            ? HarnessLocale.english
+            : HarnessLocale.thai,
+      );
+    }
+    if (value == 'signout') controller.signOutDriver();
+  }
+}
+
+class _TopButton extends StatelessWidget {
+  const _TopButton({
+    required this.size,
+    required this.icon,
+    required this.tooltip,
+    required this.onPressed,
+  });
+
+  final double size;
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: size,
+    height: size,
+    child: IconButton(
+      tooltip: tooltip,
+      padding: EdgeInsets.zero,
+      onPressed: onPressed,
+      icon: Icon(icon, size: DriverE01Metrics.topIconSize),
+      style: IconButton.styleFrom(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(DriverE01Metrics.topButtonRadius),
+        ),
+      ),
     ),
   );
 }
 
-class _StopCard extends StatelessWidget {
-  const _StopCard({required this.stop});
+class _MapSummary extends StatelessWidget {
+  const _MapSummary({required this.round});
 
-  final DriverRoundStopModel stop;
+  final DriverRoundModel round;
 
   @override
-  Widget build(BuildContext context) => Card(
-    color: Colors.white,
+  Widget build(BuildContext context) => Material(
+    color: Colors.white.withValues(alpha: .96),
+    elevation: 5,
+    shadowColor: const Color(0x1F172238),
+    shape: RoundedRectangleBorder(
+      side: const BorderSide(color: RoundsColors.line),
+      borderRadius: BorderRadius.circular(DriverE01Metrics.mapSummaryRadius),
+    ),
     child: Padding(
-      padding: const EdgeInsets.all(15),
-      child: Row(
+      padding: const EdgeInsets.symmetric(
+        horizontal: DriverE01Metrics.mapSummaryPaddingHorizontal,
+        vertical: DriverE01Metrics.mapSummaryPaddingVertical,
+      ),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 31,
-            height: 31,
-            alignment: Alignment.center,
-            decoration: const BoxDecoration(
-              color: Color(0xFFE0F0E8),
-              shape: BoxShape.circle,
-            ),
-            child: Text(
-              '${stop.sequence}',
-              style: const TextStyle(
-                color: Color(0xFF17453B),
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  stop.recipientName,
-                  style: const TextStyle(
-                    color: Color(0xFF15382F),
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  stop.rawAddress,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Color(0xFF69766F),
-                    fontSize: 13,
-                  ),
-                ),
-                const SizedBox(height: 7),
-                Text(
-                  stop.manifestItems
-                      .map((item) => '${item.quantity}× ${item.description}')
-                      .join(' · '),
-                  style: const TextStyle(
-                    color: Color(0xFF27705B),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-          ),
           Text(
-            stop.deliveryReference,
-            style: const TextStyle(color: Color(0xFF87918C), fontSize: 11),
+            'Stop 1 of ${round.stops.length}',
+            key: const Key('e01-map-summary-title'),
+            style: _e01Style(
+              color: RoundsColors.ink,
+              size: DriverE01Metrics.mapSummaryTitleSize,
+              height: 1,
+              weight: DriverE01Metrics.mapSummaryTitleWeight,
+            ),
+          ),
+          const SizedBox(height: DriverE01Metrics.mapSummaryDetailGap),
+          Text(
+            round.stops.length == 1
+                ? 'Final stop'
+                : '${round.stops.length - 1} stops remaining after this',
+            key: const Key('e01-map-summary-detail'),
+            style: _e01Style(
+              color: RoundsColors.muted,
+              size: DriverE01Metrics.mapSummaryDetailSize,
+              height: 1,
+              weight: DriverE01Metrics.mapSummaryDetailWeight,
+            ),
           ),
         ],
       ),
     ),
   );
 }
+
+class _NextStopDock extends StatelessWidget {
+  const _NextStopDock({
+    required this.round,
+    required this.stop,
+    required this.compact,
+    required this.onPrimary,
+  });
+
+  final DriverRoundModel round;
+  final DriverRoundStopModel stop;
+  final bool compact;
+  final VoidCallback onPrimary;
+
+  @override
+  Widget build(BuildContext context) {
+    final padding = EdgeInsets.fromLTRB(
+      compact
+          ? DriverE01Metrics.compactDockPaddingHorizontal
+          : DriverE01Metrics.dockPaddingLeft,
+      compact
+          ? DriverE01Metrics.compactDockPaddingTop
+          : DriverE01Metrics.dockPaddingTop,
+      compact
+          ? DriverE01Metrics.compactDockPaddingHorizontal
+          : DriverE01Metrics.dockPaddingRight,
+      compact
+          ? DriverE01Metrics.compactDockPaddingBottom
+          : DriverE01Metrics.dockPaddingBottom,
+    );
+    final task = stop.manifestItems.firstOrNull;
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        color: Color(0xFDFFFFFF),
+        border: Border(top: BorderSide(color: RoundsColors.line)),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0x12172238),
+            blurRadius: 30,
+            offset: Offset(0, -12),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: padding,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'NEXT STOP · ${stop.sequence} OF ${round.stops.length}',
+                        key: const Key('e01-next-kicker'),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: _e01Style(
+                          color: RoundsColors.orange,
+                          size: DriverE01Metrics.kickerSize,
+                          height: DriverE01Metrics.kickerHeight,
+                          weight: DriverE01Metrics.kickerWeight,
+                          tracking: DriverE01Metrics.kickerTracking,
+                        ),
+                      ),
+                      const SizedBox(height: DriverE01Metrics.nameGap),
+                      Text(
+                        stop.recipientName,
+                        key: const Key('e01-next-name'),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: _e01Style(
+                          color: RoundsColors.ink,
+                          size: compact
+                              ? DriverE01Metrics.compactNameSize
+                              : DriverE01Metrics.nameSize,
+                          height: DriverE01Metrics.nameHeight,
+                          weight: DriverE01Metrics.nameWeight,
+                          tracking: DriverE01Metrics.nameTracking,
+                        ),
+                      ),
+                      const SizedBox(height: DriverE01Metrics.placeGap),
+                      Text(
+                        stop.rawAddress,
+                        key: const Key('e01-next-place'),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: _e01Style(
+                          color: RoundsColors.muted,
+                          size: DriverE01Metrics.placeSize,
+                          height: DriverE01Metrics.placeHeight,
+                          weight: DriverE01Metrics.placeWeight,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: DriverE01Metrics.dockColumnGap),
+                Padding(
+                  padding: const EdgeInsets.only(
+                    top: DriverE01Metrics.etaPaddingTop,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        'Ready',
+                        key: const Key('e01-next-eta'),
+                        style: _e01Style(
+                          color: RoundsColors.ink,
+                          size: compact
+                              ? DriverE01Metrics.compactEtaSize
+                              : DriverE01Metrics.etaSize,
+                          height: DriverE01Metrics.etaHeight,
+                          weight: DriverE01Metrics.etaWeight,
+                          tracking: DriverE01Metrics.etaTracking,
+                        ),
+                      ),
+                      const SizedBox(height: DriverE01Metrics.distanceGap),
+                      Text(
+                        stop.deliveryReference,
+                        key: const Key('e01-next-distance'),
+                        style: _e01Style(
+                          color: RoundsColors.muted,
+                          size: DriverE01Metrics.distanceSize,
+                          height: 1,
+                          weight: DriverE01Metrics.distanceWeight,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(
+              height: compact
+                  ? DriverE01Metrics.compactTaskMarginTop
+                  : DriverE01Metrics.taskMarginTop,
+            ),
+            Row(
+              children: [
+                Container(
+                  width: DriverE01Metrics.taskDotSize,
+                  height: DriverE01Metrics.taskDotSize,
+                  decoration: const BoxDecoration(
+                    color: RoundsColors.orange,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: DriverE01Metrics.taskGap),
+                Expanded(
+                  child: Text(
+                    task == null
+                        ? 'Manifest ready'
+                        : '${task.quantity}× ${task.description}',
+                    key: const Key('e01-task-line'),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: _e01Style(
+                      color: RoundsColors.inkSecondary,
+                      size: DriverE01Metrics.taskSize,
+                      height: 1,
+                      weight: DriverE01Metrics.taskWeight,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(
+              height: compact
+                  ? DriverE01Metrics.compactPrimaryMarginTop
+                  : DriverE01Metrics.primaryMarginTop,
+            ),
+            SizedBox(
+              height: compact
+                  ? DriverE01Metrics.compactPrimaryHeight
+                  : DriverE01Metrics.primaryHeight,
+              child: FilledButton(
+                key: Key(
+                  round.state == 'active'
+                      ? 'start-navigation'
+                      : 'verify-pickup',
+                ),
+                onPressed: onPrimary,
+                style: FilledButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  backgroundColor: RoundsColors.ink,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(
+                      DriverE01Metrics.primaryRadius,
+                    ),
+                  ),
+                ),
+                child: Text(
+                  round.state == 'active'
+                      ? 'Navigate to Stop ${stop.sequence}'
+                      : 'Verify pickup manifest',
+                  style: _e01Style(
+                    color: Colors.white,
+                    size: DriverE01Metrics.primarySize,
+                    height: 1,
+                    weight: DriverE01Metrics.primaryWeight,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+TextStyle _e01Style({
+  required Color color,
+  required double size,
+  required double height,
+  required double weight,
+  double tracking = 0,
+}) => TextStyle(
+  color: color,
+  fontSize: size,
+  height: height,
+  fontWeight: FontWeight.values[(weight / 100).round().clamp(1, 9) - 1],
+  fontVariations: [FontVariation('wght', weight)],
+  letterSpacing: tracking,
+);
 
 class _WaitingForRound extends StatelessWidget {
   const _WaitingForRound({this.driverName, this.onRefresh});
@@ -346,7 +636,7 @@ class _WaitingForRound extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.route_outlined, size: 58, color: Color(0xFF17453B)),
+          const Icon(Icons.route_outlined, size: 58, color: RoundsColors.green),
           const SizedBox(height: 18),
           Text(
             'Waiting for a Round',
@@ -358,7 +648,7 @@ class _WaitingForRound extends StatelessWidget {
           Text(
             '${driverName ?? 'Driver'}, Operations has not assigned current work yet.',
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Color(0xFF69766F)),
+            style: const TextStyle(color: RoundsColors.muted),
           ),
           if (onRefresh != null) ...[
             const SizedBox(height: 20),

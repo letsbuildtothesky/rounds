@@ -17,13 +17,13 @@ void main() {
     expect(find.text('เลือกภาษา'), findsOneWidget);
     await tester.tap(find.byKey(const Key('continue-language')));
     await tester.pumpAndSettle();
-    expect(find.text('ROUND ASSIGNED'), findsOneWidget);
-    expect(find.text('ROUND-DEMO-001'), findsOneWidget);
+    expect(find.text('ROUND ACTIVE'), findsOneWidget);
+    expect(find.text('Siriporn'), findsOneWidget);
 
     await controller.selectLocale(HarnessLocale.english);
     await tester.pumpAndSettle();
-    expect(find.text('ROUND ASSIGNED'), findsOneWidget);
-    expect(find.text('ROUND-DEMO-001'), findsOneWidget);
+    expect(find.text('ROUND ACTIVE'), findsOneWidget);
+    expect(find.text('Siriporn'), findsOneWidget);
   });
 
   testWidgets('arrival remains pending and never claims server completion', (
@@ -108,6 +108,38 @@ void main() {
     await expectLater(
       find.byType(MaterialApp),
       matchesGoldenFile('goldens/navigation-instrument-393x852.png'),
+    );
+  });
+
+  testWidgets('active Round overview matches its canonical visual baseline', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final previousComparator = goldenFileComparator;
+    final localComparator = previousComparator as LocalFileComparator;
+    goldenFileComparator = _TolerantGoldenFileComparator(
+      localComparator.basedir.resolve('widget_test.dart'),
+      precisionTolerance: .025,
+    );
+    addTearDown(() => goldenFileComparator = previousComparator);
+
+    SharedPreferences.setMockInitialValues({
+      'driver_locale': 'en',
+      'driver_locale_selected': true,
+    });
+    final controller = await HarnessAppController.create();
+    await tester.pumpWidget(
+      RoundsHarnessApp(controller: controller, enableNativeNavigation: false),
+    );
+    await tester.pumpAndSettle();
+
+    await expectLater(
+      find.byType(MaterialApp),
+      matchesGoldenFile('goldens/active-round-overview-393x852.png'),
     );
   });
 }
