@@ -4,6 +4,7 @@ import type {
   CreateDeliveryCommand,
   CreateDeliveryPayload,
   CreateDeliveryResult,
+  DriverSession,
   OperationsSession,
 } from "@rounds/contracts";
 import { createDeliveryHandler } from "../src/create-delivery-handler.js";
@@ -71,6 +72,10 @@ class FakeGateway implements IdentityGateway, DeliveryCommandGateway {
   }
 
   async getOperationsSession(): Promise<OperationsSession | null> {
+    return null;
+  }
+
+  async getDriverSession(): Promise<DriverSession | null> {
     return null;
   }
 

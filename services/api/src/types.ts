@@ -2,7 +2,12 @@ import type {
   CreateDeliveryCommand,
   CreateDeliveryPayload,
   CreateDeliveryResult,
+  DriverSession,
   OperationsSession,
+  OperationsPlanningProjection,
+  PlanRoundCommand,
+  PlanRoundPayload,
+  PlanRoundResult,
 } from "@rounds/contracts";
 
 export type { OperationsRole } from "@rounds/contracts";
@@ -24,11 +29,17 @@ export interface IdentityGateway {
   authenticate(accessToken: string): Promise<AuthenticatedIdentity | null>;
   authorizeTenant(authUserId: string, tenantId: string): Promise<ActorContext | null>;
   getOperationsSession(identity: AuthenticatedIdentity): Promise<OperationsSession | null>;
+  getDriverSession(identity: AuthenticatedIdentity): Promise<DriverSession | null>;
 }
 
 export interface DeliveryCommandGateway {
   createDelivery(command: CreateDeliveryCommand, actor: ActorContext): Promise<CreateDeliveryResult>;
   ready(): Promise<boolean>;
+}
+
+export interface RoundGateway {
+  getOperationsPlanning(actor: ActorContext): Promise<OperationsPlanningProjection>;
+  planRound(command: PlanRoundCommand, actor: ActorContext): Promise<PlanRoundResult>;
 }
 
 export type CreateDeliveryDependencies = {
@@ -41,6 +52,23 @@ export type CreateDeliveryDependencies = {
 export type CreateDeliveryRequestBody = CreateDeliveryPayload;
 
 export type OperationsSessionDependencies = {
+  identity: IdentityGateway;
+  uuid: () => string;
+};
+
+export type OperationsPlanningDependencies = {
+  identity: IdentityGateway;
+  planning: RoundGateway;
+  uuid: () => string;
+};
+
+export type PlanRoundDependencies = OperationsPlanningDependencies & {
+  now: () => Date;
+};
+
+export type PlanRoundRequestBody = PlanRoundPayload;
+
+export type DriverSessionDependencies = {
   identity: IdentityGateway;
   uuid: () => string;
 };

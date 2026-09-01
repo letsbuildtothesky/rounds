@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import '../ui/assigned_round_screen.dart';
+import '../ui/driver_login_screen.dart';
 import '../ui/language_screen.dart';
 import 'app_strings.dart';
 import 'harness_app_controller.dart';
@@ -47,12 +48,17 @@ class RoundsHarnessApp extends StatelessWidget {
             ),
           ),
         ),
-        home: controller.hasSelectedLanguage
-            ? AssignedRoundScreen(
+        home: !controller.hasSelectedLanguage
+            ? LanguageScreen(controller: controller)
+            : controller.driverConfigured && controller.driverLoading
+            ? const Scaffold(body: Center(child: CircularProgressIndicator()))
+            : controller.driverConfigured && controller.driverSession == null
+            ? DriverLoginScreen(controller: controller)
+            : AssignedRoundScreen(
                 controller: controller,
                 enableNativeNavigation: enableNativeNavigation,
-              )
-            : LanguageScreen(controller: controller),
+                session: controller.driverSession,
+              ),
       ),
     );
   }

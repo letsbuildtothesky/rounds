@@ -5,27 +5,24 @@ import 'package:rounds_driver_harness/src/app/rounds_harness_app.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  testWidgets(
-    'Thai is primary and the assigned Round survives language change',
-    (tester) async {
-      SharedPreferences.setMockInitialValues({});
-      final controller = await HarnessAppController.create();
-      await tester.pumpWidget(
-        RoundsHarnessApp(controller: controller, enableNativeNavigation: false),
-      );
+  testWidgets('the assigned Round survives language change', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final controller = await HarnessAppController.create();
+    await tester.pumpWidget(
+      RoundsHarnessApp(controller: controller, enableNativeNavigation: false),
+    );
 
-      expect(find.text('เลือกภาษา'), findsOneWidget);
-      await tester.tap(find.byKey(const Key('continue-language')));
-      await tester.pumpAndSettle();
-      expect(find.text('รอบที่ได้รับมอบหมาย'), findsOneWidget);
-      expect(find.textContaining('STOP-001'), findsOneWidget);
+    expect(find.text('เลือกภาษา'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('continue-language')));
+    await tester.pumpAndSettle();
+    expect(find.text('ROUND ASSIGNED'), findsOneWidget);
+    expect(find.text('ROUND-DEMO-001'), findsOneWidget);
 
-      await controller.selectLocale(HarnessLocale.english);
-      await tester.pumpAndSettle();
-      expect(find.text('Assigned Round'), findsOneWidget);
-      expect(find.textContaining('STOP-001'), findsOneWidget);
-    },
-  );
+    await controller.selectLocale(HarnessLocale.english);
+    await tester.pumpAndSettle();
+    expect(find.text('ROUND ASSIGNED'), findsOneWidget);
+    expect(find.text('ROUND-DEMO-001'), findsOneWidget);
+  });
 
   testWidgets('arrival remains pending and never claims server completion', (
     tester,

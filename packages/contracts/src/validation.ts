@@ -1,5 +1,6 @@
 import type { CreateDeliveryCommand, CreateDeliveryPayload } from "./delivery.js";
 import type { LocationBatch, PositionSample } from "./location.js";
+import type { PlanRoundCommand, PlanRoundPayload } from "./round.js";
 
 export class ContractError extends Error {}
 
@@ -121,4 +122,35 @@ export function validateCreateDeliveryCommand(command: CreateDeliveryCommand): v
     throw new ContractError("CreateDelivery expectedVersion must be 0");
   }
   validateCreateDeliveryPayload(command.payload);
+}
+
+export function validatePlanRoundPayload(payload: PlanRoundPayload): void {
+  assertNonEmpty(payload.reference, "reference");
+  assertUuid(payload.driverId, "driverId");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(payload.serviceDate)) {
+    throw new ContractError("serviceDate must be YYYY-MM-DD");
+  }
+  if (payload.stopIds.length === 0) throw new ContractError("stopIds cannot be empty");
+  if (new Set(payload.stopIds).size !== payload.stopIds.length) {
+    throw new ContractError("stopIds cannot contain duplicates");
+  }
+  payload.stopIds.forEach((stopId, index) => assertUuid(stopId, `stopIds[${index}]`));
+}
+
+export function validatePlanRoundCommand(command: PlanRoundCommand): void {
+  if (command.schemaVersion !== 1 || command.commandType !== "round.plan_and_approve") {
+    throw new ContractError("unsupported PlanRound command envelope");
+  }
+  assertUuid(command.commandId, "commandId");
+  assertUuid(command.traceId, "traceId");
+  assertUuid(command.tenantId, "tenantId");
+  assertUuid(command.aggregateId, "aggregateId");
+  assertNonEmpty(command.idempotencyKey, "idempotencyKey");
+  if (command.idempotencyKey.length > 200) {
+    throw new ContractError("idempotencyKey exceeds 200 characters");
+  }
+  if (command.expectedVersion !== 0) {
+    throw new ContractError("PlanRound expectedVersion must be 0");
+  }
+  validatePlanRoundPayload(command.payload);
 }

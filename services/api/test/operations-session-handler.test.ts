@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import type { OperationsSession } from "@rounds/contracts";
+import type { DriverSession, OperationsSession } from "@rounds/contracts";
 import { operationsSessionHandler } from "../src/operations-session-handler.js";
 import type {
   ActorContext,
@@ -40,6 +40,10 @@ class FakeIdentity implements IdentityGateway {
 
   async getOperationsSession(): Promise<OperationsSession | null> {
     return this.authorizedSession;
+  }
+
+  async getDriverSession(): Promise<DriverSession | null> {
+    return null;
   }
 }
 

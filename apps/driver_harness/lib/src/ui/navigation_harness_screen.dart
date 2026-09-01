@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../app/harness_app_controller.dart';
+import '../driver/driver_session.dart';
 import '../navigation/google_navigation_surface.dart';
 import '../telemetry/freshness.dart';
 
@@ -8,11 +9,13 @@ class NavigationHarnessScreen extends StatefulWidget {
   const NavigationHarnessScreen({
     required this.controller,
     required this.enableNativeNavigation,
+    required this.stop,
     super.key,
   });
 
   final HarnessAppController controller;
   final bool enableNativeNavigation;
+  final DriverRoundStopModel stop;
 
   @override
   State<NavigationHarnessScreen> createState() =>
@@ -47,11 +50,11 @@ class _NavigationHarnessScreenState extends State<NavigationHarnessScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '${strings.currentStop} · STOP-001',
+                            '${strings.currentStop} · ${widget.stop.deliveryReference}',
                             style: const TextStyle(color: Colors.white70),
                           ),
                           Text(
-                            strings.recipient,
+                            widget.stop.recipientName,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
@@ -90,6 +93,12 @@ class _NavigationHarnessScreenState extends State<NavigationHarnessScreen> {
                         if (!mounted) return;
                         setState(() => _arrived = true);
                       },
+                      stopId: widget.stop.id,
+                      destinationVersion: widget.stop.destinationVersion,
+                      destinationTitle:
+                          '${widget.stop.deliveryReference} · ${widget.stop.recipientName}',
+                      latitude: widget.stop.latitude,
+                      longitude: widget.stop.longitude,
                     )
                   : _NavigationPreview(label: strings.navigationReady),
             ),

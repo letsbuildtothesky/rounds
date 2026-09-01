@@ -14,12 +14,12 @@ It contains:
 
 ## Current implementation
 
-- `apps/driver_harness` — Phase 0 Flutter navigation + telemetry field harness.
-- `apps/operations-web` — Pilot/Slice 1 authenticated Operations and manual delivery intake.
+- `apps/driver_harness` — Phase 0 Flutter navigation/telemetry foundation, now extended with authenticated Slice 1 Team Round retrieval.
+- `apps/operations-web` — Pilot/Slice 1 authenticated delivery intake and manual Team Round assignment.
 - `apps/telemetry_viewer` — Phase 0 live telemetry viewer.
 - `services/location_ingest` — batched location-ingest domain logic.
 - `services/api` — Pilot/Slice 1 authenticated command API foundation.
-- `packages/contracts` — language-neutral command, delivery, event and location contracts.
+- `packages/contracts` — language-neutral command, delivery, Round, event and location contracts.
 - `packages/domain-ts` — server-side state/version helpers.
 - `supabase` — forward-only schema migrations, deterministic synthetic seed and pgTAP/RLS tests.
 

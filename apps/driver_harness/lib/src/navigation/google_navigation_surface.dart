@@ -19,6 +19,11 @@ class GoogleNavigationSurface extends StatefulWidget {
     required this.onOperationalSample,
     required this.onStatus,
     required this.onArrival,
+    required this.stopId,
+    required this.destinationVersion,
+    required this.destinationTitle,
+    required this.latitude,
+    required this.longitude,
     super.key,
   });
 
@@ -26,6 +31,11 @@ class GoogleNavigationSurface extends StatefulWidget {
   final void Function(DateTime capturedAt) onOperationalSample;
   final void Function(String status) onStatus;
   final VoidCallback onArrival;
+  final String stopId;
+  final int destinationVersion;
+  final String destinationTitle;
+  final double latitude;
+  final double longitude;
 
   @override
   State<GoogleNavigationSurface> createState() =>
@@ -34,7 +44,8 @@ class GoogleNavigationSurface extends StatefulWidget {
 
 class _GoogleNavigationSurfaceState extends State<GoogleNavigationSurface>
     with WidgetsBindingObserver {
-  static const _destination = LatLng(latitude: 13.7367, longitude: 100.5612);
+  LatLng get _destination =>
+      LatLng(latitude: widget.latitude, longitude: widget.longitude);
 
   late final OperationalLocationRecorder _recorder;
   late final TelemetryUploader _uploader;
@@ -73,7 +84,10 @@ class _GoogleNavigationSurfaceState extends State<GoogleNavigationSurface>
       _events = HarnessEventLog(database);
       await _events?.record(
         'navigation_surface_opened',
-        payload: {'stop_id': 'STOP-001', 'destination_version': 1},
+        payload: {
+          'stop_id': widget.stopId,
+          'destination_version': widget.destinationVersion,
+        },
       );
 
       widget.onStatus('Requesting precise location…');
@@ -202,7 +216,7 @@ class _GoogleNavigationSurfaceState extends State<GoogleNavigationSurface>
         Destinations(
           waypoints: [
             NavigationWaypoint.withLatLngTarget(
-              title: 'STOP-001 · Interchange 21',
+              title: widget.destinationTitle,
               target: _destination,
             ),
           ],
@@ -272,8 +286,8 @@ class _GoogleNavigationSurfaceState extends State<GoogleNavigationSurface>
         await NavigationIntentLedger(
           SqliteNavigationIntentStore(database),
         ).attachOrCreate(
-          stopId: 'STOP-001',
-          destinationVersion: 1,
+          stopId: widget.stopId,
+          destinationVersion: widget.destinationVersion,
           destinationFingerprint:
               '${_destination.latitude},${_destination.longitude}',
           createSessionId: const Uuid().v4,
@@ -346,10 +360,7 @@ class _GoogleNavigationSurfaceState extends State<GoogleNavigationSurface>
           onViewCreated: _onViewCreated,
           initialNavigationUIEnabledPreference:
               NavigationUIEnabledPreference.automatic,
-          initialCameraPosition: const CameraPosition(
-            target: _destination,
-            zoom: 15,
-          ),
+          initialCameraPosition: CameraPosition(target: _destination, zoom: 15),
         ),
         if (_attemptGate.inFlight)
           const Positioned(

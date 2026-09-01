@@ -1,7 +1,10 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { createDeliveryHandler } from "./create-delivery-handler.js";
+import { driverSessionHandler } from "./driver-session-handler.js";
+import { operationsPlanningHandler } from "./operations-planning-handler.js";
 import { readConfig } from "./config.js";
 import { operationsSessionHandler } from "./operations-session-handler.js";
+import { planRoundHandler } from "./plan-round-handler.js";
 import { SupabaseGateway } from "./supabase-gateway.js";
 
 const config = readConfig();
@@ -86,6 +89,36 @@ const server = createServer(async (request, response) => {
         uuid: () => crypto.randomUUID(),
       });
       sendNode(response, addOperationsCors(sessionResponse, request.headers.origin));
+      return;
+    }
+    if (request.method === "GET" && request.url === "/v1/operations/planning") {
+      const webRequest = await toWebRequest(request);
+      const planningResponse = await operationsPlanningHandler(webRequest, {
+        identity: gateway,
+        planning: gateway,
+        uuid: () => crypto.randomUUID(),
+      });
+      sendNode(response, addOperationsCors(planningResponse, request.headers.origin));
+      return;
+    }
+    if (request.method === "POST" && request.url === "/v1/rounds") {
+      const webRequest = await toWebRequest(request);
+      const roundResponse = await planRoundHandler(webRequest, {
+        identity: gateway,
+        planning: gateway,
+        uuid: () => crypto.randomUUID(),
+        now: () => new Date(),
+      });
+      sendNode(response, addOperationsCors(roundResponse, request.headers.origin));
+      return;
+    }
+    if (request.method === "GET" && request.url === "/v1/driver/session") {
+      const webRequest = await toWebRequest(request);
+      const driverResponse = await driverSessionHandler(webRequest, {
+        identity: gateway,
+        uuid: () => crypto.randomUUID(),
+      });
+      sendNode(response, driverResponse);
       return;
     }
     if (request.method === "POST" && request.url === "/v1/deliveries") {

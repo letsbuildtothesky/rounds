@@ -1,7 +1,7 @@
 "use client";
 
 import { createClient, type Session, type SupabaseClient } from "@supabase/supabase-js";
-import { useCallback, useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
+import { useCallback, useEffect, useState, type FormEvent, type ReactNode } from "react";
 import type {
   CreateDeliveryResult,
   OperationsSession,
@@ -12,10 +12,14 @@ import {
   defaultDeliveryDraft,
   type DeliveryFormDraft,
 } from "../src/delivery-form";
+import { DispatchPanel } from "./dispatch-panel";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const supabasePublishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? "";
 const roundsApiUrl = process.env.NEXT_PUBLIC_ROUNDS_API_URL ?? "http://127.0.0.1:8080";
+const supabaseClient = supabaseUrl && supabasePublishableKey
+  ? createClient(supabaseUrl, supabasePublishableKey)
+  : null;
 
 type SubmissionSuccess = {
   deliveryId: string;
@@ -41,12 +45,7 @@ function roleLabel(role: OperationsTenant["role"]): string {
 }
 
 export default function OperationsPage() {
-  const supabase = useMemo(
-    () => supabaseUrl && supabasePublishableKey
-      ? createClient(supabaseUrl, supabasePublishableKey)
-      : null,
-    [],
-  );
+  const supabase = supabaseClient;
   const [authSession, setAuthSession] = useState<Session | null>(null);
   const [operationsSession, setOperationsSession] = useState<OperationsSession | null>(null);
   const [selectedTenantId, setSelectedTenantId] = useState("");
@@ -57,6 +56,7 @@ export default function OperationsPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState<SubmissionSuccess | null>(null);
+  const [section, setSection] = useState<"deliveries" | "dispatch">("deliveries");
 
   const selectedTenant = operationsSession?.tenants.find((tenant) => tenant.id === selectedTenantId)
     ?? operationsSession?.tenants[0];
@@ -181,14 +181,15 @@ export default function OperationsPage() {
     <div className="operations-shell">
       <header className="app-header">
         <div className="brand"><RoundsMark /><span>ROUNDS</span></div>
-        <nav aria-label="Operations sections"><span className="active">Deliveries</span><span>Dispatch</span><span>History</span></nav>
+        <nav aria-label="Operations sections"><button type="button" className={section === "deliveries" ? "active" : ""} onClick={() => setSection("deliveries")}>Deliveries</button><button type="button" className={section === "dispatch" ? "active" : ""} onClick={() => setSection("dispatch")}>Dispatch</button><button type="button" disabled>History</button></nav>
         <div className="account">
           <div><strong>{operationsSession?.user.displayName ?? authSession.user.email}</strong><small>{selectedTenant ? roleLabel(selectedTenant.role) : "No access"}</small></div>
           <button type="button" onClick={() => void signOut()}>Sign out</button>
         </div>
       </header>
 
-      <main className="operations-main">
+      <main className={`operations-main ${section === "dispatch" ? "dispatch-main" : ""}`}>
+        {section === "dispatch" && selectedTenant ? <DispatchPanel accessToken={authSession.access_token} tenant={selectedTenant} /> : <>
         <section className="page-heading">
           <div><p className="eyebrow">MANUAL INTAKE</p><h1>Add delivery</h1><p>Create one canonical delivery for the unplanned pool.</p></div>
           <div className="secure-badge"><ShieldIcon /> Server-authoritative command</div>
@@ -278,6 +279,7 @@ export default function OperationsPage() {
             <div className="form-actions"><div><ShieldIcon /><span>Authorized as <strong>{roleLabel(selectedTenant.role)}</strong></span></div><button className="primary-action" disabled={submitting || selectedTenant.role === "viewer"}>{submitting ? "Creating delivery…" : selectedTenant.role === "viewer" ? "Viewer cannot create" : "Add delivery"}<ArrowIcon /></button></div>
           </form>
         )}
+        </>}
       </main>
     </div>
   );
