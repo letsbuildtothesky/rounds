@@ -10,9 +10,9 @@ represented as motorcycle field evidence.
 
 ## Build
 
-- Commit SHA: `83d9b678cc8e0ccef7f9b63bc849b22af9c61ed9`
+- Commit SHA: `e38c2f7f72f63f468910f163d7526ce1f8faa9b7`
 - App version: `0.1.0+1` (debug)
-- Android APK checksum: `6ee72f718df6bc43436acdf77c0c10552d4ec128c384a53fc7e7b081e940cedc`
+- Android APK checksum: `88ce974e8d84bb180e515053201df998b2fa9ac6c91e3c98f86aead641ff6a89`
 - iOS build identifier:
 
 ## Device matrix
@@ -20,7 +20,7 @@ represented as motorcycle field evidence.
 | Class | Model | OS | Battery health | Optimization | Location permission | Carrier | Build SHA |
 |---|---|---|---|---|---|---|---|
 | iPhone | Pending | | | | | | |
-| Mainstream Android | Samsung SM-S928B | Android 16 / API 36 | Android reports good | Pending OEM review | Precise while in use | AIS | `83d9b678cc8e0ccef7f9b63bc849b22af9c61ed9` |
+| Mainstream Android | Samsung SM-S928B | Android 16 / API 36 | Android reports good | Foreground-location smoke tested; full OEM review pending | Precise while in use | AIS | `e38c2f7f72f63f468910f163d7526ce1f8faa9b7` |
 | Aggressive-OEM Android | Pending | | | | | | |
 
 ## Route corpus and field runs
@@ -65,6 +65,12 @@ represented as motorcycle field evidence.
   callback. Build `83d9b678cc8e0ccef7f9b63bc849b22af9c61ed9` bounds the automatic
   request to one attempt, keeps the map visible, and requires an explicit rider
   action for every retry or diagnostic comparison.
+- The first background/lock smoke test collected only 10 Rounds OS samples
+  across approximately 49 seconds. Build
+  `e38c2f7f72f63f468910f163d7526ce1f8faa9b7` adds an Android foreground
+  location service with a three-second interval. Repeating the same sequence
+  collected 17 samples across approximately 48 seconds while guidance stayed
+  active. This is a bench lifecycle result, not a normal-shift battery result.
 
 ## Location-source comparison
 
@@ -72,7 +78,7 @@ represented as motorcycle field evidence.
 |---|---|---|---|---|---|---|---|
 | | Navigation-only baseline | | | | | | |
 | | A — navigation sourced | | | | | | |
-| | B — Rounds tracker | | | | | | |
+| Samsung bench | B — Rounds tracker | 3 s configured; 17 samples / ~48 s background+lock smoke | Supabase viewer observed ~1 s source age while active | ±7–8 m during stationary Bangkok bench test | Continued through 15 s background and 20 s lock smoke | Full baseline pending | Android foreground service; `rounds_os` source |
 | | C — both briefly | | | | | | |
 
 ### Recommended production strategy
@@ -85,10 +91,10 @@ represented as motorcycle field evidence.
 
 | Scenario | Navigation | Telemetry | Viewer freshness | User-visible state | Recovery | Duplicate intents | Errors |
 |---|---|---|---|---|---|---|---|
-| Screen lock/unlock | | | | | | | |
-| Background/foreground | | | | | | | |
+| Screen lock/unlock | Guidance remained active | 17 samples across the combined ~48 s lifecycle sequence | Remote viewer path verified separately as LIVE | Foreground location notification active | Immediate on unlock | No new logical ledger row | No crash |
+| Background/foreground | Guidance remained active | Samples continued at configured ~3 s cadence | Local buffer remained current | Lifecycle transitions recorded | Immediate on foreground | No new logical ledger row | No crash |
 | Incoming call | | | | | | | |
-| Weak/lost/recovered network | | | | | | | |
+| Weak/lost/recovered network | Guidance stayed active during 20 s forced loss | 12 samples buffered across 35 s loss/recovery sequence | Upload path later caught up to LIVE | No false completed state | Wi-Fi/mobile restored; ping succeeded | No new logical ledger row | No sample loss observed |
 | Battery/OEM optimization | | | | | | | |
 | Process crash/relaunch | | | | | | | |
 | Permission denied/restored | | | | | | | |
@@ -98,25 +104,26 @@ represented as motorcycle field evidence.
 
 | Stop | Destination version | New intents | Reattachments | Completed | Investigation |
 |---|---|---|---|---|---|
-| | | | | | |
+| STOP-001 | 1 | 1 logical ledger row; historical debug route requests include the pre-fix retry storm | Reused one `nav_session_id` across rebuilds/relaunches | Pending field arrival | Historical total is 262 destination requests / 259 route errors because the first build retried on every callback. The retry storm is fixed; start the controlled field run with a clean database and investigate if the Stop exceeds two requests. |
 
 ## Telemetry and Broadcast metrics
 
 | Run | Ingest req/s | Samples/request | Broadcasts/s | Delivered events/s | Viewers | E2E p50 | E2E p95 | Stale transitions |
 |---|---|---|---|---|---|---|---|---|
-| | | | | | | | | |
+| Samsung bench · live path | ~0.10 | 35.5 overall average including 200-sample reconnect batches | ~0.10 | At least 1 observed in viewer; extended count pending | 1 | Source age ~1 s observed; full E2E calculation pending | Pending | LIVE confirmed; stale transition field test pending |
 
 ## Battery and performance
 
 | Device/run | Duration | Start/end battery | Increment vs nav-only | Temperature | CPU/memory | Jank/crashes |
 |---|---|---|---|---|---|---|
-| | | | | | | |
+| Samsung bench snapshot | Not a controlled drain run | 56% while USB connected | Not measurable | 34.9°C snapshot | ~757 MB PSS / ~917 MB RSS with Navigation SDK map and telemetry active | No crash observed; baseline and sustained run pending |
 
 ## Media and logs
 
 - Screenshots:
 - Video:
-- Structured logs:
+- Structured logs: on-device SQLite recorded route/lifecycle/upload events;
+  Supabase accepted watermark 637 during the live bench run.
 - Crash reports:
 
 ## Gate decision
