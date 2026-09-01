@@ -20,6 +20,7 @@ jobs:
       - run: npm test
       - run: npm run typecheck
       - run: npm run build --workspace @rounds/telemetry-viewer
+      - run: npm run build --workspace @rounds/operations-web
       - run: npm audit --audit-level=high
       - name: Reject committed secret values
         run: |
