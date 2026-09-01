@@ -4,6 +4,7 @@ import '../app/harness_app_controller.dart';
 import '../driver/driver_session.dart';
 import '../navigation/google_navigation_surface.dart';
 import '../telemetry/freshness.dart';
+import 'proof_of_delivery_screen.dart';
 
 class NavigationHarnessScreen extends StatefulWidget {
   const NavigationHarnessScreen({
@@ -23,12 +24,18 @@ class NavigationHarnessScreen extends StatefulWidget {
 }
 
 class _NavigationHarnessScreenState extends State<NavigationHarnessScreen> {
-  bool _arrived = false;
+  late bool _arrived;
   bool _nearArrival = false;
   bool _arrivalPendingSync = false;
   bool _submittingArrival = false;
   DateTime? _lastOperationalSample;
   String? _navigationStatus;
+
+  @override
+  void initState() {
+    super.initState();
+    _arrived = widget.stop.state == 'arrived';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -154,11 +161,10 @@ class _NavigationHarnessScreenState extends State<NavigationHarnessScreen> {
                         _arrivalPendingSync)
                       FilledButton(
                         key: const Key('arrival-action'),
-                        onPressed:
-                            _arrived ||
-                                _arrivalPendingSync ||
-                                _submittingArrival
+                        onPressed: _arrivalPendingSync || _submittingArrival
                             ? null
+                            : _arrived
+                            ? _openPod
                             : _confirmArrival,
                         child: Text(
                           _arrived
@@ -225,6 +231,22 @@ class _NavigationHarnessScreenState extends State<NavigationHarnessScreen> {
         ),
       );
     }
+  }
+
+  Future<void> _openPod() async {
+    final currentStop = widget.controller.driverSession?.currentRound?.stops
+        .where((stop) => stop.id == widget.stop.id)
+        .firstOrNull;
+    if (currentStop == null) return;
+    final completed = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => ProofOfDeliveryScreen(
+          controller: widget.controller,
+          stop: currentStop,
+        ),
+      ),
+    );
+    if (completed == true && mounted) Navigator.of(context).pop();
   }
 }
 

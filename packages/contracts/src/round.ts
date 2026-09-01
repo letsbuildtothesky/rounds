@@ -203,6 +203,79 @@ export type ConfirmStopArrivalResult = CommandResult<
   StopArrivalConfirmedEvent
 >;
 
+export const podHandoffTypes = [
+  "recipient",
+  "someone_else",
+  "left_at_location",
+] as const;
+
+export type PodHandoffType = (typeof podHandoffTypes)[number];
+
+export type PreparePodMediaPayload = {
+  sha256: string;
+  byteSize: number;
+  contentType: "image/jpeg" | "image/png";
+};
+
+export type PreparedPodMedia = {
+  status: "prepared";
+  mediaAssetId: string;
+  bucket: "pod-evidence";
+  path: string;
+  assetState: "staged" | "uploaded_uncommitted" | "committed";
+  tusEndpoint: string;
+  uploadAuthorization: "driver_session";
+  deduplicated?: boolean;
+};
+
+export type CompleteStopPodPayload = {
+  manifestId: string;
+  manifestVersion: number;
+  confirmedLineNumbers: number[];
+  mediaAssetId: string;
+  handoffType: PodHandoffType;
+  receiverName?: string;
+  receiverRelationship?: string;
+  leftAtLocation?: string;
+  note?: string;
+  position?: ArrivalPositionEvidence;
+};
+
+export type CompleteStopPodCommand = CommandEnvelope<
+  "stop.complete_pod",
+  CompleteStopPodPayload
+>;
+
+export type StopDeliveryCompletedPayload = {
+  podId: string;
+  mediaAssetId: string;
+  custodyEventId: string;
+  manifestVerificationId: string;
+  stopId: string;
+  deliveryId: string;
+  roundId: string;
+  driverId: string;
+  handoffType: PodHandoffType;
+  deliveredAt: string;
+};
+
+export type StopDeliveryCompletedEvent = DomainEventEnvelope<
+  "stop.delivery_completed",
+  StopDeliveryCompletedPayload
+>;
+
+export type CompleteStopPodState = StopDeliveryCompletedPayload & {
+  stopState: "completed";
+  deliveryState: "delivered";
+  roundState: "active" | "complete";
+  roundVersion: number;
+};
+
+export type CompleteStopPodResult = CommandResult<
+  CompleteStopPodState,
+  StopDeliveryCompletedEvent
+>;
+
 export type DriverManifestItem = {
   lineNumber: number;
   description: string;

@@ -109,6 +109,26 @@ class HarnessAppController extends ChangeNotifier {
   Future<DriverCommandOutcome?> confirmArrival(DriverRoundStopModel stop) =>
       _runDriverCommand(() => _driverApi.confirmArrival(stop));
 
+  Future<DriverCommandOutcome?> completePod({
+    required DriverRoundStopModel stop,
+    required String capturedPhotoPath,
+    required String handoffType,
+    String? receiverName,
+    String? receiverRelationship,
+    String? leftAtLocation,
+    String? note,
+  }) => _runDriverCommand(
+    () => _driverApi.completePod(
+      stop: stop,
+      capturedPhotoPath: capturedPhotoPath,
+      handoffType: handoffType,
+      receiverName: receiverName,
+      receiverRelationship: receiverRelationship,
+      leftAtLocation: leftAtLocation,
+      note: note,
+    ),
+  );
+
   Future<DriverCommandOutcome?> _runDriverCommand(
     Future<DriverCommandOutcome> Function() command,
   ) async {

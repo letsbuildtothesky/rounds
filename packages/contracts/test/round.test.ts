@@ -5,6 +5,8 @@ import {
   validateConfirmPickupCommand,
   validateConfirmPickupPayload,
   validateConfirmStopArrivalCommand,
+  validateCompleteStopPodCommand,
+  validatePreparePodMediaPayload,
   validatePlanRoundCommand,
   validatePlanRoundPayload,
   validateReportPickupProblemCommand,
@@ -127,4 +129,46 @@ test("validates explicit arrival evidence without requiring GPS", () => {
       },
     },
   }), ContractError);
+});
+
+test("requires bounded immutable photo metadata before POD upload", () => {
+  assert.doesNotThrow(() => validatePreparePodMediaPayload({
+    sha256: "a".repeat(64),
+    byteSize: 120000,
+    contentType: "image/jpeg",
+  }));
+  assert.throws(() => validatePreparePodMediaPayload({
+    sha256: "bad",
+    byteSize: 120000,
+    contentType: "image/jpeg",
+  }), ContractError);
+});
+
+test("validates receiver-first handoff and exact POD manifest evidence", () => {
+  const base = {
+    schemaVersion: 1 as const,
+    commandType: "stop.complete_pod" as const,
+    commandId: "10000000-0000-4000-8000-000000000101",
+    traceId: "10000000-0000-4000-8000-000000000102",
+    idempotencyKey: "pod:stop-1",
+    tenantId: "10000000-0000-4000-8000-000000000001",
+    aggregateId: "10000000-0000-4000-8000-000000000011",
+    expectedVersion: 5,
+  };
+  assert.doesNotThrow(() => validateCompleteStopPodCommand({ ...base, payload: {
+    manifestId: "10000000-0000-4000-8000-000000000012",
+    manifestVersion: 1,
+    confirmedLineNumbers: [1, 2],
+    mediaAssetId: "10000000-0000-4000-8000-000000000013",
+    handoffType: "recipient",
+    receiverName: "Siriporn",
+  } }));
+  assert.throws(() => validateCompleteStopPodCommand({ ...base, payload: {
+    manifestId: "10000000-0000-4000-8000-000000000012",
+    manifestVersion: 1,
+    confirmedLineNumbers: [1],
+    mediaAssetId: "10000000-0000-4000-8000-000000000013",
+    handoffType: "someone_else",
+    receiverName: "Reception",
+  } }), /receiverRelationship/);
 });

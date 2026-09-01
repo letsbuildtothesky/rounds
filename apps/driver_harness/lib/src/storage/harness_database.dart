@@ -10,7 +10,7 @@ class HarnessDatabase {
     final databaseRoot = await getDatabasesPath();
     final database = await openDatabase(
       path.join(databaseRoot, 'rounds_phase_zero.db'),
-      version: 2,
+      version: 3,
       onCreate: (database, _) async {
         await database.execute('''
           create table navigation_intents (
@@ -46,9 +46,11 @@ class HarnessDatabase {
           )
         ''');
         await createCommandOutboxSchema(database);
+        await createPodEvidenceSchema(database);
       },
       onUpgrade: (database, oldVersion, _) async {
         if (oldVersion < 2) await createCommandOutboxSchema(database);
+        if (oldVersion < 3) await createPodEvidenceSchema(database);
       },
     );
     return HarnessDatabase._(database);
@@ -76,6 +78,45 @@ class HarnessDatabase {
     await database.execute('''
       create index driver_command_outbox_flush_idx
       on driver_command_outbox (status, created_at)
+    ''');
+  }
+
+  static Future<void> createPodEvidenceSchema(Database database) async {
+    await database.execute('''
+      create table pod_evidence_outbox (
+        id text primary key,
+        stop_id text not null,
+        expected_stop_version integer not null,
+        manifest_id text not null,
+        manifest_version integer not null,
+        confirmed_line_numbers_json text not null,
+        local_path text not null,
+        sha256 text not null,
+        byte_size integer not null,
+        content_type text not null,
+        handoff_type text not null,
+        receiver_name text,
+        receiver_relationship text,
+        left_at_location text,
+        note text,
+        media_asset_id text,
+        storage_bucket text,
+        storage_path text,
+        tus_endpoint text,
+        upload_signature text,
+        upload_url text,
+        upload_offset integer not null default 0,
+        idempotency_key text not null unique,
+        status text not null,
+        attempts integer not null default 0,
+        last_error text,
+        created_at text not null,
+        updated_at text not null
+      )
+    ''');
+    await database.execute('''
+      create index pod_evidence_flush_idx
+      on pod_evidence_outbox (status, created_at)
     ''');
   }
 }

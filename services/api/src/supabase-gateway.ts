@@ -1,4 +1,5 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { createHash } from "node:crypto";
 import type {
   AuthenticatedIdentity,
   ActorContext,
@@ -8,6 +9,8 @@ import type {
   OperationsRole,
   PickupGateway,
   RoundGateway,
+  OperationsHistoryGateway,
+  PodGateway,
 } from "./types.js";
 import type {
   CreateDeliveryCommand,
@@ -16,10 +19,13 @@ import type {
   ConfirmPickupResult,
   ConfirmStopArrivalCommand,
   ConfirmStopArrivalResult,
+  CompleteStopPodCommand,
+  CompleteStopPodResult,
   DriverRoundStop,
   DriverSession,
   OperationsLocation,
   OperationsPlanningProjection,
+  OperationsHistoryProjection,
   OperationsSession,
   OperationsTenant,
   PlanRoundCommand,
@@ -105,7 +111,7 @@ export function parseDatabasePoint(value: unknown): { latitude: number; longitud
   return undefined;
 }
 
-export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway, RoundGateway, PickupGateway, DriverStopGateway {
+export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway, RoundGateway, PickupGateway, DriverStopGateway, PodGateway, OperationsHistoryGateway {
   private readonly admin: SupabaseClient;
 
   constructor(
@@ -473,6 +479,164 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     });
     if (error) throw error;
     return data as ConfirmStopArrivalResult;
+  }
+
+  async preparePodMedia(
+    stopId: string,
+    identity: AuthenticatedIdentity,
+    assetId: string,
+    sha256: string,
+    byteSize: number,
+    contentType: string,
+  ): Promise<Record<string, unknown>> {
+    const actorPersonId = await this.driverActorPersonId(identity);
+    if (!actorPersonId) return {
+      status: "rejected",
+      error: { code: "NOT_AUTHORIZED", message: "Driver identity is not linked" },
+    };
+    const { data, error } = await this.admin.rpc("prepare_pod_media_asset", {
+      p_stop_id: stopId,
+      p_actor_person_id: actorPersonId,
+      p_asset_id: assetId,
+      p_sha256: sha256,
+      p_size: byteSize,
+      p_content_type: contentType,
+    });
+    if (error) throw error;
+    const prepared = data as Record<string, unknown>;
+    if (prepared.status !== "prepared") return prepared;
+    const projectRef = new URL(this.url).hostname.split(".")[0];
+    return {
+      ...prepared,
+      tusEndpoint: `https://${projectRef}.storage.supabase.co/storage/v1/upload/resumable`,
+      uploadAuthorization: "driver_session",
+    };
+  }
+
+  async verifyPodMedia(assetId: string, identity: AuthenticatedIdentity): Promise<Record<string, unknown>> {
+    const actorPersonId = await this.driverActorPersonId(identity);
+    if (!actorPersonId) return {
+      status: "rejected",
+      error: { code: "NOT_AUTHORIZED", message: "Driver identity is not linked" },
+    };
+    const { data: asset, error: assetError } = await this.admin.from("media_assets")
+      .select("id, storage_bucket, storage_path, state, driver_id, expected_sha256, expected_size")
+      .eq("id", assetId).maybeSingle<{
+        id: string; storage_bucket: string; storage_path: string; state: string; driver_id: string;
+        expected_sha256: string; expected_size: number;
+      }>();
+    if (assetError) throw assetError;
+    if (!asset) return { status: "rejected", error: { code: "EVIDENCE_REQUIRED", message: "Photo asset was not prepared" } };
+    const { data: driver, error: driverError } = await this.admin.from("driver_profiles")
+      .select("person_id").eq("id", asset.driver_id).maybeSingle<{ person_id: string }>();
+    if (driverError) throw driverError;
+    if (driver?.person_id !== actorPersonId) return {
+      status: "rejected", error: { code: "NOT_AUTHORIZED", message: "Photo asset is not owned by this driver" },
+    };
+    if (asset.state === "committed" || asset.state === "uploaded_uncommitted") {
+      return { status: "verified", mediaAssetId: asset.id, assetState: asset.state };
+    }
+    const downloaded = await this.admin.storage.from(asset.storage_bucket).download(asset.storage_path);
+    if (downloaded.error || !downloaded.data) return {
+      status: "rejected", error: { code: "EVIDENCE_REQUIRED", message: "Photo upload is not complete yet" },
+    };
+    const bytes = Buffer.from(await downloaded.data.arrayBuffer());
+    const verifiedSha256 = createHash("sha256").update(bytes).digest("hex");
+    const { data, error } = await this.admin.rpc("mark_pod_media_uploaded", {
+      p_asset_id: assetId,
+      p_actor_person_id: actorPersonId,
+      p_verified_sha256: verifiedSha256,
+      p_verified_size: bytes.byteLength,
+    });
+    if (error) throw error;
+    return data as Record<string, unknown>;
+  }
+
+  async completeStopPod(
+    command: CompleteStopPodCommand,
+    identity: AuthenticatedIdentity,
+  ): Promise<CompleteStopPodResult> {
+    const actorPersonId = await this.driverActorPersonId(identity);
+    if (!actorPersonId) return {
+      status: "rejected",
+      error: { code: "NOT_AUTHORIZED", message: "Driver identity is not linked" },
+    };
+    const { data, error } = await this.admin.rpc("complete_stop_pod_command", {
+      p_command: command,
+      p_actor_person_id: actorPersonId,
+    });
+    if (error) throw error;
+    return data as CompleteStopPodResult;
+  }
+
+  async getOperationsHistory(actor: ActorContext): Promise<OperationsHistoryProjection> {
+    type PodRow = {
+      id: string; delivery_id: string; stop_id: string; round_id: string; driver_id: string;
+      media_asset_id: string; handoff_type: "recipient" | "someone_else" | "left_at_location";
+      receiver_name: string | null; receiver_relationship: string | null; left_at_location: string | null;
+      delivered_at: string; manifest_version: number;
+    };
+    const { data: pods, error: podsError } = await this.admin.from("pod_records")
+      .select("id, delivery_id, stop_id, round_id, driver_id, media_asset_id, handoff_type, receiver_name, receiver_relationship, left_at_location, delivered_at, manifest_version")
+      .eq("tenant_id", actor.tenantId).order("delivered_at", { ascending: false }).limit(100).returns<PodRow[]>();
+    if (podsError) throw podsError;
+    if (!pods?.length) return { tenantId: actor.tenantId, deliveries: [] };
+    const deliveryIds = [...new Set(pods.map((pod) => pod.delivery_id))];
+    const roundIds = [...new Set(pods.map((pod) => pod.round_id))];
+    const driverIds = [...new Set(pods.map((pod) => pod.driver_id))];
+    const mediaIds = [...new Set(pods.map((pod) => pod.media_asset_id))];
+    const [deliveryResult, roundResult, driverResult, mediaResult] = await Promise.all([
+      this.admin.from("deliveries").select("id, reference, recipient_name, destination_raw_address").in("id", deliveryIds)
+        .returns<{ id: string; reference: string; recipient_name: string; destination_raw_address: string }[]>(),
+      this.admin.from("rounds").select("id, reference").in("id", roundIds).returns<{ id: string; reference: string }[]>(),
+      this.admin.from("driver_profiles").select("id, person_id").in("id", driverIds).returns<{ id: string; person_id: string }[]>(),
+      this.admin.from("media_assets").select("id, state").in("id", mediaIds).eq("state", "committed")
+        .returns<{ id: string; state: "committed" }[]>(),
+    ]);
+    if (deliveryResult.error) throw deliveryResult.error;
+    if (roundResult.error) throw roundResult.error;
+    if (driverResult.error) throw driverResult.error;
+    if (mediaResult.error) throw mediaResult.error;
+    const personIds = (driverResult.data ?? []).map((driver) => driver.person_id);
+    const { data: people, error: peopleError } = await this.admin.from("persons")
+      .select("id, display_name").in("id", personIds).returns<{ id: string; display_name: string }[]>();
+    if (peopleError) throw peopleError;
+    const deliveryById = new Map((deliveryResult.data ?? []).map((row) => [row.id, row]));
+    const roundById = new Map((roundResult.data ?? []).map((row) => [row.id, row]));
+    const personById = new Map((people ?? []).map((row) => [row.id, row]));
+    const personIdByDriver = new Map((driverResult.data ?? []).map((row) => [row.id, row.person_id]));
+    const committedMedia = new Set((mediaResult.data ?? []).map((row) => row.id));
+    return {
+      tenantId: actor.tenantId,
+      deliveries: pods.flatMap((pod) => {
+        const delivery = deliveryById.get(pod.delivery_id);
+        const round = roundById.get(pod.round_id);
+        if (!delivery || !round || !committedMedia.has(pod.media_asset_id)) return [];
+        const receiverLabel = pod.handoff_type === "left_at_location"
+          ? pod.left_at_location ?? "Approved location"
+          : pod.receiver_relationship
+            ? `${pod.receiver_name ?? "Receiver"} · ${pod.receiver_relationship}`
+            : pod.receiver_name ?? delivery.recipient_name;
+        return [{
+          podId: pod.id,
+          deliveryId: pod.delivery_id,
+          stopId: pod.stop_id,
+          roundId: pod.round_id,
+          deliveryReference: delivery.reference,
+          roundReference: round.reference,
+          recipientName: delivery.recipient_name,
+          rawAddress: delivery.destination_raw_address,
+          driverName: personById.get(personIdByDriver.get(pod.driver_id) ?? "")?.display_name ?? "Team driver",
+          handoffType: pod.handoff_type,
+          receiverLabel,
+          deliveredAt: pod.delivered_at,
+          manifestVersion: pod.manifest_version,
+          verifiedPhotoCount: 1 as const,
+          mediaAssetId: pod.media_asset_id,
+          mediaState: "committed" as const,
+        }];
+      }),
+    };
   }
 
   private async driverActorPersonId(identity: AuthenticatedIdentity): Promise<string | null> {

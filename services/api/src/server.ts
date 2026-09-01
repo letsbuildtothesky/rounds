@@ -2,12 +2,15 @@ import { createServer, type IncomingMessage, type ServerResponse } from "node:ht
 import { createDeliveryHandler } from "./create-delivery-handler.js";
 import { confirmPickupHandler } from "./confirm-pickup-handler.js";
 import { confirmStopArrivalHandler } from "./confirm-stop-arrival-handler.js";
+import { completeStopPodHandler } from "./complete-stop-pod-handler.js";
 import { driverSessionHandler } from "./driver-session-handler.js";
 import { operationsPlanningHandler } from "./operations-planning-handler.js";
+import { operationsHistoryHandler } from "./operations-history-handler.js";
 import { readConfig } from "./config.js";
 import { operationsSessionHandler } from "./operations-session-handler.js";
 import { planRoundHandler } from "./plan-round-handler.js";
 import { reportPickupProblemHandler } from "./report-pickup-problem-handler.js";
+import { preparePodMediaHandler } from "./prepare-pod-media-handler.js";
 import { SupabaseGateway } from "./supabase-gateway.js";
 
 const config = readConfig();
@@ -104,6 +107,16 @@ const server = createServer(async (request, response) => {
       sendNode(response, addOperationsCors(planningResponse, request.headers.origin));
       return;
     }
+    if (request.method === "GET" && request.url === "/v1/operations/history") {
+      const webRequest = await toWebRequest(request);
+      const historyResponse = await operationsHistoryHandler(webRequest, {
+        identity: gateway,
+        history: gateway,
+        uuid: () => crypto.randomUUID(),
+      });
+      sendNode(response, addOperationsCors(historyResponse, request.headers.origin));
+      return;
+    }
     if (request.method === "POST" && request.url === "/v1/rounds") {
       const webRequest = await toWebRequest(request);
       const roundResponse = await planRoundHandler(webRequest, {
@@ -158,6 +171,30 @@ const server = createServer(async (request, response) => {
         now: () => new Date(),
       });
       sendNode(response, arrivalResponse);
+      return;
+    }
+    const podMediaMatch = request.url?.match(/^\/v1\/driver\/stops\/([0-9a-f-]+)\/pod-media$/i);
+    if (request.method === "POST" && podMediaMatch) {
+      const webRequest = await toWebRequest(request);
+      const mediaResponse = await preparePodMediaHandler(webRequest, podMediaMatch[1]!, {
+        identity: gateway,
+        stops: gateway,
+        uuid: () => crypto.randomUUID(),
+        now: () => new Date(),
+      });
+      sendNode(response, mediaResponse);
+      return;
+    }
+    const podMatch = request.url?.match(/^\/v1\/driver\/stops\/([0-9a-f-]+)\/pod$/i);
+    if (request.method === "POST" && podMatch) {
+      const webRequest = await toWebRequest(request);
+      const podResponse = await completeStopPodHandler(webRequest, podMatch[1]!, {
+        identity: gateway,
+        stops: gateway,
+        uuid: () => crypto.randomUUID(),
+        now: () => new Date(),
+      });
+      sendNode(response, podResponse);
       return;
     }
     if (request.method === "POST" && request.url === "/v1/deliveries") {

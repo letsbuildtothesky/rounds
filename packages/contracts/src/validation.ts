@@ -1,11 +1,14 @@
 import type { CreateDeliveryCommand, CreateDeliveryPayload } from "./delivery.js";
 import type { LocationBatch, PositionSample } from "./location.js";
-import { pickupProblemCategories } from "./round.js";
+import { pickupProblemCategories, podHandoffTypes } from "./round.js";
 import type {
   ConfirmPickupCommand,
   ConfirmPickupPayload,
   ConfirmStopArrivalCommand,
   ConfirmStopArrivalPayload,
+  CompleteStopPodCommand,
+  CompleteStopPodPayload,
+  PreparePodMediaPayload,
   PlanRoundCommand,
   PlanRoundPayload,
   ReportPickupProblemCommand,
@@ -262,8 +265,57 @@ export function validateConfirmStopArrivalCommand(command: ConfirmStopArrivalCom
   validateConfirmStopArrivalPayload(command.payload);
 }
 
+export function validatePreparePodMediaPayload(payload: PreparePodMediaPayload): void {
+  if (!/^[0-9a-f]{64}$/.test(payload.sha256)) {
+    throw new ContractError("sha256 must be a lowercase SHA-256 digest");
+  }
+  if (!Number.isInteger(payload.byteSize) || payload.byteSize < 1 || payload.byteSize > 6291456) {
+    throw new ContractError("byteSize must be between 1 byte and 6 MiB");
+  }
+  if (!["image/jpeg", "image/png"].includes(payload.contentType)) {
+    throw new ContractError("contentType must be image/jpeg or image/png");
+  }
+}
+
+export function validateCompleteStopPodPayload(payload: CompleteStopPodPayload): void {
+  assertUuid(payload.manifestId, "manifestId");
+  assertUuid(payload.mediaAssetId, "mediaAssetId");
+  if (!Number.isInteger(payload.manifestVersion) || payload.manifestVersion < 1) {
+    throw new ContractError("manifestVersion must be a positive integer");
+  }
+  if (!payload.confirmedLineNumbers.length || new Set(payload.confirmedLineNumbers).size !== payload.confirmedLineNumbers.length) {
+    throw new ContractError("confirmedLineNumbers must be non-empty and unique");
+  }
+  payload.confirmedLineNumbers.forEach((line) => {
+    if (!Number.isInteger(line) || line < 1) throw new ContractError("confirmedLineNumbers must contain positive integers");
+  });
+  if (!podHandoffTypes.includes(payload.handoffType)) throw new ContractError("handoffType is unsupported");
+  const receiverName = payload.receiverName?.trim();
+  const relationship = payload.receiverRelationship?.trim();
+  const location = payload.leftAtLocation?.trim();
+  if (payload.handoffType === "recipient" && (!receiverName || relationship || location)) {
+    throw new ContractError("recipient handoff requires receiverName only");
+  }
+  if (payload.handoffType === "someone_else" && (!receiverName || !relationship || location)) {
+    throw new ContractError("someone_else handoff requires receiverName and receiverRelationship");
+  }
+  if (payload.handoffType === "left_at_location" && (receiverName || relationship || !location)) {
+    throw new ContractError("left_at_location handoff requires leftAtLocation only");
+  }
+  if ((payload.note?.trim().length ?? 0) > 500) throw new ContractError("note exceeds 500 characters");
+  if (payload.position) validateConfirmStopArrivalPayload({ position: payload.position });
+}
+
+export function validateCompleteStopPodCommand(command: CompleteStopPodCommand): void {
+  if (command.schemaVersion !== 1 || command.commandType !== "stop.complete_pod") {
+    throw new ContractError("unsupported CompleteStopPod command envelope");
+  }
+  validateStopCommandEnvelope(command, "CompleteStopPod");
+  validateCompleteStopPodPayload(command.payload);
+}
+
 function validateStopCommandEnvelope(
-  command: ReportPickupProblemCommand | ConfirmStopArrivalCommand,
+  command: ReportPickupProblemCommand | ConfirmStopArrivalCommand | CompleteStopPodCommand,
   name: string,
 ): void {
   assertUuid(command.commandId, "commandId");

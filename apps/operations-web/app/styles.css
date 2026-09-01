@@ -164,6 +164,24 @@ svg { width: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-l
 .custody-state.exception { color: #9c3030; background: #fdeaea; }
 .custody-state b { font-size: .75rem; }
 .custody-state span { font-size: .58rem; font-weight: 800; text-transform: uppercase; }
+
+.history-workspace { width: 100%; }
+.history-refresh { border: 1px solid var(--line); background: white; color: var(--ink); border-radius: 12px; padding: 12px 18px; font-weight: 800; cursor: pointer; }
+.history-list { display: grid; gap: 16px; }
+.history-card { background: white; border: 1px solid var(--line); border-radius: 20px; padding: 22px; box-shadow: 0 8px 26px rgba(22, 54, 47, .06); }
+.history-primary { display: flex; align-items: flex-start; gap: 14px; }
+.history-primary h2 { margin: 2px 0 5px; font-size: 20px; }
+.history-primary p { margin: 0; color: var(--muted); }
+.history-check { width: 40px; height: 40px; flex: 0 0 40px; display: grid; place-items: center; border-radius: 50%; background: #bde9d4; color: #17453b; font-size: 21px; font-weight: 900; }
+.history-evidence { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 20px 0 0 54px; }
+.history-evidence div { background: #f4f6f3; border-radius: 12px; padding: 12px; }
+.history-evidence dt { color: var(--muted); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; }
+.history-evidence dd { margin: 5px 0 0; font-weight: 750; line-height: 1.35; }
+.evidence-verified { display: inline-block; background: #bde9d4; color: #17453b; padding: 2px 7px; border-radius: 99px; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+.history-empty { text-align: center; background: white; border: 1px solid var(--line); border-radius: 20px; padding: 64px 24px; }
+.history-empty div { width: 54px; height: 54px; display: grid; place-items: center; margin: 0 auto 14px; border-radius: 50%; background: #e5eee9; font-size: 24px; color: #17453b; }
+.history-empty h2 { margin: 0 0 8px; }
+.history-empty p { color: var(--muted); max-width: 560px; margin: auto; }
 .dispatch-card-heading { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 18px; }
 .dispatch-card-heading h2, .round-builder h2 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: 1.7rem; font-weight: 500; }
 .dispatch-card-heading > span { padding: 6px 9px; border-radius: 999px; color: var(--forest); background: var(--mint); font-size: .66rem; font-weight: 850; }
@@ -211,6 +229,7 @@ svg { width: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-l
   .login-panel { min-height: 100vh; padding: 24px; }
   .dispatch-grid { grid-template-columns: 1fr; }
   .round-builder { position: static; }
+  .history-evidence { grid-template-columns: 1fr 1fr; margin-left: 0; }
 }
 
 @media (max-width: 560px) {
@@ -222,4 +241,5 @@ svg { width: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-l
   .segmented button { flex: 1; }
   .primary-action { width: 100%; }
   .manifest-row { grid-template-columns: 24px minmax(0, 1fr) 58px 26px; gap: 7px; }
+  .history-evidence { grid-template-columns: 1fr; }
 }

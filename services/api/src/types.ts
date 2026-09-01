@@ -5,11 +5,15 @@ import type {
   ConfirmStopArrivalCommand,
   ConfirmStopArrivalPayload,
   ConfirmStopArrivalResult,
+  CompleteStopPodCommand,
+  CompleteStopPodPayload,
+  CompleteStopPodResult,
   CreateDeliveryCommand,
   CreateDeliveryPayload,
   CreateDeliveryResult,
   DriverSession,
   OperationsSession,
+  OperationsHistoryProjection,
   OperationsPlanningProjection,
   PlanRoundCommand,
   PlanRoundPayload,
@@ -66,6 +70,26 @@ export interface DriverStopGateway {
   ): Promise<ConfirmStopArrivalResult>;
 }
 
+export interface PodGateway {
+  preparePodMedia(
+    stopId: string,
+    identity: AuthenticatedIdentity,
+    assetId: string,
+    sha256: string,
+    byteSize: number,
+    contentType: string,
+  ): Promise<Record<string, unknown>>;
+  verifyPodMedia(assetId: string, identity: AuthenticatedIdentity): Promise<Record<string, unknown>>;
+  completeStopPod(
+    command: CompleteStopPodCommand,
+    identity: AuthenticatedIdentity,
+  ): Promise<CompleteStopPodResult>;
+}
+
+export interface OperationsHistoryGateway {
+  getOperationsHistory(actor: ActorContext): Promise<OperationsHistoryProjection>;
+}
+
 export type CreateDeliveryDependencies = {
   identity: IdentityGateway;
   commands: DeliveryCommandGateway;
@@ -83,6 +107,12 @@ export type OperationsSessionDependencies = {
 export type OperationsPlanningDependencies = {
   identity: IdentityGateway;
   planning: RoundGateway;
+  uuid: () => string;
+};
+
+export type OperationsHistoryDependencies = {
+  identity: IdentityGateway;
+  history: OperationsHistoryGateway;
   uuid: () => string;
 };
 
@@ -109,5 +139,11 @@ export type DriverStopDependencies = DriverSessionDependencies & {
   now: () => Date;
 };
 
+export type PodDependencies = DriverSessionDependencies & {
+  stops: PodGateway;
+  now: () => Date;
+};
+
 export type ReportPickupProblemRequestBody = ReportPickupProblemPayload;
 export type ConfirmStopArrivalRequestBody = ConfirmStopArrivalPayload;
+export type CompleteStopPodRequestBody = CompleteStopPodPayload;

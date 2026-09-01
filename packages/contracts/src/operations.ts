@@ -32,3 +32,27 @@ export type OperationsSession = {
   };
   tenants: OperationsTenant[];
 };
+
+export type OperationsHistoryItem = {
+  podId: string;
+  deliveryId: string;
+  stopId: string;
+  roundId: string;
+  deliveryReference: string;
+  roundReference: string;
+  recipientName: string;
+  rawAddress: string;
+  driverName: string;
+  handoffType: "recipient" | "someone_else" | "left_at_location";
+  receiverLabel: string;
+  deliveredAt: string;
+  manifestVersion: number;
+  verifiedPhotoCount: 1;
+  mediaAssetId: string;
+  mediaState: "committed";
+};
+
+export type OperationsHistoryProjection = {
+  tenantId: string;
+  deliveries: OperationsHistoryItem[];
+};
