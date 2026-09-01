@@ -1,0 +1,58 @@
+name: Rounds CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  typescript:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+      - run: npm ci --ignore-scripts
+      - run: npm test
+      - run: npm run typecheck
+      - run: npm run build --workspace @rounds/telemetry-viewer
+      - run: npm audit --audit-level=high
+      - name: Reject committed secret values
+        run: |
+          if git grep -n -E 'sb_secret_|AIzaSy[A-Za-z0-9_-]{20,}|postgresql://postgres:' -- . ':!.github/workflows/ci.yml'; then
+            echo 'Potential secret value detected' >&2
+            exit 1
+          fi
+
+  flutter:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/driver_harness
+    steps:
+      - uses: actions/checkout@v6
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.2
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
+
+  database:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.116.0
+      - run: supabase start
+      - run: supabase test db
+      - run: supabase db lint --local --schema public --level error --fail-on error
+      - if: always()
+        run: supabase stop --no-backup
