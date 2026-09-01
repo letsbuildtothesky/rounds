@@ -1,6 +1,6 @@
-# Rounds — Codex Build Pack v2.0
+# Rounds
 
-This folder is the single implementation handoff for Rounds.
+Rounds is being implemented sequentially from the canonical product, architecture and Build Specs in this repository.
 
 It contains:
 - the current canonical product specs;
@@ -12,12 +12,29 @@ It contains:
 - a dedicated Thai Driver board folder;
 - Codex build-order and repository instructions.
 
-## Start here
+## Current implementation
+
+- `apps/driver_harness` — Phase 0 Flutter navigation + telemetry field harness.
+- `apps/telemetry_viewer` — Phase 0 live telemetry viewer.
+- `services/location_ingest` — batched location-ingest domain logic.
+- `services/api` — Pilot/Slice 1 authenticated command API foundation.
+- `packages/contracts` — language-neutral command, delivery, event and location contracts.
+- `packages/domain-ts` — server-side state/version helpers.
+- `supabase` — forward-only schema migrations, deterministic synthetic seed and pgTAP/RLS tests.
+
+Implementation evidence and current gaps are recorded in `field/` and `docs/`.
+
+## Authority
 1. `AGENTS.md`
 2. `CODEX-BUILD-ORDER.md`
-3. `CODEX-FIRST-TASK.md`
+3. the active Build Specs and Implementation Scope Ladder
 
-## Important
-The Build Specs are complete enough to define how later Rounds slices are built, but **Codex must still implement sequentially**. Future-slice Build Specs are not permission to skip Phase 0 or build all screens/features at once.
+## Commands
 
-When Thai boards are ready, place them under `ux/driver/th/` with the same screen IDs/behavior as English.
+```bash
+npm test
+npm run typecheck
+npx supabase db lint --linked --schema public --level error --fail-on error
+```
+
+The Flutter harness has its own commands under `apps/driver_harness`.
