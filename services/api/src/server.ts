@@ -1,11 +1,13 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { createDeliveryHandler } from "./create-delivery-handler.js";
 import { confirmPickupHandler } from "./confirm-pickup-handler.js";
+import { confirmStopArrivalHandler } from "./confirm-stop-arrival-handler.js";
 import { driverSessionHandler } from "./driver-session-handler.js";
 import { operationsPlanningHandler } from "./operations-planning-handler.js";
 import { readConfig } from "./config.js";
 import { operationsSessionHandler } from "./operations-session-handler.js";
 import { planRoundHandler } from "./plan-round-handler.js";
+import { reportPickupProblemHandler } from "./report-pickup-problem-handler.js";
 import { SupabaseGateway } from "./supabase-gateway.js";
 
 const config = readConfig();
@@ -132,6 +134,30 @@ const server = createServer(async (request, response) => {
         now: () => new Date(),
       });
       sendNode(response, pickupResponse);
+      return;
+    }
+    const pickupProblemMatch = request.url?.match(/^\/v1\/driver\/stops\/([0-9a-f-]+)\/pickup-problem$/i);
+    if (request.method === "POST" && pickupProblemMatch) {
+      const webRequest = await toWebRequest(request);
+      const problemResponse = await reportPickupProblemHandler(webRequest, pickupProblemMatch[1]!, {
+        identity: gateway,
+        stops: gateway,
+        uuid: () => crypto.randomUUID(),
+        now: () => new Date(),
+      });
+      sendNode(response, problemResponse);
+      return;
+    }
+    const arrivalMatch = request.url?.match(/^\/v1\/driver\/stops\/([0-9a-f-]+)\/arrival$/i);
+    if (request.method === "POST" && arrivalMatch) {
+      const webRequest = await toWebRequest(request);
+      const arrivalResponse = await confirmStopArrivalHandler(webRequest, arrivalMatch[1]!, {
+        identity: gateway,
+        stops: gateway,
+        uuid: () => crypto.randomUUID(),
+        now: () => new Date(),
+      });
+      sendNode(response, arrivalResponse);
       return;
     }
     if (request.method === "POST" && request.url === "/v1/deliveries") {

@@ -133,7 +133,7 @@ export function DispatchPanel({ accessToken, tenant }: Props) {
       <div className="dispatch-card-heading"><div><p className="eyebrow">DRIVER EXECUTION</p><h2>Assigned Rounds</h2></div><span>{projection.activeRounds.length} live</span></div>
       <div className="custody-round-list">{projection.activeRounds.map((round) => <article className="custody-round" key={round.id}>
         <div><strong>{round.reference}</strong><small>{round.driverName} · {round.stopCount} Stop{round.stopCount === 1 ? "" : "s"}</small></div>
-        <div className={`custody-state ${round.state === "active" ? "committed" : ""}`}><b>{round.custodyStopCount} / {round.stopCount}</b><span>{round.state === "active" ? "Driver custody" : "Awaiting pickup"}</span></div>
+        <div className={`custody-state ${round.openExceptionCount > 0 ? "exception" : round.state === "active" ? "committed" : ""}`}><b>{round.openExceptionCount > 0 ? `${round.openExceptionCount} open` : `${round.custodyStopCount} / ${round.stopCount}`}</b><span>{round.openExceptionCount > 0 ? "Needs Operations" : round.state === "active" ? "Driver custody" : "Awaiting pickup"}</span></div>
       </article>)}</div>
     </section>}
     <div className="dispatch-grid">

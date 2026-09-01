@@ -36,6 +36,7 @@ class AssignedRoundScreen extends StatelessWidget {
         id: 'STOP-001',
         sequence: 1,
         state: 'assigned',
+        version: 1,
         destinationVersion: 1,
         manifestId: 'MANIFEST-DEMO-001',
         manifestVersion: 1,

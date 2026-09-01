@@ -32,6 +32,7 @@ void main() {
           id: 'stop-1',
           sequence: 1,
           state: 'assigned',
+          version: 1,
           destinationVersion: 1,
           manifestId: 'manifest-1',
           manifestVersion: 1,

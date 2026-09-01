@@ -1,10 +1,15 @@
 import type { CreateDeliveryCommand, CreateDeliveryPayload } from "./delivery.js";
 import type { LocationBatch, PositionSample } from "./location.js";
+import { pickupProblemCategories } from "./round.js";
 import type {
   ConfirmPickupCommand,
   ConfirmPickupPayload,
+  ConfirmStopArrivalCommand,
+  ConfirmStopArrivalPayload,
   PlanRoundCommand,
   PlanRoundPayload,
+  ReportPickupProblemCommand,
+  ReportPickupProblemPayload,
 } from "./round.js";
 
 export class ContractError extends Error {}
@@ -204,4 +209,72 @@ export function validateConfirmPickupCommand(command: ConfirmPickupCommand): voi
     throw new ContractError("ConfirmPickup expectedVersion must be a positive integer");
   }
   validateConfirmPickupPayload(command.payload);
+}
+
+export function validateReportPickupProblemPayload(payload: ReportPickupProblemPayload): void {
+  assertUuid(payload.manifestId, "manifestId");
+  if (!Number.isInteger(payload.manifestVersion) || payload.manifestVersion < 1) {
+    throw new ContractError("manifestVersion must be a positive integer");
+  }
+  if (!pickupProblemCategories.includes(payload.category)) {
+    throw new ContractError("category is not a supported pickup problem");
+  }
+  if (payload.note !== undefined && payload.note.trim().length > 500) {
+    throw new ContractError("note exceeds 500 characters");
+  }
+}
+
+export function validateReportPickupProblemCommand(command: ReportPickupProblemCommand): void {
+  if (command.schemaVersion !== 1 || command.commandType !== "stop.report_pickup_problem") {
+    throw new ContractError("unsupported ReportPickupProblem command envelope");
+  }
+  validateStopCommandEnvelope(command, "ReportPickupProblem");
+  validateReportPickupProblemPayload(command.payload);
+}
+
+export function validateConfirmStopArrivalPayload(payload: ConfirmStopArrivalPayload): void {
+  if (payload.overrideReason !== undefined && payload.overrideReason.trim().length > 500) {
+    throw new ContractError("overrideReason exceeds 500 characters");
+  }
+  if (!payload.position) return;
+  assertFinite(payload.position.latitude, "position.latitude");
+  assertFinite(payload.position.longitude, "position.longitude");
+  assertFinite(payload.position.accuracyMeters, "position.accuracyMeters");
+  if (payload.position.latitude < -90 || payload.position.latitude > 90) {
+    throw new ContractError("position.latitude out of range");
+  }
+  if (payload.position.longitude < -180 || payload.position.longitude > 180) {
+    throw new ContractError("position.longitude out of range");
+  }
+  if (payload.position.accuracyMeters < 0) {
+    throw new ContractError("position.accuracyMeters must be non-negative");
+  }
+  if (!["google_nav", "rounds_os", "unknown"].includes(payload.position.source)) {
+    throw new ContractError("position.source is unsupported");
+  }
+}
+
+export function validateConfirmStopArrivalCommand(command: ConfirmStopArrivalCommand): void {
+  if (command.schemaVersion !== 1 || command.commandType !== "stop.confirm_arrival") {
+    throw new ContractError("unsupported ConfirmStopArrival command envelope");
+  }
+  validateStopCommandEnvelope(command, "ConfirmStopArrival");
+  validateConfirmStopArrivalPayload(command.payload);
+}
+
+function validateStopCommandEnvelope(
+  command: ReportPickupProblemCommand | ConfirmStopArrivalCommand,
+  name: string,
+): void {
+  assertUuid(command.commandId, "commandId");
+  assertUuid(command.traceId, "traceId");
+  assertUuid(command.tenantId, "tenantId");
+  assertUuid(command.aggregateId, "aggregateId");
+  assertNonEmpty(command.idempotencyKey, "idempotencyKey");
+  if (command.idempotencyKey.length > 200) {
+    throw new ContractError("idempotencyKey exceeds 200 characters");
+  }
+  if (!Number.isInteger(command.expectedVersion) || command.expectedVersion < 1) {
+    throw new ContractError(`${name} expectedVersion must be a positive integer`);
+  }
 }

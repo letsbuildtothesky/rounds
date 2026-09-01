@@ -24,6 +24,9 @@ class NavigationHarnessScreen extends StatefulWidget {
 
 class _NavigationHarnessScreenState extends State<NavigationHarnessScreen> {
   bool _arrived = false;
+  bool _nearArrival = false;
+  bool _arrivalPendingSync = false;
+  bool _submittingArrival = false;
   DateTime? _lastOperationalSample;
   String? _navigationStatus;
 
@@ -91,7 +94,7 @@ class _NavigationHarnessScreenState extends State<NavigationHarnessScreen> {
                       },
                       onArrival: () {
                         if (!mounted) return;
-                        setState(() => _arrived = true);
+                        setState(() => _nearArrival = true);
                       },
                       stopId: widget.stop.id,
                       destinationVersion: widget.stop.destinationVersion,
@@ -145,19 +148,45 @@ class _NavigationHarnessScreenState extends State<NavigationHarnessScreen> {
                       ],
                     ),
                     const SizedBox(height: 8),
-                    FilledButton(
-                      key: const Key('arrival-action'),
-                      onPressed: () => setState(() => _arrived = true),
-                      child: Text(
-                        _arrived ? strings.podPlaceholder : strings.arrived,
+                    if (_nearArrival ||
+                        !widget.enableNativeNavigation ||
+                        _arrived ||
+                        _arrivalPendingSync)
+                      FilledButton(
+                        key: const Key('arrival-action'),
+                        onPressed:
+                            _arrived ||
+                                _arrivalPendingSync ||
+                                _submittingArrival
+                            ? null
+                            : _confirmArrival,
+                        child: Text(
+                          _arrived
+                              ? strings.podPlaceholder
+                              : _submittingArrival
+                              ? 'Confirming with server…'
+                              : _arrivalPendingSync
+                              ? 'Pending sync — not arrived'
+                              : strings.arrived,
+                        ),
                       ),
-                    ),
-                    if (_arrived)
+                    if (_arrivalPendingSync)
                       Padding(
                         padding: const EdgeInsets.only(top: 6),
-                        child: Text(
-                          strings.pendingSync,
-                          style: const TextStyle(color: Color(0xFF9B5A00)),
+                        child: Column(
+                          children: [
+                            Text(
+                              strings.pendingSync,
+                              style: const TextStyle(
+                                color: Color(0xFF9B5A00),
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            const Text(
+                              'Arrival is not committed yet',
+                              style: TextStyle(color: Color(0xFF9B5A00)),
+                            ),
+                          ],
                         ),
                       ),
                   ],
@@ -168,6 +197,34 @@ class _NavigationHarnessScreenState extends State<NavigationHarnessScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _confirmArrival() async {
+    setState(() => _submittingArrival = true);
+    final outcome = await widget.controller.confirmArrival(widget.stop);
+    if (!mounted) return;
+    setState(() {
+      _submittingArrival = false;
+      _arrived = outcome?.committed ?? false;
+      _arrivalPendingSync = outcome?.pendingSync ?? false;
+    });
+    if (outcome == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            widget.controller.driverError ?? 'Arrival could not be confirmed',
+          ),
+        ),
+      );
+    } else if (outcome.pendingSync) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Arrival saved on this phone. Pending sync — server state is unchanged.',
+          ),
+        ),
+      );
+    }
   }
 }
 

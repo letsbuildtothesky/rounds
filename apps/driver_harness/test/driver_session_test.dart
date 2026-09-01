@@ -31,6 +31,7 @@ void main() {
               'id': 'stop-1',
               'sequence': 1,
               'state': 'assigned',
+              'version': 1,
               'destinationVersion': 1,
               'deliveryId': 'delivery-1',
               'deliveryReference': 'UF-001',

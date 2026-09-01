@@ -102,6 +102,7 @@ class DriverRoundStopModel {
     required this.id,
     required this.sequence,
     required this.state,
+    required this.version,
     required this.destinationVersion,
     required this.manifestId,
     required this.manifestVersion,
@@ -119,6 +120,7 @@ class DriverRoundStopModel {
   final String id;
   final int sequence;
   final String state;
+  final int version;
   final int destinationVersion;
   final String manifestId;
   final int manifestVersion;
@@ -137,6 +139,7 @@ class DriverRoundStopModel {
         id: json['id'] as String,
         sequence: json['sequence'] as int,
         state: json['state'] as String,
+        version: json['version'] as int,
         destinationVersion: json['destinationVersion'] as int,
         manifestId: json['manifestId'] as String,
         manifestVersion: json['manifestVersion'] as int,

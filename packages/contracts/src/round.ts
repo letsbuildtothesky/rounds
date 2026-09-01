@@ -47,6 +47,7 @@ export type OperationsRoundSummary = {
   driverName: string;
   stopCount: number;
   custodyStopCount: number;
+  openExceptionCount: number;
 };
 
 export type PlanRoundPayload = {
@@ -118,6 +119,90 @@ export type ConfirmPickupState = {
 
 export type ConfirmPickupResult = CommandResult<ConfirmPickupState, PickupConfirmedEvent>;
 
+export const pickupProblemCategories = [
+  "missing_item",
+  "wrong_item",
+  "damaged_item",
+] as const;
+
+export type PickupProblemCategory = (typeof pickupProblemCategories)[number];
+
+export type ReportPickupProblemPayload = {
+  manifestId: string;
+  manifestVersion: number;
+  category: PickupProblemCategory;
+  note?: string;
+};
+
+export type ReportPickupProblemCommand = CommandEnvelope<
+  "stop.report_pickup_problem",
+  ReportPickupProblemPayload
+>;
+
+export type PickupProblemReportedPayload = {
+  exceptionId: string;
+  stopId: string;
+  deliveryId: string;
+  roundId: string;
+  category: PickupProblemCategory;
+};
+
+export type PickupProblemReportedEvent = DomainEventEnvelope<
+  "stop.pickup_problem_reported",
+  PickupProblemReportedPayload
+>;
+
+export type ReportPickupProblemState = PickupProblemReportedPayload & {
+  stopState: "exception";
+  deliveryState: "exception";
+};
+
+export type ReportPickupProblemResult = CommandResult<
+  ReportPickupProblemState,
+  PickupProblemReportedEvent
+>;
+
+export type ArrivalPositionEvidence = {
+  latitude: number;
+  longitude: number;
+  accuracyMeters: number;
+  source: "google_nav" | "rounds_os" | "unknown";
+};
+
+export type ConfirmStopArrivalPayload = {
+  position?: ArrivalPositionEvidence;
+  overrideReason?: string;
+};
+
+export type ConfirmStopArrivalCommand = CommandEnvelope<
+  "stop.confirm_arrival",
+  ConfirmStopArrivalPayload
+>;
+
+export type StopArrivalConfirmedPayload = {
+  arrivalId: string;
+  stopId: string;
+  deliveryId: string;
+  roundId: string;
+  driverId: string;
+  arrivedAt: string;
+};
+
+export type StopArrivalConfirmedEvent = DomainEventEnvelope<
+  "stop.arrival_confirmed",
+  StopArrivalConfirmedPayload
+>;
+
+export type ConfirmStopArrivalState = StopArrivalConfirmedPayload & {
+  stopState: "arrived";
+  deliveryState: "arrived";
+};
+
+export type ConfirmStopArrivalResult = CommandResult<
+  ConfirmStopArrivalState,
+  StopArrivalConfirmedEvent
+>;
+
 export type DriverManifestItem = {
   lineNumber: number;
   description: string;
@@ -129,6 +214,7 @@ export type DriverRoundStop = {
   id: string;
   sequence: number;
   state: string;
+  version: number;
   destinationVersion: number;
   deliveryId: string;
   deliveryReference: string;

@@ -2,6 +2,9 @@ import type {
   ConfirmPickupCommand,
   ConfirmPickupPayload,
   ConfirmPickupResult,
+  ConfirmStopArrivalCommand,
+  ConfirmStopArrivalPayload,
+  ConfirmStopArrivalResult,
   CreateDeliveryCommand,
   CreateDeliveryPayload,
   CreateDeliveryResult,
@@ -11,6 +14,9 @@ import type {
   PlanRoundCommand,
   PlanRoundPayload,
   PlanRoundResult,
+  ReportPickupProblemCommand,
+  ReportPickupProblemPayload,
+  ReportPickupProblemResult,
 } from "@rounds/contracts";
 
 export type { OperationsRole } from "@rounds/contracts";
@@ -47,6 +53,17 @@ export interface RoundGateway {
 
 export interface PickupGateway {
   confirmPickup(command: ConfirmPickupCommand, identity: AuthenticatedIdentity): Promise<ConfirmPickupResult>;
+}
+
+export interface DriverStopGateway {
+  reportPickupProblem(
+    command: ReportPickupProblemCommand,
+    identity: AuthenticatedIdentity,
+  ): Promise<ReportPickupProblemResult>;
+  confirmStopArrival(
+    command: ConfirmStopArrivalCommand,
+    identity: AuthenticatedIdentity,
+  ): Promise<ConfirmStopArrivalResult>;
 }
 
 export type CreateDeliveryDependencies = {
@@ -86,3 +103,11 @@ export type ConfirmPickupDependencies = DriverSessionDependencies & {
 };
 
 export type ConfirmPickupRequestBody = ConfirmPickupPayload;
+
+export type DriverStopDependencies = DriverSessionDependencies & {
+  stops: DriverStopGateway;
+  now: () => Date;
+};
+
+export type ReportPickupProblemRequestBody = ReportPickupProblemPayload;
+export type ConfirmStopArrivalRequestBody = ConfirmStopArrivalPayload;

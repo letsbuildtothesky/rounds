@@ -4,8 +4,10 @@ import {
   ContractError,
   validateConfirmPickupCommand,
   validateConfirmPickupPayload,
+  validateConfirmStopArrivalCommand,
   validatePlanRoundCommand,
   validatePlanRoundPayload,
+  validateReportPickupProblemCommand,
 } from "../src/index.js";
 
 const payload = () => ({
@@ -69,5 +71,60 @@ test("rejects incomplete or duplicate pickup confirmation identifiers", () => {
   }), ContractError);
   assert.throws(() => validateConfirmPickupPayload({
     stops: [pickupPayload.stops[0]!, pickupPayload.stops[0]!],
+  }), ContractError);
+});
+
+test("accepts a structured pickup problem with a bounded note", () => {
+  assert.doesNotThrow(() => validateReportPickupProblemCommand({
+    schemaVersion: 1,
+    commandType: "stop.report_pickup_problem",
+    commandId: "10000000-0000-4000-8000-000000000101",
+    traceId: "10000000-0000-4000-8000-000000000102",
+    idempotencyKey: "problem:stop-1",
+    tenantId: "10000000-0000-4000-8000-000000000001",
+    aggregateId: "10000000-0000-4000-8000-000000000011",
+    expectedVersion: 2,
+    payload: {
+      manifestId: "10000000-0000-4000-8000-000000000012",
+      manifestVersion: 1,
+      category: "damaged_item",
+      note: "Outer package is crushed",
+    },
+  }));
+});
+
+test("validates explicit arrival evidence without requiring GPS", () => {
+  const base = {
+    schemaVersion: 1 as const,
+    commandType: "stop.confirm_arrival" as const,
+    commandId: "10000000-0000-4000-8000-000000000101",
+    traceId: "10000000-0000-4000-8000-000000000102",
+    idempotencyKey: "arrival:stop-1",
+    tenantId: "10000000-0000-4000-8000-000000000001",
+    aggregateId: "10000000-0000-4000-8000-000000000011",
+    expectedVersion: 4,
+  };
+  assert.doesNotThrow(() => validateConfirmStopArrivalCommand({ ...base, payload: {} }));
+  assert.doesNotThrow(() => validateConfirmStopArrivalCommand({
+    ...base,
+    payload: {
+      position: {
+        latitude: 13.7439,
+        longitude: 100.547,
+        accuracyMeters: 18,
+        source: "google_nav",
+      },
+    },
+  }));
+  assert.throws(() => validateConfirmStopArrivalCommand({
+    ...base,
+    payload: {
+      position: {
+        latitude: 113.7439,
+        longitude: 100.547,
+        accuracyMeters: 18,
+        source: "google_nav",
+      },
+    },
   }), ContractError);
 });

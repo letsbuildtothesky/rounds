@@ -21,6 +21,7 @@ class PickupConfirmationScreen extends StatefulWidget {
 class _PickupConfirmationScreenState extends State<PickupConfirmationScreen> {
   final Set<String> _confirmed = {};
   bool _submitting = false;
+  bool _pendingSync = false;
 
   int get _lineCount => widget.round.stops.fold(
     0,
@@ -40,17 +41,74 @@ class _PickupConfirmationScreenState extends State<PickupConfirmationScreen> {
   Future<void> _confirm() async {
     if (!_ready || _submitting) return;
     setState(() => _submitting = true);
-    final committed = await widget.controller.confirmPickup(widget.round);
+    final outcome = await widget.controller.confirmPickup(widget.round);
     if (!mounted) return;
-    if (committed) {
+    if (outcome?.committed ?? false) {
       Navigator.of(context).pop(true);
       return;
     }
     setState(() => _submitting = false);
+    if (outcome?.pendingSync ?? false) {
+      setState(() => _pendingSync = true);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Pickup saved on this phone. Pending sync — custody is not confirmed yet.',
+          ),
+        ),
+      );
+      return;
+    }
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
           widget.controller.driverError ?? 'Pickup could not be confirmed',
+        ),
+      ),
+    );
+  }
+
+  Future<void> _reportProblem() async {
+    if (_submitting || _pendingSync) return;
+    final draft = await showModalBottomSheet<_PickupProblemDraft>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (context) => _PickupProblemSheet(stops: widget.round.stops),
+    );
+    if (draft == null || !mounted) return;
+    setState(() => _submitting = true);
+    final outcome = await widget.controller.reportPickupProblem(
+      stop: draft.stop,
+      category: draft.category,
+      note: draft.note,
+    );
+    if (!mounted) return;
+    setState(() => _submitting = false);
+    if (outcome?.committed ?? false) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Pickup problem sent to Operations. Pickup stopped.'),
+        ),
+      );
+      Navigator.of(context).pop(false);
+      return;
+    }
+    if (outcome?.pendingSync ?? false) {
+      setState(() => _pendingSync = true);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Problem saved on this phone. Pending sync — do not confirm pickup.',
+          ),
+        ),
+      );
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          widget.controller.driverError ?? 'Pickup problem could not be sent',
         ),
       ),
     );
@@ -194,13 +252,10 @@ class _PickupConfirmationScreenState extends State<PickupConfirmationScreen> {
                 ),
                 const SizedBox(height: 14),
                 OutlinedButton.icon(
-                  onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'Pickup problem saved for structured exception follow-up.',
-                      ),
-                    ),
-                  ),
+                  key: const Key('pickup-problem'),
+                  onPressed: _submitting || _pendingSync
+                      ? null
+                      : _reportProblem,
                   icon: const Icon(Icons.warning_amber_rounded),
                   label: const Text('Pickup problem'),
                   style: OutlinedButton.styleFrom(
@@ -218,19 +273,152 @@ class _PickupConfirmationScreenState extends State<PickupConfirmationScreen> {
             ),
             child: FilledButton(
               key: const Key('confirm-pickup'),
-              onPressed: _ready && !_submitting ? _confirm : null,
+              onPressed: _ready && !_submitting && !_pendingSync
+                  ? _confirm
+                  : null,
               style: FilledButton.styleFrom(
                 backgroundColor: const Color(0xFF168B50),
                 disabledBackgroundColor: const Color(0xFFD9DFE5),
               ),
               child: Text(
-                _submitting ? 'Confirming with server…' : 'Confirm pickup',
+                _pendingSync
+                    ? 'Pending sync — not confirmed'
+                    : _submitting
+                    ? 'Sending to server…'
+                    : 'Confirm pickup',
                 style: const TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.w900,
                 ),
               ),
             ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+class _PickupProblemDraft {
+  const _PickupProblemDraft(this.stop, this.category, this.note);
+  final DriverRoundStopModel stop;
+  final String category;
+  final String note;
+}
+
+class _PickupProblemSheet extends StatefulWidget {
+  const _PickupProblemSheet({required this.stops});
+  final List<DriverRoundStopModel> stops;
+
+  @override
+  State<_PickupProblemSheet> createState() => _PickupProblemSheetState();
+}
+
+class _PickupProblemSheetState extends State<_PickupProblemSheet> {
+  late DriverRoundStopModel _stop = widget.stops.first;
+  String? _category;
+  final _note = TextEditingController();
+
+  @override
+  void dispose() {
+    _note.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: EdgeInsets.fromLTRB(
+      20,
+      18,
+      20,
+      20 + MediaQuery.viewInsetsOf(context).bottom,
+    ),
+    child: SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text(
+            'Pickup problem',
+            style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            'Choose the exact delivery and problem. Ordinary pickup will stop until Operations resolves it.',
+            style: TextStyle(color: Color(0xFF748094)),
+          ),
+          const SizedBox(height: 18),
+          DropdownButtonFormField<DriverRoundStopModel>(
+            initialValue: _stop,
+            decoration: const InputDecoration(
+              labelText: 'Delivery',
+              border: OutlineInputBorder(),
+            ),
+            items: widget.stops
+                .map(
+                  (stop) => DropdownMenuItem(
+                    value: stop,
+                    child: Text(
+                      '${stop.deliveryReference} · ${stop.recipientName}',
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                )
+                .toList(growable: false),
+            onChanged: (stop) {
+              if (stop != null) setState(() => _stop = stop);
+            },
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'What is wrong?',
+            style: TextStyle(fontWeight: FontWeight.w900),
+          ),
+          RadioGroup<String>(
+            groupValue: _category,
+            onChanged: (value) => setState(() => _category = value),
+            child: const Column(
+              children: [
+                RadioListTile(
+                  value: 'missing_item',
+                  title: Text('Missing item'),
+                  subtitle: Text('An expected package or item is not here'),
+                ),
+                RadioListTile(
+                  value: 'wrong_item',
+                  title: Text('Wrong item'),
+                  subtitle: Text('The package does not match this delivery'),
+                ),
+                RadioListTile(
+                  value: 'damaged_item',
+                  title: Text('Damaged item'),
+                  subtitle: Text('The package or item is damaged'),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _note,
+            maxLength: 500,
+            maxLines: 3,
+            decoration: const InputDecoration(
+              labelText: 'Note for Operations (optional)',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 10),
+          FilledButton(
+            key: const Key('send-pickup-problem'),
+            onPressed: _category == null
+                ? null
+                : () => Navigator.of(
+                    context,
+                  ).pop(_PickupProblemDraft(_stop, _category!, _note.text)),
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFFB43F3F),
+            ),
+            child: const Text('Send to Operations'),
           ),
         ],
       ),

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
+import '../storage/driver_command_outbox.dart';
 import 'driver_session.dart';
 
 class DriverApiException implements Exception {
@@ -12,6 +13,18 @@ class DriverApiException implements Exception {
   String toString() => message;
 }
 
+enum DriverCommandDisposition { committed, pendingSync }
+
+class DriverCommandOutcome {
+  const DriverCommandOutcome(this.disposition, {this.session});
+
+  final DriverCommandDisposition disposition;
+  final DriverSessionModel? session;
+
+  bool get committed => disposition == DriverCommandDisposition.committed;
+  bool get pendingSync => disposition == DriverCommandDisposition.pendingSync;
+}
+
 class DriverApi {
   DriverApi({
     required this.supabaseUrl,
@@ -19,8 +32,10 @@ class DriverApi {
     required this.roundsApiUrl,
     FlutterSecureStorage? storage,
     http.Client? client,
+    Future<DriverCommandOutbox> Function()? outboxFactory,
   }) : _storage = storage ?? const FlutterSecureStorage(),
-       _client = client ?? http.Client();
+       _client = client ?? http.Client(),
+       _outboxFactory = outboxFactory ?? DriverCommandOutbox.open;
 
   static const _accessTokenKey = 'rounds_driver_access_token';
   static const _refreshTokenKey = 'rounds_driver_refresh_token';
@@ -30,6 +45,8 @@ class DriverApi {
   final String roundsApiUrl;
   final FlutterSecureStorage _storage;
   final http.Client _client;
+  final Future<DriverCommandOutbox> Function() _outboxFactory;
+  DriverCommandOutbox? _outbox;
 
   bool get isConfigured =>
       supabaseUrl.isNotEmpty &&
@@ -40,14 +57,20 @@ class DriverApi {
     final accessToken = await _storage.read(key: _accessTokenKey);
     if (accessToken == null) return null;
     try {
-      return await _driverSession(accessToken);
+      var session = await _driverSession(accessToken);
+      final flush = await _flushPending(accessToken);
+      if (flush.committedAny) session = await _driverSession(flush.accessToken);
+      return session;
     } on _Unauthorized {
       final refreshed = await _refresh();
       if (refreshed == null) {
         await signOut();
         return null;
       }
-      return _driverSession(refreshed);
+      var session = await _driverSession(refreshed);
+      final flush = await _flushPending(refreshed);
+      if (flush.committedAny) session = await _driverSession(flush.accessToken);
+      return session;
     }
   }
 
@@ -65,7 +88,10 @@ class DriverApi {
     final refreshToken = body['refresh_token'] as String;
     await _writeTokens(accessToken, refreshToken);
     try {
-      return await _driverSession(accessToken);
+      var session = await _driverSession(accessToken);
+      final flush = await _flushPending(accessToken);
+      if (flush.committedAny) session = await _driverSession(flush.accessToken);
+      return session;
     } catch (_) {
       await signOut();
       rethrow;
@@ -77,53 +103,173 @@ class DriverApi {
     _storage.delete(key: _refreshTokenKey),
   ]);
 
-  Future<DriverSessionModel> confirmPickup(DriverRoundModel round) async {
-    var accessToken = await _storage.read(key: _accessTokenKey);
-    if (accessToken == null) {
-      throw const DriverApiException('Sign in again to confirm pickup');
-    }
-    var response = await _sendPickup(round, accessToken);
-    if (response.statusCode == 401) {
-      accessToken = await _refresh();
-      if (accessToken == null) {
-        throw const DriverApiException('Session expired. Sign in again.');
-      }
-      response = await _sendPickup(round, accessToken);
-    }
-    if (response.statusCode != 200 && response.statusCode != 201) {
-      throw DriverApiException(
-        _message(response, 'Pickup could not be confirmed'),
+  Future<DriverCommandOutcome> confirmPickup(DriverRoundModel round) =>
+      _queueAndSend(
+        commandType: 'round.confirm_pickup',
+        aggregateId: round.id,
+        expectedVersion: round.version,
+        idempotencyKey: 'driver-pickup:${round.id}:v${round.version}',
+        endpoint: '/v1/driver/rounds/${round.id}/pickup',
+        payload: {
+          'stops': round.stops
+              .map(
+                (stop) => {
+                  'stopId': stop.id,
+                  'manifestId': stop.manifestId,
+                  'manifestVersion': stop.manifestVersion,
+                  'confirmedLineNumbers': stop.manifestItems
+                      .map((item) => item.lineNumber)
+                      .toList(growable: false),
+                },
+              )
+              .toList(growable: false),
+        },
       );
+
+  Future<DriverCommandOutcome> reportPickupProblem({
+    required DriverRoundStopModel stop,
+    required String category,
+    String? note,
+  }) => _queueAndSend(
+    commandType: 'stop.report_pickup_problem',
+    aggregateId: stop.id,
+    expectedVersion: stop.version,
+    idempotencyKey: 'pickup-problem:${stop.id}:v${stop.version}:$category',
+    endpoint: '/v1/driver/stops/${stop.id}/pickup-problem',
+    payload: {
+      'manifestId': stop.manifestId,
+      'manifestVersion': stop.manifestVersion,
+      'category': category,
+      if (note != null && note.trim().isNotEmpty) 'note': note.trim(),
+    },
+  );
+
+  Future<DriverCommandOutcome> confirmArrival(
+    DriverRoundStopModel stop, {
+    Map<String, Object?>? position,
+    String? overrideReason,
+  }) => _queueAndSend(
+    commandType: 'stop.confirm_arrival',
+    aggregateId: stop.id,
+    expectedVersion: stop.version,
+    idempotencyKey: 'stop-arrival:${stop.id}:v${stop.version}',
+    endpoint: '/v1/driver/stops/${stop.id}/arrival',
+    payload: {
+      'position': ?position,
+      if (overrideReason != null && overrideReason.trim().isNotEmpty)
+        'overrideReason': overrideReason.trim(),
+    },
+  );
+
+  Future<DriverCommandOutcome> _queueAndSend({
+    required String commandType,
+    required String aggregateId,
+    required int expectedVersion,
+    required String idempotencyKey,
+    required String endpoint,
+    required Map<String, Object?> payload,
+  }) async {
+    if (!isConfigured) {
+      return const DriverCommandOutcome(DriverCommandDisposition.pendingSync);
     }
-    return _driverSession(accessToken);
+    final outbox = await _commandOutbox();
+    final command = await outbox.enqueue(
+      commandType: commandType,
+      aggregateId: aggregateId,
+      expectedVersion: expectedVersion,
+      idempotencyKey: idempotencyKey,
+      endpoint: endpoint,
+      payload: payload,
+    );
+    final accessToken = await _storage.read(key: _accessTokenKey);
+    if (accessToken == null) {
+      await outbox.markPending(command.id, 'Authentication required');
+      throw const DriverApiException('Sign in again to sync this action');
+    }
+    final send = await _sendStored(command, accessToken, allowRefresh: true);
+    if (!send.committed) {
+      return const DriverCommandOutcome(DriverCommandDisposition.pendingSync);
+    }
+    try {
+      return DriverCommandOutcome(
+        DriverCommandDisposition.committed,
+        session: await _driverSession(send.accessToken),
+      );
+    } catch (_) {
+      return const DriverCommandOutcome(DriverCommandDisposition.committed);
+    }
   }
 
-  Future<http.Response> _sendPickup(
-    DriverRoundModel round,
-    String accessToken,
-  ) => _client.post(
-    Uri.parse('$roundsApiUrl/v1/driver/rounds/${round.id}/pickup'),
-    headers: {
-      'authorization': 'Bearer $accessToken',
-      'content-type': 'application/json',
-      'idempotency-key': 'driver-pickup:${round.id}:v${round.version}',
-      'x-trace-id': DateTime.now().microsecondsSinceEpoch.toString(),
-    },
-    body: jsonEncode({
-      'stops': round.stops
-          .map(
-            (stop) => {
-              'stopId': stop.id,
-              'manifestId': stop.manifestId,
-              'manifestVersion': stop.manifestVersion,
-              'confirmedLineNumbers': stop.manifestItems
-                  .map((item) => item.lineNumber)
-                  .toList(growable: false),
-            },
-          )
-          .toList(growable: false),
-    }),
-  );
+  Future<_StoredSendResult> _sendStored(
+    DriverCommandRecord command,
+    String accessToken, {
+    required bool allowRefresh,
+  }) async {
+    final outbox = await _commandOutbox();
+    await outbox.markSending(command);
+    http.Response response;
+    try {
+      response = await _client.post(
+        Uri.parse('$roundsApiUrl${command.endpoint}'),
+        headers: {
+          'authorization': 'Bearer $accessToken',
+          'content-type': 'application/json',
+          'idempotency-key': command.idempotencyKey,
+          'x-trace-id': command.id,
+        },
+        body: command.payloadJson,
+      );
+    } catch (error) {
+      await outbox.markPending(command.id, error.toString());
+      return _StoredSendResult.pending(accessToken);
+    }
+    if (response.statusCode == 401 && allowRefresh) {
+      final refreshed = await _refresh();
+      if (refreshed != null) {
+        return _sendStored(command, refreshed, allowRefresh: false);
+      }
+    }
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      await outbox.markCommitted(command.id);
+      return _StoredSendResult.committed(accessToken);
+    }
+    final message = _message(response, 'Driver action could not be committed');
+    if (response.statusCode == 401 || response.statusCode >= 500) {
+      await outbox.markPending(command.id, message);
+      if (response.statusCode == 401) {
+        throw const DriverApiException(
+          'Session expired. Sign in again; your action is still saved.',
+        );
+      }
+      return _StoredSendResult.pending(accessToken);
+    }
+    if (response.statusCode == 409) {
+      await outbox.markConflict(command.id, message);
+    } else {
+      await outbox.markFailedTerminal(command.id, message);
+    }
+    throw DriverApiException(message);
+  }
+
+  Future<_FlushResult> _flushPending(String accessToken) async {
+    var token = accessToken;
+    var committedAny = false;
+    final outbox = await _commandOutbox();
+    for (final command in await outbox.readyToSend()) {
+      try {
+        final result = await _sendStored(command, token, allowRefresh: true);
+        token = result.accessToken;
+        if (!result.committed) break;
+        committedAny = true;
+      } on DriverApiException {
+        continue;
+      }
+    }
+    return _FlushResult(token, committedAny);
+  }
+
+  Future<DriverCommandOutbox> _commandOutbox() async =>
+      _outbox ??= await _outboxFactory();
 
   Future<DriverSessionModel> _driverSession(String accessToken) async {
     final response = await _client.get(
@@ -186,4 +332,19 @@ class DriverApi {
 
 class _Unauthorized implements Exception {
   const _Unauthorized();
+}
+
+class _StoredSendResult {
+  const _StoredSendResult(this.accessToken, this.committed);
+  const _StoredSendResult.pending(String token) : this(token, false);
+  const _StoredSendResult.committed(String token) : this(token, true);
+
+  final String accessToken;
+  final bool committed;
+}
+
+class _FlushResult {
+  const _FlushResult(this.accessToken, this.committedAny);
+  final String accessToken;
+  final bool committedAny;
 }
