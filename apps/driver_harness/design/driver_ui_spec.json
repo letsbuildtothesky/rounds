@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "unit": "flutter_logical_px_equals_css_px",
+  "referenceViewport": {
+    "width": 393,
+    "height": 852,
+    "compactBreakpoint": 350
+  },
+  "screens": {
+    "E02": {
+      "source": "ux/driver/en/screens/ROUNDS-E02-NAVIGATE-TO-CURRENT-STOP-v2-10OF10.html",
+      "roadControl": {
+        "size": 44,
+        "compactSize": 42,
+        "radius": 6,
+        "iconSize": 20,
+        "outerMargin": 12,
+        "compactOuterMargin": 9,
+        "gap": 8,
+        "compactGap": 6,
+        "vendorSafeBottomGap": 10
+      },
+      "stopDock": {
+        "outerMargin": 12,
+        "compactOuterMargin": 9,
+        "rowHeight": 96,
+        "compactRowHeight": 86,
+        "paddingHorizontal": 16,
+        "paddingVertical": 15,
+        "compactPadding": 13,
+        "columnGap": 14,
+        "radius": 8,
+        "borderWidth": 1,
+        "textGap": 6,
+        "arrivalHeight": 60,
+        "arrivalMarginHorizontal": 10,
+        "arrivalMarginBottom": 10,
+        "pendingStatusHeight": 42
+      },
+      "typography": {
+        "kickerSize": 11,
+        "kickerHeight": 1,
+        "kickerWeight": 820,
+        "kickerTracking": 0.935,
+        "titleSize": 22,
+        "compactTitleSize": 20,
+        "titleHeight": 1.02,
+        "titleWeight": 830,
+        "titleTracking": -0.77,
+        "placeSize": 12.5,
+        "placeHeight": 1.2,
+        "placeWeight": 690,
+        "etaSize": 24,
+        "compactEtaSize": 21,
+        "etaHeight": 1,
+        "etaWeight": 850,
+        "etaTracking": -1.08,
+        "distanceSize": 12,
+        "distanceHeight": 1.2,
+        "distanceWeight": 700,
+        "arrivalSize": 17,
+        "arrivalWeight": 820
+      }
+    }
+  }
+}

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../app/driver_design_system.dart';
+import '../app/generated/driver_ui_metrics.g.dart';
 import '../app/harness_app_controller.dart';
 import '../driver/driver_session.dart';
 import '../navigation/google_navigation_surface.dart';
-import '../telemetry/freshness.dart';
+import 'components/navigation_road_controls.dart';
+import 'components/navigation_stop_dock.dart';
 import 'proof_of_delivery_screen.dart';
 
 class NavigationHarnessScreen extends StatefulWidget {
@@ -31,7 +33,6 @@ class _NavigationHarnessScreenState extends State<NavigationHarnessScreen> {
   bool _nearArrival = false;
   bool _arrivalPendingSync = false;
   bool _submittingArrival = false;
-  DateTime? _lastOperationalSample;
   String? _navigationStatus;
   int? _remainingSeconds;
   int? _remainingMeters;
@@ -50,6 +51,30 @@ class _NavigationHarnessScreenState extends State<NavigationHarnessScreen> {
         !widget.enableNativeNavigation ||
         _arrived ||
         _arrivalPendingSync;
+    final compact =
+        MediaQuery.sizeOf(context).width <
+        DriverReferenceViewport.compactBreakpoint;
+    final outerMargin = compact
+        ? DriverE02Metrics.compactOuterMargin
+        : DriverE02Metrics.outerMargin;
+    final controlSize = compact
+        ? DriverE02Metrics.compactRoadControlSize
+        : DriverE02Metrics.roadControlSize;
+    final rowHeight = compact
+        ? DriverE02Metrics.compactDockRowHeight
+        : DriverE02Metrics.dockRowHeight;
+    final dockHeight =
+        rowHeight +
+        (showArrivalAction
+            ? DriverE02Metrics.arrivalHeight +
+                  DriverE02Metrics.arrivalMarginBottom
+            : 0) +
+        (_arrivalPendingSync ? DriverE02Metrics.pendingStatusHeight : 0);
+    final controlsBottom =
+        outerMargin + dockHeight + DriverE02Metrics.vendorSafeBottomGap;
+    final mapBottomInset =
+        controlsBottom + controlSize + DriverE02Metrics.vendorSafeBottomGap;
+
     return Scaffold(
       backgroundColor: RoundsColors.canvas,
       body: SafeArea(
@@ -59,10 +84,7 @@ class _NavigationHarnessScreenState extends State<NavigationHarnessScreen> {
               child: widget.enableNativeNavigation
                   ? GoogleNavigationSurface(
                       strings: strings,
-                      onOperationalSample: (capturedAt) {
-                        if (!mounted) return;
-                        setState(() => _lastOperationalSample = capturedAt);
-                      },
+                      onOperationalSample: (_) {},
                       onStatus: (status) {
                         if (!mounted) return;
                         setState(() => _navigationStatus = status);
@@ -84,35 +106,54 @@ class _NavigationHarnessScreenState extends State<NavigationHarnessScreen> {
                           '${widget.stop.deliveryReference} · ${widget.stop.recipientName}',
                       latitude: widget.stop.latitude,
                       longitude: widget.stop.longitude,
-                      bottomOverlayInset: showArrivalAction ? 274 : 184,
+                      bottomOverlayInset: mapBottomInset,
                     )
                   : _NavigationPreview(label: strings.navigationReady),
             ),
             Positioned(
-              left: 12,
-              right: 12,
-              bottom: 12,
-              child: _CurrentStopDock(
-                controller: widget.controller,
-                stop: widget.stop,
+              left: outerMargin,
+              right: outerMargin,
+              bottom: controlsBottom,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  NavigationRoadControlButton(
+                    key: const Key('navigation-back'),
+                    tooltip: 'Back',
+                    icon: Icons.arrow_back,
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                  NavigationRoadMenuButton(
+                    onSelected: _onMenuSelected,
+                    itemBuilder: _navigationMenuItems,
+                  ),
+                ],
+              ),
+            ),
+            Positioned(
+              left: outerMargin,
+              right: outerMargin,
+              bottom: outerMargin,
+              child: NavigationStopDock(
+                sequence: widget.stop.sequence,
                 stopCount: widget.stopCount,
-                freshness: const FreshnessPolicy().classify(
-                  _lastOperationalSample,
-                  DateTime.now(),
-                ),
-                remainingSeconds: _remainingSeconds,
-                remainingMeters: _remainingMeters,
-                navigationStatus: _navigationStatus,
+                recipientName: widget.stop.recipientName,
+                address: widget.stop.rawAddress,
+                etaLabel: _etaLabel,
+                distanceLabel: _distanceLabel,
                 showArrivalAction: showArrivalAction,
-                arrived: _arrived,
-                arrivalPendingSync: _arrivalPendingSync,
-                submittingArrival: _submittingArrival,
-                onBack: () => Navigator.of(context).pop(),
+                arrivalLabel: _arrivalLabel,
                 onArrival: _arrivalPendingSync || _submittingArrival
                     ? null
                     : _arrived
                     ? _openPod
                     : _confirmArrival,
+                pendingSyncLabel: _arrivalPendingSync
+                    ? widget.controller.strings.pendingSync
+                    : null,
+                pendingSyncDetail: _arrivalPendingSync
+                    ? 'Arrival is not committed yet'
+                    : null,
               ),
             ),
           ],
@@ -120,6 +161,71 @@ class _NavigationHarnessScreenState extends State<NavigationHarnessScreen> {
       ),
     );
   }
+
+  String get _etaLabel {
+    final seconds = _remainingSeconds;
+    if (seconds == null) return '—';
+    return '${(seconds / 60).ceil().clamp(1, 999)} min';
+  }
+
+  String get _distanceLabel {
+    final meters = _remainingMeters;
+    if (meters == null) {
+      return _navigationStatus?.contains('active') ?? false
+          ? 'Routing'
+          : 'Locating';
+    }
+    if (meters < 1000) return '$meters m';
+    final kilometers = meters / 1000;
+    return '${kilometers.toStringAsFixed(kilometers >= 10 ? 0 : 1)} km';
+  }
+
+  String get _arrivalLabel => _arrived
+      ? widget.controller.strings.podPlaceholder
+      : _submittingArrival
+      ? 'Confirming with server…'
+      : _arrivalPendingSync
+      ? 'Pending sync — not arrived'
+      : 'I’m at Stop ${widget.stop.sequence}';
+
+  void _onMenuSelected(String action) {
+    final message = action == 'contact'
+        ? widget.controller.strings.contactOperations
+        : widget.controller.strings.reportException;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  List<PopupMenuEntry<String>> _navigationMenuItems(BuildContext context) => [
+    PopupMenuItem(
+      value: 'contact',
+      child: Row(
+        children: [
+          const Icon(Icons.support_agent, size: 20),
+          const SizedBox(width: RoundsSpace.sm),
+          Text(widget.controller.strings.contactOperations),
+        ],
+      ),
+    ),
+    PopupMenuItem(
+      value: 'exception',
+      child: Row(
+        children: [
+          const Icon(
+            Icons.warning_amber_rounded,
+            size: 20,
+            color: RoundsColors.red,
+          ),
+          const SizedBox(width: RoundsSpace.sm),
+          Text(
+            widget.controller.strings.reportException,
+            style: const TextStyle(color: RoundsColors.red),
+          ),
+        ],
+      ),
+    ),
+  ];
 
   Future<void> _confirmArrival() async {
     setState(() => _submittingArrival = true);
@@ -166,313 +272,6 @@ class _NavigationHarnessScreenState extends State<NavigationHarnessScreen> {
   }
 }
 
-class _CurrentStopDock extends StatelessWidget {
-  const _CurrentStopDock({
-    required this.controller,
-    required this.stop,
-    required this.stopCount,
-    required this.freshness,
-    required this.remainingSeconds,
-    required this.remainingMeters,
-    required this.navigationStatus,
-    required this.showArrivalAction,
-    required this.arrived,
-    required this.arrivalPendingSync,
-    required this.submittingArrival,
-    required this.onBack,
-    required this.onArrival,
-  });
-
-  final HarnessAppController controller;
-  final DriverRoundStopModel stop;
-  final int stopCount;
-  final PositionFreshness freshness;
-  final int? remainingSeconds;
-  final int? remainingMeters;
-  final String? navigationStatus;
-  final bool showArrivalAction;
-  final bool arrived;
-  final bool arrivalPendingSync;
-  final bool submittingArrival;
-  final VoidCallback onBack;
-  final VoidCallback? onArrival;
-
-  String get _etaLabel {
-    final seconds = remainingSeconds;
-    if (seconds == null) return '—';
-    return '${(seconds / 60).ceil().clamp(1, 999)} min';
-  }
-
-  String get _distanceLabel {
-    final meters = remainingMeters;
-    if (meters == null) {
-      return navigationStatus?.contains('active') ?? false
-          ? 'Routing'
-          : 'Locating';
-    }
-    if (meters < 1000) return '$meters m';
-    final kilometers = meters / 1000;
-    return '${kilometers.toStringAsFixed(kilometers >= 10 ? 0 : 1)} km';
-  }
-
-  @override
-  Widget build(BuildContext context) => Material(
-    elevation: 12,
-    color: RoundsColors.surface,
-    shadowColor: const Color(0x3D172238),
-    shape: RoundedRectangleBorder(
-      side: const BorderSide(color: RoundsColors.lineStrong),
-      borderRadius: BorderRadius.circular(RoundsRadii.surface),
-    ),
-    clipBehavior: Clip.antiAlias,
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        SizedBox(
-          height: 54,
-          child: Row(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(left: RoundsSpace.xs),
-                child: _DockIconButton(
-                  key: const Key('navigation-back'),
-                  tooltip: 'Back',
-                  icon: Icons.arrow_back,
-                  onPressed: onBack,
-                ),
-              ),
-              const SizedBox(width: RoundsSpace.sm),
-              Expanded(
-                child: Text(
-                  'STOP ${stop.sequence} OF $stopCount · ${stop.deliveryReference}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: RoundsType.roadKicker,
-                ),
-              ),
-              const SizedBox(width: RoundsSpace.xs),
-              _FreshnessBadge(freshness: freshness, controller: controller),
-              _NavigationMenu(controller: controller),
-            ],
-          ),
-        ),
-        const Divider(height: 1, thickness: 1, color: RoundsColors.line),
-        ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 94),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: RoundsSpace.md,
-              vertical: RoundsSpace.md,
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        stop.recipientName,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: RoundsType.destination,
-                      ),
-                      const SizedBox(height: RoundsSpace.xs),
-                      Text(
-                        stop.rawAddress,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: RoundsType.destinationMeta,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: RoundsSpace.md),
-                Semantics(
-                  label: '$_etaLabel, $_distanceLabel remaining',
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(_etaLabel, style: RoundsType.navigationDistance),
-                      const SizedBox(height: RoundsSpace.xs),
-                      Text(
-                        _distanceLabel,
-                        style: RoundsType.navigationDistanceMeta,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        if (showArrivalAction) ...[
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              RoundsSpace.sm,
-              0,
-              RoundsSpace.sm,
-              RoundsSpace.sm,
-            ),
-            child: FilledButton(
-              key: const Key('arrival-action'),
-              onPressed: onArrival,
-              style: FilledButton.styleFrom(
-                elevation: 0,
-                backgroundColor: RoundsColors.green,
-                disabledBackgroundColor: const Color(0xFFD9DFE5),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(RoundsRadii.small),
-                ),
-              ),
-              child: Text(
-                arrived
-                    ? controller.strings.podPlaceholder
-                    : submittingArrival
-                    ? 'Confirming with server…'
-                    : arrivalPendingSync
-                    ? 'Pending sync — not arrived'
-                    : 'I’m at Stop ${stop.sequence}',
-                style: const TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ),
-          ),
-        ],
-        if (arrivalPendingSync) ...[
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              RoundsSpace.md,
-              0,
-              RoundsSpace.md,
-              RoundsSpace.sm,
-            ),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.cloud_off_outlined,
-                  color: RoundsColors.warning,
-                  size: 18,
-                ),
-                const SizedBox(width: RoundsSpace.xs),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        controller.strings.pendingSync,
-                        style: const TextStyle(
-                          color: RoundsColors.warning,
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      const Text(
-                        'Arrival is not committed yet',
-                        style: TextStyle(
-                          color: RoundsColors.warning,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ],
-    ),
-  );
-}
-
-class _NavigationMenu extends StatelessWidget {
-  const _NavigationMenu({required this.controller});
-
-  final HarnessAppController controller;
-
-  @override
-  Widget build(BuildContext context) => PopupMenuButton<String>(
-    key: const Key('navigation-more'),
-    tooltip: 'More actions',
-    icon: const Icon(Icons.more_horiz, color: RoundsColors.ink, size: 24),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(RoundsRadii.surface),
-    ),
-    onSelected: (action) {
-      final message = action == 'contact'
-          ? controller.strings.contactOperations
-          : controller.strings.reportException;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
-    },
-    itemBuilder: (_) => [
-      PopupMenuItem(
-        value: 'contact',
-        child: Row(
-          children: [
-            const Icon(Icons.support_agent, size: 20),
-            const SizedBox(width: RoundsSpace.sm),
-            Text(controller.strings.contactOperations),
-          ],
-        ),
-      ),
-      PopupMenuItem(
-        value: 'exception',
-        child: Row(
-          children: [
-            const Icon(
-              Icons.warning_amber_rounded,
-              size: 20,
-              color: RoundsColors.red,
-            ),
-            const SizedBox(width: RoundsSpace.sm),
-            Text(
-              controller.strings.reportException,
-              style: const TextStyle(color: RoundsColors.red),
-            ),
-          ],
-        ),
-      ),
-    ],
-  );
-}
-
-class _DockIconButton extends StatelessWidget {
-  const _DockIconButton({
-    required this.tooltip,
-    required this.icon,
-    required this.onPressed,
-    super.key,
-  });
-
-  final String tooltip;
-  final IconData icon;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) => SizedBox(
-    width: 42,
-    height: 42,
-    child: IconButton(
-      onPressed: onPressed,
-      style: IconButton.styleFrom(
-        foregroundColor: RoundsColors.ink,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(RoundsRadii.small),
-        ),
-      ),
-      icon: Icon(icon, size: 20, semanticLabel: tooltip),
-    ),
-  );
-}
-
 class _NavigationPreview extends StatelessWidget {
   const _NavigationPreview({required this.label});
 
@@ -489,47 +288,6 @@ class _NavigationPreview extends StatelessWidget {
           const SizedBox(height: 16),
           Text(label, style: Theme.of(context).textTheme.titleLarge),
         ],
-      ),
-    ),
-  );
-}
-
-class _FreshnessBadge extends StatelessWidget {
-  const _FreshnessBadge({required this.freshness, required this.controller});
-
-  final PositionFreshness freshness;
-  final HarnessAppController controller;
-
-  String get _label => switch (freshness) {
-    PositionFreshness.live => controller.strings.live,
-    PositionFreshness.aging => controller.strings.aging,
-    PositionFreshness.stale => controller.strings.stale,
-    PositionFreshness.unknown => controller.strings.unknown,
-  };
-
-  Color get _background => switch (freshness) {
-    PositionFreshness.live => const Color(0xFFBDE9D4),
-    PositionFreshness.aging => const Color(0xFFFFE2A8),
-    PositionFreshness.stale => const Color(0xFFF5C7A9),
-    PositionFreshness.unknown => const Color(0xFFD9DDDC),
-  };
-
-  @override
-  Widget build(BuildContext context) => DecoratedBox(
-    decoration: BoxDecoration(
-      color: _background,
-      borderRadius: BorderRadius.all(Radius.circular(99)),
-    ),
-    child: Padding(
-      padding: EdgeInsets.symmetric(horizontal: 7, vertical: 4),
-      child: Text(
-        _label,
-        style: const TextStyle(
-          color: RoundsColors.ink,
-          fontSize: 10.5,
-          fontWeight: FontWeight.w800,
-          letterSpacing: .25,
-        ),
       ),
     ),
   );
