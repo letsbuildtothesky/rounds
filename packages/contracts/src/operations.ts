@@ -1,5 +1,6 @@
 import type { OperationsRoundSummary } from "./round.js";
 import type { DeliveryState } from "./delivery.js";
+import type { CommandEnvelope, CommandResult, DomainEventEnvelope } from "./command.js";
 
 export const operationsRoles = [
   "tenant_owner",
@@ -73,6 +74,7 @@ export type OperationsActionException = {
   stopId: string;
   stopSequence: number;
   stopState: string;
+  stopVersion: number;
   roundId: string;
   roundReference: string;
   roundState: string;
@@ -86,6 +88,28 @@ export type OperationsActionException = {
   reportedAt: string;
   operationsThreadId?: string;
 };
+
+export const operationsExceptionResolutions = ["pickup_corrected"] as const;
+export type OperationsExceptionResolution = (typeof operationsExceptionResolutions)[number];
+
+export type ResolveOperationsExceptionPayload = {
+  exceptionId: string;
+  resolution: OperationsExceptionResolution;
+  note: string;
+};
+
+export type ResolveOperationsExceptionCommand = CommandEnvelope<"operations.resolve_exception", ResolveOperationsExceptionPayload>;
+export type OperationsExceptionResolvedPayload = {
+  exceptionId: string;
+  stopId: string;
+  deliveryId: string;
+  roundId: string;
+  resolution: OperationsExceptionResolution;
+  resolvedAt: string;
+};
+export type OperationsExceptionResolvedEvent = DomainEventEnvelope<"operations.exception_resolved", OperationsExceptionResolvedPayload>;
+export type ResolveOperationsExceptionState = OperationsExceptionResolvedPayload & { stopState: "assigned"; deliveryState: "assigned" };
+export type ResolveOperationsExceptionResult = CommandResult<ResolveOperationsExceptionState, OperationsExceptionResolvedEvent>;
 
 export type OperationsActionProjection = {
   tenantId: string;

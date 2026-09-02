@@ -44,6 +44,8 @@ import type {
   RoundState,
   ReportPickupProblemCommand,
   ReportPickupProblemResult,
+  ResolveOperationsExceptionCommand,
+  ResolveOperationsExceptionResult,
   SendDriverMessageCommand,
   SendDriverMessageResult,
   SendOperationsMessageCommand,
@@ -1127,8 +1129,8 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
       this.admin.from("deliveries").select("id, reference, recipient_name, destination_raw_address, destination_position")
         .eq("tenant_id", actor.tenantId).in("id", deliveryIds)
         .returns<{ id: string; reference: string; recipient_name: string; destination_raw_address: string; destination_position: unknown }[]>(),
-      this.admin.from("delivery_stops").select("id, state").eq("tenant_id", actor.tenantId).in("id", stopIds)
-        .returns<{ id: string; state: string }[]>(),
+      this.admin.from("delivery_stops").select("id, state, version").eq("tenant_id", actor.tenantId).in("id", stopIds)
+        .returns<{ id: string; state: string; version: number }[]>(),
       this.admin.from("rounds").select("id, reference, state").eq("tenant_id", actor.tenantId).in("id", roundIds)
         .returns<{ id: string; reference: string; state: string }[]>(),
       this.admin.from("round_stops").select("round_id, stop_id, sequence").eq("tenant_id", actor.tenantId)
@@ -1185,6 +1187,7 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
           stopId: item.stop_id,
           stopSequence: sequenceByStop.get(`${item.round_id}:${item.stop_id}`) ?? 0,
           stopState: stop.state,
+          stopVersion: stop.version,
           roundId: item.round_id,
           roundReference: round.reference,
           roundState: round.state,
@@ -1200,6 +1203,15 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
         }];
       }),
     };
+  }
+
+  async resolveOperationsException(command: ResolveOperationsExceptionCommand, actor: ActorContext): Promise<ResolveOperationsExceptionResult> {
+    const { data, error } = await this.admin.rpc("resolve_operations_exception_command", {
+      p_command: command,
+      p_actor_person_id: actor.personId,
+    });
+    if (error) throw error;
+    return data as ResolveOperationsExceptionResult;
   }
 
   private async driverActorPersonId(identity: AuthenticatedIdentity): Promise<string | null> {

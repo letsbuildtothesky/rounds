@@ -4,6 +4,8 @@ import type {
   DriverSession,
   OperationsActionProjection,
   OperationsSession,
+  ResolveOperationsExceptionCommand,
+  ResolveOperationsExceptionResult,
 } from "@rounds/contracts";
 import { operationsActionHandler } from "../src/operations-action-handler.js";
 import type {
@@ -33,6 +35,7 @@ const projection: OperationsActionProjection = {
     stopId: "10000000-0000-4000-8000-000000000012",
     stopSequence: 1,
     stopState: "exception",
+    stopVersion: 3,
     roundId: "10000000-0000-4000-8000-000000000013",
     roundReference: "ROUND-001",
     roundState: "approved",
@@ -60,6 +63,9 @@ class FakeGateway implements IdentityGateway, OperationsActionGateway {
   async getOperationsAction(_actor: ActorContext, observedAt: Date): Promise<OperationsActionProjection> {
     this.observedAt = observedAt;
     return projection;
+  }
+  async resolveOperationsException(_command: ResolveOperationsExceptionCommand): Promise<ResolveOperationsExceptionResult> {
+    return { status: "rejected", error: { code: "INVALID_STATE", message: "unused" } };
   }
 }
 

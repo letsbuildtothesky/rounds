@@ -15,6 +15,7 @@ import { operationsSessionHandler } from "./operations-session-handler.js";
 import { operationsActionHandler } from "./operations-action-handler.js";
 import { operationsDeliveriesHandler } from "./operations-deliveries-handler.js";
 import { operationsRoundDetailHandler } from "./operations-round-detail-handler.js";
+import { resolveOperationsExceptionHandler } from "./resolve-operations-exception-handler.js";
 import { planRoundHandler } from "./plan-round-handler.js";
 import { reportPickupProblemHandler } from "./report-pickup-problem-handler.js";
 import { preparePodMediaHandler } from "./prepare-pod-media-handler.js";
@@ -113,6 +114,15 @@ const server = createServer(async (request, response) => {
         now: () => new Date(),
       });
       sendNode(response, addOperationsCors(actionResponse, request.headers.origin));
+      return;
+    }
+    const operationsExceptionResolveMatch = request.url?.match(/^\/v1\/operations\/exceptions\/([0-9a-f-]+)\/resolve$/i);
+    if (request.method === "POST" && operationsExceptionResolveMatch) {
+      const webRequest = await toWebRequest(request);
+      const resolveResponse = await resolveOperationsExceptionHandler(webRequest, operationsExceptionResolveMatch[1]!, {
+        identity: gateway, action: gateway, uuid: () => crypto.randomUUID(), now: () => new Date(),
+      });
+      sendNode(response, addOperationsCors(resolveResponse, request.headers.origin));
       return;
     }
     if (request.method === "GET" && request.url === "/v1/operations/deliveries") {

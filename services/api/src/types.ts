@@ -27,6 +27,8 @@ import type {
   ReportPickupProblemCommand,
   ReportPickupProblemPayload,
   ReportPickupProblemResult,
+  ResolveOperationsExceptionCommand,
+  ResolveOperationsExceptionResult,
   SendDriverMessageCommand,
   SendDriverMessageResult,
   SendOperationsMessageCommand,
@@ -123,6 +125,7 @@ export interface OperationsHistoryGateway {
 
 export interface OperationsActionGateway {
   getOperationsAction(actor: ActorContext, observedAt: Date): Promise<OperationsActionProjection>;
+  resolveOperationsException(command: ResolveOperationsExceptionCommand, actor: ActorContext): Promise<ResolveOperationsExceptionResult>;
 }
 
 export interface OperationsDeliveriesGateway {
@@ -165,6 +168,8 @@ export type OperationsActionDependencies = {
   uuid: () => string;
   now: () => Date;
 };
+
+export type ResolveOperationsExceptionDependencies = OperationsActionDependencies;
 
 export type OperationsDeliveriesDependencies = {
   identity: IdentityGateway;

@@ -20,8 +20,28 @@ import type {
   ReportPickupProblemCommand,
   ReportPickupProblemPayload,
 } from "./round.js";
+import { operationsExceptionResolutions, type ResolveOperationsExceptionCommand, type ResolveOperationsExceptionPayload } from "./operations.js";
 
 export class ContractError extends Error {}
+
+export function validateResolveOperationsExceptionPayload(payload: ResolveOperationsExceptionPayload): void {
+  assertUuid(payload.exceptionId, "exceptionId");
+  if (!operationsExceptionResolutions.includes(payload.resolution)) throw new ContractError("resolution is not supported");
+  assertNonEmpty(payload.note, "note");
+  if (payload.note.trim().length > 500) throw new ContractError("note exceeds 500 characters");
+}
+
+export function validateResolveOperationsExceptionCommand(command: ResolveOperationsExceptionCommand): void {
+  if (command.schemaVersion !== 1 || command.commandType !== "operations.resolve_exception") throw new ContractError("unsupported ResolveOperationsException command envelope");
+  assertUuid(command.commandId, "commandId");
+  assertUuid(command.traceId, "traceId");
+  assertUuid(command.tenantId, "tenantId");
+  assertUuid(command.aggregateId, "aggregateId");
+  assertNonEmpty(command.idempotencyKey, "idempotencyKey");
+  if (command.idempotencyKey.length > 200) throw new ContractError("idempotencyKey exceeds 200 characters");
+  if (!Number.isInteger(command.expectedVersion) || command.expectedVersion < 1) throw new ContractError("ResolveOperationsException expectedVersion must be a positive integer");
+  validateResolveOperationsExceptionPayload(command.payload);
+}
 
 export function validateSendDriverMessagePayload(payload: SendDriverMessagePayload): void {
   assertNonEmpty(payload.body, "body");
