@@ -30,8 +30,8 @@ values ('81000000-0000-4000-8000-000000000030', '81000000-0000-4000-8000-0000000
   '81000000-0000-4000-8000-000000000002');
 insert into public.delivery_stops (id, tenant_id, delivery_id, state, version)
 values ('81000000-0000-4000-8000-000000000040', '81000000-0000-4000-8000-000000000001', '81000000-0000-4000-8000-000000000030', 'exception', 5);
-insert into public.manifests (id, tenant_id, delivery_id, state, version)
-values ('81000000-0000-4000-8000-000000000050', '81000000-0000-4000-8000-000000000001', '81000000-0000-4000-8000-000000000030', 'picked_up_locked', 2);
+insert into public.manifests (id, tenant_id, delivery_id, state, version, locked_at)
+values ('81000000-0000-4000-8000-000000000050', '81000000-0000-4000-8000-000000000001', '81000000-0000-4000-8000-000000000030', 'picked_up_locked', 2, now());
 insert into public.rounds (id, tenant_id, reference, service_date, driver_id, state, version)
 values ('81000000-0000-4000-8000-000000000060', '81000000-0000-4000-8000-000000000001', 'ROUND-RETURN-001', '2026-09-02', '81000000-0000-4000-8000-000000000010', 'active', 4);
 insert into public.round_stops (tenant_id, round_id, stop_id, sequence)
