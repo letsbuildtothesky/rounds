@@ -6,11 +6,13 @@ import '../../driver/driver_session.dart';
 import 'rounds_action_drawer.dart';
 
 typedef RoundsExternalLauncher = Future<bool> Function(Uri uri);
+typedef RoundsOperationsMessageAction = Future<void> Function();
 
 Future<void> openOperationsContactFlow(
   BuildContext context, {
   required DriverRoundModel round,
   required DriverRoundStopModel stop,
+  RoundsOperationsMessageAction? onMessage,
   RoundsExternalLauncher launcher = _launchExternal,
 }) async {
   final action = await showRoundsActionDrawer(
@@ -30,6 +32,11 @@ Future<void> openOperationsContactFlow(
     ],
   );
   if (action == null || !context.mounted) return;
+
+  if (action == 'message' && onMessage != null) {
+    await onMessage();
+    return;
+  }
 
   final phone = round.pickup.contactPhone.trim();
   final uri = action == 'call'

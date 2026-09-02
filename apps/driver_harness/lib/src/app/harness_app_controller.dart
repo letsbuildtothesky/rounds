@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'app_strings.dart';
 import '../driver/driver_api.dart';
 import '../driver/driver_session.dart';
+import '../driver/driver_operations_thread.dart';
 
 class HarnessAppController extends ChangeNotifier {
   HarnessAppController._(
@@ -124,6 +125,25 @@ class HarnessAppController extends ChangeNotifier {
 
   Future<DriverCommandOutcome?> confirmArrival(DriverRoundStopModel stop) =>
       _runDriverCommand(() => _driverApi.confirmArrival(stop));
+
+  Future<DriverOperationsThreadModel> getOperationsThread({
+    required DriverRoundModel round,
+    required DriverRoundStopModel stop,
+  }) => _driverApi.getOperationsThread(round: round, stop: stop);
+
+  Future<List<DriverOperationsMessageModel>> pendingOperationsMessages({
+    required DriverRoundModel round,
+    required DriverRoundStopModel stop,
+  }) => _driverApi.pendingOperationsMessages(round: round, stop: stop);
+
+  Future<DriverCommandOutcome?> sendOperationsMessage({
+    required DriverRoundModel round,
+    required DriverRoundStopModel stop,
+    required String body,
+  }) => _runDriverCommand(
+    () =>
+        _driverApi.sendOperationsMessage(round: round, stop: stop, body: body),
+  );
 
   Future<DriverCommandOutcome?> completePod({
     required DriverRoundStopModel stop,

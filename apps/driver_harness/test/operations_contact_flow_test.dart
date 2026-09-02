@@ -101,6 +101,34 @@ void main() {
     );
     expect(find.textContaining('sent'), findsNothing);
   });
+
+  testWidgets('message action opens the persistent in-app thread', (
+    tester,
+  ) async {
+    var openedThread = false;
+    var launchedExternal = false;
+    await _pumpLauncher(
+      tester,
+      onPressed: (context) => openOperationsContactFlow(
+        context,
+        round: round,
+        stop: stop,
+        onMessage: () async => openedThread = true,
+        launcher: (_) async {
+          launchedExternal = true;
+          return true;
+        },
+      ),
+    );
+
+    await tester.tap(find.byKey(const Key('open-flow')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('rounds-action-message')));
+    await tester.pumpAndSettle();
+
+    expect(openedThread, isTrue);
+    expect(launchedExternal, isFalse);
+  });
 }
 
 Future<void> _pumpLauncher(

@@ -4,6 +4,7 @@ import type {
   AuthenticatedIdentity,
   ActorContext,
   DeliveryCommandGateway,
+  DriverCommunicationsGateway,
   DriverStopGateway,
   IdentityGateway,
   OperationsRole,
@@ -23,6 +24,7 @@ import type {
   CompleteStopPodResult,
   DriverRoundStop,
   DriverSession,
+  DriverOperationsThread,
   OperationsLocation,
   OperationsPlanningProjection,
   OperationsHistoryProjection,
@@ -33,6 +35,8 @@ import type {
   RoundState,
   ReportPickupProblemCommand,
   ReportPickupProblemResult,
+  SendDriverMessageCommand,
+  SendDriverMessageResult,
 } from "@rounds/contracts";
 
 type MembershipRow = {
@@ -111,7 +115,7 @@ export function parseDatabasePoint(value: unknown): { latitude: number; longitud
   return undefined;
 }
 
-export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway, RoundGateway, PickupGateway, DriverStopGateway, PodGateway, OperationsHistoryGateway {
+export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway, RoundGateway, PickupGateway, DriverStopGateway, DriverCommunicationsGateway, PodGateway, OperationsHistoryGateway {
   private readonly admin: SupabaseClient;
 
   constructor(
@@ -479,6 +483,39 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     });
     if (error) throw error;
     return data as ConfirmStopArrivalResult;
+  }
+
+  async getDriverOperationsThread(
+    roundId: string,
+    stopId: string,
+    identity: AuthenticatedIdentity,
+  ): Promise<DriverOperationsThread | null> {
+    const actorPersonId = await this.driverActorPersonId(identity);
+    if (!actorPersonId) return null;
+    const { data, error } = await this.admin.rpc("ensure_driver_operations_thread", {
+      p_round_id: roundId,
+      p_stop_id: stopId,
+      p_actor_person_id: actorPersonId,
+    });
+    if (error) throw error;
+    return data as DriverOperationsThread | null;
+  }
+
+  async sendDriverMessage(
+    command: SendDriverMessageCommand,
+    identity: AuthenticatedIdentity,
+  ): Promise<SendDriverMessageResult> {
+    const actorPersonId = await this.driverActorPersonId(identity);
+    if (!actorPersonId) return {
+      status: "rejected",
+      error: { code: "NOT_AUTHORIZED", message: "Driver identity is not linked" },
+    };
+    const { data, error } = await this.admin.rpc("send_driver_message_command", {
+      p_command: command,
+      p_actor_person_id: actorPersonId,
+    });
+    if (error) throw error;
+    return data as SendDriverMessageResult;
   }
 
   async preparePodMedia(

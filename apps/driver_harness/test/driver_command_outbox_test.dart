@@ -78,4 +78,40 @@ void main() {
     expect(await outbox.readyToSend(), isEmpty);
     await database.close();
   });
+
+  test('offline Operations message remains queryable after restart', () async {
+    final directory = await Directory.systemTemp.createTemp(
+      'rounds-message-outbox-test-',
+    );
+    final databasePath = '${directory.path}/outbox.db';
+    try {
+      var database = await databaseFactoryFfi.openDatabase(
+        databasePath,
+        options: OpenDatabaseOptions(
+          version: 1,
+          onCreate: (database, _) =>
+              HarnessDatabase.createCommandOutboxSchema(database),
+        ),
+      );
+      var outbox = DriverCommandOutbox(database);
+      await outbox.enqueue(
+        commandType: 'thread.send_message',
+        aggregateId: 'stop-1',
+        expectedVersion: 1,
+        idempotencyKey: 'message:stop-1:one',
+        endpoint: '/v1/driver/rounds/round-1/stops/stop-1/messages',
+        payload: const {'body': 'Please call me'},
+      );
+      await database.close();
+
+      database = await databaseFactoryFfi.openDatabase(databasePath);
+      outbox = DriverCommandOutbox(database);
+      final restored = await outbox.pendingByType('thread.send_message');
+      expect(restored, hasLength(1));
+      expect(restored.single.payloadJson, contains('Please call me'));
+      await database.close();
+    } finally {
+      await directory.delete(recursive: true);
+    }
+  });
 }

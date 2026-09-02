@@ -4,6 +4,8 @@ import { confirmPickupHandler } from "./confirm-pickup-handler.js";
 import { confirmStopArrivalHandler } from "./confirm-stop-arrival-handler.js";
 import { completeStopPodHandler } from "./complete-stop-pod-handler.js";
 import { driverSessionHandler } from "./driver-session-handler.js";
+import { driverOperationsThreadHandler } from "./driver-operations-thread-handler.js";
+import { sendDriverMessageHandler } from "./send-driver-message-handler.js";
 import { operationsPlanningHandler } from "./operations-planning-handler.js";
 import { operationsHistoryHandler } from "./operations-history-handler.js";
 import { readConfig } from "./config.js";
@@ -135,6 +137,30 @@ const server = createServer(async (request, response) => {
         uuid: () => crypto.randomUUID(),
       });
       sendNode(response, driverResponse);
+      return;
+    }
+    const driverThreadMatch = request.url?.match(/^\/v1\/driver\/rounds\/([0-9a-f-]+)\/stops\/([0-9a-f-]+)\/thread$/i);
+    if (request.method === "GET" && driverThreadMatch) {
+      const webRequest = await toWebRequest(request);
+      const threadResponse = await driverOperationsThreadHandler(webRequest, driverThreadMatch[1]!, driverThreadMatch[2]!, {
+        identity: gateway,
+        communications: gateway,
+        uuid: () => crypto.randomUUID(),
+        now: () => new Date(),
+      });
+      sendNode(response, threadResponse);
+      return;
+    }
+    const driverMessageMatch = request.url?.match(/^\/v1\/driver\/rounds\/([0-9a-f-]+)\/stops\/([0-9a-f-]+)\/messages$/i);
+    if (request.method === "POST" && driverMessageMatch) {
+      const webRequest = await toWebRequest(request);
+      const messageResponse = await sendDriverMessageHandler(webRequest, driverMessageMatch[1]!, driverMessageMatch[2]!, {
+        identity: gateway,
+        communications: gateway,
+        uuid: () => crypto.randomUUID(),
+        now: () => new Date(),
+      });
+      sendNode(response, messageResponse);
       return;
     }
     const pickupMatch = request.url?.match(/^\/v1\/driver\/rounds\/([0-9a-f-]+)\/pickup$/i);

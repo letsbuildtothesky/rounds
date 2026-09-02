@@ -1,4 +1,5 @@
 export * from "./command.js";
+export * from "./communications.js";
 export * from "./delivery.js";
 export * from "./location.js";
 export * from "./operations.js";

@@ -10,6 +10,7 @@ import 'package:path_provider/path_provider.dart';
 import '../storage/driver_command_outbox.dart';
 import '../storage/pod_evidence_outbox.dart';
 import 'driver_session.dart';
+import 'driver_operations_thread.dart';
 
 class DriverApiException implements Exception {
   const DriverApiException(this.message);
@@ -114,6 +115,65 @@ class DriverApi {
     _storage.delete(key: _accessTokenKey),
     _storage.delete(key: _refreshTokenKey),
   ]);
+
+  Future<DriverOperationsThreadModel> getOperationsThread({
+    required DriverRoundModel round,
+    required DriverRoundStopModel stop,
+  }) async {
+    final response = await _authorizedGet(
+      '/v1/driver/rounds/${round.id}/stops/${stop.id}/thread',
+    );
+    if (response.statusCode != 200) {
+      throw DriverApiException(
+        _message(response, 'Operations messages could not be loaded'),
+      );
+    }
+    return DriverOperationsThreadModel.fromJson(
+      jsonDecode(response.body) as Map<String, dynamic>,
+    );
+  }
+
+  Future<List<DriverOperationsMessageModel>> pendingOperationsMessages({
+    required DriverRoundModel round,
+    required DriverRoundStopModel stop,
+  }) async {
+    final endpoint = '/v1/driver/rounds/${round.id}/stops/${stop.id}/messages';
+    final records = await (await _commandOutbox()).pendingByType(
+      'thread.send_message',
+    );
+    return records
+        .where((record) => record.endpoint == endpoint)
+        .map((record) {
+          final payload =
+              jsonDecode(record.payloadJson) as Map<String, dynamic>;
+          return DriverOperationsMessageModel(
+            id: record.id,
+            sender: 'driver',
+            body: payload['body'] as String,
+            sentAt: DateTime.parse(record.occurredFromDeviceAt),
+            savedLocally: true,
+          );
+        })
+        .toList(growable: false);
+  }
+
+  Future<DriverCommandOutcome> sendOperationsMessage({
+    required DriverRoundModel round,
+    required DriverRoundStopModel stop,
+    required String body,
+  }) {
+    final trimmed = body.trim();
+    final nonce = DateTime.now().toUtc().microsecondsSinceEpoch;
+    final fingerprint = sha256.convert(utf8.encode('$nonce:$trimmed'));
+    return _queueAndSend(
+      commandType: 'thread.send_message',
+      aggregateId: stop.id,
+      expectedVersion: 1,
+      idempotencyKey: 'driver-message:${stop.id}:$fingerprint',
+      endpoint: '/v1/driver/rounds/${round.id}/stops/${stop.id}/messages',
+      payload: {'body': trimmed},
+    );
+  }
 
   Future<DriverCommandOutcome> confirmPickup(DriverRoundModel round) =>
       _queueAndSend(
@@ -546,6 +606,32 @@ class DriverApi {
     return DriverSessionModel.fromJson(
       jsonDecode(response.body) as Map<String, dynamic>,
     );
+  }
+
+  Future<http.Response> _authorizedGet(String endpoint) async {
+    var accessToken = await _storage.read(key: _accessTokenKey);
+    if (accessToken == null) {
+      throw const DriverApiException('Sign in again to load Operations');
+    }
+    var response = await _client.get(
+      Uri.parse('$roundsApiUrl$endpoint'),
+      headers: {
+        'authorization': 'Bearer $accessToken',
+        'x-trace-id': DateTime.now().microsecondsSinceEpoch.toString(),
+      },
+    );
+    if (response.statusCode == 401) {
+      accessToken = await _refresh();
+      if (accessToken == null) throw const _Unauthorized();
+      response = await _client.get(
+        Uri.parse('$roundsApiUrl$endpoint'),
+        headers: {
+          'authorization': 'Bearer $accessToken',
+          'x-trace-id': DateTime.now().microsecondsSinceEpoch.toString(),
+        },
+      );
+    }
+    return response;
   }
 
   Future<String?> _refresh() async {

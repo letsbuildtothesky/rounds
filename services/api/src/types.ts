@@ -12,6 +12,7 @@ import type {
   CreateDeliveryPayload,
   CreateDeliveryResult,
   DriverSession,
+  DriverOperationsThread,
   OperationsSession,
   OperationsHistoryProjection,
   OperationsPlanningProjection,
@@ -21,6 +22,8 @@ import type {
   ReportPickupProblemCommand,
   ReportPickupProblemPayload,
   ReportPickupProblemResult,
+  SendDriverMessageCommand,
+  SendDriverMessageResult,
 } from "@rounds/contracts";
 
 export type { OperationsRole } from "@rounds/contracts";
@@ -68,6 +71,18 @@ export interface DriverStopGateway {
     command: ConfirmStopArrivalCommand,
     identity: AuthenticatedIdentity,
   ): Promise<ConfirmStopArrivalResult>;
+}
+
+export interface DriverCommunicationsGateway {
+  getDriverOperationsThread(
+    roundId: string,
+    stopId: string,
+    identity: AuthenticatedIdentity,
+  ): Promise<DriverOperationsThread | null>;
+  sendDriverMessage(
+    command: SendDriverMessageCommand,
+    identity: AuthenticatedIdentity,
+  ): Promise<SendDriverMessageResult>;
 }
 
 export interface PodGateway {
@@ -136,6 +151,11 @@ export type ConfirmPickupRequestBody = ConfirmPickupPayload;
 
 export type DriverStopDependencies = DriverSessionDependencies & {
   stops: DriverStopGateway;
+  now: () => Date;
+};
+
+export type DriverCommunicationsDependencies = DriverSessionDependencies & {
+  communications: DriverCommunicationsGateway;
   now: () => Date;
 };
 

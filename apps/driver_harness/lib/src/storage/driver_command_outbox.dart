@@ -123,6 +123,20 @@ class DriverCommandOutbox {
     return rows.map(DriverCommandRecord.fromRow).toList(growable: false);
   }
 
+  Future<List<DriverCommandRecord>> pendingByType(String commandType) async {
+    final rows = await _database.query(
+      'driver_command_outbox',
+      where: 'command_type = ? and status in (?, ?)',
+      whereArgs: [
+        commandType,
+        DriverCommandStatus.pending.storageValue,
+        DriverCommandStatus.sending.storageValue,
+      ],
+      orderBy: 'created_at asc',
+    );
+    return rows.map(DriverCommandRecord.fromRow).toList(growable: false);
+  }
+
   Future<void> markSending(DriverCommandRecord command) => _database.update(
     'driver_command_outbox',
     {

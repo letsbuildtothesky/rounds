@@ -11,6 +11,7 @@ import 'components/delivery_issue_flow.dart';
 import 'components/operations_contact_flow.dart';
 import 'components/rounds_action_drawer.dart';
 import 'proof_of_delivery_screen.dart';
+import 'operations_chat_screen.dart';
 
 class NavigationHarnessScreen extends StatefulWidget {
   const NavigationHarnessScreen({
@@ -217,6 +218,15 @@ class _NavigationHarnessScreenState extends State<NavigationHarnessScreen> {
         context,
         round: widget.round,
         stop: widget.stop,
+        onMessage: () => Navigator.of(context).push<void>(
+          MaterialPageRoute(
+            builder: (_) => OperationsChatScreen(
+              controller: widget.controller,
+              round: widget.round,
+              stop: widget.stop,
+            ),
+          ),
+        ),
       );
     } else {
       await openDeliveryIssueFlow(
