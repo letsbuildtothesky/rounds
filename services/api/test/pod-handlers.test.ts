@@ -3,11 +3,15 @@ import test from "node:test";
 import type {
   CompleteStopPodCommand,
   CompleteStopPodResult,
+  ReportDeliveryProblemCommand,
+  ReportDeliveryProblemResult,
   DriverSession,
   OperationsSession,
 } from "@rounds/contracts";
 import { completeStopPodHandler } from "../src/complete-stop-pod-handler.js";
 import { preparePodMediaHandler } from "../src/prepare-pod-media-handler.js";
+import { prepareExceptionMediaHandler } from "../src/prepare-exception-media-handler.js";
+import { reportDeliveryProblemHandler } from "../src/report-delivery-problem-handler.js";
 import type { ActorContext, AuthenticatedIdentity, IdentityGateway, PodGateway } from "../src/types.js";
 
 const stopId = "10000000-0000-4000-8000-000000000011";
@@ -35,6 +39,7 @@ const session: DriverSession = {
 class FakePodGateway implements IdentityGateway, PodGateway {
   verificationResult: Record<string, unknown> = { status: "verified" };
   completed: CompleteStopPodCommand | null = null;
+  deliveryProblem: ReportDeliveryProblemCommand | null = null;
   async authenticate(): Promise<AuthenticatedIdentity | null> { return { authUserId: "auth-user" }; }
   async authorizeTenant(): Promise<ActorContext | null> { return null; }
   async getOperationsSession(): Promise<OperationsSession | null> { return null; }
@@ -42,7 +47,19 @@ class FakePodGateway implements IdentityGateway, PodGateway {
   async preparePodMedia(): Promise<Record<string, unknown>> {
     return { status: "prepared", mediaAssetId, bucket: "pod-evidence", path: "private/photo.jpg", assetState: "staged", tusEndpoint: "https://storage/upload/resumable", uploadAuthorization: "driver_session" };
   }
+  async prepareExceptionMedia(): Promise<Record<string, unknown>> {
+    return { status: "prepared", mediaAssetId, bucket: "pod-evidence", path: "private/exception.jpg", assetState: "staged", tusEndpoint: "https://storage/upload/resumable", uploadAuthorization: "driver_session" };
+  }
   async verifyPodMedia(): Promise<Record<string, unknown>> { return this.verificationResult; }
+  async reportDeliveryProblem(command: ReportDeliveryProblemCommand): Promise<ReportDeliveryProblemResult> {
+    this.deliveryProblem = command;
+    return { status: "committed", aggregateVersion: 6, state: {
+      exceptionId: "10000000-0000-4000-8000-000000000040", mediaAssetId,
+      stopId, deliveryId: session.currentRound!.stops[0]!.deliveryId,
+      roundId: session.currentRound!.id, category: "damaged_item",
+      stopState: "exception", deliveryState: "exception",
+    }, events: [] };
+  }
   async completeStopPod(command: CompleteStopPodCommand): Promise<CompleteStopPodResult> {
     this.completed = command;
     return { status: "committed", aggregateVersion: 6, state: {
@@ -98,4 +115,40 @@ test("missing uploaded bytes block delivery completion", async () => {
   }), stopId, dependencies(gateway));
   assert.equal(response.status, 422);
   assert.equal(gateway.completed, null);
+});
+
+test("prepares and verifies evidence before reporting delivery damage", async () => {
+  const gateway = new FakePodGateway();
+  const prepareResponse = await prepareExceptionMediaHandler(new Request("http://test/exception-media", {
+    method: "POST", headers: { authorization: "Bearer token", "content-type": "application/json" },
+    body: JSON.stringify({ sha256: "b".repeat(64), byteSize: 2000, contentType: "image/jpeg" }),
+  }), stopId, dependencies(gateway));
+  assert.equal(prepareResponse.status, 201);
+
+  const response = await reportDeliveryProblemHandler(new Request("http://test/delivery-problem", {
+    method: "POST",
+    headers: { authorization: "Bearer token", "content-type": "application/json", "idempotency-key": "delivery-problem:stop-1" },
+    body: JSON.stringify({
+      manifestId: session.currentRound!.stops[0]!.manifestId,
+      manifestVersion: 1,
+      category: "damaged_item",
+      mediaAssetId,
+      note: "Package is crushed",
+    }),
+  }), stopId, dependencies(gateway));
+  assert.equal(response.status, 201);
+  assert.equal(gateway.deliveryProblem?.expectedVersion, 5);
+  assert.equal(gateway.deliveryProblem?.payload.mediaAssetId, mediaAssetId);
+});
+
+test("unuploaded damage evidence never creates an exception", async () => {
+  const gateway = new FakePodGateway();
+  gateway.verificationResult = { status: "rejected", error: { code: "EVIDENCE_REQUIRED", message: "Photo upload is not complete yet" } };
+  const response = await reportDeliveryProblemHandler(new Request("http://test/delivery-problem", {
+    method: "POST",
+    headers: { authorization: "Bearer token", "content-type": "application/json", "idempotency-key": "delivery-problem:stop-1" },
+    body: JSON.stringify({ manifestId: session.currentRound!.stops[0]!.manifestId, manifestVersion: 1, category: "damaged_item", mediaAssetId }),
+  }), stopId, dependencies(gateway));
+  assert.equal(response.status, 422);
+  assert.equal(gateway.deliveryProblem, null);
 });

@@ -20,6 +20,8 @@ import { confirmDeliveryReturnHandler } from "./confirm-delivery-return-handler.
 import { planRoundHandler } from "./plan-round-handler.js";
 import { reportPickupProblemHandler } from "./report-pickup-problem-handler.js";
 import { preparePodMediaHandler } from "./prepare-pod-media-handler.js";
+import { prepareExceptionMediaHandler } from "./prepare-exception-media-handler.js";
+import { reportDeliveryProblemHandler } from "./report-delivery-problem-handler.js";
 import { SupabaseGateway } from "./supabase-gateway.js";
 
 const config = readConfig();
@@ -291,6 +293,30 @@ const server = createServer(async (request, response) => {
         now: () => new Date(),
       });
       sendNode(response, mediaResponse);
+      return;
+    }
+    const exceptionMediaMatch = request.url?.match(/^\/v1\/driver\/stops\/([0-9a-f-]+)\/exception-media$/i);
+    if (request.method === "POST" && exceptionMediaMatch) {
+      const webRequest = await toWebRequest(request);
+      const mediaResponse = await prepareExceptionMediaHandler(webRequest, exceptionMediaMatch[1]!, {
+        identity: gateway,
+        stops: gateway,
+        uuid: () => crypto.randomUUID(),
+        now: () => new Date(),
+      });
+      sendNode(response, mediaResponse);
+      return;
+    }
+    const deliveryProblemMatch = request.url?.match(/^\/v1\/driver\/stops\/([0-9a-f-]+)\/delivery-problem$/i);
+    if (request.method === "POST" && deliveryProblemMatch) {
+      const webRequest = await toWebRequest(request);
+      const problemResponse = await reportDeliveryProblemHandler(webRequest, deliveryProblemMatch[1]!, {
+        identity: gateway,
+        stops: gateway,
+        uuid: () => crypto.randomUUID(),
+        now: () => new Date(),
+      });
+      sendNode(response, problemResponse);
       return;
     }
     const podMatch = request.url?.match(/^\/v1\/driver\/stops\/([0-9a-f-]+)\/pod$/i);

@@ -10,6 +10,7 @@ import {
   validatePlanRoundCommand,
   validatePlanRoundPayload,
   validateReportPickupProblemCommand,
+  validateReportDeliveryProblemCommand,
 } from "../src/index.js";
 
 const payload = () => ({
@@ -93,6 +94,42 @@ test("accepts a structured pickup problem with a bounded note", () => {
       note: "Outer package is crushed",
     },
   }));
+});
+
+test("requires verified photo identity for a delivery damage problem", () => {
+  assert.doesNotThrow(() => validateReportDeliveryProblemCommand({
+    schemaVersion: 1,
+    commandType: "stop.report_delivery_problem",
+    commandId: "10000000-0000-4000-8000-000000000101",
+    traceId: "10000000-0000-4000-8000-000000000102",
+    idempotencyKey: "delivery-problem:stop-1",
+    tenantId: "10000000-0000-4000-8000-000000000001",
+    aggregateId: "10000000-0000-4000-8000-000000000011",
+    expectedVersion: 5,
+    payload: {
+      manifestId: "10000000-0000-4000-8000-000000000012",
+      manifestVersion: 1,
+      category: "damaged_item",
+      mediaAssetId: "10000000-0000-4000-8000-000000000013",
+      note: "Outer package is crushed",
+    },
+  }));
+  assert.throws(() => validateReportDeliveryProblemCommand({
+    schemaVersion: 1,
+    commandType: "stop.report_delivery_problem",
+    commandId: "10000000-0000-4000-8000-000000000101",
+    traceId: "10000000-0000-4000-8000-000000000102",
+    idempotencyKey: "delivery-problem:stop-1",
+    tenantId: "10000000-0000-4000-8000-000000000001",
+    aggregateId: "10000000-0000-4000-8000-000000000011",
+    expectedVersion: 5,
+    payload: {
+      manifestId: "10000000-0000-4000-8000-000000000012",
+      manifestVersion: 1,
+      category: "damaged_item",
+      mediaAssetId: "not-a-uuid",
+    },
+  }), ContractError);
 });
 
 test("validates explicit arrival evidence without requiring GPS", () => {

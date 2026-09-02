@@ -165,6 +165,18 @@ class HarnessAppController extends ChangeNotifier {
     ),
   );
 
+  Future<DriverCommandOutcome?> reportDeliveryDamage({
+    required DriverRoundStopModel stop,
+    required String capturedPhotoPath,
+    String? note,
+  }) => _runDriverCommand(
+    () => _driverApi.reportDeliveryDamage(
+      stop: stop,
+      capturedPhotoPath: capturedPhotoPath,
+      note: note,
+    ),
+  );
+
   Future<DriverCommandOutcome?> _runDriverCommand(
     Future<DriverCommandOutcome> Function() command,
   ) async {

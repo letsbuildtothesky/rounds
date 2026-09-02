@@ -6,7 +6,7 @@ import type {
   SendOperationsMessagePayload,
 } from "./communications.js";
 import type { LocationBatch, PositionSample } from "./location.js";
-import { pickupProblemCategories, podHandoffTypes } from "./round.js";
+import { deliveryProblemCategories, pickupProblemCategories, podHandoffTypes } from "./round.js";
 import type {
   ConfirmPickupCommand,
   ConfirmPickupPayload,
@@ -19,6 +19,8 @@ import type {
   PlanRoundPayload,
   ReportPickupProblemCommand,
   ReportPickupProblemPayload,
+  ReportDeliveryProblemCommand,
+  ReportDeliveryProblemPayload,
 } from "./round.js";
 import {
   operationsExceptionResolutions,
@@ -326,6 +328,28 @@ export function validateReportPickupProblemCommand(command: ReportPickupProblemC
   validateReportPickupProblemPayload(command.payload);
 }
 
+export function validateReportDeliveryProblemPayload(payload: ReportDeliveryProblemPayload): void {
+  assertUuid(payload.manifestId, "manifestId");
+  assertUuid(payload.mediaAssetId, "mediaAssetId");
+  if (!Number.isInteger(payload.manifestVersion) || payload.manifestVersion < 1) {
+    throw new ContractError("manifestVersion must be a positive integer");
+  }
+  if (!deliveryProblemCategories.includes(payload.category)) {
+    throw new ContractError("category is not a supported delivery problem");
+  }
+  if (payload.note !== undefined && payload.note.trim().length > 500) {
+    throw new ContractError("note exceeds 500 characters");
+  }
+}
+
+export function validateReportDeliveryProblemCommand(command: ReportDeliveryProblemCommand): void {
+  if (command.schemaVersion !== 1 || command.commandType !== "stop.report_delivery_problem") {
+    throw new ContractError("unsupported ReportDeliveryProblem command envelope");
+  }
+  validateStopCommandEnvelope(command, "ReportDeliveryProblem");
+  validateReportDeliveryProblemPayload(command.payload);
+}
+
 export function validateConfirmStopArrivalPayload(payload: ConfirmStopArrivalPayload): void {
   if (payload.overrideReason !== undefined && payload.overrideReason.trim().length > 500) {
     throw new ContractError("overrideReason exceeds 500 characters");
@@ -406,7 +430,7 @@ export function validateCompleteStopPodCommand(command: CompleteStopPodCommand):
 }
 
 function validateStopCommandEnvelope(
-  command: ReportPickupProblemCommand | ConfirmStopArrivalCommand | CompleteStopPodCommand,
+  command: ReportPickupProblemCommand | ReportDeliveryProblemCommand | ConfirmStopArrivalCommand | CompleteStopPodCommand,
   name: string,
 ): void {
   assertUuid(command.commandId, "commandId");

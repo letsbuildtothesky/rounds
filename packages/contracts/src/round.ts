@@ -214,6 +214,47 @@ export type ReportPickupProblemResult = CommandResult<
   PickupProblemReportedEvent
 >;
 
+export const deliveryProblemCategories = ["damaged_item"] as const;
+
+export type DeliveryProblemCategory = (typeof deliveryProblemCategories)[number];
+
+export type ReportDeliveryProblemPayload = {
+  manifestId: string;
+  manifestVersion: number;
+  category: DeliveryProblemCategory;
+  mediaAssetId: string;
+  note?: string;
+};
+
+export type ReportDeliveryProblemCommand = CommandEnvelope<
+  "stop.report_delivery_problem",
+  ReportDeliveryProblemPayload
+>;
+
+export type DeliveryProblemReportedPayload = {
+  exceptionId: string;
+  mediaAssetId: string;
+  stopId: string;
+  deliveryId: string;
+  roundId: string;
+  category: DeliveryProblemCategory;
+};
+
+export type DeliveryProblemReportedEvent = DomainEventEnvelope<
+  "stop.delivery_problem_reported",
+  DeliveryProblemReportedPayload
+>;
+
+export type ReportDeliveryProblemState = DeliveryProblemReportedPayload & {
+  stopState: "exception";
+  deliveryState: "exception";
+};
+
+export type ReportDeliveryProblemResult = CommandResult<
+  ReportDeliveryProblemState,
+  DeliveryProblemReportedEvent
+>;
+
 export type ArrivalPositionEvidence = {
   latitude: number;
   longitude: number;

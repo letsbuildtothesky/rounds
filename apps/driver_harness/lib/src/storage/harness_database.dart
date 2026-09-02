@@ -10,7 +10,7 @@ class HarnessDatabase {
     final databaseRoot = await getDatabasesPath();
     final database = await openDatabase(
       path.join(databaseRoot, 'rounds_phase_zero.db'),
-      version: 3,
+      version: 4,
       onCreate: (database, _) async {
         await database.execute('''
           create table navigation_intents (
@@ -47,10 +47,14 @@ class HarnessDatabase {
         ''');
         await createCommandOutboxSchema(database);
         await createPodEvidenceSchema(database);
+        await createDeliveryExceptionEvidenceSchema(database);
       },
       onUpgrade: (database, oldVersion, _) async {
         if (oldVersion < 2) await createCommandOutboxSchema(database);
         if (oldVersion < 3) await createPodEvidenceSchema(database);
+        if (oldVersion < 4) {
+          await createDeliveryExceptionEvidenceSchema(database);
+        }
       },
     );
     return HarnessDatabase._(database);
@@ -117,6 +121,42 @@ class HarnessDatabase {
     await database.execute('''
       create index pod_evidence_flush_idx
       on pod_evidence_outbox (status, created_at)
+    ''');
+  }
+
+  static Future<void> createDeliveryExceptionEvidenceSchema(
+    Database database,
+  ) async {
+    await database.execute('''
+      create table delivery_exception_evidence_outbox (
+        id text primary key,
+        stop_id text not null,
+        expected_stop_version integer not null,
+        manifest_id text not null,
+        manifest_version integer not null,
+        category text not null,
+        note text,
+        local_path text not null,
+        sha256 text not null,
+        byte_size integer not null,
+        content_type text not null,
+        media_asset_id text,
+        storage_bucket text,
+        storage_path text,
+        tus_endpoint text,
+        upload_url text,
+        upload_offset integer not null default 0,
+        idempotency_key text not null unique,
+        status text not null,
+        attempts integer not null default 0,
+        last_error text,
+        created_at text not null,
+        updated_at text not null
+      )
+    ''');
+    await database.execute('''
+      create index delivery_exception_evidence_flush_idx
+      on delivery_exception_evidence_outbox (status, created_at)
     ''');
   }
 }

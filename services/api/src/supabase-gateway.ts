@@ -46,6 +46,8 @@ import type {
   RoundState,
   ReportPickupProblemCommand,
   ReportPickupProblemResult,
+  ReportDeliveryProblemCommand,
+  ReportDeliveryProblemResult,
   ResolveOperationsExceptionCommand,
   ResolveOperationsExceptionResult,
   SendDriverMessageCommand,
@@ -975,6 +977,38 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     };
   }
 
+  async prepareExceptionMedia(
+    stopId: string,
+    identity: AuthenticatedIdentity,
+    assetId: string,
+    sha256: string,
+    byteSize: number,
+    contentType: string,
+  ): Promise<Record<string, unknown>> {
+    const actorPersonId = await this.driverActorPersonId(identity);
+    if (!actorPersonId) return {
+      status: "rejected",
+      error: { code: "NOT_AUTHORIZED", message: "Driver identity is not linked" },
+    };
+    const { data, error } = await this.admin.rpc("prepare_exception_media_asset", {
+      p_stop_id: stopId,
+      p_actor_person_id: actorPersonId,
+      p_asset_id: assetId,
+      p_sha256: sha256,
+      p_size: byteSize,
+      p_content_type: contentType,
+    });
+    if (error) throw error;
+    const prepared = data as Record<string, unknown>;
+    if (prepared.status !== "prepared") return prepared;
+    const projectRef = new URL(this.url).hostname.split(".")[0];
+    return {
+      ...prepared,
+      tusEndpoint: `https://${projectRef}.storage.supabase.co/storage/v1/upload/resumable`,
+      uploadAuthorization: "driver_session",
+    };
+  }
+
   async verifyPodMedia(assetId: string, identity: AuthenticatedIdentity): Promise<Record<string, unknown>> {
     const actorPersonId = await this.driverActorPersonId(identity);
     if (!actorPersonId) return {
@@ -1029,6 +1063,23 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     });
     if (error) throw error;
     return data as CompleteStopPodResult;
+  }
+
+  async reportDeliveryProblem(
+    command: ReportDeliveryProblemCommand,
+    identity: AuthenticatedIdentity,
+  ): Promise<ReportDeliveryProblemResult> {
+    const actorPersonId = await this.driverActorPersonId(identity);
+    if (!actorPersonId) return {
+      status: "rejected",
+      error: { code: "NOT_AUTHORIZED", message: "Driver identity is not linked" },
+    };
+    const { data, error } = await this.admin.rpc("report_delivery_problem_command", {
+      p_command: command,
+      p_actor_person_id: actorPersonId,
+    });
+    if (error) throw error;
+    return data as ReportDeliveryProblemResult;
   }
 
   async getOperationsHistory(actor: ActorContext): Promise<OperationsHistoryProjection> {

@@ -77,6 +77,23 @@ void main() {
     expect(body, contains('Security will not allow entry.'));
   });
 
+  testWidgets('delivery issue drawer exposes the native damage-photo path', (
+    tester,
+  ) async {
+    await _pumpLauncher(
+      tester,
+      onPressed: (context) =>
+          openDeliveryIssueFlow(context, round: round, stop: stop),
+    );
+
+    await tester.tap(find.byKey(const Key('open-flow')));
+    await tester.pumpAndSettle();
+    expect(find.text('Damaged package'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('delivery-issue-damaged-package')));
+    await tester.pumpAndSettle();
+    expect(find.text('Continue to damage photo'), findsOneWidget);
+  });
+
   testWidgets('failed external handoff is visible and never claims success', (
     tester,
   ) async {

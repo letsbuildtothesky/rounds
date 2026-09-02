@@ -29,6 +29,9 @@ import type {
   ReportPickupProblemCommand,
   ReportPickupProblemPayload,
   ReportPickupProblemResult,
+  ReportDeliveryProblemCommand,
+  ReportDeliveryProblemPayload,
+  ReportDeliveryProblemResult,
   ResolveOperationsExceptionCommand,
   ResolveOperationsExceptionResult,
   SendDriverMessageCommand,
@@ -115,6 +118,18 @@ export interface PodGateway {
     contentType: string,
   ): Promise<Record<string, unknown>>;
   verifyPodMedia(assetId: string, identity: AuthenticatedIdentity): Promise<Record<string, unknown>>;
+  prepareExceptionMedia(
+    stopId: string,
+    identity: AuthenticatedIdentity,
+    assetId: string,
+    sha256: string,
+    byteSize: number,
+    contentType: string,
+  ): Promise<Record<string, unknown>>;
+  reportDeliveryProblem(
+    command: ReportDeliveryProblemCommand,
+    identity: AuthenticatedIdentity,
+  ): Promise<ReportDeliveryProblemResult>;
   completeStopPod(
     command: CompleteStopPodCommand,
     identity: AuthenticatedIdentity,
@@ -232,3 +247,4 @@ export type PodDependencies = DriverSessionDependencies & {
 export type ReportPickupProblemRequestBody = ReportPickupProblemPayload;
 export type ConfirmStopArrivalRequestBody = ConfirmStopArrivalPayload;
 export type CompleteStopPodRequestBody = CompleteStopPodPayload;
+export type ReportDeliveryProblemRequestBody = ReportDeliveryProblemPayload;

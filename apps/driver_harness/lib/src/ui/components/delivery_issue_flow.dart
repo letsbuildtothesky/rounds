@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../app/driver_design_system.dart';
+import '../../app/harness_app_controller.dart';
 import '../../driver/driver_session.dart';
+import '../delivery_package_problem_screen.dart';
 import 'operations_contact_flow.dart';
 
 class DeliveryIssueDraft {
@@ -12,10 +14,11 @@ class DeliveryIssueDraft {
   final String note;
 }
 
-Future<void> openDeliveryIssueFlow(
+Future<bool> openDeliveryIssueFlow(
   BuildContext context, {
   required DriverRoundModel round,
   required DriverRoundStopModel stop,
+  HarnessAppController? controller,
   RoundsExternalLauncher launcher = _launchExternal,
 }) async {
   final draft = await showModalBottomSheet<DeliveryIssueDraft>(
@@ -26,7 +29,20 @@ Future<void> openDeliveryIssueFlow(
     barrierColor: RoundsColors.ink.withValues(alpha: .38),
     builder: (context) => _DeliveryIssueSheet(round: round, stop: stop),
   );
-  if (draft == null || !context.mounted) return;
+  if (draft == null || !context.mounted) return false;
+
+  if (draft.category == 'Damaged package') {
+    if (controller == null) return false;
+    return await Navigator.of(context).push<bool>(
+          MaterialPageRoute(
+            builder: (_) => DeliveryPackageProblemScreen(
+              controller: controller,
+              stop: stop,
+            ),
+          ),
+        ) ??
+        false;
+  }
 
   final phone = round.pickup.contactPhone.trim();
   final uri = Uri(
@@ -45,6 +61,7 @@ Future<void> openDeliveryIssueFlow(
       ),
     );
   }
+  return false;
 }
 
 String _issueMessage({
@@ -74,6 +91,7 @@ class _DeliveryIssueSheet extends StatefulWidget {
 
 class _DeliveryIssueSheetState extends State<_DeliveryIssueSheet> {
   static const _categories = [
+    'Damaged package',
     'Recipient unavailable',
     'Address or entrance problem',
     'Cannot complete delivery',
@@ -202,8 +220,16 @@ class _DeliveryIssueSheetState extends State<_DeliveryIssueSheet> {
                                 note: _note.text,
                               ),
                             ),
-                      icon: const Icon(Icons.sms_outlined),
-                      label: const Text('Continue to Messages'),
+                      icon: Icon(
+                        _category == 'Damaged package'
+                            ? Icons.camera_alt_outlined
+                            : Icons.sms_outlined,
+                      ),
+                      label: Text(
+                        _category == 'Damaged package'
+                            ? 'Continue to damage photo'
+                            : 'Continue to Messages',
+                      ),
                       style: FilledButton.styleFrom(
                         backgroundColor: RoundsColors.red,
                         disabledBackgroundColor: const Color(0xFFD9DFE5),

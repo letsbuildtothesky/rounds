@@ -230,11 +230,13 @@ class _NavigationHarnessScreenState extends State<NavigationHarnessScreen> {
         ),
       );
     } else {
-      await openDeliveryIssueFlow(
+      final reported = await openDeliveryIssueFlow(
         context,
         round: widget.round,
         stop: widget.stop,
+        controller: widget.controller,
       );
+      if (reported && mounted) Navigator.of(context).pop();
     }
   }
 

@@ -36,10 +36,21 @@ insert into public.rounds (id, tenant_id, reference, service_date, driver_id, st
 values ('81000000-0000-4000-8000-000000000060', '81000000-0000-4000-8000-000000000001', 'ROUND-RETURN-001', '2026-09-02', '81000000-0000-4000-8000-000000000010', 'active', 4);
 insert into public.round_stops (tenant_id, round_id, stop_id, sequence)
 values ('81000000-0000-4000-8000-000000000001', '81000000-0000-4000-8000-000000000060', '81000000-0000-4000-8000-000000000040', 1);
-insert into public.delivery_exceptions (id, tenant_id, delivery_id, stop_id, round_id, driver_id, manifest_id, manifest_version, stage, category, note, status, actor_person_id, command_id)
+insert into public.media_assets (
+  id, tenant_id, delivery_id, stop_id, round_id, driver_id, intent, storage_path,
+  expected_sha256, verified_sha256, expected_size, verified_size, content_type,
+  state, uploaded_at, committed_at
+) values (
+  '81000000-0000-4000-8000-000000000072', '81000000-0000-4000-8000-000000000001',
+  '81000000-0000-4000-8000-000000000030', '81000000-0000-4000-8000-000000000040',
+  '81000000-0000-4000-8000-000000000060', '81000000-0000-4000-8000-000000000010',
+  'exception_photo', 'return-test/damage.jpg', repeat('a',64), repeat('a',64), 100, 100,
+  'image/jpeg', 'committed', now(), now()
+);
+insert into public.delivery_exceptions (id, tenant_id, delivery_id, stop_id, round_id, driver_id, manifest_id, manifest_version, stage, category, note, status, media_asset_id, actor_person_id, command_id)
 values ('81000000-0000-4000-8000-000000000070', '81000000-0000-4000-8000-000000000001', '81000000-0000-4000-8000-000000000030',
   '81000000-0000-4000-8000-000000000040', '81000000-0000-4000-8000-000000000060', '81000000-0000-4000-8000-000000000010',
-  '81000000-0000-4000-8000-000000000050', 2, 'delivery', 'damaged_item', 'Glass vase damaged in custody', 'open',
+  '81000000-0000-4000-8000-000000000050', 2, 'delivery', 'damaged_item', 'Glass vase damaged in custody', 'open', '81000000-0000-4000-8000-000000000072',
   '81000000-0000-4000-8000-000000000004', '81000000-0000-4000-8000-000000000071');
 
 create temporary table delivery_return_command (body jsonb) on commit drop;

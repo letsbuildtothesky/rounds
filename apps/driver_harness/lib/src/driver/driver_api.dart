@@ -8,6 +8,7 @@ import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 
 import '../storage/driver_command_outbox.dart';
+import '../storage/delivery_exception_evidence_outbox.dart';
 import '../storage/pod_evidence_outbox.dart';
 import 'driver_session.dart';
 import 'driver_operations_thread.dart';
@@ -40,10 +41,13 @@ class DriverApi {
     http.Client? client,
     Future<DriverCommandOutbox> Function()? outboxFactory,
     Future<PodEvidenceOutbox> Function()? podOutboxFactory,
+    Future<DeliveryExceptionEvidenceOutbox> Function()? exceptionOutboxFactory,
   }) : _storage = storage ?? const FlutterSecureStorage(),
        _client = client ?? http.Client(),
        _outboxFactory = outboxFactory ?? DriverCommandOutbox.open,
-       _podOutboxFactory = podOutboxFactory ?? PodEvidenceOutbox.open;
+       _podOutboxFactory = podOutboxFactory ?? PodEvidenceOutbox.open,
+       _exceptionOutboxFactory =
+           exceptionOutboxFactory ?? DeliveryExceptionEvidenceOutbox.open;
 
   static const _accessTokenKey = 'rounds_driver_access_token';
   static const _refreshTokenKey = 'rounds_driver_refresh_token';
@@ -55,8 +59,11 @@ class DriverApi {
   final http.Client _client;
   final Future<DriverCommandOutbox> Function() _outboxFactory;
   final Future<PodEvidenceOutbox> Function() _podOutboxFactory;
+  final Future<DeliveryExceptionEvidenceOutbox> Function()
+  _exceptionOutboxFactory;
   DriverCommandOutbox? _outbox;
   PodEvidenceOutbox? _podOutbox;
+  DeliveryExceptionEvidenceOutbox? _exceptionOutbox;
 
   bool get isConfigured =>
       supabaseUrl.isNotEmpty &&
@@ -68,7 +75,10 @@ class DriverApi {
     if (accessToken == null) return null;
     try {
       var session = await _driverSession(accessToken);
-      final podFlush = await _flushPendingPodEvidence(accessToken);
+      final exceptionFlush = await _flushPendingExceptionEvidence(accessToken);
+      final podFlush = await _flushPendingPodEvidence(
+        exceptionFlush.accessToken,
+      );
       final flush = await _flushPending(podFlush.accessToken);
       if (flush.committedAny) session = await _driverSession(flush.accessToken);
       return session;
@@ -79,7 +89,10 @@ class DriverApi {
         return null;
       }
       var session = await _driverSession(refreshed);
-      final podFlush = await _flushPendingPodEvidence(refreshed);
+      final exceptionFlush = await _flushPendingExceptionEvidence(refreshed);
+      final podFlush = await _flushPendingPodEvidence(
+        exceptionFlush.accessToken,
+      );
       final flush = await _flushPending(podFlush.accessToken);
       if (flush.committedAny) session = await _driverSession(flush.accessToken);
       return session;
@@ -101,7 +114,10 @@ class DriverApi {
     await _writeTokens(accessToken, refreshToken);
     try {
       var session = await _driverSession(accessToken);
-      final podFlush = await _flushPendingPodEvidence(accessToken);
+      final exceptionFlush = await _flushPendingExceptionEvidence(accessToken);
+      final podFlush = await _flushPendingPodEvidence(
+        exceptionFlush.accessToken,
+      );
       final flush = await _flushPending(podFlush.accessToken);
       if (flush.committedAny) session = await _driverSession(flush.accessToken);
       return session;
@@ -288,6 +304,49 @@ class DriverApi {
     return _syncPodEvidence(record, token);
   }
 
+  Future<DriverCommandOutcome> reportDeliveryDamage({
+    required DriverRoundStopModel stop,
+    required String capturedPhotoPath,
+    String? note,
+  }) async {
+    final source = File(capturedPhotoPath);
+    final bytes = await source.readAsBytes();
+    if (bytes.isEmpty || bytes.length > 6291456) {
+      throw const DriverApiException('Damage photo must be smaller than 6 MB');
+    }
+    final digest = sha256.convert(bytes).toString();
+    final support = await getApplicationSupportDirectory();
+    final evidenceDirectory = Directory(
+      path.join(support.path, 'delivery_exception_evidence'),
+    );
+    await evidenceDirectory.create(recursive: true);
+    final extension = path.extension(capturedPhotoPath).toLowerCase() == '.png'
+        ? '.png'
+        : '.jpg';
+    final durablePath = path.join(
+      evidenceDirectory.path,
+      '${stop.id}-$digest$extension',
+    );
+    if (!await File(durablePath).exists()) await source.copy(durablePath);
+    final record = await (await _deliveryExceptionOutbox()).saveLocal(
+      stopId: stop.id,
+      expectedStopVersion: stop.version,
+      manifestId: stop.manifestId,
+      manifestVersion: stop.manifestVersion,
+      category: 'damaged_item',
+      localPath: durablePath,
+      sha256: digest,
+      byteSize: bytes.length,
+      contentType: extension == '.png' ? 'image/png' : 'image/jpeg',
+      note: note,
+    );
+    final token = await _storage.read(key: _accessTokenKey);
+    if (token == null) {
+      return const DriverCommandOutcome(DriverCommandDisposition.pendingSync);
+    }
+    return _syncExceptionEvidence(record, token);
+  }
+
   Future<DriverCommandOutcome> _queueAndSend({
     required String commandType,
     required String aggregateId,
@@ -408,6 +467,195 @@ class DriverApi {
       }
     }
     return _FlushResult(accessToken, committedAny);
+  }
+
+  Future<_FlushResult> _flushPendingExceptionEvidence(
+    String accessToken,
+  ) async {
+    var committedAny = false;
+    final outbox = await _deliveryExceptionOutbox();
+    for (final record in await outbox.pending()) {
+      try {
+        final outcome = await _syncExceptionEvidence(record, accessToken);
+        if (outcome.pendingSync) break;
+        committedAny = true;
+      } on DriverApiException {
+        continue;
+      }
+    }
+    return _FlushResult(accessToken, committedAny);
+  }
+
+  Future<DriverCommandOutcome> _syncExceptionEvidence(
+    DeliveryExceptionEvidenceRecord original,
+    String accessToken,
+  ) async {
+    final outbox = await _deliveryExceptionOutbox();
+    var record = original;
+    try {
+      if (record.mediaAssetId == null || record.tusEndpoint == null) {
+        final response = await _client.post(
+          Uri.parse(
+            '$roundsApiUrl/v1/driver/stops/${record.stopId}/exception-media',
+          ),
+          headers: {
+            'authorization': 'Bearer $accessToken',
+            'content-type': 'application/json',
+            'x-trace-id': record.id,
+          },
+          body: jsonEncode({
+            'sha256': record.sha256,
+            'byteSize': record.byteSize,
+            'contentType': record.contentType,
+          }),
+        );
+        if (response.statusCode != 200 && response.statusCode != 201) {
+          if (response.statusCode >= 500) {
+            throw DriverApiException(
+              _message(
+                response,
+                'Damage photo preparation is temporarily unavailable',
+              ),
+            );
+          }
+          final message = _message(
+            response,
+            'Damage photo could not be prepared',
+          );
+          await outbox.markFailed(record.id, message);
+          throw DriverApiException(message);
+        }
+        record = await outbox.markPrepared(
+          record.id,
+          jsonDecode(response.body) as Map<String, dynamic>,
+        );
+      }
+      if (record.status != 'uploaded' && record.status != 'pending_command') {
+        record = await _uploadExceptionTus(record, accessToken);
+      }
+      await outbox.markPendingCommand(record.id);
+      final outcome = await _queueAndSend(
+        commandType: 'stop.report_delivery_problem',
+        aggregateId: record.stopId,
+        expectedVersion: record.expectedStopVersion,
+        idempotencyKey: record.idempotencyKey,
+        endpoint: '/v1/driver/stops/${record.stopId}/delivery-problem',
+        payload: {
+          'manifestId': record.manifestId,
+          'manifestVersion': record.manifestVersion,
+          'category': record.category,
+          'mediaAssetId': record.mediaAssetId,
+          if (record.note != null && record.note!.trim().isNotEmpty)
+            'note': record.note!.trim(),
+        },
+      );
+      if (outcome.committed) await outbox.markCompleted(record.id);
+      return outcome;
+    } on DriverApiException catch (error) {
+      final latest = await outbox.byId(record.id);
+      if (latest?.status == 'failed_terminal') rethrow;
+      await outbox.markPending(record.id, error);
+      return const DriverCommandOutcome(DriverCommandDisposition.pendingSync);
+    } catch (error) {
+      await outbox.markPending(record.id, error);
+      return const DriverCommandOutcome(DriverCommandDisposition.pendingSync);
+    }
+  }
+
+  Future<DeliveryExceptionEvidenceRecord> _uploadExceptionTus(
+    DeliveryExceptionEvidenceRecord original,
+    String accessToken,
+  ) async {
+    final outbox = await _deliveryExceptionOutbox();
+    var record = original;
+    var uploadUrl = record.uploadUrl;
+    if (uploadUrl == null) {
+      final metadata =
+          {
+                'bucketName': record.storageBucket!,
+                'objectName': record.storagePath!,
+                'contentType': record.contentType,
+                'cacheControl': '3600',
+              }.entries
+              .map(
+                (entry) =>
+                    '${entry.key} ${base64Encode(utf8.encode(entry.value))}',
+              )
+              .join(',');
+      final request = http.Request('POST', Uri.parse(record.tusEndpoint!));
+      request.headers.addAll({
+        'tus-resumable': '1.0.0',
+        'upload-length': record.byteSize.toString(),
+        'upload-metadata': metadata,
+        'authorization': 'Bearer $accessToken',
+      });
+      final response = await http.Response.fromStream(
+        await _client.send(request),
+      );
+      if (response.statusCode != 201) {
+        throw DriverApiException(
+          'Damage photo upload could not start (HTTP ${response.statusCode})',
+        );
+      }
+      final location = response.headers['location'];
+      if (location == null) {
+        throw const DriverApiException(
+          'Damage photo upload did not return a resume URL',
+        );
+      }
+      uploadUrl = Uri.parse(record.tusEndpoint!).resolve(location).toString();
+      await outbox.markUploadUrl(record.id, uploadUrl);
+      record = (await outbox.byId(record.id))!;
+    } else {
+      final head = http.Request('HEAD', Uri.parse(uploadUrl));
+      head.headers.addAll({
+        'tus-resumable': '1.0.0',
+        'authorization': 'Bearer $accessToken',
+      });
+      final response = await http.Response.fromStream(await _client.send(head));
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        final offset =
+            int.tryParse(response.headers['upload-offset'] ?? '') ??
+            record.uploadOffset;
+        await outbox.markOffset(record.id, offset);
+        record = (await outbox.byId(record.id))!;
+      } else if (response.statusCode == 404 || response.statusCode == 410) {
+        record = await outbox.resetUploadSession(record.id);
+        return _uploadExceptionTus(record, accessToken);
+      } else {
+        throw DriverApiException(
+          'Damage photo upload could not resume (HTTP ${response.statusCode})',
+        );
+      }
+    }
+    if (record.uploadOffset < record.byteSize) {
+      final bytes = await File(record.localPath).readAsBytes();
+      final request = http.Request('PATCH', Uri.parse(uploadUrl));
+      request.headers.addAll({
+        'tus-resumable': '1.0.0',
+        'upload-offset': record.uploadOffset.toString(),
+        'content-type': 'application/offset+octet-stream',
+        'authorization': 'Bearer $accessToken',
+      });
+      request.bodyBytes = bytes.sublist(record.uploadOffset);
+      final response = await http.Response.fromStream(
+        await _client.send(request),
+      );
+      if (response.statusCode != 204) {
+        throw DriverApiException(
+          'Damage photo upload paused (HTTP ${response.statusCode})',
+        );
+      }
+      final offset =
+          int.tryParse(response.headers['upload-offset'] ?? '') ??
+          record.byteSize;
+      await outbox.markOffset(record.id, offset);
+      if (offset < record.byteSize) {
+        throw const DriverApiException('Damage photo upload is incomplete');
+      }
+    }
+    await outbox.markUploaded(record.id);
+    return (await outbox.byId(record.id))!;
   }
 
   Future<DriverCommandOutcome> _syncPodEvidence(
@@ -588,6 +836,9 @@ class DriverApi {
 
   Future<PodEvidenceOutbox> _podEvidenceOutbox() async =>
       _podOutbox ??= await _podOutboxFactory();
+
+  Future<DeliveryExceptionEvidenceOutbox> _deliveryExceptionOutbox() async =>
+      _exceptionOutbox ??= await _exceptionOutboxFactory();
 
   Future<DriverSessionModel> _driverSession(String accessToken) async {
     final response = await _client.get(
