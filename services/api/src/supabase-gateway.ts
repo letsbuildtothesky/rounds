@@ -92,6 +92,7 @@ type RoundStopRow = { stop_id: string; sequence: number };
 type PlanningRoundStopRow = { round_id: string; stop_id: string };
 type PickupVerificationRow = { round_id: string; stop_id: string };
 type DeliveryExceptionRow = { round_id: string };
+type DriverPositionRow = { driver_id: string; position: unknown; captured_at: string };
 
 export function parseDatabasePoint(value: unknown): { latitude: number; longitude: number } | undefined {
   if (value && typeof value === "object" && "coordinates" in value) {
@@ -365,26 +366,36 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
       .returns<(RoundRow & { driver_id: string })[]>();
     if (activeRoundsError) throw activeRoundsError;
     const activeRoundIds = (activeRounds ?? []).map((round) => round.id);
+    const activeDriverIds = [...new Set((activeRounds ?? []).map((round) => round.driver_id))];
     let planningRoundStops: PlanningRoundStopRow[] = [];
     let pickupVerifications: PickupVerificationRow[] = [];
     let deliveryExceptions: DeliveryExceptionRow[] = [];
+    let driverPositions: DriverPositionRow[] = [];
     if (activeRoundIds.length) {
-      const [roundStopResult, verificationResult, exceptionResult] = await Promise.all([
+      const [roundStopResult, verificationResult, exceptionResult, positionResult] = await Promise.all([
         this.admin.from("round_stops").select("round_id, stop_id").in("round_id", activeRoundIds)
           .returns<PlanningRoundStopRow[]>(),
         this.admin.from("manifest_verifications").select("round_id, stop_id")
           .in("round_id", activeRoundIds).eq("stage", "pickup").returns<PickupVerificationRow[]>(),
         this.admin.from("delivery_exceptions").select("round_id")
           .in("round_id", activeRoundIds).eq("status", "open").returns<DeliveryExceptionRow[]>(),
+        this.admin.from("driver_position_current").select("driver_id, position, captured_at")
+          .eq("tenant_id", actor.tenantId).in("driver_id", activeDriverIds).returns<DriverPositionRow[]>(),
       ]);
       if (roundStopResult.error) throw roundStopResult.error;
       if (verificationResult.error) throw verificationResult.error;
       if (exceptionResult.error) throw exceptionResult.error;
+      if (positionResult.error) throw positionResult.error;
       planningRoundStops = roundStopResult.data ?? [];
       pickupVerifications = verificationResult.data ?? [];
       deliveryExceptions = exceptionResult.data ?? [];
+      driverPositions = positionResult.data ?? [];
     }
     const profileById = new Map(profiles.map((profile) => [profile.id, profile]));
+    const positionByDriver = new Map(driverPositions.flatMap((row) => {
+      const coordinate = parseDatabasePoint(row.position);
+      return coordinate ? [[row.driver_id, { ...coordinate, capturedAt: row.captured_at }] as const] : [];
+    }));
 
     return {
       tenantId: actor.tenantId,
@@ -398,6 +409,7 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
         const stop = stopByDelivery.get(delivery.id);
         const promise = promiseByDelivery.get(delivery.id);
         const manifest = manifestByDelivery.get(delivery.id);
+        const coordinate = parseDatabasePoint(delivery.destination_position);
         if (!stop || !promise || !manifest) return [];
         const summary = items
           .filter((item) => item.manifest_id === manifest.id)
@@ -411,6 +423,7 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
           pickupLocationId: delivery.pickup_location_id,
           recipientName: delivery.recipient_name,
           rawAddress: delivery.destination_raw_address,
+          ...(coordinate ? { coordinate } : {}),
           windowStart: promise.window_start,
           windowEnd: promise.window_end,
           manifestSummary: summary || "Manifest ready",
@@ -418,6 +431,7 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
       }),
       activeRounds: (activeRounds ?? []).map((round) => {
         const profile = profileById.get(round.driver_id);
+        const currentPosition = positionByDriver.get(round.driver_id);
         return {
           id: round.id,
           reference: round.reference,
@@ -428,6 +442,7 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
           stopCount: planningRoundStops.filter((stop) => stop.round_id === round.id).length,
           custodyStopCount: pickupVerifications.filter((verification) => verification.round_id === round.id).length,
           openExceptionCount: deliveryExceptions.filter((exception) => exception.round_id === round.id).length,
+          ...(currentPosition ? { currentPosition } : {}),
         };
       }),
     };
@@ -818,9 +833,9 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     const roundIds = [...new Set(exceptions.map((item) => item.round_id))];
     const driverIds = [...new Set(exceptions.map((item) => item.driver_id))];
     const [deliveryResult, stopResult, roundResult, roundStopResult, driverResult, threadResult] = await Promise.all([
-      this.admin.from("deliveries").select("id, reference, recipient_name, destination_raw_address")
+      this.admin.from("deliveries").select("id, reference, recipient_name, destination_raw_address, destination_position")
         .eq("tenant_id", actor.tenantId).in("id", deliveryIds)
-        .returns<{ id: string; reference: string; recipient_name: string; destination_raw_address: string }[]>(),
+        .returns<{ id: string; reference: string; recipient_name: string; destination_raw_address: string; destination_position: unknown }[]>(),
       this.admin.from("delivery_stops").select("id, state").eq("tenant_id", actor.tenantId).in("id", stopIds)
         .returns<{ id: string; state: string }[]>(),
       this.admin.from("rounds").select("id, reference, state").eq("tenant_id", actor.tenantId).in("id", roundIds)
@@ -867,6 +882,7 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
         const stop = stopById.get(item.stop_id);
         const round = roundById.get(item.round_id);
         if (!delivery || !stop || !round) return [];
+        const coordinate = parseDatabasePoint(delivery.destination_position);
         const threadId = threadByStop.get(`${item.round_id}:${item.stop_id}`);
         return [{
           id: item.id,
@@ -874,6 +890,7 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
           deliveryReference: delivery.reference,
           recipientName: delivery.recipient_name,
           rawAddress: delivery.destination_raw_address,
+          ...(coordinate ? { coordinate } : {}),
           stopId: item.stop_id,
           stopSequence: sequenceByStop.get(`${item.round_id}:${item.stop_id}`) ?? 0,
           stopState: stop.state,

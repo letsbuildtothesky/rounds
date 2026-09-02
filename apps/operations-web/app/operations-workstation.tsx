@@ -34,14 +34,14 @@ function demoProjection(tenantId: string): OperationsActionProjection {
     tenantId,
     observedAt: reportedAt,
     rounds: [
-      { id: "demo-round-18", reference: "Round 18", serviceDate: "2026-09-02", state: "active", driverId: "demo-somchai", driverName: "Somchai K.", stopCount: 3, custodyStopCount: 2, openExceptionCount: 1 },
-      { id: "demo-round-19", reference: "Round 19", serviceDate: "2026-09-02", state: "active", driverId: "demo-nattawut", driverName: "Nattawut P.", stopCount: 2, custodyStopCount: 1, openExceptionCount: 0 },
+      { id: "demo-round-18", reference: "Round 18", serviceDate: "2026-09-02", state: "active", driverId: "demo-somchai", driverName: "Somchai K.", stopCount: 3, custodyStopCount: 2, openExceptionCount: 1, currentPosition: { latitude: 13.7298, longitude: 100.5487, capturedAt: reportedAt } },
+      { id: "demo-round-19", reference: "Round 19", serviceDate: "2026-09-02", state: "active", driverId: "demo-nattawut", driverName: "Nattawut P.", stopCount: 2, custodyStopCount: 1, openExceptionCount: 0, currentPosition: { latitude: 13.7338, longitude: 100.5766, capturedAt: reportedAt } },
       { id: "demo-round-20", reference: "Round 20", serviceDate: "2026-09-02", state: "approved", driverId: "demo-pim", driverName: "Pim T.", stopCount: 3, custodyStopCount: 0, openExceptionCount: 0 },
     ],
     exceptions: [
-      { id: "demo-exception-1", deliveryId: "demo-delivery-10432", deliveryReference: "10432", recipientName: "K. Nattaporn", rawAddress: "The Emporio Place · Sukhumvit 24", stopId: "demo-stop-1", stopSequence: 1, stopState: "at_pickup", roundId: "demo-round-18", roundReference: "Round 18", roundState: "active", driverId: "demo-somchai", driverName: "Somchai K.", stage: "pickup", category: "missing_item", note: "One manifest item is not physically present at pickup.", status: "open", manifestVersion: 1, reportedAt, operationsThreadId: "demo-thread-1" },
-      { id: "demo-exception-2", deliveryId: "demo-delivery-10439", deliveryReference: "10439", recipientName: "Pullman Bangkok Hotel G", rawAddress: "Silom Road · Bang Rak", stopId: "demo-stop-2", stopSequence: 2, stopState: "arrived", roundId: "demo-round-18", roundReference: "Round 18", roundState: "active", driverId: "demo-somchai", driverName: "Somchai K.", stage: "delivery", category: "damaged_item", note: "Packaging damage requires an Operations decision before handoff.", status: "open", manifestVersion: 2, reportedAt, operationsThreadId: "demo-thread-2" },
-      { id: "demo-exception-3", deliveryId: "demo-delivery-10444", deliveryReference: "10444", recipientName: "Anantara Siam", rawAddress: "Ratchadamri Road · Pathum Wan", stopId: "demo-stop-3", stopSequence: 1, stopState: "at_pickup", roundId: "demo-round-19", roundReference: "Round 19", roundState: "active", driverId: "demo-nattawut", driverName: "Nattawut P.", stage: "pickup", category: "wrong_item", note: "The physical package does not match the current manifest.", status: "open", manifestVersion: 1, reportedAt, operationsThreadId: "demo-thread-3" },
+      { id: "demo-exception-1", deliveryId: "demo-delivery-10432", deliveryReference: "10432", recipientName: "K. Nattaporn", rawAddress: "The Emporio Place · Sukhumvit 24", coordinate: { latitude: 13.7274, longitude: 100.5663 }, stopId: "demo-stop-1", stopSequence: 1, stopState: "at_pickup", roundId: "demo-round-18", roundReference: "Round 18", roundState: "active", driverId: "demo-somchai", driverName: "Somchai K.", stage: "pickup", category: "missing_item", note: "One manifest item is not physically present at pickup.", status: "open", manifestVersion: 1, reportedAt, operationsThreadId: "demo-thread-1" },
+      { id: "demo-exception-2", deliveryId: "demo-delivery-10439", deliveryReference: "10439", recipientName: "Pullman Bangkok Hotel G", rawAddress: "Silom Road · Bang Rak", coordinate: { latitude: 13.7215, longitude: 100.5298 }, stopId: "demo-stop-2", stopSequence: 2, stopState: "arrived", roundId: "demo-round-18", roundReference: "Round 18", roundState: "active", driverId: "demo-somchai", driverName: "Somchai K.", stage: "delivery", category: "damaged_item", note: "Packaging damage requires an Operations decision before handoff.", status: "open", manifestVersion: 2, reportedAt, operationsThreadId: "demo-thread-2" },
+      { id: "demo-exception-3", deliveryId: "demo-delivery-10444", deliveryReference: "10444", recipientName: "Anantara Siam", rawAddress: "Ratchadamri Road · Pathum Wan", coordinate: { latitude: 13.7402, longitude: 100.5417 }, stopId: "demo-stop-3", stopSequence: 1, stopState: "at_pickup", roundId: "demo-round-19", roundReference: "Round 19", roundState: "active", driverId: "demo-nattawut", driverName: "Nattawut P.", stage: "pickup", category: "wrong_item", note: "The physical package does not match the current manifest.", status: "open", manifestVersion: 1, reportedAt, operationsThreadId: "demo-thread-3" },
     ],
   };
 }
@@ -54,9 +54,9 @@ function demoPlanningProjection(tenantId: string): OperationsPlanningProjection 
       { id: "demo-pim", displayName: "Pim T.", vehicleLabel: "Car", vehiclePlate: "8KT 3318" },
     ],
     unplannedDeliveries: [
-      { deliveryId: "demo-ready-10435", stopId: "demo-ready-stop-1", reference: "10435", serviceDate: "2026-09-02", pickupLocationId: "urbanflowers", recipientName: "James T.", rawAddress: "Sathorn Square · Sathorn", windowStart: "2026-09-02T06:00:00.000Z", windowEnd: "2026-09-02T08:30:00.000Z", manifestSummary: "1× Signature hamper" },
-      { deliveryId: "demo-ready-10441", stopId: "demo-ready-stop-2", reference: "10441", serviceDate: "2026-09-02", pickupLocationId: "urbanflowers", recipientName: "Marriott Sukhumvit", rawAddress: "Thonglor · Sukhumvit", windowStart: "2026-09-02T07:00:00.000Z", windowEnd: "2026-09-02T09:00:00.000Z", manifestSummary: "2× Lobby arrangement" },
-      { deliveryId: "demo-ready-10446", stopId: "demo-ready-stop-3", reference: "10446", serviceDate: "2026-09-02", pickupLocationId: "urbanflowers", recipientName: "Bangkok Hospital", rawAddress: "Phetchaburi Road", windowStart: "2026-09-02T08:00:00.000Z", windowEnd: "2026-09-02T11:00:00.000Z", manifestSummary: "1× Get well bouquet" },
+      { deliveryId: "demo-ready-10435", stopId: "demo-ready-stop-1", reference: "10435", serviceDate: "2026-09-02", pickupLocationId: "urbanflowers", recipientName: "James T.", rawAddress: "Sathorn Square · Sathorn", coordinate: { latitude: 13.7215, longitude: 100.5298 }, windowStart: "2026-09-02T06:00:00.000Z", windowEnd: "2026-09-02T08:30:00.000Z", manifestSummary: "1× Signature hamper" },
+      { deliveryId: "demo-ready-10441", stopId: "demo-ready-stop-2", reference: "10441", serviceDate: "2026-09-02", pickupLocationId: "urbanflowers", recipientName: "Marriott Sukhumvit", rawAddress: "Thonglor · Sukhumvit", coordinate: { latitude: 13.7308, longitude: 100.5828 }, windowStart: "2026-09-02T07:00:00.000Z", windowEnd: "2026-09-02T09:00:00.000Z", manifestSummary: "2× Lobby arrangement" },
+      { deliveryId: "demo-ready-10446", stopId: "demo-ready-stop-3", reference: "10446", serviceDate: "2026-09-02", pickupLocationId: "urbanflowers", recipientName: "Bangkok Hospital", rawAddress: "Phetchaburi Road", coordinate: { latitude: 13.7487, longitude: 100.5846 }, windowStart: "2026-09-02T08:00:00.000Z", windowEnd: "2026-09-02T11:00:00.000Z", manifestSummary: "1× Get well bouquet" },
     ],
     activeRounds: demoProjection(tenantId).rounds,
   };
@@ -69,22 +69,9 @@ const exceptionLabels: Record<OperationsActionException["category"], string> = {
 };
 
 const mapModeCopy: Record<OperationsMapMode, { label: string; description: string; hint: string }> = {
-  operations: { label: "Operations", description: "Quiet map · routes and decisions first", hint: "routes and decisions first" },
+  operations: { label: "Operations", description: "Live driver and destination positions only", hint: "server-backed positions only" },
   satellite: { label: "Satellite", description: "Real-world aerial imagery for access and site checks", hint: "inspect real-world access" },
-  site: { label: "3D Site", description: "Close building-level view · approach + handoff", hint: "building + approach + handoff" },
-  street: { label: "Street", description: "Street-level imagery · Google preferred / Mapillary fallback", hint: "street imagery provider view" },
 };
-
-const positions = [
-  { left: "44%", top: "25%" },
-  { left: "68%", top: "48%" },
-  { left: "29%", top: "61%" },
-  { left: "77%", top: "32%" },
-];
-
-function initials(name: string): string {
-  return name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase()).join("") || "DR";
-}
 
 function shortTime(value: string, timezone: string): string {
   return new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: timezone }).format(new Date(value));
@@ -103,8 +90,6 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
   const [profileOpen, setProfileOpen] = useState(false);
   const [mapMode, setMapMode] = useState<OperationsMapMode>("operations");
   const [mapMenuOpen, setMapMenuOpen] = useState(false);
-  const [weatherLayerOn, setWeatherLayerOn] = useState(true);
-  const [networkSupplyOn, setNetworkSupplyOn] = useState(false);
   const [mapCamera, setMapCamera] = useState<OperationsMapCamera>({ bearing: 0, pitch: 0 });
   const [mapHint, setMapHint] = useState("");
 
@@ -233,12 +218,9 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
       <section className="v45-map-wrap">
         <div className="v45-map-header"><strong>Bangkok · {dispatchMode === "live" ? "Live" : "Plan"}</strong><span>{dispatchMode === "plan" ? `${planning?.unplannedDeliveries.length ?? 0} unplanned` : tab === "action" ? "All deliveries" : `${visible.length} ${tab}`}</span><button>Rounds</button><button><i />Automatic</button><div className="v45-spacer" /><em><i />{stale ? "Connection delayed" : dispatchMode === "plan" ? "Draft only" : "On time"}</em><span>{dispatchMode === "plan" ? "Plan not approved" : <>Live rounds <b>{activeRounds}</b></>}</span></div>
         <div className="v45-map-body" onClick={() => setMapMenuOpen(false)}>
-          <div className="v45-map-grid" />
           <OperationsMap
             mode={dispatchMode}
             mapMode={mapMode}
-            weatherLayerOn={weatherLayerOn}
-            networkSupplyOn={networkSupplyOn}
             rounds={projection?.rounds ?? []}
             exceptions={projection?.exceptions ?? []}
             planningDeliveries={planning?.unplannedDeliveries ?? []}
@@ -247,26 +229,16 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
             onSelectException={(item) => { setDispatchMode("live"); setTab("action"); setSelection({ kind: "exception", item }); }}
             onSelectDelivery={(item) => { setDispatchMode("plan"); setSelection({ kind: "delivery", item }); }}
           />
-          <div className="v45-water" />
-          <div className="v45-park one" /><div className="v45-park two" />
-          <div className="v45-road h1" /><div className="v45-road h2" /><div className="v45-road h3" /><div className="v45-road v1" /><div className="v45-road v2" /><div className="v45-road v3" />
-          <svg className="v45-routes" viewBox="0 0 1000 700" preserveAspectRatio="none" aria-hidden="true"><path className="shadow" d="M115,430 L220,405 L300,315 L420,320 L500,190 L610,215 L680,350 L825,385"/><path d="M115,430 L220,405 L300,315 L420,320 L500,190 L610,215 L680,350 L825,385"/><path className="shadow" d="M330,585 L440,520 L545,555 L650,475 L820,460"/><path className="green" d="M330,585 L440,520 L545,555 L650,475 L820,460"/></svg>
-          <span className="v45-place asoke">ASOKE</span><span className="v45-place sukhumvit">SUKHUMVIT</span><span className="v45-place thonglor">THONGLOR</span><span className="v45-place sathorn">SATHORN</span>
-          {(projection?.rounds ?? []).slice(0, 4).map((round, index) => <button key={round.id} className={`v45-driver ${selection?.kind === "round" && selection.item.id === round.id ? "selected" : ""}`} style={positions[index]} onClick={() => { setTab(round.state === "complete" ? "done" : round.state === "active" ? "live" : "ready"); setSelection({ kind: "round", item: round }); }} title={round.driverName}>{initials(round.driverName)}</button>)}
-          {dispatchMode === "plan" ? (planning?.unplannedDeliveries ?? []).slice(0, 3).map((item, index) => <button key={item.stopId} className="v45-stop" style={{ left: `${70 + index * 7}%`, top: `${31 + index * 12}%` }} onClick={() => setSelection({ kind: "delivery", item })}>{index + 1}</button>) : (projection?.exceptions ?? []).slice(0, 3).map((item, index) => <button key={item.id} className="v45-stop" style={{ left: `${70 + index * 7}%`, top: `${31 + index * 12}%` }} onClick={() => { setTab("action"); setSelection({ kind: "exception", item }); }}>{index + 1}</button>)}
           <div className="v45-map-mode" onClick={(event) => event.stopPropagation()}>
             <button type="button" aria-haspopup="menu" aria-expanded={mapMenuOpen} onClick={() => setMapMenuOpen((open) => !open)}>{mapModeCopy[mapMode].label}<span>▾</span></button>
             <div className={`v45-map-mode-menu ${mapMenuOpen ? "open" : ""}`} role="menu">
-              {(["operations", "satellite", "site", "street"] as OperationsMapMode[]).map((item) => <button key={item} type="button" role="menuitemradio" aria-checked={mapMode === item} className={mapMode === item ? "on" : ""} onClick={() => { setMapMode(item); setMapMenuOpen(false); }}><b>{mapModeCopy[item].label}</b><span>{mapModeCopy[item].description}</span></button>)}
-              <button type="button" className={`v45-map-layer ${weatherLayerOn ? "on" : ""}`} onClick={() => setWeatherLayerOn((on) => !on)}><span><b>Weather layer</b><small>Localized precipitation · only when operationally relevant</small></span><em>{weatherLayerOn ? "AUTO" : "OFF"}</em></button>
-              <button type="button" className={`v45-map-layer ${networkSupplyOn ? "on" : ""}`} onClick={() => setNetworkSupplyOn((on) => !on)}><span><b>Network supply</b><small>Nearby open and busy capacity · generalized before acceptance</small></span><em>{networkSupplyOn ? "ON" : "OFF"}</em></button>
+              {(["operations", "satellite"] as OperationsMapMode[]).map((item) => <button key={item} type="button" role="menuitemradio" aria-checked={mapMode === item} className={mapMode === item ? "on" : ""} onClick={() => { setMapMode(item); setMapMenuOpen(false); }}><b>{mapModeCopy[item].label}</b><span>{mapModeCopy[item].description}</span></button>)}
             </div>
           </div>
+          {demoMode && <div className="v45-preview-badge"><b>PREVIEW DATA</b><span>Positions shown here are UX samples, not live drivers.</span></div>}
+          {!demoMode && !loading && <div className="v45-map-truth"><b>Live map truth</b><span>Only server-reported driver positions and saved destination pins are shown. Routes appear after server routing is connected.</span></div>}
           {mapHint && <div className="v45-map-hint"><strong>{mapHint.split(" · ")[0]}</strong> · {mapHint.split(" · ").slice(1).join(" · ")}</div>}
-          {mapMode === "site" && <div className="v45-site-inspector"><small>3D SITE · DESTINATION</small><h3>#10432 · The Emporio Place</h3><p>Confirmed building approach and handoff study.</p><div><span>Vehicle access<b>Sukhumvit 24 driveway</b></span><span>Entrance<b>Main lobby</b></span></div><button type="button" onClick={() => window.dispatchEvent(new CustomEvent("rounds-map-control", { detail: "focus" }))}>Focus access</button><button type="button" onClick={() => setMapMode("street")}>Open Street</button></div>}
-          {mapMode === "street" && <div className="v45-street-panel" onClick={(event) => event.stopPropagation()}><section><div><small>STREET IMAGERY</small><h2>See the entrance before the driver arrives.</h2><p>Street imagery is a separate provider from the Rounds Mapbox map. Google Street View is preferred for consistent coverage, with Mapillary as the crowdsourced fallback.</p><article><span><b>Google Street View</b><small>Best coverage and panorama consistency · API key required</small></span><em>Preferred</em></article><article><span><b>Mapillary</b><small>Free crowdsourced imagery · coverage varies by street</small></span><em>Fallback</em></article></div></section><aside><small>DESTINATION STUDY</small><h3>#10432 · The Emporio Place</h3><p>Vehicle access and handoff entrance remain separate operational points.</p><dl><div><dt>Vehicle access</dt><dd>Sukhumvit 24 driveway</dd></div><div><dt>Entrance</dt><dd>Main lobby</dd></div><div><dt>Rounds knowledge</dt><dd>7 successful confirmations</dd></div></dl><button type="button" className="primary" onClick={() => setMapMode("site")}>Back to 3D Site</button><button type="button" onClick={() => setMapMode("operations")}>Back to Operations</button></aside></div>}
-          {networkSupplyOn && <div className="v45-network-notice"><span><i />Network supply</span><b>5 open · 3 busy nearby</b><small>Locations generalized until acceptance</small><button type="button" onClick={() => setNetworkSupplyOn(false)}>Hide</button></div>}
-          <div className="v45-legend"><span><i className="own" />Own</span><span><i className="network" />Network</span><span><i className="external" />External</span><span><i className="traffic" />Traffic impact</span></div>
+          <div className="v45-legend"><span><i className="own" />Driver position</span><span><i className="destination" />Destination</span></div>
           <button className="v45-focus" type="button" onClick={() => window.dispatchEvent(new CustomEvent("rounds-map-control", { detail: "focus" }))}><FocusIcon />Focus map</button>
           <div className="v45-camera">
             <button type="button" title="Zoom in" onClick={() => window.dispatchEvent(new CustomEvent("rounds-map-control", { detail: "zoom-in" }))}>+</button>

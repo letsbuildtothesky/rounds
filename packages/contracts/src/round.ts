@@ -26,6 +26,10 @@ export type UnplannedDeliverySummary = {
   pickupLocationId: string;
   recipientName: string;
   rawAddress: string;
+  coordinate?: {
+    latitude: number;
+    longitude: number;
+  };
   windowStart: string;
   windowEnd: string;
   manifestSummary: string;
@@ -48,6 +52,11 @@ export type OperationsRoundSummary = {
   stopCount: number;
   custodyStopCount: number;
   openExceptionCount: number;
+  currentPosition?: {
+    latitude: number;
+    longitude: number;
+    capturedAt: string;
+  };
 };
 
 export type PlanRoundPayload = {

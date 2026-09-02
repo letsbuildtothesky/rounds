@@ -65,6 +65,10 @@ export type OperationsActionException = {
   deliveryReference: string;
   recipientName: string;
   rawAddress: string;
+  coordinate?: {
+    latitude: number;
+    longitude: number;
+  };
   stopId: string;
   stopSequence: number;
   stopState: string;
