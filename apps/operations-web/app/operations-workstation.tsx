@@ -9,7 +9,7 @@ import type {
   OperationsTenant,
   UnplannedDeliverySummary,
 } from "@rounds/contracts";
-import { OperationsMap } from "./operations-map";
+import { OperationsMap, type OperationsMapCamera, type OperationsMapMode } from "./operations-map";
 
 const roundsApiUrl = process.env.NEXT_PUBLIC_ROUNDS_API_URL ?? "http://127.0.0.1:8080";
 
@@ -68,6 +68,13 @@ const exceptionLabels: Record<OperationsActionException["category"], string> = {
   damaged_item: "Damaged item",
 };
 
+const mapModeCopy: Record<OperationsMapMode, { label: string; description: string; hint: string }> = {
+  operations: { label: "Operations", description: "Quiet map · routes and decisions first", hint: "routes and decisions first" },
+  satellite: { label: "Satellite", description: "Real-world aerial imagery for access and site checks", hint: "inspect real-world access" },
+  site: { label: "3D Site", description: "Close building-level view · approach + handoff", hint: "building + approach + handoff" },
+  street: { label: "Street", description: "Street-level imagery · Google preferred / Mapillary fallback", hint: "street imagery provider view" },
+};
+
 const positions = [
   { left: "44%", top: "25%" },
   { left: "68%", top: "48%" },
@@ -94,6 +101,12 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
   const [stale, setStale] = useState(false);
   const [error, setError] = useState("");
   const [profileOpen, setProfileOpen] = useState(false);
+  const [mapMode, setMapMode] = useState<OperationsMapMode>("operations");
+  const [mapMenuOpen, setMapMenuOpen] = useState(false);
+  const [weatherLayerOn, setWeatherLayerOn] = useState(true);
+  const [networkSupplyOn, setNetworkSupplyOn] = useState(false);
+  const [mapCamera, setMapCamera] = useState<OperationsMapCamera>({ bearing: 0, pitch: 0 });
+  const [mapHint, setMapHint] = useState("");
 
   const load = useCallback(async (quiet = false) => {
     if (!quiet) setLoading(true);
@@ -157,6 +170,12 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
     if (dispatchMode === "plan") void loadPlanning();
   }, [dispatchMode, loadPlanning]);
 
+  useEffect(() => {
+    setMapHint(`${mapModeCopy[mapMode].label} · ${mapModeCopy[mapMode].hint}`);
+    const timer = window.setTimeout(() => setMapHint(""), 1800);
+    return () => window.clearTimeout(timer);
+  }, [mapMode]);
+
   const buckets = useMemo(() => {
     const rounds = projection?.rounds ?? [];
     return {
@@ -213,13 +232,17 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
 
       <section className="v45-map-wrap">
         <div className="v45-map-header"><strong>Bangkok · {dispatchMode === "live" ? "Live" : "Plan"}</strong><span>{dispatchMode === "plan" ? `${planning?.unplannedDeliveries.length ?? 0} unplanned` : tab === "action" ? "All deliveries" : `${visible.length} ${tab}`}</span><button>Rounds</button><button><i />Automatic</button><div className="v45-spacer" /><em><i />{stale ? "Connection delayed" : dispatchMode === "plan" ? "Draft only" : "On time"}</em><span>{dispatchMode === "plan" ? "Plan not approved" : <>Live rounds <b>{activeRounds}</b></>}</span></div>
-        <div className="v45-map-body">
+        <div className="v45-map-body" onClick={() => setMapMenuOpen(false)}>
           <div className="v45-map-grid" />
           <OperationsMap
             mode={dispatchMode}
+            mapMode={mapMode}
+            weatherLayerOn={weatherLayerOn}
+            networkSupplyOn={networkSupplyOn}
             rounds={projection?.rounds ?? []}
             exceptions={projection?.exceptions ?? []}
             planningDeliveries={planning?.unplannedDeliveries ?? []}
+            onCameraChange={setMapCamera}
             onSelectRound={(round) => { setDispatchMode("live"); setTab(round.state === "complete" ? "done" : round.state === "active" ? "live" : "ready"); setSelection({ kind: "round", item: round }); }}
             onSelectException={(item) => { setDispatchMode("live"); setTab("action"); setSelection({ kind: "exception", item }); }}
             onSelectDelivery={(item) => { setDispatchMode("plan"); setSelection({ kind: "delivery", item }); }}
@@ -231,9 +254,28 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
           <span className="v45-place asoke">ASOKE</span><span className="v45-place sukhumvit">SUKHUMVIT</span><span className="v45-place thonglor">THONGLOR</span><span className="v45-place sathorn">SATHORN</span>
           {(projection?.rounds ?? []).slice(0, 4).map((round, index) => <button key={round.id} className={`v45-driver ${selection?.kind === "round" && selection.item.id === round.id ? "selected" : ""}`} style={positions[index]} onClick={() => { setTab(round.state === "complete" ? "done" : round.state === "active" ? "live" : "ready"); setSelection({ kind: "round", item: round }); }} title={round.driverName}>{initials(round.driverName)}</button>)}
           {dispatchMode === "plan" ? (planning?.unplannedDeliveries ?? []).slice(0, 3).map((item, index) => <button key={item.stopId} className="v45-stop" style={{ left: `${70 + index * 7}%`, top: `${31 + index * 12}%` }} onClick={() => setSelection({ kind: "delivery", item })}>{index + 1}</button>) : (projection?.exceptions ?? []).slice(0, 3).map((item, index) => <button key={item.id} className="v45-stop" style={{ left: `${70 + index * 7}%`, top: `${31 + index * 12}%` }} onClick={() => { setTab("action"); setSelection({ kind: "exception", item }); }}>{index + 1}</button>)}
-          <div className="v45-map-mode"><button>Operations <span>▾</span></button></div>
-          <div className="v45-legend"><span><i className="own" />Own</span><span><i className="network" />Network</span><span><i className="traffic" />Traffic impact</span></div>
-          <button className="v45-focus" onClick={() => window.dispatchEvent(new CustomEvent("rounds-map-control", { detail: "focus" }))}><FocusIcon />Focus map</button><div className="v45-zoom"><button onClick={() => window.dispatchEvent(new CustomEvent("rounds-map-control", { detail: "zoom-in" }))}>+</button><button onClick={() => window.dispatchEvent(new CustomEvent("rounds-map-control", { detail: "zoom-out" }))}>−</button></div>
+          <div className="v45-map-mode" onClick={(event) => event.stopPropagation()}>
+            <button type="button" aria-haspopup="menu" aria-expanded={mapMenuOpen} onClick={() => setMapMenuOpen((open) => !open)}>{mapModeCopy[mapMode].label}<span>▾</span></button>
+            <div className={`v45-map-mode-menu ${mapMenuOpen ? "open" : ""}`} role="menu">
+              {(["operations", "satellite", "site", "street"] as OperationsMapMode[]).map((item) => <button key={item} type="button" role="menuitemradio" aria-checked={mapMode === item} className={mapMode === item ? "on" : ""} onClick={() => { setMapMode(item); setMapMenuOpen(false); }}><b>{mapModeCopy[item].label}</b><span>{mapModeCopy[item].description}</span></button>)}
+              <button type="button" className={`v45-map-layer ${weatherLayerOn ? "on" : ""}`} onClick={() => setWeatherLayerOn((on) => !on)}><span><b>Weather layer</b><small>Localized precipitation · only when operationally relevant</small></span><em>{weatherLayerOn ? "AUTO" : "OFF"}</em></button>
+              <button type="button" className={`v45-map-layer ${networkSupplyOn ? "on" : ""}`} onClick={() => setNetworkSupplyOn((on) => !on)}><span><b>Network supply</b><small>Nearby open and busy capacity · generalized before acceptance</small></span><em>{networkSupplyOn ? "ON" : "OFF"}</em></button>
+            </div>
+          </div>
+          {mapHint && <div className="v45-map-hint"><strong>{mapHint.split(" · ")[0]}</strong> · {mapHint.split(" · ").slice(1).join(" · ")}</div>}
+          {mapMode === "site" && <div className="v45-site-inspector"><small>3D SITE · DESTINATION</small><h3>#10432 · The Emporio Place</h3><p>Confirmed building approach and handoff study.</p><div><span>Vehicle access<b>Sukhumvit 24 driveway</b></span><span>Entrance<b>Main lobby</b></span></div><button type="button" onClick={() => window.dispatchEvent(new CustomEvent("rounds-map-control", { detail: "focus" }))}>Focus access</button><button type="button" onClick={() => setMapMode("street")}>Open Street</button></div>}
+          {mapMode === "street" && <div className="v45-street-panel" onClick={(event) => event.stopPropagation()}><section><div><small>STREET IMAGERY</small><h2>See the entrance before the driver arrives.</h2><p>Street imagery is a separate provider from the Rounds Mapbox map. Google Street View is preferred for consistent coverage, with Mapillary as the crowdsourced fallback.</p><article><span><b>Google Street View</b><small>Best coverage and panorama consistency · API key required</small></span><em>Preferred</em></article><article><span><b>Mapillary</b><small>Free crowdsourced imagery · coverage varies by street</small></span><em>Fallback</em></article></div></section><aside><small>DESTINATION STUDY</small><h3>#10432 · The Emporio Place</h3><p>Vehicle access and handoff entrance remain separate operational points.</p><dl><div><dt>Vehicle access</dt><dd>Sukhumvit 24 driveway</dd></div><div><dt>Entrance</dt><dd>Main lobby</dd></div><div><dt>Rounds knowledge</dt><dd>7 successful confirmations</dd></div></dl><button type="button" className="primary" onClick={() => setMapMode("site")}>Back to 3D Site</button><button type="button" onClick={() => setMapMode("operations")}>Back to Operations</button></aside></div>}
+          {networkSupplyOn && <div className="v45-network-notice"><span><i />Network supply</span><b>5 open · 3 busy nearby</b><small>Locations generalized until acceptance</small><button type="button" onClick={() => setNetworkSupplyOn(false)}>Hide</button></div>}
+          <div className="v45-legend"><span><i className="own" />Own</span><span><i className="network" />Network</span><span><i className="external" />External</span><span><i className="traffic" />Traffic impact</span></div>
+          <button className="v45-focus" type="button" onClick={() => window.dispatchEvent(new CustomEvent("rounds-map-control", { detail: "focus" }))}><FocusIcon />Focus map</button>
+          <div className="v45-camera">
+            <button type="button" title="Zoom in" onClick={() => window.dispatchEvent(new CustomEvent("rounds-map-control", { detail: "zoom-in" }))}>+</button>
+            <button type="button" title="Zoom out" onClick={() => window.dispatchEvent(new CustomEvent("rounds-map-control", { detail: "zoom-out" }))}>−</button>
+            <button type="button" title="Rotate left" onClick={() => window.dispatchEvent(new CustomEvent("rounds-map-control", { detail: "rotate-left" }))}>↶</button>
+            <button type="button" className="compass" title="Return North" onClick={() => window.dispatchEvent(new CustomEvent("rounds-map-control", { detail: "north" }))}><span style={{ transform: `rotate(${-mapCamera.bearing}deg)` }}>↑</span><small>{Math.round((mapCamera.bearing % 360 + 360) % 360)}°</small></button>
+            <button type="button" title="Rotate right" onClick={() => window.dispatchEvent(new CustomEvent("rounds-map-control", { detail: "rotate-right" }))}>↷</button>
+            <button type="button" className={mapCamera.pitch >= 20 ? "on" : ""} title="Toggle 2D / 3D" onClick={() => window.dispatchEvent(new CustomEvent("rounds-map-control", { detail: "toggle-pitch" }))}>{mapCamera.pitch >= 20 ? "2D" : "3D"}</button>
+          </div>
         </div>
 
         <aside className={`v45-drawer ${selection ? "open" : ""}`} aria-hidden={!selection}>
