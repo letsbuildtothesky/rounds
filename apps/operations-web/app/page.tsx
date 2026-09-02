@@ -16,6 +16,7 @@ import { DispatchPanel } from "./dispatch-panel";
 import { HistoryPanel } from "./history-panel";
 import { CommunicationsPanel } from "./communications-panel";
 import { ActionPanel } from "./action-panel";
+import { OperationsWorkstation } from "./operations-workstation";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const supabasePublishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? "";
@@ -186,6 +187,21 @@ export default function OperationsPage() {
   if (booting) return <LoadingScreen label="Opening Operations" />;
   if (!authSession) return <LoginScreen supabase={supabase} error={error} setError={setError} />;
   if (loadingProfile) return <LoadingScreen label="Checking merchant access" />;
+
+  if (selectedTenant && section === "action") {
+    return <OperationsWorkstation
+      accessToken={authSession.access_token}
+      tenant={selectedTenant}
+      userName={operationsSession?.user.displayName ?? authSession.user.email ?? "Operations"}
+      onAddDelivery={() => setSection("deliveries")}
+      onHistory={() => setSection("history")}
+      onCommunications={(threadId) => {
+        if (threadId) setCommunicationThreadId(threadId);
+        setSection("communications");
+      }}
+      onSignOut={() => void signOut()}
+    />;
+  }
 
   return (
     <div className="operations-shell">
