@@ -7,6 +7,8 @@ import '../driver/driver_session.dart';
 import '../navigation/google_navigation_surface.dart';
 import 'components/navigation_road_controls.dart';
 import 'components/navigation_stop_dock.dart';
+import 'components/delivery_issue_flow.dart';
+import 'components/operations_contact_flow.dart';
 import 'components/rounds_action_drawer.dart';
 import 'proof_of_delivery_screen.dart';
 
@@ -14,6 +16,7 @@ class NavigationHarnessScreen extends StatefulWidget {
   const NavigationHarnessScreen({
     required this.controller,
     required this.enableNativeNavigation,
+    required this.round,
     required this.stop,
     required this.stopCount,
     super.key,
@@ -21,6 +24,7 @@ class NavigationHarnessScreen extends StatefulWidget {
 
   final HarnessAppController controller;
   final bool enableNativeNavigation;
+  final DriverRoundModel round;
   final DriverRoundStopModel stop;
   final int stopCount;
 
@@ -186,15 +190,6 @@ class _NavigationHarnessScreenState extends State<NavigationHarnessScreen> {
       ? 'Pending sync — not arrived'
       : 'I’m at Stop ${widget.stop.sequence}';
 
-  void _onMenuSelected(String action) {
-    final message = action == 'contact'
-        ? widget.controller.strings.contactOperations
-        : widget.controller.strings.reportException;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
-  }
-
   Future<void> _openNavigationActions() async {
     final action = await showRoundsActionDrawer(
       context,
@@ -213,7 +208,23 @@ class _NavigationHarnessScreenState extends State<NavigationHarnessScreen> {
         ),
       ],
     );
-    if (action != null && mounted) _onMenuSelected(action);
+    if (action != null && mounted) await _onMenuSelected(action);
+  }
+
+  Future<void> _onMenuSelected(String action) async {
+    if (action == 'contact') {
+      await openOperationsContactFlow(
+        context,
+        round: widget.round,
+        stop: widget.stop,
+      );
+    } else {
+      await openDeliveryIssueFlow(
+        context,
+        round: widget.round,
+        stop: widget.stop,
+      );
+    }
   }
 
   Future<void> _confirmArrival() async {

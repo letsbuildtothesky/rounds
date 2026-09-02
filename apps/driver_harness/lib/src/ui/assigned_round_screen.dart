@@ -158,6 +158,7 @@ class _ActiveRoundOverview extends StatelessWidget {
             ? NavigationHarnessScreen(
                 controller: controller,
                 enableNativeNavigation: enableNativeNavigation,
+                round: round,
                 stop: firstStop,
                 stopCount: round.stops.length,
               )

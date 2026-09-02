@@ -39,8 +39,44 @@ void main() {
 
     await tester.tap(find.byKey(const Key('rounds-action-contact')));
     await tester.pumpAndSettle();
-    expect(drawer, findsNothing);
+    expect(drawer, findsOneWidget);
     expect(find.text('Contact Operations'), findsOneWidget);
+    expect(find.text('Call UrbanFlowers Dispatch'), findsOneWidget);
+    expect(find.text('Message UrbanFlowers Dispatch'), findsOneWidget);
+  });
+
+  testWidgets('report exception opens a structured bottom drawer', (
+    tester,
+  ) async {
+    await _pumpApp(tester);
+    await tester.tap(find.byKey(const Key('start-navigation')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('navigation-more')));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('rounds-action-exception')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('delivery-issue-drawer')), findsOneWidget);
+    expect(find.text('Report exception'), findsOneWidget);
+    expect(find.text('Recipient unavailable'), findsOneWidget);
+    expect(find.text('Address or entrance problem'), findsOneWidget);
+    expect(find.text('Cannot complete delivery'), findsOneWidget);
+    expect(find.text('Emergency or safety issue'), findsOneWidget);
+
+    final continueButton = tester.widget<FilledButton>(
+      find.byKey(const Key('continue-delivery-issue')),
+    );
+    expect(continueButton.onPressed, isNull);
+
+    await tester.tap(
+      find.byKey(const Key('delivery-issue-recipient-unavailable')),
+    );
+    await tester.pump();
+    final enabledButton = tester.widget<FilledButton>(
+      find.byKey(const Key('continue-delivery-issue')),
+    );
+    expect(enabledButton.onPressed, isNotNull);
   });
 }
 
