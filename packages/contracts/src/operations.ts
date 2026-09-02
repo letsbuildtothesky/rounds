@@ -126,7 +126,12 @@ export type DeliveryReturnConfirmedPayload = {
   returnedAt: string;
 };
 export type DeliveryReturnConfirmedEvent = DomainEventEnvelope<"operations.delivery_return_confirmed", DeliveryReturnConfirmedPayload>;
-export type ConfirmDeliveryReturnState = DeliveryReturnConfirmedPayload & { stopState: "cancelled"; deliveryState: "returned" };
+export type ConfirmDeliveryReturnState = DeliveryReturnConfirmedPayload & {
+  stopState: "cancelled";
+  deliveryState: "returned";
+  roundState: "active" | "complete";
+  roundVersion: number;
+};
 export type ConfirmDeliveryReturnResult = CommandResult<ConfirmDeliveryReturnState, DeliveryReturnConfirmedEvent>;
 
 export type OperationsActionProjection = {

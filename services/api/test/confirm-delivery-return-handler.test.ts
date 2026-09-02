@@ -28,6 +28,8 @@ const result: ConfirmDeliveryReturnResult = {
     returnedAt: "2026-09-02T07:00:00.000Z",
     stopState: "cancelled",
     deliveryState: "returned",
+    roundState: "complete",
+    roundVersion: 5,
   },
   events: [],
 };

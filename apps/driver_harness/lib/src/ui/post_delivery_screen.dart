@@ -460,201 +460,217 @@ class RoundCompleteScreen extends StatelessWidget {
   final void Function(BuildContext context) onContinue;
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    backgroundColor: Colors.white,
-    body: SafeArea(
-      child: MediaQuery.withNoTextScaling(
-        child: Column(
-          children: [
-            Container(
-              key: const Key('i01-topbar'),
-              height: DriverI01Metrics.topBarHeight,
-              padding: const EdgeInsets.symmetric(
-                horizontal: DriverI01Metrics.topBarPaddingHorizontal,
-              ),
-              decoration: const BoxDecoration(
-                border: Border(bottom: BorderSide(color: RoundsColors.line)),
-              ),
-              alignment: Alignment.centerLeft,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    'Rounds',
-                    style: TextStyle(
-                      color: RoundsColors.ink,
-                      fontSize: DriverI01Metrics.brandSize,
-                      height: 1,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -1,
-                    ),
-                  ),
-                  Container(
-                    width: 6,
-                    height: 6,
-                    margin: const EdgeInsets.only(left: 3, bottom: 2),
-                    decoration: const BoxDecoration(
-                      color: RoundsColors.orange,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              key: const Key('i01-hero'),
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(
-                DriverI01Metrics.heroPaddingHorizontal,
-                DriverI01Metrics.heroPaddingTop,
-                DriverI01Metrics.heroPaddingHorizontal,
-                DriverI01Metrics.heroPaddingBottom,
-              ),
-              decoration: const BoxDecoration(
-                border: Border(bottom: BorderSide(color: RoundsColors.line)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Row(
-                    children: [
-                      Icon(Icons.check, size: 22, color: RoundsColors.green),
-                      SizedBox(width: DriverI01Metrics.heroStateGap),
-                      Text(
-                        'ROUND COMPLETE',
-                        style: TextStyle(
-                          color: RoundsColors.green,
-                          fontSize: DriverI01Metrics.heroStateSize,
-                          height: 1,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 1.08,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: DriverI01Metrics.heroStateBottom),
-                  Text(
-                    '${round.stops.length} of ${round.stops.length} delivered',
-                    key: const Key('i01-title'),
-                    style: const TextStyle(
-                      color: RoundsColors.ink,
-                      fontSize: DriverI01Metrics.heroTitleSize,
-                      height: DriverI01Metrics.heroTitleHeight,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -2.5,
-                    ),
-                  ),
-                  const SizedBox(height: DriverI01Metrics.heroSubtitleTop),
-                  const Text(
-                    'All deliveries committed',
-                    style: TextStyle(
-                      color: RoundsColors.inkSecondary,
-                      fontSize: DriverI01Metrics.heroSubtitleSize,
-                      height: 1.25,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -.45,
-                    ),
-                  ),
-                  const SizedBox(height: DriverI01Metrics.heroMetaTop),
-                  Text(
-                    '${round.tenantName} · ${round.reference}',
-                    style: const TextStyle(
-                      color: RoundsColors.muted,
-                      fontSize: DriverI01Metrics.heroMetaSize,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: Container(
-                key: const Key('i01-continuation'),
-                width: double.infinity,
-                padding: const EdgeInsets.fromLTRB(
-                  DriverI01Metrics.continuationPaddingHorizontal,
-                  DriverI01Metrics.continuationPaddingTop,
-                  DriverI01Metrics.continuationPaddingHorizontal,
-                  20,
+  Widget build(BuildContext context) {
+    final delivered = round.stops
+        .where((stop) => stop.state == 'completed')
+        .length;
+    final closed = round.stops
+        .where((stop) => stop.state == 'cancelled')
+        .length;
+    final resolved = delivered + closed;
+    final hasClosedStops = closed > 0;
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: MediaQuery.withNoTextScaling(
+          child: Column(
+            children: [
+              Container(
+                key: const Key('i01-topbar'),
+                height: DriverI01Metrics.topBarHeight,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: DriverI01Metrics.topBarPaddingHorizontal,
                 ),
-                child: const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                decoration: const BoxDecoration(
+                  border: Border(bottom: BorderSide(color: RoundsColors.line)),
+                ),
+                alignment: Alignment.centerLeft,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      'TEAM SHIFT',
-                      style: TextStyle(
-                        color: RoundsColors.muted,
-                        fontSize: DriverI01Metrics.continuationSectionSize,
-                        height: 1,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 1.03,
-                      ),
-                    ),
-                    SizedBox(
-                      height: DriverI01Metrics.continuationSectionBottom,
-                    ),
-                    Text(
-                      'Shift continues',
-                      style: TextStyle(
-                        color: RoundsColors.green,
-                        fontSize: DriverI01Metrics.continuationStateSize,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    SizedBox(height: DriverI01Metrics.continuationStateBottom),
-                    Text(
-                      'Ready for next assignment',
+                    const Text(
+                      'Rounds',
                       style: TextStyle(
                         color: RoundsColors.ink,
-                        fontSize: DriverI01Metrics.continuationMessageSize,
-                        height: 1.08,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -1.5,
+                        fontSize: DriverI01Metrics.brandSize,
+                        height: 1,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -1,
+                      ),
+                    ),
+                    Container(
+                      width: 6,
+                      height: 6,
+                      margin: const EdgeInsets.only(left: 3, bottom: 2),
+                      decoration: const BoxDecoration(
+                        color: RoundsColors.orange,
+                        shape: BoxShape.circle,
                       ),
                     ),
                   ],
                 ),
               ),
-            ),
-            Container(
-              key: const Key('i01-footer'),
-              padding: const EdgeInsets.fromLTRB(
-                DriverI01Metrics.footerPaddingHorizontal,
-                DriverI01Metrics.footerPaddingTop,
-                DriverI01Metrics.footerPaddingHorizontal,
-                DriverI01Metrics.footerPaddingBottom,
-              ),
-              decoration: const BoxDecoration(
-                border: Border(top: BorderSide(color: RoundsColors.line)),
-              ),
-              child: SizedBox(
-                key: const Key('i01-continue'),
+              Container(
+                key: const Key('i01-hero'),
                 width: double.infinity,
-                height: DriverI01Metrics.primaryHeight,
-                child: FilledButton(
-                  onPressed: () => onContinue(context),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: RoundsColors.ink,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(
-                        DriverI01Metrics.primaryRadius,
+                padding: const EdgeInsets.fromLTRB(
+                  DriverI01Metrics.heroPaddingHorizontal,
+                  DriverI01Metrics.heroPaddingTop,
+                  DriverI01Metrics.heroPaddingHorizontal,
+                  DriverI01Metrics.heroPaddingBottom,
+                ),
+                decoration: const BoxDecoration(
+                  border: Border(bottom: BorderSide(color: RoundsColors.line)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(Icons.check, size: 22, color: RoundsColors.green),
+                        SizedBox(width: DriverI01Metrics.heroStateGap),
+                        Text(
+                          'ROUND COMPLETE',
+                          style: TextStyle(
+                            color: RoundsColors.green,
+                            fontSize: DriverI01Metrics.heroStateSize,
+                            height: 1,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1.08,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: DriverI01Metrics.heroStateBottom),
+                    Text(
+                      hasClosedStops
+                          ? '$resolved of ${round.stops.length} resolved'
+                          : '$delivered of ${round.stops.length} delivered',
+                      key: const Key('i01-title'),
+                      style: const TextStyle(
+                        color: RoundsColors.ink,
+                        fontSize: DriverI01Metrics.heroTitleSize,
+                        height: DriverI01Metrics.heroTitleHeight,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -2.5,
                       ),
                     ),
+                    const SizedBox(height: DriverI01Metrics.heroSubtitleTop),
+                    Text(
+                      hasClosedStops
+                          ? '$delivered delivered · $closed formally closed'
+                          : 'All deliveries committed',
+                      style: const TextStyle(
+                        color: RoundsColors.inkSecondary,
+                        fontSize: DriverI01Metrics.heroSubtitleSize,
+                        height: 1.25,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -.45,
+                      ),
+                    ),
+                    const SizedBox(height: DriverI01Metrics.heroMetaTop),
+                    Text(
+                      '${round.tenantName} · ${round.reference}',
+                      style: const TextStyle(
+                        color: RoundsColors.muted,
+                        fontSize: DriverI01Metrics.heroMetaSize,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Container(
+                  key: const Key('i01-continuation'),
+                  width: double.infinity,
+                  padding: const EdgeInsets.fromLTRB(
+                    DriverI01Metrics.continuationPaddingHorizontal,
+                    DriverI01Metrics.continuationPaddingTop,
+                    DriverI01Metrics.continuationPaddingHorizontal,
+                    20,
                   ),
-                  child: const Text(
-                    'Continue shift',
-                    style: TextStyle(
-                      fontSize: DriverI01Metrics.primarySize,
-                      fontWeight: FontWeight.w800,
+                  child: const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'TEAM SHIFT',
+                        style: TextStyle(
+                          color: RoundsColors.muted,
+                          fontSize: DriverI01Metrics.continuationSectionSize,
+                          height: 1,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1.03,
+                        ),
+                      ),
+                      SizedBox(
+                        height: DriverI01Metrics.continuationSectionBottom,
+                      ),
+                      Text(
+                        'Shift continues',
+                        style: TextStyle(
+                          color: RoundsColors.green,
+                          fontSize: DriverI01Metrics.continuationStateSize,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      SizedBox(
+                        height: DriverI01Metrics.continuationStateBottom,
+                      ),
+                      Text(
+                        'Ready for next assignment',
+                        style: TextStyle(
+                          color: RoundsColors.ink,
+                          fontSize: DriverI01Metrics.continuationMessageSize,
+                          height: 1.08,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -1.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Container(
+                key: const Key('i01-footer'),
+                padding: const EdgeInsets.fromLTRB(
+                  DriverI01Metrics.footerPaddingHorizontal,
+                  DriverI01Metrics.footerPaddingTop,
+                  DriverI01Metrics.footerPaddingHorizontal,
+                  DriverI01Metrics.footerPaddingBottom,
+                ),
+                decoration: const BoxDecoration(
+                  border: Border(top: BorderSide(color: RoundsColors.line)),
+                ),
+                child: SizedBox(
+                  key: const Key('i01-continue'),
+                  width: double.infinity,
+                  height: DriverI01Metrics.primaryHeight,
+                  child: FilledButton(
+                    onPressed: () => onContinue(context),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: RoundsColors.ink,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                          DriverI01Metrics.primaryRadius,
+                        ),
+                      ),
+                    ),
+                    child: const Text(
+                      'Continue shift',
+                      style: TextStyle(
+                        fontSize: DriverI01Metrics.primarySize,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }

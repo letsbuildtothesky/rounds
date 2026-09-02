@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(14);
+select plan(15);
 
 select has_function('public', 'confirm_delivery_return_command', array['jsonb', 'uuid'], 'Delivery return confirmation command exists');
 select ok(has_function_privilege('service_role', 'public.confirm_delivery_return_command(jsonb,uuid)', 'EXECUTE'), 'API service can confirm delivery returns');
@@ -67,6 +67,7 @@ select is((select status::text from public.delivery_exceptions where id='8100000
 select ok((select resolved_at is not null from public.delivery_exceptions where id='81000000-0000-4000-8000-000000000070'), 'return resolution is timestamped');
 select is((select state::text from public.delivery_stops where id='81000000-0000-4000-8000-000000000040'), 'cancelled', 'delivery Stop closes without POD');
 select is((select state::text from public.deliveries where id='81000000-0000-4000-8000-000000000030'), 'returned', 'delivery records returned physical truth');
+select is((select state::text from public.rounds where id='81000000-0000-4000-8000-000000000060'), 'complete', 'Round completes when its final Stop is formally closed');
 select is((select count(*) from public.audit_events where action='operations.delivery_return_confirmed' and aggregate_id='81000000-0000-4000-8000-000000000040'), 1::bigint, 'return is audited');
 select is((select count(*) from public.domain_event_outbox where event_name='operations.delivery_return_confirmed' and aggregate_id='81000000-0000-4000-8000-000000000040'), 1::bigint, 'return event is staged');
 select is((public.confirm_delivery_return_command((select body from delivery_return_command), '81000000-0000-4000-8000-000000000002')->>'deduplicated'), 'true', 'return retry is deduplicated');

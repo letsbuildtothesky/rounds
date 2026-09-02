@@ -97,11 +97,16 @@ void main() {
   ) async {
     await _setViewport(tester);
     var continued = false;
+    final completedRound = _roundWithStops([
+      _stop1,
+      _stop2.copyWithState('completed'),
+      _stop3.copyWithState('completed'),
+    ]);
     await tester.pumpWidget(
       MaterialApp(
         theme: buildRoundsDriverTheme(),
         home: RoundCompleteScreen(
-          round: _activeRound,
+          round: completedRound,
           onContinue: (_) => continued = true,
         ),
       ),
@@ -125,6 +130,27 @@ void main() {
 
     await tester.tap(find.byKey(const Key('i01-continue')));
     expect(continued, isTrue);
+  });
+
+  testWidgets('I01 reports terminal returned or cancelled work truthfully', (
+    tester,
+  ) async {
+    await _setViewport(tester);
+    final resolvedRound = _roundWithStops([
+      _stop1,
+      _stop2.copyWithState('cancelled'),
+      _stop3.copyWithState('cancelled'),
+    ]);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildRoundsDriverTheme(),
+        home: RoundCompleteScreen(round: resolvedRound, onContinue: (_) {}),
+      ),
+    );
+
+    expect(find.text('3 of 3 resolved'), findsOneWidget);
+    expect(find.text('1 delivered · 2 formally closed'), findsOneWidget);
+    expect(find.text('3 of 3 delivered'), findsNothing);
   });
 }
 

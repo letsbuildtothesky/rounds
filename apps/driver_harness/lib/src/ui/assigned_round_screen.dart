@@ -11,6 +11,7 @@ import 'components/rounds_action_drawer.dart';
 import 'debug_pod_acceptance_screen.dart';
 import 'navigation_harness_screen.dart';
 import 'pickup_confirmation_screen.dart';
+import 'post_delivery_screen.dart';
 
 class AssignedRoundScreen extends StatelessWidget {
   const AssignedRoundScreen({
@@ -70,6 +71,12 @@ class AssignedRoundScreen extends StatelessWidget {
     final round =
         session?.currentRound ??
         (controller.driverConfigured ? null : demoRound);
+    if (round != null && nextOperationalStop(round) == null) {
+      return RoundCompleteScreen(
+        round: round,
+        onContinue: (_) => controller.refreshDriverSession(),
+      );
+    }
     return Scaffold(
       backgroundColor: RoundsColors.canvas,
       body: SafeArea(
@@ -109,7 +116,7 @@ class _ActiveRoundOverview extends StatelessWidget {
     final dockHeight = compact
         ? DriverE01Metrics.compactDockHeight
         : DriverE01Metrics.dockHeight;
-    final firstStop = round.stops.first;
+    final firstStop = nextOperationalStop(round)!;
     return MediaQuery.withNoTextScaling(
       child: Stack(
         children: [
