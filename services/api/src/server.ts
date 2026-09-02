@@ -16,6 +16,7 @@ import { operationsActionHandler } from "./operations-action-handler.js";
 import { operationsDeliveriesHandler } from "./operations-deliveries-handler.js";
 import { operationsRoundDetailHandler } from "./operations-round-detail-handler.js";
 import { resolveOperationsExceptionHandler } from "./resolve-operations-exception-handler.js";
+import { confirmDeliveryReturnHandler } from "./confirm-delivery-return-handler.js";
 import { planRoundHandler } from "./plan-round-handler.js";
 import { reportPickupProblemHandler } from "./report-pickup-problem-handler.js";
 import { preparePodMediaHandler } from "./prepare-pod-media-handler.js";
@@ -123,6 +124,15 @@ const server = createServer(async (request, response) => {
         identity: gateway, action: gateway, uuid: () => crypto.randomUUID(), now: () => new Date(),
       });
       sendNode(response, addOperationsCors(resolveResponse, request.headers.origin));
+      return;
+    }
+    const operationsDeliveryReturnMatch = request.url?.match(/^\/v1\/operations\/exceptions\/([0-9a-f-]+)\/confirm-return$/i);
+    if (request.method === "POST" && operationsDeliveryReturnMatch) {
+      const webRequest = await toWebRequest(request);
+      const returnResponse = await confirmDeliveryReturnHandler(webRequest, operationsDeliveryReturnMatch[1]!, {
+        identity: gateway, action: gateway, uuid: () => crypto.randomUUID(), now: () => new Date(),
+      });
+      sendNode(response, addOperationsCors(returnResponse, request.headers.origin));
       return;
     }
     if (request.method === "GET" && request.url === "/v1/operations/deliveries") {

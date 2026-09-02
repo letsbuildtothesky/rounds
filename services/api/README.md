@@ -9,6 +9,7 @@ Implemented now:
 - `GET /v1/operations/deliveries` tenant-scoped canonical delivery list and detail projection;
 - `GET /v1/operations/rounds/:roundId` tenant-scoped ordered Round, Stop, custody, manifest, exception and communication truth;
 - `POST /v1/operations/exceptions/:exceptionId/resolve` audited pickup-correction release back to assigned work;
+- `POST /v1/operations/exceptions/:exceptionId/confirm-return` audited confirmation that a delivery-stage damaged item is physically back with the merchant;
 - `GET /v1/operations/planning` purpose-limited unplanned delivery and Team-driver projection;
 - `POST /v1/rounds` manual ordered Team Round approval;
 - `GET /v1/driver/session` authenticated assigned/current Round projection;

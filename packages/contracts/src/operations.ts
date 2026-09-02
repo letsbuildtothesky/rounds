@@ -111,6 +111,24 @@ export type OperationsExceptionResolvedEvent = DomainEventEnvelope<"operations.e
 export type ResolveOperationsExceptionState = OperationsExceptionResolvedPayload & { stopState: "assigned"; deliveryState: "assigned" };
 export type ResolveOperationsExceptionResult = CommandResult<ResolveOperationsExceptionState, OperationsExceptionResolvedEvent>;
 
+export type ConfirmDeliveryReturnPayload = {
+  exceptionId: string;
+  note: string;
+};
+
+export type ConfirmDeliveryReturnCommand = CommandEnvelope<"operations.confirm_delivery_return", ConfirmDeliveryReturnPayload>;
+export type DeliveryReturnConfirmedPayload = {
+  exceptionId: string;
+  stopId: string;
+  deliveryId: string;
+  roundId: string;
+  resolution: "delivery_returned";
+  returnedAt: string;
+};
+export type DeliveryReturnConfirmedEvent = DomainEventEnvelope<"operations.delivery_return_confirmed", DeliveryReturnConfirmedPayload>;
+export type ConfirmDeliveryReturnState = DeliveryReturnConfirmedPayload & { stopState: "cancelled"; deliveryState: "returned" };
+export type ConfirmDeliveryReturnResult = CommandResult<ConfirmDeliveryReturnState, DeliveryReturnConfirmedEvent>;
+
 export type OperationsActionProjection = {
   tenantId: string;
   observedAt: string;

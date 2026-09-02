@@ -20,7 +20,13 @@ import type {
   ReportPickupProblemCommand,
   ReportPickupProblemPayload,
 } from "./round.js";
-import { operationsExceptionResolutions, type ResolveOperationsExceptionCommand, type ResolveOperationsExceptionPayload } from "./operations.js";
+import {
+  operationsExceptionResolutions,
+  type ConfirmDeliveryReturnCommand,
+  type ConfirmDeliveryReturnPayload,
+  type ResolveOperationsExceptionCommand,
+  type ResolveOperationsExceptionPayload,
+} from "./operations.js";
 
 export class ContractError extends Error {}
 
@@ -41,6 +47,24 @@ export function validateResolveOperationsExceptionCommand(command: ResolveOperat
   if (command.idempotencyKey.length > 200) throw new ContractError("idempotencyKey exceeds 200 characters");
   if (!Number.isInteger(command.expectedVersion) || command.expectedVersion < 1) throw new ContractError("ResolveOperationsException expectedVersion must be a positive integer");
   validateResolveOperationsExceptionPayload(command.payload);
+}
+
+export function validateConfirmDeliveryReturnPayload(payload: ConfirmDeliveryReturnPayload): void {
+  assertUuid(payload.exceptionId, "exceptionId");
+  assertNonEmpty(payload.note, "note");
+  if (payload.note.trim().length > 500) throw new ContractError("note exceeds 500 characters");
+}
+
+export function validateConfirmDeliveryReturnCommand(command: ConfirmDeliveryReturnCommand): void {
+  if (command.schemaVersion !== 1 || command.commandType !== "operations.confirm_delivery_return") throw new ContractError("unsupported ConfirmDeliveryReturn command envelope");
+  assertUuid(command.commandId, "commandId");
+  assertUuid(command.traceId, "traceId");
+  assertUuid(command.tenantId, "tenantId");
+  assertUuid(command.aggregateId, "aggregateId");
+  assertNonEmpty(command.idempotencyKey, "idempotencyKey");
+  if (command.idempotencyKey.length > 200) throw new ContractError("idempotencyKey exceeds 200 characters");
+  if (!Number.isInteger(command.expectedVersion) || command.expectedVersion < 1) throw new ContractError("ConfirmDeliveryReturn expectedVersion must be a positive integer");
+  validateConfirmDeliveryReturnPayload(command.payload);
 }
 
 export function validateSendDriverMessagePayload(payload: SendDriverMessagePayload): void {

@@ -18,6 +18,8 @@ import type {
   PodGateway,
 } from "./types.js";
 import type {
+  ConfirmDeliveryReturnCommand,
+  ConfirmDeliveryReturnResult,
   CreateDeliveryCommand,
   CreateDeliveryResult,
   ConfirmPickupCommand,
@@ -1212,6 +1214,15 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     });
     if (error) throw error;
     return data as ResolveOperationsExceptionResult;
+  }
+
+  async confirmDeliveryReturn(command: ConfirmDeliveryReturnCommand, actor: ActorContext): Promise<ConfirmDeliveryReturnResult> {
+    const { data, error } = await this.admin.rpc("confirm_delivery_return_command", {
+      p_command: command,
+      p_actor_person_id: actor.personId,
+    });
+    if (error) throw error;
+    return data as ConfirmDeliveryReturnResult;
   }
 
   private async driverActorPersonId(identity: AuthenticatedIdentity): Promise<string | null> {

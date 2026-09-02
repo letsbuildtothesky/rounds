@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type {
+  ConfirmDeliveryReturnCommand,
+  ConfirmDeliveryReturnResult,
   DriverSession,
   OperationsActionProjection,
   OperationsSession,
@@ -65,6 +67,9 @@ class FakeGateway implements IdentityGateway, OperationsActionGateway {
     return projection;
   }
   async resolveOperationsException(_command: ResolveOperationsExceptionCommand): Promise<ResolveOperationsExceptionResult> {
+    return { status: "rejected", error: { code: "INVALID_STATE", message: "unused" } };
+  }
+  async confirmDeliveryReturn(_command: ConfirmDeliveryReturnCommand): Promise<ConfirmDeliveryReturnResult> {
     return { status: "rejected", error: { code: "INVALID_STATE", message: "unused" } };
   }
 }

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import type { DriverSession, OperationsActionProjection, OperationsSession, ResolveOperationsExceptionCommand, ResolveOperationsExceptionResult } from "@rounds/contracts";
+import type { ConfirmDeliveryReturnCommand, ConfirmDeliveryReturnResult, DriverSession, OperationsActionProjection, OperationsSession, ResolveOperationsExceptionCommand, ResolveOperationsExceptionResult } from "@rounds/contracts";
 import { resolveOperationsExceptionHandler } from "../src/resolve-operations-exception-handler.js";
 import type { ActorContext, AuthenticatedIdentity, IdentityGateway, OperationsActionGateway } from "../src/types.js";
 
@@ -19,6 +19,7 @@ class FakeGateway implements IdentityGateway, OperationsActionGateway {
   async getDriverSession(): Promise<DriverSession | null> { return null; }
   async getOperationsAction(): Promise<OperationsActionProjection> { return { tenantId, observedAt: "", rounds: [], exceptions: [] }; }
   async resolveOperationsException(command: ResolveOperationsExceptionCommand): Promise<ResolveOperationsExceptionResult> { this.command = command; return result; }
+  async confirmDeliveryReturn(_command: ConfirmDeliveryReturnCommand): Promise<ConfirmDeliveryReturnResult> { return { status: "rejected", error: { code: "INVALID_STATE", message: "unused" } }; }
 }
 
 function request(body: unknown, headers: Record<string,string> = {}): Request { return new Request(`http://test/v1/operations/exceptions/${exceptionId}/resolve`, { method: "POST", headers: { "content-type": "application/json", ...headers }, body: JSON.stringify(body) }); }
