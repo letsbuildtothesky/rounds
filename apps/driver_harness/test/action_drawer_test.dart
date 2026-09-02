@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rounds_driver_harness/src/app/harness_app_controller.dart';
 import 'package:rounds_driver_harness/src/app/rounds_harness_app.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
