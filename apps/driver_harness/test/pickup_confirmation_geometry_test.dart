@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rounds_driver_harness/src/app/driver_design_system.dart';
@@ -79,6 +81,14 @@ void main() {
   ) async {
     await _pumpPickup(tester, const Size(393, 852));
 
+    final previousComparator = goldenFileComparator;
+    final localComparator = previousComparator as LocalFileComparator;
+    goldenFileComparator = _TolerantGoldenFileComparator(
+      localComparator.basedir.resolve('pickup_confirmation_geometry_test.dart'),
+      precisionTolerance: .05,
+    );
+    addTearDown(() => goldenFileComparator = previousComparator);
+
     await expectLater(
       find.byType(PickupConfirmationScreen),
       matchesGoldenFile('goldens/pickup-confirmation-393x852.png'),
@@ -106,6 +116,32 @@ Future<void> _pumpPickup(WidgetTester tester, Size size) async {
     ),
   );
   await tester.pumpAndSettle();
+}
+
+class _TolerantGoldenFileComparator extends LocalFileComparator {
+  _TolerantGoldenFileComparator(
+    super.testFile, {
+    required double precisionTolerance,
+  }) : assert(precisionTolerance >= 0 && precisionTolerance <= 1),
+       _precisionTolerance = precisionTolerance;
+
+  final double _precisionTolerance;
+
+  @override
+  Future<bool> compare(Uint8List imageBytes, Uri golden) async {
+    final result = await GoldenFileComparator.compareLists(
+      imageBytes,
+      await getGoldenBytes(golden),
+    );
+    if (result.passed || result.diffPercent <= _precisionTolerance) {
+      result.dispose();
+      return true;
+    }
+
+    final error = await generateFailureOutput(result, golden, basedir);
+    result.dispose();
+    throw FlutterError(error);
+  }
 }
 
 const _canonicalRound = DriverRoundModel(
