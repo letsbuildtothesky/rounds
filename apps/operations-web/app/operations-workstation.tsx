@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import type {
   OperationsActionException,
   OperationsActionProjection,
@@ -24,6 +24,9 @@ type Props = {
   tenant: OperationsTenant;
   userName: string;
   demoMode?: boolean;
+  deliveryIntake?: ReactNode;
+  deliveryIntakeOpen?: boolean;
+  onCloseDeliveryIntake?: () => void;
   onAddDelivery: () => void;
   onHistory: () => void;
   onCommunications: (threadId?: string) => void;
@@ -91,7 +94,7 @@ function nextRoundReference(deliveries: UnplannedDeliverySummary[]): string {
   return `ROUND-${serviceDate.replaceAll("-", "")}-${time}`;
 }
 
-export function OperationsWorkstation({ accessToken, tenant, userName, demoMode = false, onAddDelivery, onHistory, onCommunications, onSignOut }: Props) {
+export function OperationsWorkstation({ accessToken, tenant, userName, demoMode = false, deliveryIntake, deliveryIntakeOpen = false, onCloseDeliveryIntake, onAddDelivery, onHistory, onCommunications, onSignOut }: Props) {
   const [projection, setProjection] = useState<OperationsActionProjection | null>(null);
   const [planning, setPlanning] = useState<OperationsPlanningProjection | null>(null);
   const [planningDate, setPlanningDate] = useState(() => new Intl.DateTimeFormat("en-CA", { timeZone: tenant.timezone }).format(new Date()));
@@ -265,7 +268,7 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
         <button type="button" onClick={onHistory}>History</button>
         <button type="button" disabled title="Settings workspace is not connected yet">Settings</button>
       </nav>
-      <button className="v45-section-trigger" type="button" aria-haspopup="dialog" aria-expanded={sectionMenuOpen} onClick={() => setSectionMenuOpen(true)}><span>Dispatch</span><OperationsMenuIcon /></button>
+      <button className="v45-section-trigger" type="button" aria-haspopup="dialog" aria-expanded={sectionMenuOpen} onClick={() => setSectionMenuOpen(true)}><span>{deliveryIntakeOpen ? "Deliveries" : "Dispatch"}</span><OperationsMenuIcon /></button>
       <div className="v45-spacer" />
       <button className="v45-network" type="button" disabled title="Network dispatch is outside the connected Own-Team slice"><i /><span>Own Team</span><ChevronIcon /></button>
       <button className="v45-util" type="button" title="Driver communications" onClick={() => onCommunications()}><MessageIcon />{buckets.action.length > 0 && <b>{buckets.action.length}</b>}</button>
@@ -277,10 +280,11 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
 
     <OperationsSectionSheet
       open={sectionMenuOpen}
-      current="action"
+      current={deliveryIntakeOpen ? "deliveries" : "action"}
       onClose={() => setSectionMenuOpen(false)}
       onSelect={(section: OperationsSectionKey) => {
-        if (section === "deliveries") onAddDelivery();
+        if (section === "action") onCloseDeliveryIntake?.();
+        else if (section === "deliveries") onAddDelivery();
         else if (section === "communications") onCommunications();
         else if (section === "history") onHistory();
       }}
@@ -352,6 +356,14 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
           <div className="v45-drawer-body">{selection?.kind === "exception" ? <ExceptionDrawer item={selection.item} timezone={tenant.timezone} onCommunications={onCommunications} /> : selection?.kind === "round" ? <RoundDrawer item={selection.item} onCommunications={onCommunications} /> : selection?.kind === "delivery" ? <PlanningDrawer item={selection.item} timezone={tenant.timezone} /> : null}</div>
         </aside>
       </section>
+
+      {deliveryIntakeOpen && <>
+        <button className="v45-intake-scrim" type="button" aria-label="Close delivery intake" onClick={onCloseDeliveryIntake} />
+        <aside className="v45-intake-drawer" role="dialog" aria-modal="true" aria-labelledby="v45-intake-title">
+          <header><div><small>+ DELIVERIES</small><h2 id="v45-intake-title">Add delivery</h2><p>Create one canonical delivery for the unplanned pool.</p></div><button type="button" onClick={onCloseDeliveryIntake} aria-label="Close delivery intake"><CloseIcon /></button></header>
+          <div className="v45-intake-body">{deliveryIntake}</div>
+        </aside>
+      </>}
     </div>
   </main>;
 }
