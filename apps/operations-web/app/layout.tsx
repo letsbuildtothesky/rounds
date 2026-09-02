@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import "mapbox-gl/dist/mapbox-gl.css";
 import "./styles.css";
 import "./operations-v45.css";
 

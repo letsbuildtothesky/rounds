@@ -9,6 +9,7 @@ import type {
   OperationsTenant,
   UnplannedDeliverySummary,
 } from "@rounds/contracts";
+import { OperationsMap } from "./operations-map";
 
 const roundsApiUrl = process.env.NEXT_PUBLIC_ROUNDS_API_URL ?? "http://127.0.0.1:8080";
 
@@ -214,6 +215,15 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
         <div className="v45-map-header"><strong>Bangkok · {dispatchMode === "live" ? "Live" : "Plan"}</strong><span>{dispatchMode === "plan" ? `${planning?.unplannedDeliveries.length ?? 0} unplanned` : tab === "action" ? "All deliveries" : `${visible.length} ${tab}`}</span><button>Rounds</button><button><i />Automatic</button><div className="v45-spacer" /><em><i />{stale ? "Connection delayed" : dispatchMode === "plan" ? "Draft only" : "On time"}</em><span>{dispatchMode === "plan" ? "Plan not approved" : <>Live rounds <b>{activeRounds}</b></>}</span></div>
         <div className="v45-map-body">
           <div className="v45-map-grid" />
+          <OperationsMap
+            mode={dispatchMode}
+            rounds={projection?.rounds ?? []}
+            exceptions={projection?.exceptions ?? []}
+            planningDeliveries={planning?.unplannedDeliveries ?? []}
+            onSelectRound={(round) => { setDispatchMode("live"); setTab(round.state === "complete" ? "done" : round.state === "active" ? "live" : "ready"); setSelection({ kind: "round", item: round }); }}
+            onSelectException={(item) => { setDispatchMode("live"); setTab("action"); setSelection({ kind: "exception", item }); }}
+            onSelectDelivery={(item) => { setDispatchMode("plan"); setSelection({ kind: "delivery", item }); }}
+          />
           <div className="v45-water" />
           <div className="v45-park one" /><div className="v45-park two" />
           <div className="v45-road h1" /><div className="v45-road h2" /><div className="v45-road h3" /><div className="v45-road v1" /><div className="v45-road v2" /><div className="v45-road v3" />
@@ -223,7 +233,7 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
           {dispatchMode === "plan" ? (planning?.unplannedDeliveries ?? []).slice(0, 3).map((item, index) => <button key={item.stopId} className="v45-stop" style={{ left: `${70 + index * 7}%`, top: `${31 + index * 12}%` }} onClick={() => setSelection({ kind: "delivery", item })}>{index + 1}</button>) : (projection?.exceptions ?? []).slice(0, 3).map((item, index) => <button key={item.id} className="v45-stop" style={{ left: `${70 + index * 7}%`, top: `${31 + index * 12}%` }} onClick={() => { setTab("action"); setSelection({ kind: "exception", item }); }}>{index + 1}</button>)}
           <div className="v45-map-mode"><button>Operations <span>▾</span></button></div>
           <div className="v45-legend"><span><i className="own" />Own</span><span><i className="network" />Network</span><span><i className="traffic" />Traffic impact</span></div>
-          <button className="v45-focus"><FocusIcon />Focus map</button><div className="v45-zoom"><button>+</button><button>−</button></div>
+          <button className="v45-focus" onClick={() => window.dispatchEvent(new CustomEvent("rounds-map-control", { detail: "focus" }))}><FocusIcon />Focus map</button><div className="v45-zoom"><button onClick={() => window.dispatchEvent(new CustomEvent("rounds-map-control", { detail: "zoom-in" }))}>+</button><button onClick={() => window.dispatchEvent(new CustomEvent("rounds-map-control", { detail: "zoom-out" }))}>−</button></div>
         </div>
 
         <aside className={`v45-drawer ${selection ? "open" : ""}`} aria-hidden={!selection}>
