@@ -7,6 +7,7 @@ import type {
   OperationsPlanningProjection,
   OperationsRoundSummary,
   OperationsTenant,
+  PlanRoundResult,
   UnplannedDeliverySummary,
 } from "@rounds/contracts";
 import { OperationsMap, type OperationsMapCamera, type OperationsMapMode } from "./operations-map";
@@ -78,9 +79,29 @@ function shortTime(value: string, timezone: string): string {
   return new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: timezone }).format(new Date(value));
 }
 
+function nextRoundReference(deliveries: UnplannedDeliverySummary[]): string {
+  const serviceDate = deliveries[0]?.serviceDate ?? new Date().toISOString().slice(0, 10);
+  const time = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Bangkok",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  }).format(new Date()).replaceAll(":", "");
+  return `ROUND-${serviceDate.replaceAll("-", "")}-${time}`;
+}
+
 export function OperationsWorkstation({ accessToken, tenant, userName, demoMode = false, onAddDelivery, onHistory, onCommunications, onSignOut }: Props) {
   const [projection, setProjection] = useState<OperationsActionProjection | null>(null);
   const [planning, setPlanning] = useState<OperationsPlanningProjection | null>(null);
+  const [planningDate, setPlanningDate] = useState(() => new Intl.DateTimeFormat("en-CA", { timeZone: tenant.timezone }).format(new Date()));
+  const [selectedStops, setSelectedStops] = useState<string[]>([]);
+  const [planningDriverId, setPlanningDriverId] = useState("");
+  const [roundReference, setRoundReference] = useState("");
+  const [roundSubmitting, setRoundSubmitting] = useState(false);
+  const [roundError, setRoundError] = useState("");
+  const [roundSuccess, setRoundSuccess] = useState<Extract<PlanRoundResult, { status: "committed" }> | null>(null);
+  const [roundIdempotencyKey, setRoundIdempotencyKey] = useState(() => crypto.randomUUID());
   const [dispatchMode, setDispatchMode] = useState<"live" | "plan">("live");
   const [tab, setTab] = useState<QueueTab>("action");
   const [query, setQuery] = useState("");
@@ -127,7 +148,11 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
 
   const loadPlanning = useCallback(async () => {
     if (demoMode) {
-      setPlanning(demoPlanningProjection(tenant.id));
+      const data = demoPlanningProjection(tenant.id);
+      setPlanning(data);
+      setPlanningDate((current) => data.unplannedDeliveries.some((delivery) => delivery.serviceDate === current) ? current : data.unplannedDeliveries[0]?.serviceDate ?? current);
+      setPlanningDriverId((current) => current || data.drivers[0]?.id || "");
+      setRoundReference((current) => current || nextRoundReference(data.unplannedDeliveries));
       return;
     }
     try {
@@ -140,7 +165,11 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
       });
       const body = await response.json() as OperationsPlanningProjection | ApiError;
       if (!response.ok) throw new Error((body as ApiError).error?.message ?? `Planning HTTP ${response.status}`);
-      setPlanning(body as OperationsPlanningProjection);
+      const data = body as OperationsPlanningProjection;
+      setPlanning(data);
+      setPlanningDate((current) => data.unplannedDeliveries.some((delivery) => delivery.serviceDate === current) ? current : data.unplannedDeliveries[0]?.serviceDate ?? current);
+      setPlanningDriverId((current) => current || data.drivers[0]?.id || "");
+      setRoundReference((current) => current || nextRoundReference(data.unplannedDeliveries));
       setError("");
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Planning could not be loaded");
@@ -180,6 +209,51 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
   }, [buckets, query, tab]);
 
   const activeRounds = buckets.live.length;
+  const chosenDeliveries = useMemo(() => planning?.unplannedDeliveries.filter((delivery) => selectedStops.includes(delivery.stopId)) ?? [], [planning, selectedStops]);
+  const planningAnchor = chosenDeliveries[0];
+
+  function togglePlanningDelivery(delivery: UnplannedDeliverySummary) {
+    if (planningAnchor && !selectedStops.includes(delivery.stopId) && (planningAnchor.serviceDate !== delivery.serviceDate || planningAnchor.pickupLocationId !== delivery.pickupLocationId)) return;
+    setRoundError("");
+    setRoundSuccess(null);
+    setSelectedStops((current) => current.includes(delivery.stopId) ? current.filter((stopId) => stopId !== delivery.stopId) : [...current, delivery.stopId]);
+  }
+
+  async function approveRound() {
+    if (!planning || !planningDriverId || !roundReference.trim() || !chosenDeliveries.length) return;
+    setRoundSubmitting(true);
+    setRoundError("");
+    setRoundSuccess(null);
+    try {
+      const response = await fetch(`${roundsApiUrl}/v1/rounds`, {
+        method: "POST",
+        headers: {
+          authorization: `Bearer ${accessToken}`,
+          "content-type": "application/json",
+          "idempotency-key": `operations:${roundIdempotencyKey}`,
+          "x-rounds-tenant-id": tenant.id,
+          "x-trace-id": crypto.randomUUID(),
+        },
+        body: JSON.stringify({
+          reference: roundReference.trim(),
+          serviceDate: chosenDeliveries[0]!.serviceDate,
+          driverId: planningDriverId,
+          stopIds: selectedStops,
+        }),
+      });
+      const body = await response.json() as PlanRoundResult | ApiError;
+      if (!response.ok || !("status" in body) || body.status !== "committed") throw new Error((body as ApiError).error?.message ?? `Round command HTTP ${response.status}`);
+      setRoundSuccess(body);
+      setSelectedStops([]);
+      setRoundReference("");
+      setRoundIdempotencyKey(crypto.randomUUID());
+      await Promise.all([loadPlanning(), load(true)]);
+    } catch (caught) {
+      setRoundError(caught instanceof Error ? caught.message : "Round could not be approved");
+    } finally {
+      setRoundSubmitting(false);
+    }
+  }
 
   return <main className="v45-app">
     <header className="v45-topbar">
@@ -193,7 +267,7 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
       </nav>
       <button className="v45-section-trigger" type="button" aria-haspopup="dialog" aria-expanded={sectionMenuOpen} onClick={() => setSectionMenuOpen(true)}><span>Dispatch</span><OperationsMenuIcon /></button>
       <div className="v45-spacer" />
-      <button className="v45-network" type="button"><i /><span>Network enabled</span><ChevronIcon /></button>
+      <button className="v45-network" type="button" disabled title="Network dispatch is outside the connected Own-Team slice"><i /><span>Own Team</span><ChevronIcon /></button>
       <button className="v45-util" type="button" title="Driver communications" onClick={() => onCommunications()}><MessageIcon />{buckets.action.length > 0 && <b>{buckets.action.length}</b>}</button>
       <button className="v45-util" type="button" title="Operational alerts" onClick={() => setTab("action")}><BellIcon /></button>
       <div className="v45-profile-wrap"><button className="v45-util" type="button" title="Business settings" onClick={() => setProfileOpen((open) => !open)}><UserIcon /></button>{profileOpen && <div className="v45-profile-menu"><strong>{userName}</strong><span>{tenant.displayName}</span><button type="button" onClick={onSignOut}>Sign out</button></div>}</div>
@@ -218,27 +292,35 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
         <div className="v45-rail-head">
           <div className="v45-rail-title"><div><h1>Dispatch</h1><p>What needs attention now.</p></div><button type="button" className="v45-add" onClick={onAddDelivery}>+ Deliveries</button></div>
           <div className="v45-mode"><button className={dispatchMode === "live" ? "on" : ""} type="button" onClick={() => { setDispatchMode("live"); setSelection(null); }}>Live</button><button className={dispatchMode === "plan" ? "on" : ""} type="button" onClick={() => { setDispatchMode("plan"); setSelection(null); }}>Plan <span>{planning?.unplannedDeliveries.length ?? buckets.ready.length}</span></button></div>
-          {dispatchMode === "plan" ? <div className="v45-plan-controls"><label>Planning date<input type="date" defaultValue="2026-09-02" /></label><p><span>Unplanned deliveries waiting</span><b>{planning?.unplannedDeliveries.length ?? "—"}</b></p><button type="button" onClick={() => void loadPlanning()}>Generate plan</button><small>Nothing is sent to drivers until the plan is approved.</small></div> : <div className="v45-scope"><label>Delivery view<select defaultValue="all"><option value="all">All deliveries</option><option value="today">Today</option></select></label><p><b>{buckets.action.length} action</b><span>·</span><b>{activeRounds} live</b><span>·</span><span>{buckets.done.length} completed today</span></p></div>}
+          {dispatchMode === "plan" ? <div className="v45-plan-controls"><label>Planning date<input type="date" value={planningDate} onChange={(event) => { setPlanningDate(event.target.value); setSelectedStops([]); setRoundError(""); setRoundSuccess(null); }} /></label><p><span>Unplanned deliveries waiting</span><b>{planning?.unplannedDeliveries.filter((delivery) => delivery.serviceDate === planningDate).length ?? "—"}</b></p><button type="button" onClick={() => void loadPlanning()}>Refresh delivery pool</button><small>Select Stops in visit order. Nothing is assigned until explicit approval.</small></div> : <div className="v45-scope"><label>Delivery view<select defaultValue="all"><option value="all">All deliveries</option><option value="today">Today</option></select></label><p><b>{buckets.action.length} action</b><span>·</span><b>{activeRounds} live</b><span>·</span><span>{buckets.done.length} completed today</span></p></div>}
           {dispatchMode === "live" && <div className="v45-tabs" role="tablist">
             {(["action", "ready", "live", "done"] as QueueTab[]).map((item) => <button key={item} type="button" role="tab" aria-selected={tab === item} className={tab === item ? "on" : ""} onClick={() => { setTab(item); setSelection(null); }}><b>{buckets[item].length}</b>{item[0]!.toUpperCase() + item.slice(1)}</button>)}
           </div>}
           <label className="v45-search"><SearchIcon /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search order, customer or area" /></label>
+          {dispatchMode === "plan" && <section className="v45-plan-approval" aria-label="Round approval">
+            <div><span>PROPOSED ROUND</span><b>{selectedStops.length} Stop{selectedStops.length === 1 ? "" : "s"} selected</b>{selectedStops.length > 0 && <button type="button" onClick={() => setSelectedStops([])}>Clear</button>}</div>
+            <label>Round reference<input value={roundReference} onChange={(event) => setRoundReference(event.target.value)} placeholder="ROUND-YYYYMMDD-01" /></label>
+            <label>Team driver<select value={planningDriverId} onChange={(event) => setPlanningDriverId(event.target.value)}><option value="">Choose driver</option>{planning?.drivers.map((driver) => <option key={driver.id} value={driver.id}>{driver.displayName}{driver.vehiclePlate ? ` · ${driver.vehiclePlate}` : ""}</option>)}</select></label>
+            {roundError && <p role="alert">{roundError}</p>}
+            {roundSuccess && <p className="success" role="status">{roundSuccess.state.reference} assigned · {roundSuccess.state.stopIds.length} Stop{roundSuccess.state.stopIds.length === 1 ? "" : "s"}</p>}
+            <button className="primary" type="button" disabled={roundSubmitting || tenant.role === "viewer" || !selectedStops.length || !planningDriverId || !roundReference.trim()} onClick={() => void approveRound()}>{roundSubmitting ? "Approving…" : tenant.role === "viewer" ? "Viewer cannot approve" : "Approve & assign Round"}</button>
+          </section>}
         </div>
         <div className="v45-queue">
-          {dispatchMode === "plan" ? <PlanningQueue planning={planning} query={query} selection={selection} setSelection={setSelection} timezone={tenant.timezone} /> : <><div className={`v45-group ${tab === "action" ? "action" : ""}`}><b>{tab === "action" ? "Needs action" : tab === "ready" ? "Ready" : tab === "live" ? "Live deliveries" : "Recently completed"}</b><span>{visible.length}</span></div>
+          {dispatchMode === "plan" ? <PlanningQueue planning={planning} planningDate={planningDate} query={query} selection={selection} selectedStops={selectedStops} anchor={planningAnchor} setSelection={setSelection} onToggle={togglePlanningDelivery} timezone={tenant.timezone} /> : <><div className={`v45-group ${tab === "action" ? "action" : ""}`}><b>{tab === "action" ? "Needs action" : tab === "ready" ? "Ready" : tab === "live" ? "Live deliveries" : "Recently completed"}</b><span>{visible.length}</span></div>
           {loading ? <div className="v45-empty">Checking live Operations truth…</div> : error ? <div className="v45-empty error"><b>Couldn&apos;t load Dispatch</b><span>{error}</span><button onClick={() => void load()}>Retry</button></div> : visible.length === 0 ? <div className="v45-empty"><b>{tab === "action" ? "Nothing needs attention." : `No ${tab} work right now.`}</b><span>{tab === "action" ? "The exception queue is clear." : "Live work appears here automatically."}</span></div> : tab === "action" ? (visible as OperationsActionException[]).map((item) => <ExceptionRow key={item.id} item={item} selected={selection?.kind === "exception" && selection.item.id === item.id} onSelect={() => setSelection({ kind: "exception", item })} timezone={tenant.timezone} />) : (visible as OperationsRoundSummary[]).map((item) => <RoundRow key={item.id} item={item} selected={selection?.kind === "round" && selection.item.id === item.id} onSelect={() => setSelection({ kind: "round", item })} />)}</>}
         </div>
       </aside>
 
       <section className="v45-map-wrap">
-        <div className="v45-map-header"><strong>Bangkok · {dispatchMode === "live" ? "Live" : "Plan"}</strong><span>{dispatchMode === "plan" ? `${planning?.unplannedDeliveries.length ?? 0} unplanned` : tab === "action" ? "All deliveries" : `${visible.length} ${tab}`}</span><button>Rounds</button><button><i />Automatic</button><div className="v45-spacer" /><em><i />{stale ? "Connection delayed" : dispatchMode === "plan" ? "Draft only" : "On time"}</em><span>{dispatchMode === "plan" ? "Plan not approved" : <>Live rounds <b>{activeRounds}</b></>}</span></div>
+        <div className="v45-map-header"><strong>Bangkok · {dispatchMode === "live" ? "Live" : "Plan"}</strong><span>{dispatchMode === "plan" ? `${planning?.unplannedDeliveries.filter((delivery) => delivery.serviceDate === planningDate).length ?? 0} unplanned` : tab === "action" ? "All deliveries" : `${visible.length} ${tab}`}</span><button type="button" disabled title="Round overview is not connected yet">Rounds</button><button type="button" disabled title="Automatic planning is not connected yet"><i />Manual</button><div className="v45-spacer" /><em><i />{stale ? "Connection delayed" : dispatchMode === "plan" ? "Draft only" : "On time"}</em><span>{dispatchMode === "plan" ? `${selectedStops.length} selected · not approved` : <>Live rounds <b>{activeRounds}</b></>}</span></div>
         <div className="v45-map-body" onClick={() => setMapMenuOpen(false)}>
           <OperationsMap
             mode={dispatchMode}
             mapMode={mapMode}
             rounds={projection?.rounds ?? []}
             exceptions={projection?.exceptions ?? []}
-            planningDeliveries={planning?.unplannedDeliveries ?? []}
+            planningDeliveries={planning?.unplannedDeliveries.filter((delivery) => delivery.serviceDate === planningDate) ?? []}
             onCameraChange={setMapCamera}
             onSelectRound={(round) => { setDispatchMode("live"); setTab(round.state === "complete" ? "done" : round.state === "active" ? "live" : "ready"); setSelection({ kind: "round", item: round }); }}
             onSelectException={(item) => { setDispatchMode("live"); setTab("action"); setSelection({ kind: "exception", item }); }}
@@ -282,13 +364,13 @@ function RoundRow({ item, selected, onSelect }: { item: OperationsRoundSummary; 
   return <button type="button" className={`v45-order round ${selected ? "selected" : ""}`} onClick={onSelect}><span className="v45-order-line"><span><b>{item.reference}</b><small>{item.driverName}</small></span><em>{item.stopCount} Stops</em></span><span className="v45-order-foot"><span>{item.custodyStopCount} custody</span><span>{item.openExceptionCount} action</span><b>{item.state}</b></span></button>;
 }
 
-function PlanningQueue({ planning, query, selection, setSelection, timezone }: { planning: OperationsPlanningProjection | null; query: string; selection: Selection; setSelection: (selection: Selection) => void; timezone: string }) {
-  const deliveries = planning?.unplannedDeliveries.filter((item) => !query.trim() || `${item.reference} ${item.recipientName} ${item.rawAddress}`.toLowerCase().includes(query.trim().toLowerCase())) ?? [];
-  return <><div className="v45-group"><b>Unplanned deliveries</b><span>{deliveries.length}</span></div>{!planning ? <div className="v45-empty">Loading the delivery pool…</div> : deliveries.length === 0 ? <div className="v45-empty"><b>No unplanned deliveries.</b><span>Add deliveries to begin planning.</span></div> : deliveries.map((item) => <PlanningRow key={item.stopId} item={item} selected={selection?.kind === "delivery" && selection.item.stopId === item.stopId} onSelect={() => setSelection({ kind: "delivery", item })} timezone={timezone} />)}</>;
+function PlanningQueue({ planning, planningDate, query, selection, selectedStops, anchor, setSelection, onToggle, timezone }: { planning: OperationsPlanningProjection | null; planningDate: string; query: string; selection: Selection; selectedStops: string[]; anchor?: UnplannedDeliverySummary; setSelection: (selection: Selection) => void; onToggle: (item: UnplannedDeliverySummary) => void; timezone: string }) {
+  const deliveries = planning?.unplannedDeliveries.filter((item) => item.serviceDate === planningDate && (!query.trim() || `${item.reference} ${item.recipientName} ${item.rawAddress}`.toLowerCase().includes(query.trim().toLowerCase()))) ?? [];
+  return <><div className="v45-group"><b>Unplanned deliveries</b><span>{deliveries.length}</span></div>{!planning ? <div className="v45-empty">Loading the delivery pool…</div> : deliveries.length === 0 ? <div className="v45-empty"><b>No unplanned deliveries for this date.</b><span>Add a delivery or choose another planning date.</span></div> : deliveries.map((item) => <PlanningRow key={item.stopId} item={item} inspected={selection?.kind === "delivery" && selection.item.stopId === item.stopId} selectedOrder={selectedStops.includes(item.stopId) ? selectedStops.indexOf(item.stopId) + 1 : 0} disabled={Boolean(anchor && !selectedStops.includes(item.stopId) && (anchor.serviceDate !== item.serviceDate || anchor.pickupLocationId !== item.pickupLocationId))} onInspect={() => setSelection({ kind: "delivery", item })} onToggle={() => onToggle(item)} timezone={timezone} />)}</>;
 }
 
-function PlanningRow({ item, selected, onSelect, timezone }: { item: UnplannedDeliverySummary; selected: boolean; onSelect: () => void; timezone: string }) {
-  return <button type="button" className={`v45-order round ${selected ? "selected" : ""}`} onClick={onSelect}><span className="v45-order-line"><span><b>{item.recipientName}</b><small>{item.rawAddress}</small></span><em>#{item.reference}</em></span><span className="v45-order-foot"><span>{shortTime(item.windowStart, timezone)}–{shortTime(item.windowEnd, timezone)}</span><span>{item.manifestSummary}</span><b>Ready</b></span></button>;
+function PlanningRow({ item, inspected, selectedOrder, disabled, onInspect, onToggle, timezone }: { item: UnplannedDeliverySummary; inspected: boolean; selectedOrder: number; disabled: boolean; onInspect: () => void; onToggle: () => void; timezone: string }) {
+  return <article className={`v45-order round planning ${inspected ? "selected" : ""} ${selectedOrder ? "proposed" : ""} ${disabled ? "disabled" : ""}`}><button type="button" className="v45-order-inspect" onClick={onInspect}><span className="v45-order-line"><span><b>{item.recipientName}</b><small>{item.rawAddress}</small></span><em>#{item.reference}</em></span><span className="v45-order-foot"><span>{shortTime(item.windowStart, timezone)}–{shortTime(item.windowEnd, timezone)}</span><span>{item.manifestSummary}</span><b>Ready</b></span></button><button className="v45-plan-toggle" type="button" disabled={disabled} aria-label={selectedOrder ? `Remove ${item.reference} from proposed Round` : `Add ${item.reference} to proposed Round`} onClick={onToggle}>{selectedOrder || "+"}</button></article>;
 }
 
 function ExceptionDrawer({ item, timezone, onCommunications }: { item: OperationsActionException; timezone: string; onCommunications: (threadId?: string) => void }) {

@@ -12,10 +12,8 @@ import {
   defaultDeliveryDraft,
   type DeliveryFormDraft,
 } from "../src/delivery-form";
-import { DispatchPanel } from "./dispatch-panel";
 import { HistoryPanel } from "./history-panel";
 import { CommunicationsPanel } from "./communications-panel";
-import { ActionPanel } from "./action-panel";
 import { OperationsWorkstation } from "./operations-workstation";
 import { OperationsMenuIcon, OperationsSectionSheet, type OperationsSectionKey } from "./operations-section-sheet";
 
@@ -70,7 +68,7 @@ export default function OperationsPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState<SubmissionSuccess | null>(null);
-  const [section, setSection] = useState<"action" | "deliveries" | "dispatch" | "communications" | "history">("action");
+  const [section, setSection] = useState<OperationsSectionKey>("action");
   const [communicationThreadId, setCommunicationThreadId] = useState("");
   const [developmentPreview, setDevelopmentPreview] = useState(false);
   const [sectionMenuOpen, setSectionMenuOpen] = useState(false);
@@ -219,7 +217,7 @@ export default function OperationsPage() {
     <div className="operations-shell">
       <header className="app-header">
         <div className="brand"><RoundsMark /><span>ROUNDS</span></div>
-        <nav aria-label="Operations sections"><button type="button" className={section === "action" ? "active" : ""} onClick={() => setSection("action")}>Action</button><button type="button" className={section === "deliveries" ? "active" : ""} onClick={() => setSection("deliveries")}>Deliveries</button><button type="button" className={section === "dispatch" ? "active" : ""} onClick={() => setSection("dispatch")}>Dispatch</button><button type="button" className={section === "communications" ? "active" : ""} onClick={() => setSection("communications")}>Communications</button><button type="button" className={section === "history" ? "active" : ""} onClick={() => setSection("history")}>History</button></nav>
+        <nav aria-label="Operations sections"><button type="button" className={section === "action" ? "active" : ""} onClick={() => setSection("action")}>Dispatch</button><button type="button" className={section === "deliveries" ? "active" : ""} onClick={() => setSection("deliveries")}>Deliveries</button><button type="button" className={section === "communications" ? "active" : ""} onClick={() => setSection("communications")}>Communications</button><button type="button" className={section === "history" ? "active" : ""} onClick={() => setSection("history")}>History</button></nav>
         <div className="account">
           <div><strong>{operationsSession?.user.displayName ?? authSession.user.email}</strong><small>{selectedTenant ? roleLabel(selectedTenant.role) : "No access"}</small></div>
           <button type="button" onClick={() => void signOut()}>Sign out</button>
@@ -229,14 +227,14 @@ export default function OperationsPage() {
 
       <OperationsSectionSheet
         open={sectionMenuOpen}
-        current={(section === "dispatch" ? "action" : section) as OperationsSectionKey}
+        current={section}
         onClose={() => setSectionMenuOpen(false)}
         onSelect={(nextSection) => setSection(nextSection)}
         onSignOut={() => void signOut()}
       />
 
       <main className={`operations-main ${section !== "deliveries" ? "dispatch-main" : ""}`}>
-        {section === "action" && selectedTenant ? <ActionPanel accessToken={authSession.access_token} tenant={selectedTenant} onOpenThread={openCommunicationThread} /> : section === "dispatch" && selectedTenant ? <DispatchPanel accessToken={authSession.access_token} tenant={selectedTenant} /> : section === "communications" && selectedTenant ? <CommunicationsPanel accessToken={authSession.access_token} tenant={selectedTenant} initialThreadId={communicationThreadId} /> : section === "history" && selectedTenant ? <HistoryPanel accessToken={authSession.access_token} tenant={selectedTenant} /> : <>
+        {section === "communications" && selectedTenant ? <CommunicationsPanel accessToken={authSession.access_token} tenant={selectedTenant} initialThreadId={communicationThreadId} /> : section === "history" && selectedTenant ? <HistoryPanel accessToken={authSession.access_token} tenant={selectedTenant} /> : <>
         <section className="page-heading">
           <div><p className="eyebrow">MANUAL INTAKE</p><h1>Add delivery</h1><p>Create one canonical delivery for the unplanned pool.</p></div>
           <div className="secure-badge"><ShieldIcon /> Server-authoritative command</div>
