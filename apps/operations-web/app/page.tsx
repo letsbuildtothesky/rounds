@@ -22,6 +22,14 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const supabasePublishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? "";
 const roundsApiUrl = process.env.NEXT_PUBLIC_ROUNDS_API_URL ?? "http://127.0.0.1:8080";
 const defaultOperationsEmail = process.env.NEXT_PUBLIC_OPERATIONS_LOGIN_EMAIL ?? "";
+const developmentPreviewEnabled = process.env.NODE_ENV !== "production";
+const developmentPreviewTenant: OperationsTenant = {
+  id: "development-preview",
+  displayName: "UrbanFlowers",
+  timezone: "Asia/Bangkok",
+  role: "dispatcher",
+  locations: [],
+};
 const supabaseClient = supabaseUrl && supabasePublishableKey
   ? createClient(supabaseUrl, supabasePublishableKey)
   : null;
@@ -63,6 +71,7 @@ export default function OperationsPage() {
   const [success, setSuccess] = useState<SubmissionSuccess | null>(null);
   const [section, setSection] = useState<"action" | "deliveries" | "dispatch" | "communications" | "history">("action");
   const [communicationThreadId, setCommunicationThreadId] = useState("");
+  const [developmentPreview, setDevelopmentPreview] = useState(false);
 
   const selectedTenant = operationsSession?.tenants.find((tenant) => tenant.id === selectedTenantId)
     ?? operationsSession?.tenants[0];
@@ -185,7 +194,8 @@ export default function OperationsPage() {
   }
 
   if (booting) return <LoadingScreen label="Opening Operations" />;
-  if (!authSession) return <LoginScreen supabase={supabase} error={error} setError={setError} />;
+  if (!authSession && developmentPreview) return <OperationsWorkstation accessToken="" tenant={developmentPreviewTenant} userName="Demo dispatcher" demoMode onAddDelivery={() => undefined} onHistory={() => undefined} onCommunications={() => undefined} onSignOut={() => setDevelopmentPreview(false)} />;
+  if (!authSession) return <LoginScreen supabase={supabase} error={error} setError={setError} onPreview={developmentPreviewEnabled ? () => setDevelopmentPreview(true) : undefined} />;
   if (loadingProfile) return <LoadingScreen label="Checking merchant access" />;
 
   if (selectedTenant && section === "action") {
@@ -311,7 +321,7 @@ export default function OperationsPage() {
   );
 }
 
-function LoginScreen({ supabase, error, setError }: { supabase: SupabaseClient | null; error: string; setError: (message: string) => void }) {
+function LoginScreen({ supabase, error, setError, onPreview }: { supabase: SupabaseClient | null; error: string; setError: (message: string) => void; onPreview?: () => void }) {
   const [email, setEmail] = useState(defaultOperationsEmail);
   const [submitting, setSubmitting] = useState(false);
   const [sent, setSent] = useState(false);
@@ -330,7 +340,7 @@ function LoginScreen({ supabase, error, setError }: { supabase: SupabaseClient |
     setSubmitting(false);
   }
 
-  return <main className="login-shell"><section className="login-brand"><div className="large-mark"><RoundsMark /></div><p className="eyebrow">ROUNDS OPERATIONS</p><h1>Delivery truth,<br />from order to handoff.</h1><p>Secure merchant access for Dispatch, planning and delivery execution.</p><div className="login-points"><span><ShieldIcon /> Tenant-isolated</span><span><PulseIcon /> Live operations</span><span><CheckIcon /> Audited commands</span></div></section><section className="login-panel"><div className="login-card"><p className="eyebrow">WELCOME BACK</p><h2>Sign in to Operations</h2><p>No password. Rounds sends one secure sign-in link to the approved Operations address.</p>{error && <div className="login-error" role="alert">{error}</div>}{sent ? <div className="login-link-sent" role="status"><CheckIcon /><div><strong>Check your email</strong><span>Open the Rounds sign-in link on this computer.</span></div></div> : <form onSubmit={(event) => void signIn(event)}>{!defaultOperationsEmail && <Field label="Work email"><input required type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@business.com" /></Field>}<button className="login-button" disabled={submitting || !supabase || !email.trim()}>{submitting ? "Sending secure link…" : "Sign in"}<ArrowIcon /></button></form>}<div className="security-note"><LockIcon /><span>The link verifies identity with Supabase Auth. Merchant permissions are checked again by the Rounds API.</span></div></div></section></main>;
+  return <main className="login-shell"><section className="login-brand"><div className="large-mark"><RoundsMark /></div><p className="eyebrow">ROUNDS OPERATIONS</p><h1>Delivery truth,<br />from order to handoff.</h1><p>Secure merchant access for Dispatch, planning and delivery execution.</p><div className="login-points"><span><ShieldIcon /> Tenant-isolated</span><span><PulseIcon /> Live operations</span><span><CheckIcon /> Audited commands</span></div></section><section className="login-panel"><div className="login-card"><p className="eyebrow">WELCOME BACK</p><h2>Sign in to Operations</h2><p>No password. Rounds sends one secure sign-in link to the approved Operations address.</p>{error && <div className="login-error" role="alert">{error}</div>}{sent ? <div className="login-link-sent" role="status"><CheckIcon /><div><strong>Check your email</strong><span>Open the Rounds sign-in link on this computer.</span></div></div> : <form onSubmit={(event) => void signIn(event)}>{!defaultOperationsEmail && <Field label="Work email"><input required type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@business.com" /></Field>}<button className="login-button" disabled={submitting || !supabase || !email.trim()}>{submitting ? "Sending secure link…" : "Sign in"}<ArrowIcon /></button></form>}{onPreview && <button type="button" className="preview-board-button" onClick={onPreview}>Skip sign-in · Preview board</button>}<div className="security-note"><LockIcon /><span>The preview uses local demo data. Real Operations access still requires Supabase authentication.</span></div></div></section></main>;
 }
 
 function SuccessPanel({ success, onReset }: { success: SubmissionSuccess; onReset: () => void }) {
