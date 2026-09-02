@@ -5,6 +5,7 @@ import type {
   OperationsActionException,
   OperationsActionProjection,
   OperationsPlanningProjection,
+  OperationsDeliveryItem,
   OperationsRoundSummary,
   OperationsTenant,
   PlanRoundResult,
@@ -12,6 +13,7 @@ import type {
 } from "@rounds/contracts";
 import { OperationsMap, type OperationsMapCamera, type OperationsMapMode } from "./operations-map";
 import { OperationsMenuIcon, OperationsSectionSheet, type OperationsSectionKey } from "./operations-section-sheet";
+import { DeliveriesWorkspace } from "./deliveries-workspace";
 
 const roundsApiUrl = process.env.NEXT_PUBLIC_ROUNDS_API_URL ?? "http://127.0.0.1:8080";
 
@@ -26,7 +28,11 @@ type Props = {
   demoMode?: boolean;
   deliveryIntake?: ReactNode;
   deliveryIntakeOpen?: boolean;
+  deliveriesOpen?: boolean;
+  deliveryRefreshKey?: number;
   onCloseDeliveryIntake?: () => void;
+  onDeliveries?: () => void;
+  onCloseDeliveries?: () => void;
   onAddDelivery: () => void;
   onHistory: () => void;
   onCommunications: (threadId?: string) => void;
@@ -94,7 +100,7 @@ function nextRoundReference(deliveries: UnplannedDeliverySummary[]): string {
   return `ROUND-${serviceDate.replaceAll("-", "")}-${time}`;
 }
 
-export function OperationsWorkstation({ accessToken, tenant, userName, demoMode = false, deliveryIntake, deliveryIntakeOpen = false, onCloseDeliveryIntake, onAddDelivery, onHistory, onCommunications, onSignOut }: Props) {
+export function OperationsWorkstation({ accessToken, tenant, userName, demoMode = false, deliveryIntake, deliveryIntakeOpen = false, deliveriesOpen = false, deliveryRefreshKey = 0, onCloseDeliveryIntake, onDeliveries, onCloseDeliveries, onAddDelivery, onHistory, onCommunications, onSignOut }: Props) {
   const [projection, setProjection] = useState<OperationsActionProjection | null>(null);
   const [planning, setPlanning] = useState<OperationsPlanningProjection | null>(null);
   const [planningDate, setPlanningDate] = useState(() => new Intl.DateTimeFormat("en-CA", { timeZone: tenant.timezone }).format(new Date()));
@@ -263,12 +269,13 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
       <div className="v45-wordmark">Rounds<i /></div>
       <div className="v45-workspace"><b>{tenant.displayName}</b><span>Bangkok · Automatic dispatch</span></div>
       <nav className="v45-nav" aria-label="Operations sections">
-        <button className="on">Dispatch</button>
+        <button className={!deliveriesOpen ? "on" : ""} type="button" onClick={onCloseDeliveries}>Dispatch</button>
+        <button className={deliveriesOpen ? "on" : ""} type="button" onClick={onDeliveries}>Deliveries</button>
         <button type="button" disabled title="Drivers workspace is not connected yet">Drivers</button>
         <button type="button" onClick={onHistory}>History</button>
         <button type="button" disabled title="Settings workspace is not connected yet">Settings</button>
       </nav>
-      <button className="v45-section-trigger" type="button" aria-haspopup="dialog" aria-expanded={sectionMenuOpen} onClick={() => setSectionMenuOpen(true)}><span>{deliveryIntakeOpen ? "Deliveries" : "Dispatch"}</span><OperationsMenuIcon /></button>
+      <button className="v45-section-trigger" type="button" aria-haspopup="dialog" aria-expanded={sectionMenuOpen} onClick={() => setSectionMenuOpen(true)}><span>{deliveriesOpen || deliveryIntakeOpen ? "Deliveries" : "Dispatch"}</span><OperationsMenuIcon /></button>
       <div className="v45-spacer" />
       <button className="v45-network" type="button" disabled title="Network dispatch is outside the connected Own-Team slice"><i /><span>Own Team</span><ChevronIcon /></button>
       <button className="v45-util" type="button" title="Driver communications" onClick={() => onCommunications()}><MessageIcon />{buckets.action.length > 0 && <b>{buckets.action.length}</b>}</button>
@@ -280,11 +287,11 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
 
     <OperationsSectionSheet
       open={sectionMenuOpen}
-      current={deliveryIntakeOpen ? "deliveries" : "action"}
+      current={deliveriesOpen || deliveryIntakeOpen ? "deliveries" : "action"}
       onClose={() => setSectionMenuOpen(false)}
       onSelect={(section: OperationsSectionKey) => {
-        if (section === "action") onCloseDeliveryIntake?.();
-        else if (section === "deliveries") onAddDelivery();
+        if (section === "action") { onCloseDeliveryIntake?.(); onCloseDeliveries?.(); }
+        else if (section === "deliveries") { onCloseDeliveryIntake?.(); onDeliveries?.(); }
         else if (section === "communications") onCommunications();
         else if (section === "history") onHistory();
       }}
@@ -356,6 +363,22 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
           <div className="v45-drawer-body">{selection?.kind === "exception" ? <ExceptionDrawer item={selection.item} timezone={tenant.timezone} onCommunications={onCommunications} /> : selection?.kind === "round" ? <RoundDrawer item={selection.item} onCommunications={onCommunications} /> : selection?.kind === "delivery" ? <PlanningDrawer item={selection.item} timezone={tenant.timezone} /> : null}</div>
         </aside>
       </section>
+
+      {deliveriesOpen && accessToken && <DeliveriesWorkspace
+        accessToken={accessToken}
+        tenant={tenant}
+        refreshKey={deliveryRefreshKey}
+        onAddDelivery={onAddDelivery}
+        onBackToDispatch={() => onCloseDeliveries?.()}
+        onOpenPlanning={(item: OperationsDeliveryItem) => {
+          onCloseDeliveries?.();
+          setDispatchMode("plan");
+          setPlanningDate(item.serviceDate);
+          setQuery(item.reference);
+          setSelection(null);
+        }}
+        onCommunications={() => onCommunications()}
+      />}
 
       {deliveryIntakeOpen && <>
         <button className="v45-intake-scrim" type="button" aria-label="Close delivery intake" onClick={onCloseDeliveryIntake} />

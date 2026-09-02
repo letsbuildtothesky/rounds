@@ -12,6 +12,7 @@ import type {
   RoundGateway,
   OperationsHistoryGateway,
   OperationsActionGateway,
+  OperationsDeliveriesGateway,
   OperationsCommunicationsGateway,
   PodGateway,
 } from "./types.js";
@@ -31,6 +32,7 @@ import type {
   OperationsPlanningProjection,
   OperationsHistoryProjection,
   OperationsActionProjection,
+  OperationsDeliveriesProjection,
   OperationsCommunicationThread,
   OperationsCommunicationsProjection,
   OperationsSession,
@@ -123,7 +125,7 @@ export function parseDatabasePoint(value: unknown): { latitude: number; longitud
   return undefined;
 }
 
-export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway, RoundGateway, PickupGateway, DriverStopGateway, DriverCommunicationsGateway, OperationsCommunicationsGateway, PodGateway, OperationsHistoryGateway, OperationsActionGateway {
+export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway, RoundGateway, PickupGateway, DriverStopGateway, DriverCommunicationsGateway, OperationsCommunicationsGateway, PodGateway, OperationsHistoryGateway, OperationsActionGateway, OperationsDeliveriesGateway {
   private readonly admin: SupabaseClient;
 
   constructor(
@@ -280,6 +282,132 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     });
     if (error) throw error;
     return data as CreateDeliveryResult;
+  }
+
+  async getOperationsDeliveries(actor: ActorContext, observedAt: Date): Promise<OperationsDeliveriesProjection> {
+    type DeliveryListRow = {
+      id: string; reference: string; state: OperationsDeliveriesProjection["deliveries"][number]["state"]; version: number;
+      source_system: string; service_date: string; service_timezone: string; pickup_location_id: string;
+      buyer_same_as_recipient: boolean; buyer_name: string; buyer_phone: string; recipient_name: string;
+      recipient_phone: string; destination_raw_address: string; destination_position: unknown; access_note: string | null;
+      delivery_note: string | null; is_surprise: boolean; created_at: string; updated_at: string;
+    };
+    type DeliveryStopListRow = { id: string; delivery_id: string; state: string; version: number };
+    type ManifestListRow = { id: string; delivery_id: string; state: string; version: number };
+    type RoundStopListRow = { round_id: string; stop_id: string; sequence: number };
+    type DeliveryRoundRow = { id: string; reference: string; state: string; driver_id: string | null };
+
+    const { data: deliveries, error: deliveriesError } = await this.admin.from("deliveries")
+      .select("id, reference, state, version, source_system, service_date, service_timezone, pickup_location_id, buyer_same_as_recipient, buyer_name, buyer_phone, recipient_name, recipient_phone, destination_raw_address, destination_position, access_note, delivery_note, is_surprise, created_at, updated_at")
+      .eq("tenant_id", actor.tenantId).is("deleted_at", null)
+      .order("updated_at", { ascending: false }).limit(250).returns<DeliveryListRow[]>();
+    if (deliveriesError) throw deliveriesError;
+    const rows = deliveries ?? [];
+    if (!rows.length) return { tenantId: actor.tenantId, observedAt: observedAt.toISOString(), deliveries: [] };
+
+    const deliveryIds = rows.map((delivery) => delivery.id);
+    const pickupIds = [...new Set(rows.map((delivery) => delivery.pickup_location_id))];
+    const [stopResult, promiseResult, manifestResult, locationResult] = await Promise.all([
+      this.admin.from("delivery_stops").select("id, delivery_id, state, version").eq("tenant_id", actor.tenantId).in("delivery_id", deliveryIds).returns<DeliveryStopListRow[]>(),
+      this.admin.from("delivery_promises").select("delivery_id, window_start, window_end").eq("tenant_id", actor.tenantId).in("delivery_id", deliveryIds).returns<PromiseRow[]>(),
+      this.admin.from("manifests").select("id, delivery_id, state, version").eq("tenant_id", actor.tenantId).in("delivery_id", deliveryIds).order("version", { ascending: false }).returns<ManifestListRow[]>(),
+      this.admin.from("tenant_locations").select("id, display_name").eq("tenant_id", actor.tenantId).in("id", pickupIds).returns<{ id: string; display_name: string }[]>(),
+    ]);
+    if (stopResult.error) throw stopResult.error;
+    if (promiseResult.error) throw promiseResult.error;
+    if (manifestResult.error) throw manifestResult.error;
+    if (locationResult.error) throw locationResult.error;
+
+    const stops = stopResult.data ?? [];
+    const manifests = manifestResult.data ?? [];
+    const currentManifestByDelivery = new Map<string, ManifestListRow>();
+    for (const manifest of manifests) if (!currentManifestByDelivery.has(manifest.delivery_id)) currentManifestByDelivery.set(manifest.delivery_id, manifest);
+    const manifestIds = [...currentManifestByDelivery.values()].map((manifest) => manifest.id);
+    const stopIds = stops.map((stop) => stop.id);
+    const [itemResult, roundStopResult] = await Promise.all([
+      manifestIds.length ? this.admin.from("manifest_items").select("manifest_id, line_number, description, quantity, handling_note").eq("tenant_id", actor.tenantId).in("manifest_id", manifestIds).order("line_number").returns<ManifestItemRow[]>() : Promise.resolve({ data: [] as ManifestItemRow[], error: null }),
+      stopIds.length ? this.admin.from("round_stops").select("round_id, stop_id, sequence").eq("tenant_id", actor.tenantId).in("stop_id", stopIds).returns<RoundStopListRow[]>() : Promise.resolve({ data: [] as RoundStopListRow[], error: null }),
+    ]);
+    if (itemResult.error) throw itemResult.error;
+    if (roundStopResult.error) throw roundStopResult.error;
+
+    const roundStops = roundStopResult.data ?? [];
+    const roundIds = [...new Set(roundStops.map((entry) => entry.round_id))];
+    let rounds: DeliveryRoundRow[] = [];
+    let profiles: Array<{ id: string; person_id: string }> = [];
+    let people: Array<{ id: string; display_name: string }> = [];
+    if (roundIds.length) {
+      const roundResult = await this.admin.from("rounds").select("id, reference, state, driver_id").eq("tenant_id", actor.tenantId).in("id", roundIds).returns<DeliveryRoundRow[]>();
+      if (roundResult.error) throw roundResult.error;
+      rounds = roundResult.data ?? [];
+      const driverIds = [...new Set(rounds.flatMap((round) => round.driver_id ? [round.driver_id] : []))];
+      if (driverIds.length) {
+        const profileResult = await this.admin.from("driver_profiles").select("id, person_id").in("id", driverIds).returns<Array<{ id: string; person_id: string }>>();
+        if (profileResult.error) throw profileResult.error;
+        profiles = profileResult.data ?? [];
+        const personIds = [...new Set(profiles.map((profile) => profile.person_id))];
+        if (personIds.length) {
+          const personResult = await this.admin.from("persons").select("id, display_name").in("id", personIds).returns<Array<{ id: string; display_name: string }>>();
+          if (personResult.error) throw personResult.error;
+          people = personResult.data ?? [];
+        }
+      }
+    }
+
+    const stopByDelivery = new Map(stops.map((stop) => [stop.delivery_id, stop]));
+    const promiseByDelivery = new Map((promiseResult.data ?? []).map((promise) => [promise.delivery_id, promise]));
+    const locationById = new Map((locationResult.data ?? []).map((location) => [location.id, location.display_name]));
+    const roundStopByStop = new Map(roundStops.map((entry) => [entry.stop_id, entry]));
+    const roundById = new Map(rounds.map((round) => [round.id, round]));
+    const personIdByDriver = new Map(profiles.map((profile) => [profile.id, profile.person_id]));
+    const personById = new Map(people.map((person) => [person.id, person.display_name]));
+
+    return {
+      tenantId: actor.tenantId,
+      observedAt: observedAt.toISOString(),
+      deliveries: rows.flatMap((delivery) => {
+        const stop = stopByDelivery.get(delivery.id);
+        const promise = promiseByDelivery.get(delivery.id);
+        const manifest = currentManifestByDelivery.get(delivery.id);
+        if (!stop || !promise || !manifest) return [];
+        const coordinate = parseDatabasePoint(delivery.destination_position);
+        const roundStop = roundStopByStop.get(stop.id);
+        const round = roundStop ? roundById.get(roundStop.round_id) : undefined;
+        const driverName = round?.driver_id ? personById.get(personIdByDriver.get(round.driver_id) ?? "") : undefined;
+        return [{
+          deliveryId: delivery.id,
+          reference: delivery.reference,
+          state: delivery.state,
+          version: delivery.version,
+          sourceSystem: delivery.source_system,
+          serviceDate: delivery.service_date,
+          serviceTimezone: delivery.service_timezone,
+          pickupLocationId: delivery.pickup_location_id,
+          pickupLocationName: locationById.get(delivery.pickup_location_id) ?? "Pickup location",
+          buyerSameAsRecipient: delivery.buyer_same_as_recipient,
+          buyerName: delivery.buyer_name,
+          buyerPhone: delivery.buyer_phone,
+          recipientName: delivery.recipient_name,
+          recipientPhone: delivery.recipient_phone,
+          rawAddress: delivery.destination_raw_address,
+          ...(coordinate ? { coordinate } : {}),
+          ...(delivery.access_note ? { accessNote: delivery.access_note } : {}),
+          ...(delivery.delivery_note ? { deliveryNote: delivery.delivery_note } : {}),
+          isSurprise: delivery.is_surprise,
+          createdAt: delivery.created_at,
+          updatedAt: delivery.updated_at,
+          stop: { id: stop.id, state: stop.state, version: stop.version },
+          promise: { windowStart: promise.window_start, windowEnd: promise.window_end },
+          manifest: {
+            id: manifest.id,
+            state: manifest.state,
+            version: manifest.version,
+            items: (itemResult.data ?? []).filter((item) => item.manifest_id === manifest.id).map((item) => ({ lineNumber: item.line_number, description: item.description, quantity: item.quantity, ...(item.handling_note ? { handlingNote: item.handling_note } : {}) })),
+          },
+          ...(round && roundStop ? { round: { id: round.id, reference: round.reference, state: round.state, sequence: roundStop.sequence, driverName: driverName ?? "Team driver" } } : {}),
+        }];
+      }),
+    };
   }
 
   async getOperationsPlanning(actor: ActorContext): Promise<OperationsPlanningProjection> {

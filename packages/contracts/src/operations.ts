@@ -1,4 +1,5 @@
 import type { OperationsRoundSummary } from "./round.js";
+import type { DeliveryState } from "./delivery.js";
 
 export const operationsRoles = [
   "tenant_owner",
@@ -91,4 +92,61 @@ export type OperationsActionProjection = {
   observedAt: string;
   rounds: OperationsRoundSummary[];
   exceptions: OperationsActionException[];
+};
+
+export type OperationsDeliveryItem = {
+  deliveryId: string;
+  reference: string;
+  state: DeliveryState;
+  version: number;
+  sourceSystem: string;
+  serviceDate: string;
+  serviceTimezone: string;
+  pickupLocationId: string;
+  pickupLocationName: string;
+  buyerSameAsRecipient: boolean;
+  buyerName: string;
+  buyerPhone: string;
+  recipientName: string;
+  recipientPhone: string;
+  rawAddress: string;
+  coordinate?: { latitude: number; longitude: number };
+  accessNote?: string;
+  deliveryNote?: string;
+  isSurprise: boolean;
+  createdAt: string;
+  updatedAt: string;
+  stop: {
+    id: string;
+    state: string;
+    version: number;
+  };
+  promise: {
+    windowStart: string;
+    windowEnd: string;
+  };
+  manifest: {
+    id: string;
+    state: string;
+    version: number;
+    items: Array<{
+      lineNumber: number;
+      description: string;
+      quantity: number;
+      handlingNote?: string;
+    }>;
+  };
+  round?: {
+    id: string;
+    reference: string;
+    state: string;
+    sequence: number;
+    driverName: string;
+  };
+};
+
+export type OperationsDeliveriesProjection = {
+  tenantId: string;
+  observedAt: string;
+  deliveries: OperationsDeliveryItem[];
 };

@@ -4,7 +4,7 @@ export type OperationsSectionKey = "action" | "deliveries" | "communications" | 
 
 const sectionLabels: Record<OperationsSectionKey, { label: string; detail: string }> = {
   action: { label: "Dispatch", detail: "Live work, planning and exceptions" },
-  deliveries: { label: "Deliveries", detail: "Add one canonical delivery" },
+  deliveries: { label: "Deliveries", detail: "Search and inspect canonical delivery truth" },
   communications: { label: "Communications", detail: "Shared Driver conversations" },
   history: { label: "History", detail: "Committed handoffs and POD evidence" },
 };

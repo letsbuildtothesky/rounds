@@ -13,6 +13,7 @@ import { sendOperationsMessageHandler } from "./send-operations-message-handler.
 import { readConfig } from "./config.js";
 import { operationsSessionHandler } from "./operations-session-handler.js";
 import { operationsActionHandler } from "./operations-action-handler.js";
+import { operationsDeliveriesHandler } from "./operations-deliveries-handler.js";
 import { planRoundHandler } from "./plan-round-handler.js";
 import { reportPickupProblemHandler } from "./report-pickup-problem-handler.js";
 import { preparePodMediaHandler } from "./prepare-pod-media-handler.js";
@@ -111,6 +112,17 @@ const server = createServer(async (request, response) => {
         now: () => new Date(),
       });
       sendNode(response, addOperationsCors(actionResponse, request.headers.origin));
+      return;
+    }
+    if (request.method === "GET" && request.url === "/v1/operations/deliveries") {
+      const webRequest = await toWebRequest(request);
+      const deliveriesResponse = await operationsDeliveriesHandler(webRequest, {
+        identity: gateway,
+        deliveries: gateway,
+        uuid: () => crypto.randomUUID(),
+        now: () => new Date(),
+      });
+      sendNode(response, addOperationsCors(deliveriesResponse, request.headers.origin));
       return;
     }
     if (request.method === "GET" && request.url === "/v1/operations/planning") {

@@ -66,6 +66,8 @@ export default function OperationsPage() {
   const [communicationThreadId, setCommunicationThreadId] = useState("");
   const [developmentPreview, setDevelopmentPreview] = useState(false);
   const [sectionMenuOpen, setSectionMenuOpen] = useState(false);
+  const [deliveryIntakeOpen, setDeliveryIntakeOpen] = useState(false);
+  const [deliveryRevision, setDeliveryRevision] = useState(0);
 
   const selectedTenant = operationsSession?.tenants.find((tenant) => tenant.id === selectedTenantId)
     ?? operationsSession?.tenants[0];
@@ -180,6 +182,7 @@ export default function OperationsPage() {
         reference: draft.reference.trim(),
         deduplicated: result.deduplicated ?? false,
       });
+      setDeliveryRevision((current) => current + 1);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Delivery could not be created");
     } finally {
@@ -197,8 +200,12 @@ export default function OperationsPage() {
       accessToken={authSession.access_token}
       tenant={selectedTenant}
       userName={operationsSession?.user.displayName ?? authSession.user.email ?? "Operations"}
-      deliveryIntakeOpen={section === "deliveries"}
-      onCloseDeliveryIntake={() => setSection("action")}
+      deliveryIntakeOpen={deliveryIntakeOpen}
+      deliveriesOpen={section === "deliveries"}
+      deliveryRefreshKey={deliveryRevision}
+      onCloseDeliveryIntake={() => setDeliveryIntakeOpen(false)}
+      onDeliveries={() => { setDeliveryIntakeOpen(false); setSection("deliveries"); }}
+      onCloseDeliveries={() => setSection("action")}
       deliveryIntake={<DeliveryIntake
         operationsSession={operationsSession}
         selectedTenant={selectedTenant}
@@ -211,9 +218,10 @@ export default function OperationsPage() {
         onChooseTenant={chooseTenant}
         onReset={resetForm}
       />}
-      onAddDelivery={() => setSection("deliveries")}
+      onAddDelivery={() => setDeliveryIntakeOpen(true)}
       onHistory={() => setSection("history")}
       onCommunications={(threadId) => {
+        setDeliveryIntakeOpen(false);
         if (threadId) setCommunicationThreadId(threadId);
         setSection("communications");
       }}
