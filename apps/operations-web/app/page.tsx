@@ -15,10 +15,12 @@ import {
 import { DispatchPanel } from "./dispatch-panel";
 import { HistoryPanel } from "./history-panel";
 import { CommunicationsPanel } from "./communications-panel";
+import { ActionPanel } from "./action-panel";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const supabasePublishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? "";
 const roundsApiUrl = process.env.NEXT_PUBLIC_ROUNDS_API_URL ?? "http://127.0.0.1:8080";
+const defaultOperationsEmail = process.env.NEXT_PUBLIC_OPERATIONS_LOGIN_EMAIL ?? "";
 const supabaseClient = supabaseUrl && supabasePublishableKey
   ? createClient(supabaseUrl, supabasePublishableKey)
   : null;
@@ -58,7 +60,8 @@ export default function OperationsPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState<SubmissionSuccess | null>(null);
-  const [section, setSection] = useState<"deliveries" | "dispatch" | "communications" | "history">("deliveries");
+  const [section, setSection] = useState<"action" | "deliveries" | "dispatch" | "communications" | "history">("action");
+  const [communicationThreadId, setCommunicationThreadId] = useState("");
 
   const selectedTenant = operationsSession?.tenants.find((tenant) => tenant.id === selectedTenantId)
     ?? operationsSession?.tenants[0];
@@ -119,6 +122,11 @@ export default function OperationsPage() {
     await supabase.auth.signOut();
     setSuccess(null);
     setError("");
+  }
+
+  function openCommunicationThread(threadId: string) {
+    setCommunicationThreadId(threadId);
+    setSection("communications");
   }
 
   function updateDraft<K extends keyof DeliveryFormDraft>(key: K, value: DeliveryFormDraft[K]) {
@@ -183,7 +191,7 @@ export default function OperationsPage() {
     <div className="operations-shell">
       <header className="app-header">
         <div className="brand"><RoundsMark /><span>ROUNDS</span></div>
-        <nav aria-label="Operations sections"><button type="button" className={section === "deliveries" ? "active" : ""} onClick={() => setSection("deliveries")}>Deliveries</button><button type="button" className={section === "dispatch" ? "active" : ""} onClick={() => setSection("dispatch")}>Dispatch</button><button type="button" className={section === "communications" ? "active" : ""} onClick={() => setSection("communications")}>Communications</button><button type="button" className={section === "history" ? "active" : ""} onClick={() => setSection("history")}>History</button></nav>
+        <nav aria-label="Operations sections"><button type="button" className={section === "action" ? "active" : ""} onClick={() => setSection("action")}>Action</button><button type="button" className={section === "deliveries" ? "active" : ""} onClick={() => setSection("deliveries")}>Deliveries</button><button type="button" className={section === "dispatch" ? "active" : ""} onClick={() => setSection("dispatch")}>Dispatch</button><button type="button" className={section === "communications" ? "active" : ""} onClick={() => setSection("communications")}>Communications</button><button type="button" className={section === "history" ? "active" : ""} onClick={() => setSection("history")}>History</button></nav>
         <div className="account">
           <div><strong>{operationsSession?.user.displayName ?? authSession.user.email}</strong><small>{selectedTenant ? roleLabel(selectedTenant.role) : "No access"}</small></div>
           <button type="button" onClick={() => void signOut()}>Sign out</button>
@@ -191,7 +199,7 @@ export default function OperationsPage() {
       </header>
 
       <main className={`operations-main ${section !== "deliveries" ? "dispatch-main" : ""}`}>
-        {section === "dispatch" && selectedTenant ? <DispatchPanel accessToken={authSession.access_token} tenant={selectedTenant} /> : section === "communications" && selectedTenant ? <CommunicationsPanel accessToken={authSession.access_token} tenant={selectedTenant} /> : section === "history" && selectedTenant ? <HistoryPanel accessToken={authSession.access_token} tenant={selectedTenant} /> : <>
+        {section === "action" && selectedTenant ? <ActionPanel accessToken={authSession.access_token} tenant={selectedTenant} onOpenThread={openCommunicationThread} /> : section === "dispatch" && selectedTenant ? <DispatchPanel accessToken={authSession.access_token} tenant={selectedTenant} /> : section === "communications" && selectedTenant ? <CommunicationsPanel accessToken={authSession.access_token} tenant={selectedTenant} initialThreadId={communicationThreadId} /> : section === "history" && selectedTenant ? <HistoryPanel accessToken={authSession.access_token} tenant={selectedTenant} /> : <>
         <section className="page-heading">
           <div><p className="eyebrow">MANUAL INTAKE</p><h1>Add delivery</h1><p>Create one canonical delivery for the unplanned pool.</p></div>
           <div className="secure-badge"><ShieldIcon /> Server-authoritative command</div>
@@ -288,21 +296,25 @@ export default function OperationsPage() {
 }
 
 function LoginScreen({ supabase, error, setError }: { supabase: SupabaseClient | null; error: string; setError: (message: string) => void }) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState(defaultOperationsEmail);
   const [submitting, setSubmitting] = useState(false);
+  const [sent, setSent] = useState(false);
 
   async function signIn(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!supabase) return;
     setSubmitting(true);
     setError("");
-    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+    const { error: signInError } = await supabase.auth.signInWithOtp({
+      email: email.trim(),
+      options: { emailRedirectTo: window.location.origin, shouldCreateUser: false },
+    });
     if (signInError) setError(signInError.message);
+    else setSent(true);
     setSubmitting(false);
   }
 
-  return <main className="login-shell"><section className="login-brand"><div className="large-mark"><RoundsMark /></div><p className="eyebrow">ROUNDS OPERATIONS</p><h1>Delivery truth,<br />from order to handoff.</h1><p>Secure merchant access for Dispatch, planning and delivery execution.</p><div className="login-points"><span><ShieldIcon /> Tenant-isolated</span><span><PulseIcon /> Live operations</span><span><CheckIcon /> Audited commands</span></div></section><section className="login-panel"><div className="login-card"><p className="eyebrow">WELCOME BACK</p><h2>Sign in to Operations</h2><p>Use your merchant Operations account.</p>{error && <div className="login-error" role="alert">{error}</div>}<form onSubmit={(event) => void signIn(event)}><Field label="Work email"><input required type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@business.com" /></Field><Field label="Password"><input required type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="••••••••••••" /></Field><button className="login-button" disabled={submitting || !supabase}>{submitting ? "Signing in…" : "Sign in"}<ArrowIcon /></button></form><div className="security-note"><LockIcon /><span>Your session is verified by Supabase Auth. Merchant permissions are checked again by the Rounds API.</span></div></div></section></main>;
+  return <main className="login-shell"><section className="login-brand"><div className="large-mark"><RoundsMark /></div><p className="eyebrow">ROUNDS OPERATIONS</p><h1>Delivery truth,<br />from order to handoff.</h1><p>Secure merchant access for Dispatch, planning and delivery execution.</p><div className="login-points"><span><ShieldIcon /> Tenant-isolated</span><span><PulseIcon /> Live operations</span><span><CheckIcon /> Audited commands</span></div></section><section className="login-panel"><div className="login-card"><p className="eyebrow">WELCOME BACK</p><h2>Sign in to Operations</h2><p>No password. Rounds sends one secure sign-in link to the approved Operations address.</p>{error && <div className="login-error" role="alert">{error}</div>}{sent ? <div className="login-link-sent" role="status"><CheckIcon /><div><strong>Check your email</strong><span>Open the Rounds sign-in link on this computer.</span></div></div> : <form onSubmit={(event) => void signIn(event)}>{!defaultOperationsEmail && <Field label="Work email"><input required type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@business.com" /></Field>}<button className="login-button" disabled={submitting || !supabase || !email.trim()}>{submitting ? "Sending secure link…" : "Sign in"}<ArrowIcon /></button></form>}<div className="security-note"><LockIcon /><span>The link verifies identity with Supabase Auth. Merchant permissions are checked again by the Rounds API.</span></div></div></section></main>;
 }
 
 function SuccessPanel({ success, onReset }: { success: SubmissionSuccess; onReset: () => void }) {

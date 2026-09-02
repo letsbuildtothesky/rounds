@@ -12,6 +12,7 @@ import { operationsCommunicationsHandler } from "./operations-communications-han
 import { sendOperationsMessageHandler } from "./send-operations-message-handler.js";
 import { readConfig } from "./config.js";
 import { operationsSessionHandler } from "./operations-session-handler.js";
+import { operationsActionHandler } from "./operations-action-handler.js";
 import { planRoundHandler } from "./plan-round-handler.js";
 import { reportPickupProblemHandler } from "./report-pickup-problem-handler.js";
 import { preparePodMediaHandler } from "./prepare-pod-media-handler.js";
@@ -99,6 +100,17 @@ const server = createServer(async (request, response) => {
         uuid: () => crypto.randomUUID(),
       });
       sendNode(response, addOperationsCors(sessionResponse, request.headers.origin));
+      return;
+    }
+    if (request.method === "GET" && request.url === "/v1/operations/action") {
+      const webRequest = await toWebRequest(request);
+      const actionResponse = await operationsActionHandler(webRequest, {
+        identity: gateway,
+        action: gateway,
+        uuid: () => crypto.randomUUID(),
+        now: () => new Date(),
+      });
+      sendNode(response, addOperationsCors(actionResponse, request.headers.origin));
       return;
     }
     if (request.method === "GET" && request.url === "/v1/operations/planning") {

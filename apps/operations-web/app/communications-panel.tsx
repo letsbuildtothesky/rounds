@@ -8,7 +8,7 @@ import type {
 } from "@rounds/contracts";
 
 const roundsApiUrl = process.env.NEXT_PUBLIC_ROUNDS_API_URL ?? "http://127.0.0.1:8080";
-type Props = { accessToken: string; tenant: OperationsTenant };
+type Props = { accessToken: string; tenant: OperationsTenant; initialThreadId?: string };
 type ApiError = { error?: { message?: string }; status?: string };
 
 function timeLabel(value: string, timezone: string): string {
@@ -23,7 +23,7 @@ function messageFrom(body: ApiError, fallback: string): string {
   return body.error?.message ?? fallback;
 }
 
-export function CommunicationsPanel({ accessToken, tenant }: Props) {
+export function CommunicationsPanel({ accessToken, tenant, initialThreadId = "" }: Props) {
   const [projection, setProjection] = useState<OperationsCommunicationsProjection | null>(null);
   const [selectedThreadId, setSelectedThreadId] = useState("");
   const [draft, setDraft] = useState("");
@@ -45,16 +45,16 @@ export function CommunicationsPanel({ accessToken, tenant }: Props) {
       if (!response.ok) throw new Error(messageFrom(body as ApiError, `Communications HTTP ${response.status}`));
       const next = body as OperationsCommunicationsProjection;
       setProjection(next);
-      setSelectedThreadId((current) => next.threads.some((thread) => thread.id === current)
-        ? current
-        : next.threads[0]?.id ?? "");
+      setSelectedThreadId((current) => next.threads.some((thread) => thread.id === initialThreadId)
+        ? initialThreadId
+        : next.threads.some((thread) => thread.id === current) ? current : next.threads[0]?.id ?? "");
       setError("");
     } catch (caught) {
       if (!quiet) setError(caught instanceof Error ? caught.message : "Communications could not be loaded");
     } finally {
       if (!quiet) setLoading(false);
     }
-  }, [accessToken, tenant.id]);
+  }, [accessToken, initialThreadId, tenant.id]);
 
   useEffect(() => {
     void load();

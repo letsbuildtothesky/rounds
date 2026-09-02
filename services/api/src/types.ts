@@ -15,6 +15,7 @@ import type {
   DriverOperationsThread,
   OperationsSession,
   OperationsHistoryProjection,
+  OperationsActionProjection,
   OperationsCommunicationsProjection,
   OperationsCommunicationThread,
   OperationsPlanningProjection,
@@ -118,6 +119,10 @@ export interface OperationsHistoryGateway {
   getOperationsHistory(actor: ActorContext): Promise<OperationsHistoryProjection>;
 }
 
+export interface OperationsActionGateway {
+  getOperationsAction(actor: ActorContext, observedAt: Date): Promise<OperationsActionProjection>;
+}
+
 export type CreateDeliveryDependencies = {
   identity: IdentityGateway;
   commands: DeliveryCommandGateway;
@@ -142,6 +147,13 @@ export type OperationsHistoryDependencies = {
   identity: IdentityGateway;
   history: OperationsHistoryGateway;
   uuid: () => string;
+};
+
+export type OperationsActionDependencies = {
+  identity: IdentityGateway;
+  action: OperationsActionGateway;
+  uuid: () => string;
+  now: () => Date;
 };
 
 export type OperationsCommunicationsDependencies = {

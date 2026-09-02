@@ -1,3 +1,5 @@
+import type { OperationsRoundSummary } from "./round.js";
+
 export const operationsRoles = [
   "tenant_owner",
   "operations_admin",
@@ -55,4 +57,34 @@ export type OperationsHistoryItem = {
 export type OperationsHistoryProjection = {
   tenantId: string;
   deliveries: OperationsHistoryItem[];
+};
+
+export type OperationsActionException = {
+  id: string;
+  deliveryId: string;
+  deliveryReference: string;
+  recipientName: string;
+  rawAddress: string;
+  stopId: string;
+  stopSequence: number;
+  stopState: string;
+  roundId: string;
+  roundReference: string;
+  roundState: string;
+  driverId: string;
+  driverName: string;
+  stage: "pickup" | "delivery";
+  category: "missing_item" | "wrong_item" | "damaged_item";
+  note?: string;
+  status: "open";
+  manifestVersion: number;
+  reportedAt: string;
+  operationsThreadId?: string;
+};
+
+export type OperationsActionProjection = {
+  tenantId: string;
+  observedAt: string;
+  rounds: OperationsRoundSummary[];
+  exceptions: OperationsActionException[];
 };

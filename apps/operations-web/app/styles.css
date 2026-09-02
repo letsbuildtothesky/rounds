@@ -129,6 +129,11 @@ svg { width: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-l
 .login-button { display: flex; min-height: 48px; align-items: center; justify-content: center; gap: 12px; margin-top: 4px; border: 0; border-radius: 9px; color: white; background: var(--forest); font-size: .77rem; font-weight: 850; }
 .login-button svg { width: 17px; }
 .login-error { margin-bottom: 16px; padding: 10px 12px; border: 1px solid #e2b9ae; border-radius: 8px; color: var(--danger); background: #fff1ec; font-size: .71rem; }
+.login-link-sent { display: flex; align-items: flex-start; gap: 11px; padding: 14px; border: 1px solid #bfdbce; border-radius: 11px; color: var(--forest); background: #eaf6ef; }
+.login-link-sent > svg { flex: 0 0 auto; }
+.login-link-sent div { display: grid; gap: 3px; }
+.login-link-sent strong { font-size: .78rem; }
+.login-link-sent span { color: #557168; font-size: .69rem; }
 .security-note { display: flex; align-items: flex-start; gap: 9px; margin-top: 25px; padding-top: 20px; border-top: 1px solid #e2e3de; color: #7f8984; font-size: .66rem; line-height: 1.5; }
 .security-note svg { width: 17px; flex: 0 0 auto; color: var(--forest); }
 
@@ -260,6 +265,51 @@ svg { width: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-l
 .composer small { grid-column: 1 / -1; color: #9ba39f; font-size: .55rem; }
 .dispatch-success { margin-top: 40px; }
 
+.action-workspace { width: 100%; }
+.action-heading { margin-bottom: 22px; }
+.freshness-strip { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; padding: 11px 14px; border-radius: 11px; font-size: .7rem; }
+.freshness-strip.stale { border: 1px solid #e2c58f; color: #76500f; background: #fff7e5; }
+.freshness-strip span { color: inherit; opacity: .82; }
+.action-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 18px; }
+.action-metrics article { display: grid; min-height: 124px; align-content: center; gap: 3px; padding: 20px; border: 1px solid #d9dfda; border-radius: 16px; background: #fff; box-shadow: 0 8px 24px rgba(22,54,45,.04); }
+.action-metrics span { color: #74817b; font-size: .61rem; font-weight: 900; letter-spacing: .09em; text-transform: uppercase; }
+.action-metrics strong { font-family: Georgia, "Times New Roman", serif; font-size: 2.25rem; font-weight: 500; line-height: 1; }
+.action-metrics small { color: var(--muted); font-size: .64rem; }
+.action-metrics article:first-child { border-color: #e7c8c0; background: #fff8f5; }
+.action-metrics article:first-child strong { color: var(--danger); }
+.action-clear { display: grid; justify-items: center; margin-bottom: 18px; padding: 44px 24px; border: 1px solid #cee0d5; border-radius: 18px; text-align: center; background: #f4faf6; }
+.action-clear div { display: grid; width: 44px; height: 44px; margin-bottom: 12px; place-items: center; border-radius: 50%; color: white; background: #23845f; font-weight: 900; }
+.action-clear h2 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: 1.7rem; font-weight: 500; }
+.action-clear p { margin: 7px 0 0; color: var(--muted); font-size: .72rem; }
+.exception-section, .round-health-section { margin-bottom: 18px; padding: 20px; border: 1px solid #d8dfda; border-radius: 18px; background: rgba(255,255,255,.82); box-shadow: 0 12px 32px rgba(22,54,45,.05); }
+.exception-list { display: grid; gap: 12px; }
+.exception-card { position: relative; overflow: hidden; padding: 20px 20px 16px 25px; border: 1px solid #e3d3ce; border-radius: 15px; background: #fff; }
+.exception-accent { position: absolute; top: 0; bottom: 0; left: 0; width: 5px; background: #bd513d; }
+.exception-card > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
+.exception-card .eyebrow { margin-bottom: 5px; color: #a34b39; }
+.exception-card h3 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: 1.45rem; font-weight: 500; }
+.exception-status { padding: 6px 9px; border-radius: 99px; color: #9c3b27; background: #fce6e0; font-size: .58rem; font-weight: 900; letter-spacing: .09em; }
+.exception-note { margin: 14px 0; color: #42534c; font-size: .78rem; line-height: 1.5; }
+.exception-context { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0; padding: 14px; border-radius: 11px; background: #f5f6f3; }
+.exception-context div { min-width: 0; }
+.exception-context dt { color: #87908c; font-size: .56rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+.exception-context dd { margin: 3px 0 0; overflow: hidden; font-size: .69rem; font-weight: 750; text-overflow: ellipsis; white-space: nowrap; }
+.exception-card footer { display: flex; min-height: 40px; align-items: flex-end; justify-content: space-between; gap: 16px; margin-top: 10px; }
+.exception-card footer > span, .exception-card footer em { color: #87918c; font-size: .61rem; font-style: normal; }
+.exception-card footer button { padding: 9px 12px; border: 1px solid #b8cec4; border-radius: 9px; color: var(--forest); background: #f1f8f4; font-size: .66rem; font-weight: 850; }
+.exception-card footer button:disabled { opacity: .45; cursor: default; }
+.round-health-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px; }
+.round-health-card { padding: 16px; border: 1px solid #dce3de; border-radius: 13px; background: #fff; }
+.round-health-card.has-exception { border-color: #e5bdb3; }
+.round-health-card header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.round-health-card header span { padding: 5px 7px; border-radius: 6px; color: #176246; background: #e5f3eb; font-size: .55rem; font-weight: 900; text-transform: uppercase; }
+.round-health-card header strong { color: var(--forest); font-size: .72rem; }
+.round-health-card > p { margin: 10px 0 13px; color: var(--muted); font-size: .7rem; }
+.round-health-card > div { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; padding-top: 11px; border-top: 1px solid #e4e7e4; }
+.round-health-card > div span { display: grid; gap: 2px; color: #7f8984; font-size: .56rem; }
+.round-health-card > div b { color: var(--ink); font-size: .76rem; }
+.round-health-card > div .danger b { color: var(--danger); }
+
 @media (max-width: 840px) {
   .app-header { grid-template-columns: 1fr auto; padding: 0 18px; }
   .app-header nav { display: none; }
@@ -275,6 +325,7 @@ svg { width: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-l
   .round-builder { position: static; }
   .history-evidence { grid-template-columns: 1fr 1fr; margin-left: 0; }
   .communications-frame { min-height: 600px; grid-template-columns: 260px minmax(0, 1fr); }
+  .action-metrics { grid-template-columns: 1fr 1fr; }
 }
 
 @media (max-width: 560px) {
@@ -292,4 +343,7 @@ svg { width: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-l
   .conversation-header { grid-template-columns: auto 1fr; }
   .live-pill { display: none; }
   .conversation-context { grid-template-columns: 1fr; gap: 8px; }
+  .action-metrics { grid-template-columns: 1fr; }
+  .exception-context { grid-template-columns: 1fr; }
+  .exception-card footer { align-items: stretch; flex-direction: column; }
 }

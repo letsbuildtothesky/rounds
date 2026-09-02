@@ -11,6 +11,7 @@ import type {
   PickupGateway,
   RoundGateway,
   OperationsHistoryGateway,
+  OperationsActionGateway,
   OperationsCommunicationsGateway,
   PodGateway,
 } from "./types.js";
@@ -29,6 +30,7 @@ import type {
   OperationsLocation,
   OperationsPlanningProjection,
   OperationsHistoryProjection,
+  OperationsActionProjection,
   OperationsCommunicationThread,
   OperationsCommunicationsProjection,
   OperationsSession,
@@ -120,7 +122,7 @@ export function parseDatabasePoint(value: unknown): { latitude: number; longitud
   return undefined;
 }
 
-export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway, RoundGateway, PickupGateway, DriverStopGateway, DriverCommunicationsGateway, OperationsCommunicationsGateway, PodGateway, OperationsHistoryGateway {
+export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway, RoundGateway, PickupGateway, DriverStopGateway, DriverCommunicationsGateway, OperationsCommunicationsGateway, PodGateway, OperationsHistoryGateway, OperationsActionGateway {
   private readonly admin: SupabaseClient;
 
   constructor(
@@ -784,6 +786,109 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
           verifiedPhotoCount: 1 as const,
           mediaAssetId: pod.media_asset_id,
           mediaState: "committed" as const,
+        }];
+      }),
+    };
+  }
+
+  async getOperationsAction(actor: ActorContext, observedAt: Date): Promise<OperationsActionProjection> {
+    type ExceptionRow = {
+      id: string; delivery_id: string; stop_id: string; round_id: string; driver_id: string;
+      stage: "pickup" | "delivery"; category: "missing_item" | "wrong_item" | "damaged_item";
+      note: string | null; status: "open"; manifest_version: number; reported_at: string;
+    };
+    const [planning, exceptionResult] = await Promise.all([
+      this.getOperationsPlanning(actor),
+      this.admin.from("delivery_exceptions")
+        .select("id, delivery_id, stop_id, round_id, driver_id, stage, category, note, status, manifest_version, reported_at")
+        .eq("tenant_id", actor.tenantId).eq("status", "open")
+        .order("reported_at", { ascending: false }).limit(100).returns<ExceptionRow[]>(),
+    ]);
+    if (exceptionResult.error) throw exceptionResult.error;
+    const exceptions = exceptionResult.data ?? [];
+    if (!exceptions.length) return {
+      tenantId: actor.tenantId,
+      observedAt: observedAt.toISOString(),
+      rounds: planning.activeRounds,
+      exceptions: [],
+    };
+
+    const deliveryIds = [...new Set(exceptions.map((item) => item.delivery_id))];
+    const stopIds = [...new Set(exceptions.map((item) => item.stop_id))];
+    const roundIds = [...new Set(exceptions.map((item) => item.round_id))];
+    const driverIds = [...new Set(exceptions.map((item) => item.driver_id))];
+    const [deliveryResult, stopResult, roundResult, roundStopResult, driverResult, threadResult] = await Promise.all([
+      this.admin.from("deliveries").select("id, reference, recipient_name, destination_raw_address")
+        .eq("tenant_id", actor.tenantId).in("id", deliveryIds)
+        .returns<{ id: string; reference: string; recipient_name: string; destination_raw_address: string }[]>(),
+      this.admin.from("delivery_stops").select("id, state").eq("tenant_id", actor.tenantId).in("id", stopIds)
+        .returns<{ id: string; state: string }[]>(),
+      this.admin.from("rounds").select("id, reference, state").eq("tenant_id", actor.tenantId).in("id", roundIds)
+        .returns<{ id: string; reference: string; state: string }[]>(),
+      this.admin.from("round_stops").select("round_id, stop_id, sequence").eq("tenant_id", actor.tenantId)
+        .in("round_id", roundIds).in("stop_id", stopIds)
+        .returns<{ round_id: string; stop_id: string; sequence: number }[]>(),
+      this.admin.from("driver_profiles").select("id, person_id").in("id", driverIds)
+        .returns<{ id: string; person_id: string }[]>(),
+      this.admin.from("operations_threads").select("id, round_id, stop_id, updated_at")
+        .eq("tenant_id", actor.tenantId).in("round_id", roundIds).in("stop_id", stopIds)
+        .order("updated_at", { ascending: false })
+        .returns<{ id: string; round_id: string; stop_id: string; updated_at: string }[]>(),
+    ]);
+    if (deliveryResult.error) throw deliveryResult.error;
+    if (stopResult.error) throw stopResult.error;
+    if (roundResult.error) throw roundResult.error;
+    if (roundStopResult.error) throw roundStopResult.error;
+    if (driverResult.error) throw driverResult.error;
+    if (threadResult.error) throw threadResult.error;
+
+    const personIds = [...new Set((driverResult.data ?? []).map((driver) => driver.person_id))];
+    const peopleResult = await this.admin.from("persons").select("id, display_name").in("id", personIds)
+      .returns<{ id: string; display_name: string }[]>();
+    if (peopleResult.error) throw peopleResult.error;
+    const deliveryById = new Map((deliveryResult.data ?? []).map((row) => [row.id, row]));
+    const stopById = new Map((stopResult.data ?? []).map((row) => [row.id, row]));
+    const roundById = new Map((roundResult.data ?? []).map((row) => [row.id, row]));
+    const sequenceByStop = new Map((roundStopResult.data ?? []).map((row) => [`${row.round_id}:${row.stop_id}`, row.sequence]));
+    const personIdByDriver = new Map((driverResult.data ?? []).map((row) => [row.id, row.person_id]));
+    const personById = new Map((peopleResult.data ?? []).map((row) => [row.id, row]));
+    const threadByStop = new Map<string, string>();
+    for (const thread of threadResult.data ?? []) {
+      const key = `${thread.round_id}:${thread.stop_id}`;
+      if (!threadByStop.has(key)) threadByStop.set(key, thread.id);
+    }
+
+    return {
+      tenantId: actor.tenantId,
+      observedAt: observedAt.toISOString(),
+      rounds: planning.activeRounds,
+      exceptions: exceptions.flatMap((item) => {
+        const delivery = deliveryById.get(item.delivery_id);
+        const stop = stopById.get(item.stop_id);
+        const round = roundById.get(item.round_id);
+        if (!delivery || !stop || !round) return [];
+        const threadId = threadByStop.get(`${item.round_id}:${item.stop_id}`);
+        return [{
+          id: item.id,
+          deliveryId: item.delivery_id,
+          deliveryReference: delivery.reference,
+          recipientName: delivery.recipient_name,
+          rawAddress: delivery.destination_raw_address,
+          stopId: item.stop_id,
+          stopSequence: sequenceByStop.get(`${item.round_id}:${item.stop_id}`) ?? 0,
+          stopState: stop.state,
+          roundId: item.round_id,
+          roundReference: round.reference,
+          roundState: round.state,
+          driverId: item.driver_id,
+          driverName: personById.get(personIdByDriver.get(item.driver_id) ?? "")?.display_name ?? "Team driver",
+          stage: item.stage,
+          category: item.category,
+          ...(item.note ? { note: item.note } : {}),
+          status: item.status,
+          manifestVersion: item.manifest_version,
+          reportedAt: item.reported_at,
+          ...(threadId ? { operationsThreadId: threadId } : {}),
         }];
       }),
     };
