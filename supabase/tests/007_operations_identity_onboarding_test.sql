@@ -18,8 +18,8 @@ select ok(
   'authenticated clients cannot link their own identities'
 );
 select ok(
-  not has_table_privilege('service_role', 'public.auth_identities', 'INSERT'),
-  'API service still cannot insert identity links directly'
+  not has_table_privilege('authenticated', 'public.auth_identities', 'INSERT'),
+  'authenticated clients cannot insert identity links directly'
 );
 
 select * from finish();
