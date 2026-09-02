@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../app/app_strings.dart';
@@ -7,6 +8,7 @@ import '../app/harness_app_controller.dart';
 import '../driver/driver_session.dart';
 import 'components/round_overview_map.dart';
 import 'components/rounds_action_drawer.dart';
+import 'debug_pod_acceptance_screen.dart';
 import 'navigation_harness_screen.dart';
 import 'pickup_confirmation_screen.dart';
 
@@ -306,12 +308,18 @@ class _RoundTopBar extends StatelessWidget {
             icon: Icons.logout,
             destructive: true,
           ),
+        if (kDebugMode)
+          const RoundsDrawerAction(
+            value: 'pod-acceptance',
+            label: 'Test camera + restart',
+            icon: Icons.camera_alt_outlined,
+          ),
       ],
     );
-    if (action != null && context.mounted) _onAction(action);
+    if (action != null && context.mounted) _onAction(context, action);
   }
 
-  void _onAction(String value) {
+  void _onAction(BuildContext context, String value) {
     if (value == 'refresh') controller.refreshDriverSession();
     if (value == 'language') {
       controller.selectLocale(
@@ -321,6 +329,13 @@ class _RoundTopBar extends StatelessWidget {
       );
     }
     if (value == 'signout') controller.signOutDriver();
+    if (value == 'pod-acceptance') {
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => DebugPodAcceptanceScreen(stop: round.stops.first),
+        ),
+      );
+    }
   }
 }
 

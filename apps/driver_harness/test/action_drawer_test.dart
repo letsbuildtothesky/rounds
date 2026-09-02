@@ -19,7 +19,27 @@ void main() {
     expect(find.text('Round actions'), findsOneWidget);
     expect(find.text('Refresh Round'), findsOneWidget);
     expect(find.text('Choose language'), findsOneWidget);
+    expect(find.text('Test camera + restart'), findsOneWidget);
     expect(find.byType(PopupMenuButton), findsNothing);
+  });
+
+  testWidgets('debug camera acceptance is isolated from delivery actions', (
+    tester,
+  ) async {
+    await _pumpApp(tester);
+
+    await tester.tap(find.byKey(const Key('e01-round-actions')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Test camera + restart'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Camera + restart test'), findsOneWidget);
+    expect(
+      find.text('DEVELOPMENT ACCEPTANCE · NOT A DELIVERY'),
+      findsOneWidget,
+    );
+    expect(find.byKey(const Key('complete-delivery')), findsNothing);
+    expect(find.text('Confirm arrival'), findsNothing);
   });
 
   testWidgets('navigation actions use the same bottom drawer', (tester) async {
