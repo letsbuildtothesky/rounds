@@ -31,13 +31,13 @@ insert into public.tenant_locations (
 );
 insert into public.deliveries (
   id, tenant_id, reference, source_system, external_id, source_payload_hash,
-  service_date, service_timezone, pickup_location_id, buyer_name, buyer_phone,
+  service_date, service_timezone, pickup_location_id, buyer_same_as_recipient, buyer_name, buyer_phone,
   recipient_name, recipient_phone, destination_raw_address, destination_position,
   destination_provenance, state, version, created_by_person_id
 ) values (
   '70000000-0000-4000-8000-000000000100', '70000000-0000-4000-8000-000000000001',
   'THREAD-001', 'manual', 'THREAD-001', repeat('f', 64), '2026-09-02', 'Asia/Bangkok',
-  '70000000-0000-4000-8000-000000000020', 'Buyer', '+66999999998', 'Siriporn', '+66999999999',
+  '70000000-0000-4000-8000-000000000020', false, 'Buyer', '+66999999998', 'Siriporn', '+66999999999',
   'Bangkok', extensions.st_setsrid(extensions.st_makepoint(100.55::double precision, 13.75::double precision), 4326)::extensions.geography,
   'dispatcher_pin', 'in_custody', 4, '70000000-0000-4000-8000-000000000007'
 );
