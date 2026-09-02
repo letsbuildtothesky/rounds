@@ -126,7 +126,7 @@ insert into operations_message_command values (jsonb_build_object(
 
 select is((public.send_operations_message_command((select body from operations_message_command), '70000000-0000-4000-8000-000000000009') ->> 'status'), 'committed', 'dispatcher reply commits');
 select is((select count(*) from public.operations_messages), 2::bigint, 'Operations reply is durable beside driver message');
-select is((select sender::text from public.operations_messages order by sent_at desc, id desc limit 1), 'operations', 'reply sender is Operations');
+select is((select sender::text from public.operations_messages where body = 'Continue to the recipient'), 'operations', 'reply sender is Operations');
 select is((select body from public.operations_messages where sender = 'operations'), 'Continue to the recipient', 'exact Operations body is preserved');
 select is((select version from public.operations_threads limit 1), 3::bigint, 'Operations reply advances thread version');
 select is((select count(*) from public.audit_events where semantic_change ->> 'sender' = 'operations'), 1::bigint, 'Operations reply is audited once');
