@@ -56,6 +56,7 @@ void main() {
     expect(find.text('Navigation actions'), findsOneWidget);
     expect(find.text('Contact Operations'), findsOneWidget);
     expect(find.text('Report exception'), findsOneWidget);
+    expect(find.text('Test arrival override'), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('rounds-action-contact')));
     await tester.pumpAndSettle();
@@ -87,6 +88,7 @@ void main() {
       find.text('Available after you confirm arrival at this Stop'),
       findsOneWidget,
     );
+    expect(find.byKey(const Key('close-delivery-issue')), findsOneWidget);
 
     final continueButton = tester.widget<FilledButton>(
       find.byKey(const Key('continue-delivery-issue')),
@@ -101,6 +103,29 @@ void main() {
       find.byKey(const Key('continue-delivery-issue')),
     );
     expect(enabledButton.onPressed, isNotNull);
+  });
+
+  testWidgets('debug arrival override is explicit and audited', (tester) async {
+    await _pumpApp(tester);
+    await tester.tap(find.byKey(const Key('start-navigation')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('navigation-more')));
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.byKey(const Key('rounds-action-test_arrival_override')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const Key('test-arrival-override-drawer')),
+      findsOneWidget,
+    );
+    expect(find.textContaining('real, audited arrival'), findsOneWidget);
+    expect(
+      find.byKey(const Key('confirm-test-arrival-override')),
+      findsOneWidget,
+    );
   });
 }
 

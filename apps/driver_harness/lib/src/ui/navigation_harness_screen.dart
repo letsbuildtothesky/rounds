@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../app/driver_design_system.dart';
@@ -208,13 +209,21 @@ class _NavigationHarnessScreenState extends State<NavigationHarnessScreen> {
           icon: Icons.warning_amber_rounded,
           destructive: true,
         ),
+        if (kDebugMode && !_arrived)
+          const RoundsDrawerAction(
+            value: 'test_arrival_override',
+            label: 'Test arrival override',
+            icon: Icons.science_outlined,
+          ),
       ],
     );
     if (action != null && mounted) await _onMenuSelected(action);
   }
 
   Future<void> _onMenuSelected(String action) async {
-    if (action == 'contact') {
+    if (action == 'test_arrival_override') {
+      await _confirmTestArrivalOverride();
+    } else if (action == 'contact') {
       await openOperationsContactFlow(
         context,
         round: widget.round,
@@ -244,9 +253,15 @@ class _NavigationHarnessScreenState extends State<NavigationHarnessScreen> {
     }
   }
 
-  Future<void> _confirmArrival() async {
+  Future<void> _confirmArrival({String? overrideReason}) async {
     setState(() => _submittingArrival = true);
-    final outcome = await widget.controller.confirmArrival(widget.stop);
+    final currentStop = widget.controller.driverSession?.currentRound?.stops
+        .where((stop) => stop.id == widget.stop.id)
+        .firstOrNull;
+    final outcome = await widget.controller.confirmArrival(
+      currentStop ?? widget.stop,
+      overrideReason: overrideReason,
+    );
     if (!mounted) return;
     setState(() {
       _submittingArrival = false;
@@ -270,6 +285,19 @@ class _NavigationHarnessScreenState extends State<NavigationHarnessScreen> {
         ),
       );
     }
+  }
+
+  Future<void> _confirmTestArrivalOverride() async {
+    final reason = await showModalBottomSheet<String>(
+      context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: RoundsColors.ink.withValues(alpha: .38),
+      builder: (_) => const _ArrivalOverrideSheet(),
+    );
+    if (reason == null || !mounted) return;
+    await _confirmArrival(overrideReason: reason);
   }
 
   Future<void> _openPod() async {
@@ -319,6 +347,98 @@ class _NavigationHarnessScreenState extends State<NavigationHarnessScreen> {
         builder: (_) => RoundCompleteScreen(
           round: widget.round,
           onContinue: (completeContext) => Navigator.of(completeContext).pop(),
+        ),
+      ),
+    );
+  }
+}
+
+class _ArrivalOverrideSheet extends StatefulWidget {
+  const _ArrivalOverrideSheet();
+
+  @override
+  State<_ArrivalOverrideSheet> createState() => _ArrivalOverrideSheetState();
+}
+
+class _ArrivalOverrideSheetState extends State<_ArrivalOverrideSheet> {
+  final _reason = TextEditingController(text: 'Field test override');
+
+  @override
+  void dispose() {
+    _reason.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final keyboard = MediaQuery.viewInsetsOf(context).bottom;
+    return Material(
+      key: const Key('test-arrival-override-drawer'),
+      color: RoundsColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(RoundsRadii.large),
+        ),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(20, 12, 20, 20 + keyboard),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                const Expanded(
+                  child: Text(
+                    'Test arrival override',
+                    style: TextStyle(
+                      color: RoundsColors.ink,
+                      fontSize: 23,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  tooltip: 'Close',
+                  onPressed: () => Navigator.of(context).pop(),
+                  icon: const Icon(Icons.close),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Debug builds only. This commits a real, audited arrival without changing the delivery pin.',
+              style: TextStyle(
+                color: RoundsColors.muted,
+                fontSize: 14,
+                height: 1.35,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              key: const Key('test-arrival-override-reason'),
+              controller: _reason,
+              maxLength: 500,
+              onChanged: (_) => setState(() {}),
+              decoration: const InputDecoration(
+                labelText: 'Audit reason',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              height: 58,
+              child: FilledButton(
+                key: const Key('confirm-test-arrival-override'),
+                onPressed: _reason.text.trim().isEmpty
+                    ? null
+                    : () => Navigator.of(context).pop(_reason.text.trim()),
+                child: const Text('Confirm test arrival'),
+              ),
+            ),
+          ],
         ),
       ),
     );

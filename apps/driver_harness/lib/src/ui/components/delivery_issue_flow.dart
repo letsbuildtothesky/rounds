@@ -151,15 +151,27 @@ class _DeliveryIssueSheetState extends State<_DeliveryIssueSheet> {
                     ),
                   ),
                   const SizedBox(height: 18),
-                  const Text(
-                    'Report exception',
-                    style: TextStyle(
-                      color: RoundsColors.ink,
-                      fontSize: 25,
-                      height: 1,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -.65,
-                    ),
+                  Row(
+                    children: [
+                      const Expanded(
+                        child: Text(
+                          'Report exception',
+                          style: TextStyle(
+                            color: RoundsColors.ink,
+                            fontSize: 25,
+                            height: 1,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: -.65,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        key: const Key('close-delivery-issue'),
+                        tooltip: 'Close',
+                        onPressed: () => Navigator.of(context).pop(),
+                        icon: const Icon(Icons.close),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 7),
                   const Text(

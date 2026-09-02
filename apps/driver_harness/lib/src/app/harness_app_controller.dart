@@ -123,8 +123,12 @@ class HarnessAppController extends ChangeNotifier {
     ),
   );
 
-  Future<DriverCommandOutcome?> confirmArrival(DriverRoundStopModel stop) =>
-      _runDriverCommand(() => _driverApi.confirmArrival(stop));
+  Future<DriverCommandOutcome?> confirmArrival(
+    DriverRoundStopModel stop, {
+    String? overrideReason,
+  }) => _runDriverCommand(
+    () => _driverApi.confirmArrival(stop, overrideReason: overrideReason),
+  );
 
   Future<DriverOperationsThreadModel> getOperationsThread({
     required DriverRoundModel round,
