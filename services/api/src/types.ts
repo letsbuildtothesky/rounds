@@ -15,6 +15,8 @@ import type {
   DriverOperationsThread,
   OperationsSession,
   OperationsHistoryProjection,
+  OperationsCommunicationsProjection,
+  OperationsCommunicationThread,
   OperationsPlanningProjection,
   PlanRoundCommand,
   PlanRoundPayload,
@@ -24,6 +26,8 @@ import type {
   ReportPickupProblemResult,
   SendDriverMessageCommand,
   SendDriverMessageResult,
+  SendOperationsMessageCommand,
+  SendOperationsMessageResult,
 } from "@rounds/contracts";
 
 export type { OperationsRole } from "@rounds/contracts";
@@ -85,6 +89,15 @@ export interface DriverCommunicationsGateway {
   ): Promise<SendDriverMessageResult>;
 }
 
+export interface OperationsCommunicationsGateway {
+  getOperationsCommunications(actor: ActorContext): Promise<OperationsCommunicationsProjection>;
+  getOperationsCommunicationThread(threadId: string, actor: ActorContext): Promise<OperationsCommunicationThread | null>;
+  sendOperationsMessage(
+    command: SendOperationsMessageCommand,
+    actor: ActorContext,
+  ): Promise<SendOperationsMessageResult>;
+}
+
 export interface PodGateway {
   preparePodMedia(
     stopId: string,
@@ -129,6 +142,13 @@ export type OperationsHistoryDependencies = {
   identity: IdentityGateway;
   history: OperationsHistoryGateway;
   uuid: () => string;
+};
+
+export type OperationsCommunicationsDependencies = {
+  identity: IdentityGateway;
+  communications: OperationsCommunicationsGateway;
+  uuid: () => string;
+  now: () => Date;
 };
 
 export type PlanRoundDependencies = OperationsPlanningDependencies & {

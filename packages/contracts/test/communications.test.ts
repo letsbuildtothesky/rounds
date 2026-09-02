@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { ContractError, validateSendDriverMessageCommand } from "../src/index.js";
+import {
+  ContractError,
+  validateSendDriverMessageCommand,
+  validateSendOperationsMessageCommand,
+} from "../src/index.js";
 
 const base = {
   schemaVersion: 1 as const,
@@ -29,4 +33,12 @@ test("rejects empty and oversized message bodies", () => {
     ...base,
     payload: { body: "x".repeat(2001) },
   }), ContractError);
+});
+
+test("accepts a bounded versioned Operations reply", () => {
+  assert.doesNotThrow(() => validateSendOperationsMessageCommand({
+    ...base,
+    commandType: "thread.send_operations_message",
+    payload: { body: "Please continue to the recipient" },
+  }));
 });

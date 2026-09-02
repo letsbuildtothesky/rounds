@@ -14,6 +14,7 @@ import {
 } from "../src/delivery-form";
 import { DispatchPanel } from "./dispatch-panel";
 import { HistoryPanel } from "./history-panel";
+import { CommunicationsPanel } from "./communications-panel";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const supabasePublishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? "";
@@ -57,7 +58,7 @@ export default function OperationsPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState<SubmissionSuccess | null>(null);
-  const [section, setSection] = useState<"deliveries" | "dispatch" | "history">("deliveries");
+  const [section, setSection] = useState<"deliveries" | "dispatch" | "communications" | "history">("deliveries");
 
   const selectedTenant = operationsSession?.tenants.find((tenant) => tenant.id === selectedTenantId)
     ?? operationsSession?.tenants[0];
@@ -182,7 +183,7 @@ export default function OperationsPage() {
     <div className="operations-shell">
       <header className="app-header">
         <div className="brand"><RoundsMark /><span>ROUNDS</span></div>
-        <nav aria-label="Operations sections"><button type="button" className={section === "deliveries" ? "active" : ""} onClick={() => setSection("deliveries")}>Deliveries</button><button type="button" className={section === "dispatch" ? "active" : ""} onClick={() => setSection("dispatch")}>Dispatch</button><button type="button" className={section === "history" ? "active" : ""} onClick={() => setSection("history")}>History</button></nav>
+        <nav aria-label="Operations sections"><button type="button" className={section === "deliveries" ? "active" : ""} onClick={() => setSection("deliveries")}>Deliveries</button><button type="button" className={section === "dispatch" ? "active" : ""} onClick={() => setSection("dispatch")}>Dispatch</button><button type="button" className={section === "communications" ? "active" : ""} onClick={() => setSection("communications")}>Communications</button><button type="button" className={section === "history" ? "active" : ""} onClick={() => setSection("history")}>History</button></nav>
         <div className="account">
           <div><strong>{operationsSession?.user.displayName ?? authSession.user.email}</strong><small>{selectedTenant ? roleLabel(selectedTenant.role) : "No access"}</small></div>
           <button type="button" onClick={() => void signOut()}>Sign out</button>
@@ -190,7 +191,7 @@ export default function OperationsPage() {
       </header>
 
       <main className={`operations-main ${section !== "deliveries" ? "dispatch-main" : ""}`}>
-        {section === "dispatch" && selectedTenant ? <DispatchPanel accessToken={authSession.access_token} tenant={selectedTenant} /> : section === "history" && selectedTenant ? <HistoryPanel accessToken={authSession.access_token} tenant={selectedTenant} /> : <>
+        {section === "dispatch" && selectedTenant ? <DispatchPanel accessToken={authSession.access_token} tenant={selectedTenant} /> : section === "communications" && selectedTenant ? <CommunicationsPanel accessToken={authSession.access_token} tenant={selectedTenant} /> : section === "history" && selectedTenant ? <HistoryPanel accessToken={authSession.access_token} tenant={selectedTenant} /> : <>
         <section className="page-heading">
           <div><p className="eyebrow">MANUAL INTAKE</p><h1>Add delivery</h1><p>Create one canonical delivery for the unplanned pool.</p></div>
           <div className="secure-badge"><ShieldIcon /> Server-authoritative command</div>

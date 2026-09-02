@@ -8,6 +8,8 @@ import { driverOperationsThreadHandler } from "./driver-operations-thread-handle
 import { sendDriverMessageHandler } from "./send-driver-message-handler.js";
 import { operationsPlanningHandler } from "./operations-planning-handler.js";
 import { operationsHistoryHandler } from "./operations-history-handler.js";
+import { operationsCommunicationsHandler } from "./operations-communications-handler.js";
+import { sendOperationsMessageHandler } from "./send-operations-message-handler.js";
 import { readConfig } from "./config.js";
 import { operationsSessionHandler } from "./operations-session-handler.js";
 import { planRoundHandler } from "./plan-round-handler.js";
@@ -117,6 +119,29 @@ const server = createServer(async (request, response) => {
         uuid: () => crypto.randomUUID(),
       });
       sendNode(response, addOperationsCors(historyResponse, request.headers.origin));
+      return;
+    }
+    if (request.method === "GET" && request.url === "/v1/operations/communications") {
+      const webRequest = await toWebRequest(request);
+      const communicationsResponse = await operationsCommunicationsHandler(webRequest, {
+        identity: gateway,
+        communications: gateway,
+        uuid: () => crypto.randomUUID(),
+        now: () => new Date(),
+      });
+      sendNode(response, addOperationsCors(communicationsResponse, request.headers.origin));
+      return;
+    }
+    const operationsMessageMatch = request.url?.match(/^\/v1\/operations\/communications\/([0-9a-f-]+)\/messages$/i);
+    if (request.method === "POST" && operationsMessageMatch) {
+      const webRequest = await toWebRequest(request);
+      const messageResponse = await sendOperationsMessageHandler(webRequest, operationsMessageMatch[1]!, {
+        identity: gateway,
+        communications: gateway,
+        uuid: () => crypto.randomUUID(),
+        now: () => new Date(),
+      });
+      sendNode(response, addOperationsCors(messageResponse, request.headers.origin));
       return;
     }
     if (request.method === "POST" && request.url === "/v1/rounds") {

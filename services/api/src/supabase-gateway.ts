@@ -11,6 +11,7 @@ import type {
   PickupGateway,
   RoundGateway,
   OperationsHistoryGateway,
+  OperationsCommunicationsGateway,
   PodGateway,
 } from "./types.js";
 import type {
@@ -28,6 +29,8 @@ import type {
   OperationsLocation,
   OperationsPlanningProjection,
   OperationsHistoryProjection,
+  OperationsCommunicationThread,
+  OperationsCommunicationsProjection,
   OperationsSession,
   OperationsTenant,
   PlanRoundCommand,
@@ -37,6 +40,8 @@ import type {
   ReportPickupProblemResult,
   SendDriverMessageCommand,
   SendDriverMessageResult,
+  SendOperationsMessageCommand,
+  SendOperationsMessageResult,
 } from "@rounds/contracts";
 
 type MembershipRow = {
@@ -115,7 +120,7 @@ export function parseDatabasePoint(value: unknown): { latitude: number; longitud
   return undefined;
 }
 
-export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway, RoundGateway, PickupGateway, DriverStopGateway, DriverCommunicationsGateway, PodGateway, OperationsHistoryGateway {
+export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway, RoundGateway, PickupGateway, DriverStopGateway, DriverCommunicationsGateway, OperationsCommunicationsGateway, PodGateway, OperationsHistoryGateway {
   private readonly admin: SupabaseClient;
 
   constructor(
@@ -516,6 +521,114 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     });
     if (error) throw error;
     return data as SendDriverMessageResult;
+  }
+
+  async getOperationsCommunications(actor: ActorContext): Promise<OperationsCommunicationsProjection> {
+    type ThreadRow = {
+      id: string; round_id: string; stop_id: string; driver_id: string;
+      version: number; updated_at: string;
+    };
+    const { data: threads, error: threadsError } = await this.admin.from("operations_threads")
+      .select("id, round_id, stop_id, driver_id, version, updated_at")
+      .eq("tenant_id", actor.tenantId).order("updated_at", { ascending: false }).returns<ThreadRow[]>();
+    if (threadsError) throw threadsError;
+    if (!threads?.length) return { tenantId: actor.tenantId, threads: [] };
+
+    const threadIds = threads.map((thread) => thread.id);
+    const roundIds = [...new Set(threads.map((thread) => thread.round_id))];
+    const stopIds = [...new Set(threads.map((thread) => thread.stop_id))];
+    const driverIds = [...new Set(threads.map((thread) => thread.driver_id))];
+    const [roundResult, roundStopResult, stopResult, driverResult, messageResult] = await Promise.all([
+      this.admin.from("rounds").select("id, reference").eq("tenant_id", actor.tenantId).in("id", roundIds)
+        .returns<{ id: string; reference: string }[]>(),
+      this.admin.from("round_stops").select("round_id, stop_id, sequence").eq("tenant_id", actor.tenantId)
+        .in("round_id", roundIds).in("stop_id", stopIds)
+        .returns<{ round_id: string; stop_id: string; sequence: number }[]>(),
+      this.admin.from("delivery_stops").select("id, delivery_id").eq("tenant_id", actor.tenantId).in("id", stopIds)
+        .returns<{ id: string; delivery_id: string }[]>(),
+      this.admin.from("driver_profiles").select("id, person_id").in("id", driverIds)
+        .returns<{ id: string; person_id: string }[]>(),
+      this.admin.from("operations_messages").select("id, thread_id, sender, body, sent_at")
+        .eq("tenant_id", actor.tenantId).in("thread_id", threadIds).order("sent_at")
+        .returns<{ id: string; thread_id: string; sender: "driver" | "operations" | "system"; body: string; sent_at: string }[]>(),
+    ]);
+    if (roundResult.error) throw roundResult.error;
+    if (roundStopResult.error) throw roundStopResult.error;
+    if (stopResult.error) throw stopResult.error;
+    if (driverResult.error) throw driverResult.error;
+    if (messageResult.error) throw messageResult.error;
+
+    const deliveryIds = (stopResult.data ?? []).map((stop) => stop.delivery_id);
+    const personIds = (driverResult.data ?? []).map((driver) => driver.person_id);
+    const [deliveryResult, peopleResult] = await Promise.all([
+      this.admin.from("deliveries").select("id, reference, recipient_name, destination_raw_address")
+        .eq("tenant_id", actor.tenantId).in("id", deliveryIds)
+        .returns<{ id: string; reference: string; recipient_name: string; destination_raw_address: string }[]>(),
+      this.admin.from("persons").select("id, display_name").in("id", personIds)
+        .returns<{ id: string; display_name: string }[]>(),
+    ]);
+    if (deliveryResult.error) throw deliveryResult.error;
+    if (peopleResult.error) throw peopleResult.error;
+
+    const roundById = new Map((roundResult.data ?? []).map((round) => [round.id, round]));
+    const sequenceByKey = new Map((roundStopResult.data ?? []).map((entry) => [`${entry.round_id}:${entry.stop_id}`, entry.sequence]));
+    const stopById = new Map((stopResult.data ?? []).map((stop) => [stop.id, stop]));
+    const deliveryById = new Map((deliveryResult.data ?? []).map((delivery) => [delivery.id, delivery]));
+    const personById = new Map((peopleResult.data ?? []).map((person) => [person.id, person]));
+    const driverById = new Map((driverResult.data ?? []).map((driver) => [driver.id, driver]));
+    const messages = messageResult.data ?? [];
+
+    return {
+      tenantId: actor.tenantId,
+      threads: threads.flatMap((thread): OperationsCommunicationThread[] => {
+        const round = roundById.get(thread.round_id);
+        const stop = stopById.get(thread.stop_id);
+        const delivery = stop ? deliveryById.get(stop.delivery_id) : undefined;
+        const driver = driverById.get(thread.driver_id);
+        if (!round || !stop || !delivery || !driver) return [];
+        return [{
+          id: thread.id,
+          roundId: thread.round_id,
+          roundReference: round.reference,
+          stopId: thread.stop_id,
+          stopSequence: sequenceByKey.get(`${thread.round_id}:${thread.stop_id}`) ?? 0,
+          deliveryId: delivery.id,
+          deliveryReference: delivery.reference,
+          recipientName: delivery.recipient_name,
+          rawAddress: delivery.destination_raw_address,
+          driverId: thread.driver_id,
+          driverName: personById.get(driver.person_id)?.display_name ?? "Team driver",
+          version: thread.version,
+          updatedAt: thread.updated_at,
+          messages: messages.filter((message) => message.thread_id === thread.id).map((message) => ({
+            id: message.id,
+            sender: message.sender,
+            body: message.body,
+            sentAt: message.sent_at,
+          })),
+        }];
+      }),
+    };
+  }
+
+  async getOperationsCommunicationThread(
+    threadId: string,
+    actor: ActorContext,
+  ): Promise<OperationsCommunicationThread | null> {
+    const projection = await this.getOperationsCommunications(actor);
+    return projection.threads.find((thread) => thread.id === threadId) ?? null;
+  }
+
+  async sendOperationsMessage(
+    command: SendOperationsMessageCommand,
+    actor: ActorContext,
+  ): Promise<SendOperationsMessageResult> {
+    const { data, error } = await this.admin.rpc("send_operations_message_command", {
+      p_command: command,
+      p_actor_person_id: actor.personId,
+    });
+    if (error) throw error;
+    return data as SendOperationsMessageResult;
   }
 
   async preparePodMedia(

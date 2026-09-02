@@ -1,11 +1,13 @@
 begin;
 
 create extension if not exists pgtap with schema extensions;
-select plan(23);
+select plan(38);
 
 select has_function('public', 'ensure_driver_operations_thread', array['uuid', 'uuid', 'uuid'], 'driver thread projection exists');
 select has_function('public', 'send_driver_message_command', array['jsonb', 'uuid'], 'driver message command exists');
+select has_function('public', 'send_operations_message_command', array['jsonb', 'uuid'], 'Operations reply command exists');
 select ok(has_function_privilege('service_role', 'public.send_driver_message_command(jsonb,uuid)', 'EXECUTE'), 'API service can send driver messages');
+select ok(has_function_privilege('service_role', 'public.send_operations_message_command(jsonb,uuid)', 'EXECUTE'), 'API service can send Operations replies');
 select ok(not has_table_privilege('authenticated', 'public.operations_threads', 'SELECT'), 'driver cannot read threads directly');
 select ok(not has_table_privilege('authenticated', 'public.operations_messages', 'SELECT'), 'driver cannot read messages directly');
 
@@ -13,9 +15,14 @@ insert into public.tenants (id, slug, display_name)
 values ('70000000-0000-4000-8000-000000000001', 'thread-command-test', 'Thread Command Test');
 insert into public.persons (id, display_name, email) values
   ('70000000-0000-4000-8000-000000000007', 'Thread Driver', 'thread-driver@test.invalid'),
-  ('70000000-0000-4000-8000-000000000008', 'Other Person', 'other-thread@test.invalid');
+  ('70000000-0000-4000-8000-000000000008', 'Other Person', 'other-thread@test.invalid'),
+  ('70000000-0000-4000-8000-000000000009', 'Dispatcher', 'thread-dispatcher@test.invalid'),
+  ('70000000-0000-4000-8000-000000000010', 'Viewer', 'thread-viewer@test.invalid');
 insert into public.tenant_memberships (tenant_id, person_id, role, status, activated_at)
-values ('70000000-0000-4000-8000-000000000001', '70000000-0000-4000-8000-000000000007', 'team_driver', 'active', now());
+values
+  ('70000000-0000-4000-8000-000000000001', '70000000-0000-4000-8000-000000000007', 'team_driver', 'active', now()),
+  ('70000000-0000-4000-8000-000000000001', '70000000-0000-4000-8000-000000000009', 'dispatcher', 'active', now()),
+  ('70000000-0000-4000-8000-000000000001', '70000000-0000-4000-8000-000000000010', 'viewer', 'active', now());
 insert into public.driver_profiles (id, person_id, preferred_locale, vehicle_label)
 values ('70000000-0000-4000-8000-000000000002', '70000000-0000-4000-8000-000000000007', 'en', 'Motorbike');
 insert into public.driver_tenant_relationships (tenant_id, driver_id, relationship_kind, status, permissions)
@@ -105,6 +112,40 @@ select is(
   'unassigned person cannot load the thread'
 );
 
+create temporary table operations_message_command (body jsonb not null) on commit drop;
+insert into operations_message_command values (jsonb_build_object(
+  'schemaVersion', 1, 'commandType', 'thread.send_operations_message',
+  'commandId', '70000000-0000-4000-8000-000000000211',
+  'traceId', '70000000-0000-4000-8000-000000000212',
+  'idempotencyKey', 'operations-message:THREAD-001:one',
+  'tenantId', '70000000-0000-4000-8000-000000000001',
+  'aggregateId', (select body ->> 'id' from thread_projection),
+  'expectedVersion', 2,
+  'payload', jsonb_build_object('body', 'Continue to the recipient')
+));
+
+select is((public.send_operations_message_command((select body from operations_message_command), '70000000-0000-4000-8000-000000000009') ->> 'status'), 'committed', 'dispatcher reply commits');
+select is((select count(*) from public.operations_messages), 2::bigint, 'Operations reply is durable beside driver message');
+select is((select sender::text from public.operations_messages order by sent_at desc, id desc limit 1), 'operations', 'reply sender is Operations');
+select is((select body from public.operations_messages where sender = 'operations'), 'Continue to the recipient', 'exact Operations body is preserved');
+select is((select version from public.operations_threads limit 1), 3::bigint, 'Operations reply advances thread version');
+select is((select count(*) from public.audit_events where semantic_change ->> 'sender' = 'operations'), 1::bigint, 'Operations reply is audited once');
+select is((select count(*) from public.domain_event_outbox where event_name = 'thread.message_sent'), 2::bigint, 'driver and Operations message events are staged');
+select is((public.send_operations_message_command((select body from operations_message_command), '70000000-0000-4000-8000-000000000009') ->> 'deduplicated'), 'true', 'Operations retry is safely deduplicated');
+select is((select count(*) from public.operations_messages), 2::bigint, 'Operations deduplication does not duplicate history');
+select is(
+  (public.send_operations_message_command(jsonb_set((select body from operations_message_command), '{idempotencyKey}', '"operations-message:viewer"'), '70000000-0000-4000-8000-000000000010') -> 'error' ->> 'code'),
+  'NOT_AUTHORIZED', 'viewer cannot reply'
+);
+select is(
+  (public.send_operations_message_command(jsonb_set((select body from operations_message_command), '{idempotencyKey}', '"operations-message:outsider"'), '70000000-0000-4000-8000-000000000008') -> 'error' ->> 'code'),
+  'NOT_AUTHORIZED', 'person outside the tenant cannot reply'
+);
+select is(
+  (public.send_operations_message_command(jsonb_set((select body from operations_message_command), '{idempotencyKey}', '"operations-message:stale"'), '70000000-0000-4000-8000-000000000009') -> 'error' ->> 'code'),
+  'STALE_VERSION', 'stale Operations reply cannot append a message'
+);
+
 set local role authenticated;
 select throws_ok(
   $$select public.ensure_driver_operations_thread('70000000-0000-4000-8000-000000000130', '70000000-0000-4000-8000-000000000110', '70000000-0000-4000-8000-000000000007')$$,
@@ -115,6 +156,11 @@ select throws_ok(
   $$select public.send_driver_message_command('{}'::jsonb, '70000000-0000-4000-8000-000000000007')$$,
   '42501', 'permission denied for function send_driver_message_command',
   'authenticated clients cannot execute message commands directly'
+);
+select throws_ok(
+  $$select public.send_operations_message_command('{}'::jsonb, '70000000-0000-4000-8000-000000000009')$$,
+  '42501', 'permission denied for function send_operations_message_command',
+  'authenticated clients cannot execute Operations message commands directly'
 );
 reset role;
 

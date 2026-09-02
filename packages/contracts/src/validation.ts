@@ -1,5 +1,10 @@
 import type { CreateDeliveryCommand, CreateDeliveryPayload } from "./delivery.js";
-import type { SendDriverMessageCommand, SendDriverMessagePayload } from "./communications.js";
+import type {
+  SendDriverMessageCommand,
+  SendDriverMessagePayload,
+  SendOperationsMessageCommand,
+  SendOperationsMessagePayload,
+} from "./communications.js";
 import type { LocationBatch, PositionSample } from "./location.js";
 import { pickupProblemCategories, podHandoffTypes } from "./round.js";
 import type {
@@ -37,6 +42,26 @@ export function validateSendDriverMessageCommand(command: SendDriverMessageComma
     throw new ContractError("SendDriverMessage expectedVersion must be a positive integer");
   }
   validateSendDriverMessagePayload(command.payload);
+}
+
+export function validateSendOperationsMessagePayload(payload: SendOperationsMessagePayload): void {
+  validateSendDriverMessagePayload(payload);
+}
+
+export function validateSendOperationsMessageCommand(command: SendOperationsMessageCommand): void {
+  if (command.schemaVersion !== 1 || command.commandType !== "thread.send_operations_message") {
+    throw new ContractError("unsupported SendOperationsMessage command envelope");
+  }
+  assertUuid(command.commandId, "commandId");
+  assertUuid(command.traceId, "traceId");
+  assertUuid(command.tenantId, "tenantId");
+  assertUuid(command.aggregateId, "aggregateId");
+  assertNonEmpty(command.idempotencyKey, "idempotencyKey");
+  if (command.idempotencyKey.length > 200) throw new ContractError("idempotencyKey exceeds 200 characters");
+  if (!Number.isInteger(command.expectedVersion) || command.expectedVersion < 1) {
+    throw new ContractError("SendOperationsMessage expectedVersion must be a positive integer");
+  }
+  validateSendOperationsMessagePayload(command.payload);
 }
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;

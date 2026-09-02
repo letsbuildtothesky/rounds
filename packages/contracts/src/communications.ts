@@ -40,3 +40,34 @@ export type SendDriverMessageResult = CommandResult<
   DriverMessageSentPayload,
   DriverMessageSentEvent
 >;
+
+export type OperationsCommunicationThread = DriverOperationsThread & {
+  roundReference: string;
+  stopSequence: number;
+  deliveryId: string;
+  deliveryReference: string;
+  recipientName: string;
+  rawAddress: string;
+  driverId: string;
+  driverName: string;
+  updatedAt: string;
+};
+
+export type OperationsCommunicationsProjection = {
+  tenantId: string;
+  threads: OperationsCommunicationThread[];
+};
+
+export type SendOperationsMessagePayload = {
+  body: string;
+};
+
+export type SendOperationsMessageCommand = CommandEnvelope<
+  "thread.send_operations_message",
+  SendOperationsMessagePayload
+>;
+
+export type SendOperationsMessageResult = CommandResult<
+  DriverMessageSentPayload,
+  DriverMessageSentEvent
+>;
