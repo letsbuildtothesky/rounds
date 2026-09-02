@@ -30,9 +30,11 @@ values ('82000000-0000-4000-8000-000000000030', '82000000-0000-4000-8000-0000000
 insert into public.delivery_stops (id, tenant_id, delivery_id, state, version, arrived_at)
 values ('82000000-0000-4000-8000-000000000040', '82000000-0000-4000-8000-000000000001', '82000000-0000-4000-8000-000000000030', 'arrived', 5, now());
 insert into public.manifests (id, tenant_id, delivery_id, state, version, locked_at)
-values ('82000000-0000-4000-8000-000000000050', '82000000-0000-4000-8000-000000000001', '82000000-0000-4000-8000-000000000030', 'picked_up_locked', 2, now());
+values ('82000000-0000-4000-8000-000000000050', '82000000-0000-4000-8000-000000000001', '82000000-0000-4000-8000-000000000030', 'draft', 1, null);
 insert into public.manifest_items (tenant_id, manifest_id, line_number, description, quantity)
 values ('82000000-0000-4000-8000-000000000001', '82000000-0000-4000-8000-000000000050', 1, 'Glass vase bouquet', 1);
+update public.manifests set state='picked_up_locked', version=2, locked_at=now(), updated_at=now()
+where id='82000000-0000-4000-8000-000000000050';
 insert into public.rounds (id, tenant_id, reference, service_date, driver_id, state, version)
 values ('82000000-0000-4000-8000-000000000060', '82000000-0000-4000-8000-000000000001', 'ROUND-DAMAGE-001', '2026-09-02', '82000000-0000-4000-8000-000000000010', 'active', 4);
 insert into public.round_stops (tenant_id, round_id, stop_id, sequence)
