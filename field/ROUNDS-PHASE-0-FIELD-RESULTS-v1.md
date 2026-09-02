@@ -96,7 +96,7 @@ represented as motorcycle field evidence.
 | Incoming call | | | | | | | |
 | Weak/lost/recovered network | Guidance stayed active during 20 s forced loss | 12 samples buffered across 35 s loss/recovery sequence | Upload path later caught up to LIVE | No false completed state | Wi-Fi/mobile restored; ping succeeded | No new logical ledger row | No sample loss observed |
 | Battery/OEM optimization | | | | | | | |
-| Process crash/relaunch | | | | | | | |
+| Process crash/relaunch | Not active during the POD bench case | Not under test | Not under test | Captured POD photo restored for the same Stop after a full app stop and relaunch | Immediate after reopening the Stop | Server committed one POD record and one media asset | No crash; controlled bench evidence only |
 | Permission denied/restored | | | | | | | |
 | GPS unavailable/restored | | | | | | | |
 
@@ -124,6 +124,10 @@ represented as motorcycle field evidence.
 - Video:
 - Structured logs: on-device SQLite recorded route/lifecycle/upload events;
   Supabase accepted watermark 637 during the live bench run.
+- POD bench evidence: Samsung camera capture survived a full app stop/relaunch;
+  remote verification found the synthetic Delivery delivered and its JPEG media
+  asset committed. This is physical-device acceptance evidence, not a Phase 0
+  route-field result.
 - Crash reports:
 
 ## Gate decision

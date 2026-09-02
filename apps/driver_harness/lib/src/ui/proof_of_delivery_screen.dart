@@ -5,15 +5,22 @@ import 'package:image_picker/image_picker.dart';
 
 import '../app/harness_app_controller.dart';
 import '../driver/driver_session.dart';
+import '../storage/pod_draft_photo_store.dart';
+
+typedef DeliveryPhotoCapture = Future<XFile?> Function();
 
 class ProofOfDeliveryScreen extends StatefulWidget {
   const ProofOfDeliveryScreen({
     required this.controller,
     required this.stop,
+    this.photoStore,
+    this.capturePhoto,
     super.key,
   });
   final HarnessAppController controller;
   final DriverRoundStopModel stop;
+  final PodDraftPhotoStore? photoStore;
+  final DeliveryPhotoCapture? capturePhoto;
 
   @override
   State<ProofOfDeliveryScreen> createState() => _ProofOfDeliveryScreenState();
@@ -25,14 +32,19 @@ class _ProofOfDeliveryScreenState extends State<ProofOfDeliveryScreen> {
   final _location = TextEditingController();
   final _note = TextEditingController();
   String _handoffType = 'recipient';
+  PodDraftPhotoStore? _photoStore;
   XFile? _photo;
+  bool _restoringPhoto = true;
+  bool _capturingPhoto = false;
   bool _submitting = false;
   bool _pendingSync = false;
+  String? _photoError;
 
   @override
   void initState() {
     super.initState();
     _receiver.text = widget.stop.recipientName;
+    _restorePhoto();
   }
 
   @override
@@ -165,7 +177,20 @@ class _ProofOfDeliveryScreenState extends State<ProofOfDeliveryScreen> {
           const Text(
             'Required. The photo is saved on this phone first and uploaded resumably.',
           ),
+          if (_photoError != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(
+                _photoError!,
+                style: const TextStyle(color: Colors.red),
+              ),
+            ),
           const SizedBox(height: 10),
+          if (_restoringPhoto)
+            const SizedBox(
+              height: 80,
+              child: Center(child: CircularProgressIndicator()),
+            ),
           if (_photo != null)
             ClipRRect(
               borderRadius: BorderRadius.circular(16),
@@ -178,10 +203,22 @@ class _ProofOfDeliveryScreenState extends State<ProofOfDeliveryScreen> {
           const SizedBox(height: 10),
           OutlinedButton.icon(
             key: const Key('capture-delivery-photo'),
-            onPressed: _submitting || _pendingSync ? null : _capturePhoto,
+            onPressed:
+                _submitting ||
+                    _pendingSync ||
+                    _restoringPhoto ||
+                    _capturingPhoto
+                ? null
+                : _capturePhoto,
             icon: const Icon(Icons.camera_alt_outlined),
             label: Text(
-              _photo == null ? 'Take delivery photo' : 'Retake photo',
+              _restoringPhoto
+                  ? 'Checking saved photo…'
+                  : _capturingPhoto
+                  ? 'Saving photo…'
+                  : _photo == null
+                  ? 'Take delivery photo'
+                  : 'Retake photo',
             ),
           ),
           TextField(
@@ -205,7 +242,12 @@ class _ProofOfDeliveryScreenState extends State<ProofOfDeliveryScreen> {
           const SizedBox(height: 12),
           FilledButton.icon(
             key: const Key('complete-delivery'),
-            onPressed: _submitting || _photo == null || !_handoffValid
+            onPressed:
+                _submitting ||
+                    _restoringPhoto ||
+                    _capturingPhoto ||
+                    _photo == null ||
+                    !_handoffValid
                 ? null
                 : _complete,
             icon: const Icon(Icons.verified_outlined),
@@ -222,16 +264,57 @@ class _ProofOfDeliveryScreenState extends State<ProofOfDeliveryScreen> {
     ),
   );
 
-  Future<void> _capturePhoto() async {
-    final photo = await ImagePicker().pickImage(
-      source: ImageSource.camera,
-      maxWidth: 1600,
-      imageQuality: 75,
-      requestFullMetadata: false,
-    );
-    if (!mounted || photo == null) return;
-    setState(() => _photo = photo);
+  Future<void> _restorePhoto() async {
+    try {
+      final store = widget.photoStore ?? await PodDraftPhotoStore.create();
+      final restored = await store.restore(widget.stop.id);
+      if (!mounted) return;
+      setState(() {
+        _photoStore = store;
+        _photo = restored == null ? null : XFile(restored.path);
+        _restoringPhoto = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _restoringPhoto = false;
+        _photoError = 'The saved delivery photo could not be checked.';
+      });
+    }
   }
+
+  Future<void> _capturePhoto() async {
+    setState(() {
+      _capturingPhoto = true;
+      _photoError = null;
+    });
+    try {
+      final photo = await (widget.capturePhoto ?? _openCamera)();
+      if (photo == null || !mounted) {
+        if (mounted) setState(() => _capturingPhoto = false);
+        return;
+      }
+      final retained = await _photoStore!.retain(widget.stop.id, photo.path);
+      if (!mounted) return;
+      setState(() {
+        _photo = XFile(retained.path);
+        _capturingPhoto = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _capturingPhoto = false;
+        _photoError = 'The delivery photo could not be retained. Try again.';
+      });
+    }
+  }
+
+  Future<XFile?> _openCamera() => ImagePicker().pickImage(
+    source: ImageSource.camera,
+    maxWidth: 1600,
+    imageQuality: 75,
+    requestFullMetadata: false,
+  );
 
   Future<void> _complete() async {
     setState(() => _submitting = true);
@@ -256,6 +339,8 @@ class _ProofOfDeliveryScreenState extends State<ProofOfDeliveryScreen> {
       _pendingSync = outcome?.pendingSync ?? false;
     });
     if (outcome?.committed ?? false) {
+      await _photoStore?.clear(widget.stop.id);
+      if (!mounted) return;
       Navigator.of(context).pop(true);
     } else if (outcome == null) {
       ScaffoldMessenger.of(context).showSnackBar(
