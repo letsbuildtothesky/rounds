@@ -10,25 +10,42 @@ class RoundOverviewMap extends StatelessWidget {
   const RoundOverviewMap({
     required this.round,
     required this.enableNativeMap,
+    this.currentStopSequence = 1,
+    this.completedStopSequences = const <int>{},
+    this.semanticsLabel = 'Active Round route map',
     super.key,
   });
 
   final DriverRoundModel round;
   final bool enableNativeMap;
+  final int currentStopSequence;
+  final Set<int> completedStopSequences;
+  final String semanticsLabel;
 
   @override
   Widget build(BuildContext context) => Semantics(
-    label: 'Active Round route map',
+    label: semanticsLabel,
     child: enableNativeMap
-        ? _NativeRoundMap(round: round)
-        : _RoundMapPreview(stopCount: round.stops.length),
+        ? _NativeRoundMap(
+            round: round,
+            currentStopSequence: currentStopSequence,
+          )
+        : _RoundMapPreview(
+            stopCount: round.stops.length,
+            currentStopSequence: currentStopSequence,
+            completedStopSequences: completedStopSequences,
+          ),
   );
 }
 
 class _NativeRoundMap extends StatelessWidget {
-  const _NativeRoundMap({required this.round});
+  const _NativeRoundMap({
+    required this.round,
+    required this.currentStopSequence,
+  });
 
   final DriverRoundModel round;
+  final int currentStopSequence;
 
   @override
   Widget build(BuildContext context) {
@@ -64,7 +81,7 @@ class _NativeRoundMap extends StatelessWidget {
               title: '${stop.sequence}. ${stop.recipientName}',
               snippet: stop.rawAddress,
             ),
-            zIndex: stop.sequence == 1 ? 2 : 1,
+            zIndex: stop.sequence == currentStopSequence ? 2 : 1,
           ),
       ]);
       if (points.length > 1) {
@@ -100,22 +117,38 @@ class _NativeRoundMap extends StatelessWidget {
 }
 
 class _RoundMapPreview extends StatelessWidget {
-  const _RoundMapPreview({required this.stopCount});
+  const _RoundMapPreview({
+    required this.stopCount,
+    required this.currentStopSequence,
+    required this.completedStopSequences,
+  });
 
   final int stopCount;
+  final int currentStopSequence;
+  final Set<int> completedStopSequences;
 
   @override
   Widget build(BuildContext context) => CustomPaint(
     key: const Key('e01-map-preview'),
-    painter: _RoundMapPainter(stopCount: stopCount),
+    painter: _RoundMapPainter(
+      stopCount: stopCount,
+      currentStopSequence: currentStopSequence,
+      completedStopSequences: completedStopSequences,
+    ),
     child: const SizedBox.expand(),
   );
 }
 
 class _RoundMapPainter extends CustomPainter {
-  const _RoundMapPainter({required this.stopCount});
+  const _RoundMapPainter({
+    required this.stopCount,
+    required this.currentStopSequence,
+    required this.completedStopSequences,
+  });
 
   final int stopCount;
+  final int currentStopSequence;
+  final Set<int> completedStopSequences;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -212,28 +245,52 @@ class _RoundMapPainter extends CustomPainter {
       Offset(.86, .68),
     ];
     for (var index = 0; index < count; index++) {
+      final sequence = index + 1;
+      final completed = completedStopSequences.contains(sequence);
+      final current = sequence == currentStopSequence;
       final center = Offset(
         size.width * markerOffsets[index].dx,
         size.height * markerOffsets[index].dy,
       );
       canvas.drawCircle(
         center,
-        index == 0 ? 17 : 14.5,
-        Paint()..color = index == 0 ? RoundsColors.orange : Colors.white,
+        current ? 17 : 14.5,
+        Paint()
+          ..color = completed
+              ? RoundsColors.green
+              : current
+              ? RoundsColors.orange
+              : Colors.white,
       );
       canvas.drawCircle(
         center,
-        index == 0 ? 17 : 14.5,
+        current ? 17 : 14.5,
         Paint()
-          ..color = index == 0 ? Colors.white : RoundsColors.ink
+          ..color = completed || current ? Colors.white : RoundsColors.ink
           ..style = PaintingStyle.stroke
           ..strokeWidth = 3,
       );
+      if (completed) {
+        final check = Path()
+          ..moveTo(center.dx - 6, center.dy)
+          ..lineTo(center.dx - 1.5, center.dy + 4)
+          ..lineTo(center.dx + 6.5, center.dy - 5);
+        canvas.drawPath(
+          check,
+          Paint()
+            ..color = Colors.white
+            ..strokeWidth = 2.5
+            ..strokeCap = StrokeCap.round
+            ..strokeJoin = StrokeJoin.round
+            ..style = PaintingStyle.stroke,
+        );
+        continue;
+      }
       final label = TextPainter(
         text: TextSpan(
-          text: '${index + 1}',
+          text: '$sequence',
           style: TextStyle(
-            color: index == 0 ? Colors.white : RoundsColors.ink,
+            color: current ? Colors.white : RoundsColors.ink,
             fontSize: 11,
             fontWeight: FontWeight.w900,
           ),
@@ -246,5 +303,7 @@ class _RoundMapPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_RoundMapPainter oldDelegate) =>
-      oldDelegate.stopCount != stopCount;
+      oldDelegate.stopCount != stopCount ||
+      oldDelegate.currentStopSequence != currentStopSequence ||
+      oldDelegate.completedStopSequences != completedStopSequences;
 }

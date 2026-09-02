@@ -48,6 +48,14 @@ String generateDriverUiMetrics(Map<String, dynamic> json) {
   final control = e02['roadControl'] as Map<String, dynamic>;
   final dock = e02['stopDock'] as Map<String, dynamic>;
   final type = e02['typography'] as Map<String, dynamic>;
+  final f08 = screens['F08'] as Map<String, dynamic>;
+  final f08Complete = f08['completeBar'] as Map<String, dynamic>;
+  final f08Dock = f08['nextDock'] as Map<String, dynamic>;
+  final i01 = screens['I01'] as Map<String, dynamic>;
+  final i01Top = i01['topBar'] as Map<String, dynamic>;
+  final i01Hero = i01['hero'] as Map<String, dynamic>;
+  final i01Continuation = i01['continuation'] as Map<String, dynamic>;
+  final i01Footer = i01['footer'] as Map<String, dynamic>;
 
   return '''// GENERATED CODE - DO NOT MODIFY BY HAND.
 // Source: $_sourcePath
@@ -299,6 +307,69 @@ abstract final class DriverE02Metrics {
   static const double distanceWeight = ${_double(type['distanceWeight'])};
   static const double arrivalSize = ${_double(type['arrivalSize'])};
   static const double arrivalWeight = ${_double(type['arrivalWeight'])};
+}
+
+abstract final class DriverF08Metrics {
+  static const String source = '${f08['source']}';
+
+  static const double completeBarHeight = ${_double(f08Complete['height'])};
+  static const double compactCompleteBarHeight = ${_double(f08Complete['compactHeight'])};
+  static const double completeBarPaddingHorizontal = ${_double(f08Complete['paddingHorizontal'])};
+  static const double completeIconSize = ${_double(f08Complete['iconSize'])};
+  static const double completeColumnGap = ${_double(f08Complete['columnGap'])};
+  static const double completeTitleSize = ${_double(f08Complete['titleSize'])};
+  static const double completeDetailGap = ${_double(f08Complete['detailGap'])};
+  static const double completeDetailSize = ${_double(f08Complete['detailSize'])};
+
+  static const double dockHeight = ${_double(f08Dock['height'])};
+  static const double compactDockHeight = ${_double(f08Dock['compactHeight'])};
+  static const double dockPaddingHorizontal = ${_double(f08Dock['paddingHorizontal'])};
+  static const double dockPaddingTop = ${_double(f08Dock['paddingTop'])};
+  static const double dockPaddingBottom = ${_double(f08Dock['paddingBottom'])};
+  static const double kickerSize = ${_double(f08Dock['kickerSize'])};
+  static const double nameGap = ${_double(f08Dock['nameGap'])};
+  static const double nameSize = ${_double(f08Dock['nameSize'])};
+  static const double placeGap = ${_double(f08Dock['placeGap'])};
+  static const double placeSize = ${_double(f08Dock['placeSize'])};
+  static const double primaryHeight = ${_double(f08Dock['primaryHeight'])};
+  static const double primaryMarginTop = ${_double(f08Dock['primaryMarginTop'])};
+  static const double primaryRadius = ${_double(f08Dock['primaryRadius'])};
+  static const double primarySize = ${_double(f08Dock['primarySize'])};
+  static const double remainingHeight = ${_double(f08Dock['remainingHeight'])};
+  static const double remainingMarginTop = ${_double(f08Dock['remainingMarginTop'])};
+}
+
+abstract final class DriverI01Metrics {
+  static const String source = '${i01['source']}';
+
+  static const double topBarHeight = ${_double(i01Top['height'])};
+  static const double topBarPaddingHorizontal = ${_double(i01Top['paddingHorizontal'])};
+  static const double brandSize = ${_double(i01Top['brandSize'])};
+  static const double heroPaddingHorizontal = ${_double(i01Hero['paddingHorizontal'])};
+  static const double heroPaddingTop = ${_double(i01Hero['paddingTop'])};
+  static const double heroPaddingBottom = ${_double(i01Hero['paddingBottom'])};
+  static const double heroStateSize = ${_double(i01Hero['stateSize'])};
+  static const double heroStateGap = ${_double(i01Hero['stateGap'])};
+  static const double heroStateBottom = ${_double(i01Hero['stateBottom'])};
+  static const double heroTitleSize = ${_double(i01Hero['titleSize'])};
+  static const double heroTitleHeight = ${_double(i01Hero['titleHeight'])};
+  static const double heroSubtitleTop = ${_double(i01Hero['subtitleTop'])};
+  static const double heroSubtitleSize = ${_double(i01Hero['subtitleSize'])};
+  static const double heroMetaTop = ${_double(i01Hero['metaTop'])};
+  static const double heroMetaSize = ${_double(i01Hero['metaSize'])};
+  static const double continuationPaddingHorizontal = ${_double(i01Continuation['paddingHorizontal'])};
+  static const double continuationPaddingTop = ${_double(i01Continuation['paddingTop'])};
+  static const double continuationSectionSize = ${_double(i01Continuation['sectionSize'])};
+  static const double continuationSectionBottom = ${_double(i01Continuation['sectionBottom'])};
+  static const double continuationStateSize = ${_double(i01Continuation['stateSize'])};
+  static const double continuationStateBottom = ${_double(i01Continuation['stateBottom'])};
+  static const double continuationMessageSize = ${_double(i01Continuation['messageSize'])};
+  static const double footerPaddingHorizontal = ${_double(i01Footer['paddingHorizontal'])};
+  static const double footerPaddingTop = ${_double(i01Footer['paddingTop'])};
+  static const double footerPaddingBottom = ${_double(i01Footer['paddingBottom'])};
+  static const double primaryHeight = ${_double(i01Footer['primaryHeight'])};
+  static const double primaryRadius = ${_double(i01Footer['primaryRadius'])};
+  static const double primarySize = ${_double(i01Footer['primarySize'])};
 }
 ''';
 }

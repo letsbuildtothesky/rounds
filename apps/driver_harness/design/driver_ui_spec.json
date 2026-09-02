@@ -259,6 +259,76 @@
         "arrivalSize": 17,
         "arrivalWeight": 820
       }
+    },
+    "F08": {
+      "source": "ux/driver/en/screens/ROUNDS-F08-STOP-COMPLETE-NEXT-STOP-v4-10OF10.html",
+      "completeBar": {
+        "height": 74,
+        "compactHeight": 66,
+        "paddingHorizontal": 17,
+        "iconSize": 38,
+        "columnGap": 12,
+        "titleSize": 16.5,
+        "detailGap": 5,
+        "detailSize": 11.5
+      },
+      "nextDock": {
+        "height": 232,
+        "compactHeight": 214,
+        "paddingHorizontal": 18,
+        "paddingTop": 17,
+        "paddingBottom": 13,
+        "kickerSize": 11,
+        "nameGap": 7,
+        "nameSize": 27,
+        "placeGap": 7,
+        "placeSize": 12.5,
+        "primaryHeight": 60,
+        "primaryMarginTop": 13,
+        "primaryRadius": 7,
+        "primarySize": 16.5,
+        "remainingHeight": 39,
+        "remainingMarginTop": 7
+      }
+    },
+    "I01": {
+      "source": "ux/driver/en/screens/ROUNDS-I01-ROUND-COMPLETE-v3-10OF10.html",
+      "topBar": {
+        "height": 56,
+        "paddingHorizontal": 20,
+        "brandSize": 20
+      },
+      "hero": {
+        "paddingHorizontal": 20,
+        "paddingTop": 34,
+        "paddingBottom": 31,
+        "stateSize": 12,
+        "stateGap": 9,
+        "stateBottom": 18,
+        "titleSize": 42,
+        "titleHeight": 0.98,
+        "subtitleTop": 14,
+        "subtitleSize": 18,
+        "metaTop": 8,
+        "metaSize": 14
+      },
+      "continuation": {
+        "paddingHorizontal": 20,
+        "paddingTop": 28,
+        "sectionSize": 11.5,
+        "sectionBottom": 12,
+        "stateSize": 15,
+        "stateBottom": 8,
+        "messageSize": 34
+      },
+      "footer": {
+        "paddingHorizontal": 20,
+        "paddingTop": 12,
+        "paddingBottom": 18,
+        "primaryHeight": 62,
+        "primaryRadius": 7,
+        "primarySize": 17
+      }
     }
   }
 }

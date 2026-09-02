@@ -11,6 +11,7 @@ import 'components/delivery_issue_flow.dart';
 import 'components/operations_contact_flow.dart';
 import 'components/rounds_action_drawer.dart';
 import 'proof_of_delivery_screen.dart';
+import 'post_delivery_screen.dart';
 import 'operations_chat_screen.dart';
 
 class NavigationHarnessScreen extends StatefulWidget {
@@ -278,7 +279,43 @@ class _NavigationHarnessScreenState extends State<NavigationHarnessScreen> {
         ),
       ),
     );
-    if (completed == true && mounted) Navigator.of(context).pop();
+    if (completed != true || !mounted) return;
+    final refreshedRound = widget.controller.driverSession?.currentRound;
+    final nextStop = nextOperationalStop(refreshedRound);
+    if (refreshedRound != null && nextStop != null) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute<void>(
+          builder: (_) => StopCompleteNextStopScreen(
+            round: refreshedRound,
+            completedStop: widget.stop,
+            nextStop: nextStop,
+            enableNativeMap: widget.enableNativeNavigation,
+            onNavigate: (nextContext) {
+              Navigator.of(nextContext).pushReplacement(
+                MaterialPageRoute<void>(
+                  builder: (_) => NavigationHarnessScreen(
+                    controller: widget.controller,
+                    enableNativeNavigation: widget.enableNativeNavigation,
+                    round: refreshedRound,
+                    stop: nextStop,
+                    stopCount: refreshedRound.stops.length,
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      );
+      return;
+    }
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute<void>(
+        builder: (_) => RoundCompleteScreen(
+          round: widget.round,
+          onContinue: (completeContext) => Navigator.of(completeContext).pop(),
+        ),
+      ),
+    );
   }
 }
 

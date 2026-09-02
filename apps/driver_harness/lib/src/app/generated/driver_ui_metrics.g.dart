@@ -249,3 +249,66 @@ abstract final class DriverE02Metrics {
   static const double arrivalSize = 17.0;
   static const double arrivalWeight = 820.0;
 }
+
+abstract final class DriverF08Metrics {
+  static const String source = 'ux/driver/en/screens/ROUNDS-F08-STOP-COMPLETE-NEXT-STOP-v4-10OF10.html';
+
+  static const double completeBarHeight = 74.0;
+  static const double compactCompleteBarHeight = 66.0;
+  static const double completeBarPaddingHorizontal = 17.0;
+  static const double completeIconSize = 38.0;
+  static const double completeColumnGap = 12.0;
+  static const double completeTitleSize = 16.5;
+  static const double completeDetailGap = 5.0;
+  static const double completeDetailSize = 11.5;
+
+  static const double dockHeight = 232.0;
+  static const double compactDockHeight = 214.0;
+  static const double dockPaddingHorizontal = 18.0;
+  static const double dockPaddingTop = 17.0;
+  static const double dockPaddingBottom = 13.0;
+  static const double kickerSize = 11.0;
+  static const double nameGap = 7.0;
+  static const double nameSize = 27.0;
+  static const double placeGap = 7.0;
+  static const double placeSize = 12.5;
+  static const double primaryHeight = 60.0;
+  static const double primaryMarginTop = 13.0;
+  static const double primaryRadius = 7.0;
+  static const double primarySize = 16.5;
+  static const double remainingHeight = 39.0;
+  static const double remainingMarginTop = 7.0;
+}
+
+abstract final class DriverI01Metrics {
+  static const String source = 'ux/driver/en/screens/ROUNDS-I01-ROUND-COMPLETE-v3-10OF10.html';
+
+  static const double topBarHeight = 56.0;
+  static const double topBarPaddingHorizontal = 20.0;
+  static const double brandSize = 20.0;
+  static const double heroPaddingHorizontal = 20.0;
+  static const double heroPaddingTop = 34.0;
+  static const double heroPaddingBottom = 31.0;
+  static const double heroStateSize = 12.0;
+  static const double heroStateGap = 9.0;
+  static const double heroStateBottom = 18.0;
+  static const double heroTitleSize = 42.0;
+  static const double heroTitleHeight = 0.98;
+  static const double heroSubtitleTop = 14.0;
+  static const double heroSubtitleSize = 18.0;
+  static const double heroMetaTop = 8.0;
+  static const double heroMetaSize = 14.0;
+  static const double continuationPaddingHorizontal = 20.0;
+  static const double continuationPaddingTop = 28.0;
+  static const double continuationSectionSize = 11.5;
+  static const double continuationSectionBottom = 12.0;
+  static const double continuationStateSize = 15.0;
+  static const double continuationStateBottom = 8.0;
+  static const double continuationMessageSize = 34.0;
+  static const double footerPaddingHorizontal = 20.0;
+  static const double footerPaddingTop = 12.0;
+  static const double footerPaddingBottom = 18.0;
+  static const double primaryHeight = 62.0;
+  static const double primaryRadius = 7.0;
+  static const double primarySize = 17.0;
+}
