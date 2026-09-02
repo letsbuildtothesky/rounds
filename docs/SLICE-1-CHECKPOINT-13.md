@@ -15,7 +15,7 @@
 - 4 Operations web tests passed.
 - API and Operations web TypeScript checks passed.
 - The production Operations web build passed.
-- Migration `202609020003_operations_exception_resolution.sql` was applied to the linked Supabase project.
+- Migrations `202609020003_operations_exception_resolution.sql` and `202609020004_exception_recovery_transition.sql` were applied to the linked Supabase project.
 - Linked remote `public` schema lint returned no errors and the local/remote migration histories match.
 - The live tenant Action queue refreshed successfully after deployment and currently contains no unresolved exceptions.
 
