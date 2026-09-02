@@ -59,6 +59,49 @@ export type OperationsRoundSummary = {
   };
 };
 
+export type OperationsRoundStopDetail = {
+  stopId: string;
+  sequence: number;
+  stopState: string;
+  stopVersion: number;
+  deliveryId: string;
+  deliveryReference: string;
+  deliveryState: string;
+  recipientName: string;
+  recipientPhone: string;
+  rawAddress: string;
+  coordinate?: { latitude: number; longitude: number };
+  windowStart: string;
+  windowEnd: string;
+  manifest: {
+    id: string;
+    state: string;
+    version: number;
+    items: Array<{ lineNumber: number; description: string; quantity: number; handlingNote?: string }>;
+  };
+  pickupConfirmed: boolean;
+  arrivedAt?: string;
+  completedAt?: string;
+  openExceptionCount: number;
+  operationsThreadId?: string;
+};
+
+export type OperationsRoundDetail = {
+  tenantId: string;
+  observedAt: string;
+  id: string;
+  reference: string;
+  serviceDate: string;
+  state: RoundState;
+  version: number;
+  driver: TeamDriverSummary;
+  pickup: { id: string; displayName: string };
+  stops: OperationsRoundStopDetail[];
+  custodyStopCount: number;
+  openExceptionCount: number;
+  currentPosition?: { latitude: number; longitude: number; capturedAt: string };
+};
+
 export type PlanRoundPayload = {
   reference: string;
   serviceDate: string;

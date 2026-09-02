@@ -14,6 +14,7 @@ import { readConfig } from "./config.js";
 import { operationsSessionHandler } from "./operations-session-handler.js";
 import { operationsActionHandler } from "./operations-action-handler.js";
 import { operationsDeliveriesHandler } from "./operations-deliveries-handler.js";
+import { operationsRoundDetailHandler } from "./operations-round-detail-handler.js";
 import { planRoundHandler } from "./plan-round-handler.js";
 import { reportPickupProblemHandler } from "./report-pickup-problem-handler.js";
 import { preparePodMediaHandler } from "./prepare-pod-media-handler.js";
@@ -123,6 +124,18 @@ const server = createServer(async (request, response) => {
         now: () => new Date(),
       });
       sendNode(response, addOperationsCors(deliveriesResponse, request.headers.origin));
+      return;
+    }
+    const operationsRoundMatch = request.url?.match(/^\/v1\/operations\/rounds\/([0-9a-f-]+)$/i);
+    if (request.method === "GET" && operationsRoundMatch) {
+      const webRequest = await toWebRequest(request);
+      const roundDetailResponse = await operationsRoundDetailHandler(webRequest, operationsRoundMatch[1]!, {
+        identity: gateway,
+        rounds: gateway,
+        uuid: () => crypto.randomUUID(),
+        now: () => new Date(),
+      });
+      sendNode(response, addOperationsCors(roundDetailResponse, request.headers.origin));
       return;
     }
     if (request.method === "GET" && request.url === "/v1/operations/planning") {

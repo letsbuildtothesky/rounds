@@ -17,6 +17,7 @@ import type {
   OperationsHistoryProjection,
   OperationsActionProjection,
   OperationsDeliveriesProjection,
+  OperationsRoundDetail,
   OperationsCommunicationsProjection,
   OperationsCommunicationThread,
   OperationsPlanningProjection,
@@ -128,6 +129,10 @@ export interface OperationsDeliveriesGateway {
   getOperationsDeliveries(actor: ActorContext, observedAt: Date): Promise<OperationsDeliveriesProjection>;
 }
 
+export interface OperationsRoundDetailGateway {
+  getOperationsRoundDetail(roundId: string, actor: ActorContext, observedAt: Date): Promise<OperationsRoundDetail | null>;
+}
+
 export type CreateDeliveryDependencies = {
   identity: IdentityGateway;
   commands: DeliveryCommandGateway;
@@ -164,6 +169,13 @@ export type OperationsActionDependencies = {
 export type OperationsDeliveriesDependencies = {
   identity: IdentityGateway;
   deliveries: OperationsDeliveriesGateway;
+  uuid: () => string;
+  now: () => Date;
+};
+
+export type OperationsRoundDetailDependencies = {
+  identity: IdentityGateway;
+  rounds: OperationsRoundDetailGateway;
   uuid: () => string;
   now: () => Date;
 };

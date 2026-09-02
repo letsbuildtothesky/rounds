@@ -14,6 +14,7 @@ import type {
 import { OperationsMap, type OperationsMapCamera, type OperationsMapMode } from "./operations-map";
 import { OperationsMenuIcon, OperationsSectionSheet, type OperationsSectionKey } from "./operations-section-sheet";
 import { DeliveriesWorkspace } from "./deliveries-workspace";
+import { RoundDetailWorkspace } from "./round-detail-workspace";
 
 const roundsApiUrl = process.env.NEXT_PUBLIC_ROUNDS_API_URL ?? "http://127.0.0.1:8080";
 
@@ -124,6 +125,7 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
   const [mapMenuOpen, setMapMenuOpen] = useState(false);
   const [mapCamera, setMapCamera] = useState<OperationsMapCamera>({ bearing: 0, pitch: 0 });
   const [mapHint, setMapHint] = useState("");
+  const [roundDetailId, setRoundDetailId] = useState("");
 
   const load = useCallback(async (quiet = false) => {
     if (!quiet) setLoading(true);
@@ -360,9 +362,11 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
 
         <aside className={`v45-drawer ${selection ? "open" : ""}`} aria-hidden={!selection}>
           <header><div><small>{selection?.kind === "exception" ? "ORDER DECISION" : selection?.kind === "delivery" ? "PLANNING DELIVERY" : "LIVE ROUND"}</small><h2>{selection?.kind === "exception" ? selection.item.recipientName : selection?.kind === "round" ? selection.item.reference : selection?.kind === "delivery" ? selection.item.recipientName : ""}</h2><p>{selection?.kind === "exception" ? `#${selection.item.deliveryReference} · ${selection.item.rawAddress}` : selection?.kind === "round" ? `${selection.item.driverName} · ${selection.item.stopCount} Stops` : selection?.kind === "delivery" ? `#${selection.item.reference} · ${selection.item.rawAddress}` : ""}</p></div><button type="button" onClick={() => setSelection(null)} aria-label="Close drawer"><CloseIcon /></button></header>
-          <div className="v45-drawer-body">{selection?.kind === "exception" ? <ExceptionDrawer item={selection.item} timezone={tenant.timezone} onCommunications={onCommunications} /> : selection?.kind === "round" ? <RoundDrawer item={selection.item} onCommunications={onCommunications} /> : selection?.kind === "delivery" ? <PlanningDrawer item={selection.item} timezone={tenant.timezone} /> : null}</div>
+          <div className="v45-drawer-body">{selection?.kind === "exception" ? <ExceptionDrawer item={selection.item} timezone={tenant.timezone} onCommunications={onCommunications} /> : selection?.kind === "round" ? <RoundDrawer item={selection.item} onCommunications={onCommunications} onOpen={() => setRoundDetailId(selection.item.id)} /> : selection?.kind === "delivery" ? <PlanningDrawer item={selection.item} timezone={tenant.timezone} /> : null}</div>
         </aside>
       </section>
+
+      {roundDetailId && accessToken && <RoundDetailWorkspace accessToken={accessToken} tenant={tenant} roundId={roundDetailId} onClose={() => setRoundDetailId("")} onCommunications={(threadId) => { setRoundDetailId(""); onCommunications(threadId); }} />}
 
       {deliveriesOpen && accessToken && <DeliveriesWorkspace
         accessToken={accessToken}
@@ -412,8 +416,8 @@ function ExceptionDrawer({ item, timezone, onCommunications }: { item: Operation
   return <><section className="v45-decision"><small>NEXT DECISION</small><h3>Review {exceptionLabels[item.category].toLowerCase()} report.</h3><p>{item.note || "The driver reported an item problem without an additional note."}</p><div><span><small>Stage</small><b>{item.stage}</b></span><span><small>Reported</small><b>{shortTime(item.reportedAt, timezone)}</b></span><span><small>State</small><b>Action</b></span></div></section><section className="v45-detail"><h4>Delivery truth <span>realtime</span></h4><dl><div><dt>Round</dt><dd>{item.roundReference}</dd></div><div><dt>Driver</dt><dd>{item.driverName}</dd></div><div><dt>Stop</dt><dd>{item.stopSequence} · {item.stopState}</dd></div><div><dt>Manifest</dt><dd>Version {item.manifestVersion}</dd></div></dl></section><div className="v45-drawer-actions"><button className="primary" disabled={!item.operationsThreadId} onClick={() => onCommunications(item.operationsThreadId)}>Message driver</button><button>Inspect destination on map</button></div></>;
 }
 
-function RoundDrawer({ item, onCommunications }: { item: OperationsRoundSummary; onCommunications: (threadId?: string) => void }) {
-  return <><section className="v45-decision"><small>ROUND STATUS</small><h3>{item.state === "active" ? "Round is moving." : item.state === "complete" ? "Round completed." : "Round is ready for execution."}</h3><p>Dispatch sees the same server-authoritative operational state produced by the driver app.</p><div><span><small>Stops</small><b>{item.stopCount}</b></span><span><small>Custody</small><b>{item.custodyStopCount}</b></span><span><small>Action</small><b>{item.openExceptionCount}</b></span></div></section><section className="v45-detail"><h4>Assignment <span>live</span></h4><dl><div><dt>Driver</dt><dd>{item.driverName}</dd></div><div><dt>Service date</dt><dd>{item.serviceDate}</dd></div><div><dt>State</dt><dd>{item.state}</dd></div></dl></section><div className="v45-drawer-actions"><button className="primary" onClick={() => onCommunications()}>Message driver</button><button>Open Round details</button></div></>;
+function RoundDrawer({ item, onCommunications, onOpen }: { item: OperationsRoundSummary; onCommunications: (threadId?: string) => void; onOpen: () => void }) {
+  return <><section className="v45-decision"><small>ROUND STATUS</small><h3>{item.state === "active" ? "Round is moving." : item.state === "complete" ? "Round completed." : "Round is ready for execution."}</h3><p>Dispatch sees the same server-authoritative operational state produced by the driver app.</p><div><span><small>Stops</small><b>{item.stopCount}</b></span><span><small>Custody</small><b>{item.custodyStopCount}</b></span><span><small>Action</small><b>{item.openExceptionCount}</b></span></div></section><section className="v45-detail"><h4>Assignment <span>live</span></h4><dl><div><dt>Driver</dt><dd>{item.driverName}</dd></div><div><dt>Service date</dt><dd>{item.serviceDate}</dd></div><div><dt>State</dt><dd>{item.state}</dd></div></dl></section><div className="v45-drawer-actions"><button className="primary" onClick={onOpen}>Open Round details</button><button onClick={() => onCommunications()}>Open communications</button></div></>;
 }
 
 function PlanningDrawer({ item, timezone }: { item: UnplannedDeliverySummary; timezone: string }) {
