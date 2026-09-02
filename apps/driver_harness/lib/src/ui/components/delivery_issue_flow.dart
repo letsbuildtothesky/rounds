@@ -18,6 +18,7 @@ Future<bool> openDeliveryIssueFlow(
   BuildContext context, {
   required DriverRoundModel round,
   required DriverRoundStopModel stop,
+  bool damageEvidenceAvailable = true,
   HarnessAppController? controller,
   RoundsExternalLauncher launcher = _launchExternal,
 }) async {
@@ -27,7 +28,11 @@ Future<bool> openDeliveryIssueFlow(
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     barrierColor: RoundsColors.ink.withValues(alpha: .38),
-    builder: (context) => _DeliveryIssueSheet(round: round, stop: stop),
+    builder: (context) => _DeliveryIssueSheet(
+      round: round,
+      stop: stop,
+      damageEvidenceAvailable: damageEvidenceAvailable,
+    ),
   );
   if (draft == null || !context.mounted) return false;
 
@@ -80,10 +85,15 @@ Future<bool> _launchExternal(Uri uri) =>
     launchUrl(uri, mode: LaunchMode.externalApplication);
 
 class _DeliveryIssueSheet extends StatefulWidget {
-  const _DeliveryIssueSheet({required this.round, required this.stop});
+  const _DeliveryIssueSheet({
+    required this.round,
+    required this.stop,
+    required this.damageEvidenceAvailable,
+  });
 
   final DriverRoundModel round;
   final DriverRoundStopModel stop;
+  final bool damageEvidenceAvailable;
 
   @override
   State<_DeliveryIssueSheet> createState() => _DeliveryIssueSheetState();
@@ -180,6 +190,14 @@ class _DeliveryIssueSheetState extends State<_DeliveryIssueSheet> {
                     _IssueChoice(
                       label: category,
                       selected: _category == category,
+                      enabled:
+                          category != 'Damaged package' ||
+                          widget.damageEvidenceAvailable,
+                      supportingText:
+                          category == 'Damaged package' &&
+                              !widget.damageEvidenceAvailable
+                          ? 'Available after you confirm arrival at this Stop'
+                          : null,
                       onTap: () => setState(() => _category = category),
                     ),
                   const SizedBox(height: 12),
@@ -257,10 +275,14 @@ class _IssueChoice extends StatelessWidget {
     required this.label,
     required this.selected,
     required this.onTap,
+    this.enabled = true,
+    this.supportingText,
   });
 
   final String label;
   final bool selected;
+  final bool enabled;
+  final String? supportingText;
   final VoidCallback onTap;
 
   @override
@@ -279,7 +301,7 @@ class _IssueChoice extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         key: Key('delivery-issue-${label.toLowerCase().replaceAll(' ', '-')}'),
-        onTap: onTap,
+        onTap: enabled ? onTap : null,
         child: ConstrainedBox(
           constraints: const BoxConstraints(minHeight: 52),
           child: Padding(
@@ -290,18 +312,43 @@ class _IssueChoice extends StatelessWidget {
                   selected
                       ? Icons.radio_button_checked
                       : Icons.radio_button_off,
-                  color: selected ? RoundsColors.red : RoundsColors.muted,
+                  color: !enabled
+                      ? RoundsColors.lineStrong
+                      : selected
+                      ? RoundsColors.red
+                      : RoundsColors.muted,
                   size: 21,
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Text(
-                    label,
-                    style: TextStyle(
-                      color: selected ? RoundsColors.red : RoundsColors.ink,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        label,
+                        style: TextStyle(
+                          color: !enabled
+                              ? RoundsColors.muted
+                              : selected
+                              ? RoundsColors.red
+                              : RoundsColors.ink,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      if (supportingText != null) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          supportingText!,
+                          style: const TextStyle(
+                            color: RoundsColors.muted,
+                            fontSize: 12,
+                            height: 1.25,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
               ],

@@ -230,10 +230,14 @@ class _NavigationHarnessScreenState extends State<NavigationHarnessScreen> {
         ),
       );
     } else {
+      final currentStop = widget.controller.driverSession?.currentRound?.stops
+          .where((stop) => stop.id == widget.stop.id)
+          .firstOrNull;
       final reported = await openDeliveryIssueFlow(
         context,
         round: widget.round,
-        stop: widget.stop,
+        stop: currentStop ?? widget.stop,
+        damageEvidenceAvailable: _arrived,
         controller: widget.controller,
       );
       if (reported && mounted) Navigator.of(context).pop();

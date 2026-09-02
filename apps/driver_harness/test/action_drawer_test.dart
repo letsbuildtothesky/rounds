@@ -83,6 +83,10 @@ void main() {
     expect(find.text('Address or entrance problem'), findsOneWidget);
     expect(find.text('Cannot complete delivery'), findsOneWidget);
     expect(find.text('Emergency or safety issue'), findsOneWidget);
+    expect(
+      find.text('Available after you confirm arrival at this Stop'),
+      findsOneWidget,
+    );
 
     final continueButton = tester.widget<FilledButton>(
       find.byKey(const Key('continue-delivery-issue')),

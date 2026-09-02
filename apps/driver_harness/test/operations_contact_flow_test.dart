@@ -82,8 +82,12 @@ void main() {
   ) async {
     await _pumpLauncher(
       tester,
-      onPressed: (context) =>
-          openDeliveryIssueFlow(context, round: round, stop: stop),
+      onPressed: (context) => openDeliveryIssueFlow(
+        context,
+        round: round,
+        stop: stop,
+        damageEvidenceAvailable: true,
+      ),
     );
 
     await tester.tap(find.byKey(const Key('open-flow')));
@@ -92,6 +96,34 @@ void main() {
     await tester.tap(find.byKey(const Key('delivery-issue-damaged-package')));
     await tester.pumpAndSettle();
     expect(find.text('Continue to damage photo'), findsOneWidget);
+  });
+
+  testWidgets('damage photo is blocked until arrival is confirmed', (
+    tester,
+  ) async {
+    await _pumpLauncher(
+      tester,
+      onPressed: (context) => openDeliveryIssueFlow(
+        context,
+        round: round,
+        stop: stop,
+        damageEvidenceAvailable: false,
+      ),
+    );
+
+    await tester.tap(find.byKey(const Key('open-flow')));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Available after you confirm arrival at this Stop'),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.byKey(const Key('delivery-issue-damaged-package')));
+    await tester.pump();
+    final continueButton = tester.widget<FilledButton>(
+      find.byKey(const Key('continue-delivery-issue')),
+    );
+    expect(continueButton.onPressed, isNull);
   });
 
   testWidgets('failed external handoff is visible and never claims success', (
