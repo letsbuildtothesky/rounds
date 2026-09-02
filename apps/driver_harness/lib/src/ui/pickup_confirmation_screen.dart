@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../app/driver_design_system.dart';
+import '../app/generated/driver_ui_metrics.g.dart';
 import '../app/harness_app_controller.dart';
 import '../driver/driver_session.dart';
 
@@ -115,121 +117,82 @@ class _PickupConfirmationScreenState extends State<PickupConfirmationScreen> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    backgroundColor: Colors.white,
-    body: SafeArea(
-      child: Column(
-        children: [
-          _PickupTopBar(round: widget.round),
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(18, 24, 18, 20),
-              children: [
-                _PickupHero(
-                  confirmed: _confirmed.length,
-                  lineCount: _lineCount,
-                  unitCount: _unitCount,
-                ),
-                const SizedBox(height: 20),
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: const Color(0xFFE1E6EA)),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                  child: Column(
-                    children: [
-                      Container(
-                        constraints: const BoxConstraints(minHeight: 54),
-                        padding: const EdgeInsets.symmetric(horizontal: 14),
-                        color: const Color(0xFFFAFBFB),
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Collect',
-                              style: TextStyle(
-                                color: Color(0xFF172238),
-                                fontSize: 13,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                            Text(
-                              'Tap when physically present',
-                              style: TextStyle(
-                                color: Color(0xFF748094),
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ],
-                        ),
+  Widget build(BuildContext context) {
+    final compact =
+        MediaQuery.sizeOf(context).width <
+        DriverReferenceViewport.compactBreakpoint;
+    final horizontalPadding = compact
+        ? DriverD03D04Metrics.compactContentPaddingHorizontal
+        : DriverD03D04Metrics.contentPaddingHorizontal;
+    return Scaffold(
+      backgroundColor: RoundsColors.surface,
+      body: SafeArea(
+        child: MediaQuery.withNoTextScaling(
+          child: Stack(
+            children: [
+              Column(
+                children: [
+                  _PickupTopBar(round: widget.round),
+                  Expanded(
+                    child: ListView(
+                      key: const Key('pickup-content'),
+                      padding: EdgeInsets.fromLTRB(
+                        horizontalPadding,
+                        DriverD03D04Metrics.contentPaddingTop,
+                        horizontalPadding,
+                        DriverD03D04Metrics.contentPaddingBottom,
                       ),
-                      for (final stop in widget.round.stops)
-                        for (final item in stop.manifestItems)
-                          _ManifestLine(
-                            key: Key('manifest-${stop.id}-${item.lineNumber}'),
-                            item: item,
-                            reference: stop.deliveryReference,
-                            recipient: stop.recipientName,
-                            checked: _confirmed.contains(_key(stop, item)),
-                            onTap: () => setState(() {
-                              final key = _key(stop, item);
-                              if (!_confirmed.add(key)) _confirmed.remove(key);
-                            }),
-                          ),
-                    ],
+                      children: [
+                        _PickupHero(
+                          confirmed: _confirmed.length,
+                          lineCount: _lineCount,
+                          unitCount: _unitCount,
+                          compact: compact,
+                        ),
+                        SizedBox(height: DriverD03D04Metrics.manifestMarginTop),
+                        _PickupManifest(
+                          round: widget.round,
+                          compact: compact,
+                          confirmed: _confirmed,
+                          itemKey: _key,
+                          onToggle: (stop, item) => setState(() {
+                            final key = _key(stop, item);
+                            if (!_confirmed.add(key)) _confirmed.remove(key);
+                          }),
+                        ),
+                        SizedBox(height: DriverD03D04Metrics.problemMarginTop),
+                        _PickupProblemButton(
+                          key: const Key('pickup-problem'),
+                          onPressed: _submitting || _pendingSync
+                              ? null
+                              : _reportProblem,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 14),
-                _PickupProblemButton(
-                  key: const Key('pickup-problem'),
-                  onPressed: _submitting || _pendingSync
-                      ? null
-                      : _reportProblem,
-                ),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.fromLTRB(18, 12, 18, 18),
-            decoration: const BoxDecoration(
-              border: Border(top: BorderSide(color: Color(0xFFE1E6EA))),
-            ),
-            child: SizedBox(
-              height: 64,
-              child: FilledButton(
-                key: const Key('confirm-pickup'),
-                onPressed: _ready && !_submitting && !_pendingSync
-                    ? _confirm
-                    : null,
-                style: FilledButton.styleFrom(
-                  elevation: 0,
-                  backgroundColor: const Color(0xFF168B50),
-                  disabledBackgroundColor: const Color(0xFFD9DFE5),
-                  disabledForegroundColor: const Color(0xFF85909D),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(7),
-                  ),
-                ),
-                child: Text(
-                  _pendingSync
-                      ? 'Pending sync — not confirmed'
-                      : _submitting
-                      ? 'Sending to server…'
-                      : 'Confirm pickup',
-                  style: const TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w800,
-                  ),
+                ],
+              ),
+              Positioned(
+                key: const Key('pickup-footer'),
+                left: 0,
+                right: 0,
+                bottom: 0,
+                height: DriverD03D04Metrics.footerHeight,
+                child: _PickupFooter(
+                  compact: compact,
+                  pendingSync: _pendingSync,
+                  submitting: _submitting,
+                  onPressed: _ready && !_submitting && !_pendingSync
+                      ? _confirm
+                      : null,
                 ),
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class _PickupTopBar extends StatelessWidget {
@@ -241,31 +204,40 @@ class _PickupTopBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final deliveryCount = round.stops.length;
     return Container(
-      height: 60,
-      padding: const EdgeInsets.symmetric(horizontal: 18),
+      key: const Key('pickup-topbar'),
+      height: DriverD03D04Metrics.topBarHeight,
+      padding: const EdgeInsets.symmetric(
+        horizontal: DriverD03D04Metrics.topBarPaddingHorizontal,
+      ),
       decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xFFE1E6EA))),
+        color: RoundsColors.surface,
+        border: Border(bottom: BorderSide(color: RoundsColors.line)),
       ),
       child: Row(
         children: [
           SizedBox(
-            width: 42,
-            height: 42,
+            width: DriverD03D04Metrics.topButtonSize,
+            height: DriverD03D04Metrics.topButtonSize,
             child: OutlinedButton(
               key: const Key('pickup-back'),
               onPressed: () => Navigator.of(context).maybePop(),
               style: OutlinedButton.styleFrom(
                 padding: EdgeInsets.zero,
-                foregroundColor: const Color(0xFF172238),
-                side: const BorderSide(color: Color(0xFFCBD4DC)),
+                foregroundColor: RoundsColors.ink,
+                side: const BorderSide(color: RoundsColors.lineStrong),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(7),
+                  borderRadius: BorderRadius.circular(
+                    DriverD03D04Metrics.topButtonRadius,
+                  ),
                 ),
               ),
-              child: const Icon(Icons.arrow_back, size: 21),
+              child: const Icon(
+                Icons.arrow_back,
+                size: DriverD03D04Metrics.topIconSize,
+              ),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: DriverD03D04Metrics.topColumnGap),
           Expanded(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -274,32 +246,41 @@ class _PickupTopBar extends StatelessWidget {
                 const Text(
                   'AT PICKUP',
                   style: TextStyle(
-                    color: Color(0xFFFF6420),
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: .88,
+                    color: RoundsColors.orange,
+                    fontSize: DriverD03D04Metrics.topEyebrowSize,
+                    height: 1,
+                    fontWeight: FontWeight.w900,
+                    fontVariations: [
+                      FontVariation(
+                        'wght',
+                        DriverD03D04Metrics.topEyebrowWeight,
+                      ),
+                    ],
+                    letterSpacing: DriverD03D04Metrics.topEyebrowTracking,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: DriverD03D04Metrics.topNameGap),
                 Text(
                   round.tenantName,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Color(0xFF172238),
-                    fontSize: 15,
-                    fontWeight: FontWeight.w800,
+                  style: _pickupTextStyle(
+                    color: RoundsColors.ink,
+                    size: DriverD03D04Metrics.topNameSize,
+                    height: 1,
+                    weight: DriverD03D04Metrics.topNameWeight,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: DriverD03D04Metrics.topMetaGap),
           Text(
             '$deliveryCount ${deliveryCount == 1 ? 'delivery' : 'deliveries'}',
-            style: const TextStyle(
-              color: Color(0xFF748094),
-              fontSize: 12.5,
-              fontWeight: FontWeight.w700,
+            style: _pickupTextStyle(
+              color: RoundsColors.muted,
+              size: DriverD03D04Metrics.topMetaSize,
+              height: 1,
+              weight: DriverD03D04Metrics.topMetaWeight,
             ),
           ),
         ],
@@ -313,17 +294,22 @@ class _PickupHero extends StatelessWidget {
     required this.confirmed,
     required this.lineCount,
     required this.unitCount,
+    required this.compact,
   });
 
   final int confirmed;
   final int lineCount;
   final int unitCount;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.only(bottom: 22),
+    key: const Key('pickup-hero'),
+    padding: const EdgeInsets.only(
+      bottom: DriverD03D04Metrics.heroPaddingBottom,
+    ),
     decoration: const BoxDecoration(
-      border: Border(bottom: BorderSide(color: Color(0xFFE1E6EA))),
+      border: Border(bottom: BorderSide(color: RoundsColors.line)),
     ),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -332,72 +318,180 @@ class _PickupHero extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.end,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Expanded(
+            Expanded(
               child: Text(
                 'Confirm pickup',
                 maxLines: 1,
                 overflow: TextOverflow.fade,
                 softWrap: false,
-                style: TextStyle(
-                  color: Color(0xFF172238),
-                  fontSize: 31,
-                  height: .98,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -1.7,
+                style: _pickupTextStyle(
+                  color: RoundsColors.ink,
+                  size: compact
+                      ? DriverD03D04Metrics.compactHeroTitleSize
+                      : DriverD03D04Metrics.heroTitleSize,
+                  height: DriverD03D04Metrics.heroTitleHeight,
+                  weight: DriverD03D04Metrics.heroTitleWeight,
+                  tracking: DriverD03D04Metrics.heroTitleTracking,
                 ),
               ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: DriverD03D04Metrics.heroColumnGap),
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
                   '$confirmed / $lineCount',
                   key: const Key('pickup-progress'),
-                  style: const TextStyle(
-                    color: Color(0xFF172238),
-                    fontSize: 27,
-                    height: 1,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -1.2,
+                  style: _pickupTextStyle(
+                    color: RoundsColors.ink,
+                    size: compact
+                        ? DriverD03D04Metrics.compactProgressSize
+                        : DriverD03D04Metrics.progressSize,
+                    height: DriverD03D04Metrics.progressHeight,
+                    weight: DriverD03D04Metrics.progressWeight,
+                    tracking: DriverD03D04Metrics.progressTracking,
                   ),
                 ),
-                const SizedBox(height: 5),
+                const SizedBox(height: DriverD03D04Metrics.progressLabelGap),
                 const Text(
                   'confirmed',
                   style: TextStyle(
-                    color: Color(0xFF748094),
-                    fontSize: 11.5,
+                    color: RoundsColors.muted,
+                    fontSize: DriverD03D04Metrics.progressLabelSize,
                     fontWeight: FontWeight.w700,
+                    fontVariations: [
+                      FontVariation(
+                        'wght',
+                        DriverD03D04Metrics.progressLabelWeight,
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: DriverD03D04Metrics.summaryGap),
         Text.rich(
           TextSpan(
             children: [
               TextSpan(
                 text: '$unitCount package${unitCount == 1 ? '' : 's'}',
-                style: const TextStyle(
-                  color: Color(0xFF3D4A5D),
-                  fontWeight: FontWeight.w800,
+                style: _pickupTextStyle(
+                  color: RoundsColors.inkSecondary,
+                  size: DriverD03D04Metrics.summarySize,
+                  height: 1,
+                  weight: DriverD03D04Metrics.summaryStrongWeight,
                 ),
               ),
               const TextSpan(text: ' · physical manifest'),
             ],
           ),
-          style: const TextStyle(
-            color: Color(0xFF748094),
-            fontSize: 13,
-            fontWeight: FontWeight.w700,
+          style: _pickupTextStyle(
+            color: RoundsColors.muted,
+            size: DriverD03D04Metrics.summarySize,
+            height: 1,
+            weight: DriverD03D04Metrics.summaryWeight,
           ),
         ),
       ],
     ),
   );
+}
+
+class _PickupManifest extends StatelessWidget {
+  const _PickupManifest({
+    required this.round,
+    required this.compact,
+    required this.confirmed,
+    required this.itemKey,
+    required this.onToggle,
+  });
+
+  final DriverRoundModel round;
+  final bool compact;
+  final Set<String> confirmed;
+  final String Function(DriverRoundStopModel stop, DriverManifestItemModel item)
+  itemKey;
+  final void Function(DriverRoundStopModel stop, DriverManifestItemModel item)
+  onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    final entries = [
+      for (final stop in round.stops)
+        for (final item in stop.manifestItems) (stop: stop, item: item),
+    ];
+    return Container(
+      key: const Key('pickup-manifest'),
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: RoundsColors.line,
+          width: DriverD03D04Metrics.manifestBorderWidth,
+        ),
+        borderRadius: BorderRadius.circular(DriverD03D04Metrics.manifestRadius),
+      ),
+      padding: const EdgeInsets.all(DriverD03D04Metrics.manifestBorderWidth),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          Container(
+            key: const Key('pickup-manifest-head'),
+            height: DriverD03D04Metrics.manifestHeadHeight,
+            padding: const EdgeInsets.symmetric(
+              horizontal: DriverD03D04Metrics.manifestHeadPaddingHorizontal,
+            ),
+            decoration: const BoxDecoration(
+              color: Color(0xFFFAFBFB),
+              border: Border(bottom: BorderSide(color: RoundsColors.line)),
+            ),
+            child: Row(
+              children: [
+                Text(
+                  'Collect',
+                  style: _pickupTextStyle(
+                    color: RoundsColors.ink,
+                    size: DriverD03D04Metrics.manifestHeadTitleSize,
+                    height: 1,
+                    weight: DriverD03D04Metrics.manifestHeadTitleWeight,
+                  ),
+                ),
+                const Spacer(),
+                const SizedBox(
+                  width: DriverD03D04Metrics.manifestHeadColumnGap,
+                ),
+                Text(
+                  'Tap when physically present',
+                  style: _pickupTextStyle(
+                    color: RoundsColors.muted,
+                    size: DriverD03D04Metrics.manifestHeadMetaSize,
+                    height: 1,
+                    weight: DriverD03D04Metrics.manifestHeadMetaWeight,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          for (var index = 0; index < entries.length; index++)
+            _ManifestLine(
+              key: Key(
+                'manifest-${entries[index].stop.id}-'
+                '${entries[index].item.lineNumber}',
+              ),
+              item: entries[index].item,
+              reference: entries[index].stop.deliveryReference,
+              recipient: entries[index].stop.recipientName,
+              checked: confirmed.contains(
+                itemKey(entries[index].stop, entries[index].item),
+              ),
+              compact: compact,
+              isLast: index == entries.length - 1,
+              onTap: () => onToggle(entries[index].stop, entries[index].item),
+            ),
+        ],
+      ),
+    );
+  }
 }
 
 class _PickupProblemButton extends StatelessWidget {
@@ -408,25 +502,102 @@ class _PickupProblemButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) => SizedBox(
     width: double.infinity,
-    height: 56,
+    height: DriverD03D04Metrics.problemHeight,
     child: OutlinedButton(
       onPressed: onPressed,
       style: OutlinedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 14),
+        padding: const EdgeInsets.symmetric(
+          horizontal: DriverD03D04Metrics.problemPaddingHorizontal,
+        ),
         alignment: Alignment.centerLeft,
-        foregroundColor: const Color(0xFFBF4A4A),
+        foregroundColor: RoundsColors.red,
         side: const BorderSide(color: Color(0xFFE6C8C8)),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(
+            DriverD03D04Metrics.problemRadius,
+          ),
+        ),
       ),
-      child: const Row(
+      child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             'Pickup problem',
-            style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w800),
+            style: _pickupTextStyle(
+              color: RoundsColors.red,
+              size: DriverD03D04Metrics.problemSize,
+              height: 1,
+              weight: DriverD03D04Metrics.problemWeight,
+            ),
           ),
-          Icon(Icons.chevron_right, size: 22),
+          const Icon(
+            Icons.chevron_right,
+            size: DriverD03D04Metrics.problemIconSize,
+          ),
         ],
+      ),
+    ),
+  );
+}
+
+class _PickupFooter extends StatelessWidget {
+  const _PickupFooter({
+    required this.compact,
+    required this.pendingSync,
+    required this.submitting,
+    required this.onPressed,
+  });
+
+  final bool compact;
+  final bool pendingSync;
+  final bool submitting;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: EdgeInsets.fromLTRB(
+      compact
+          ? DriverD03D04Metrics.compactFooterPaddingHorizontal
+          : DriverD03D04Metrics.footerPaddingHorizontal,
+      DriverD03D04Metrics.footerPaddingTop,
+      compact
+          ? DriverD03D04Metrics.compactFooterPaddingHorizontal
+          : DriverD03D04Metrics.footerPaddingHorizontal,
+      DriverD03D04Metrics.footerPaddingBottom,
+    ),
+    decoration: const BoxDecoration(
+      color: RoundsColors.surface,
+      border: Border(top: BorderSide(color: RoundsColors.line)),
+    ),
+    child: SizedBox(
+      height: DriverD03D04Metrics.primaryHeight,
+      child: FilledButton(
+        key: const Key('confirm-pickup'),
+        onPressed: onPressed,
+        style: FilledButton.styleFrom(
+          elevation: 0,
+          backgroundColor: RoundsColors.green,
+          disabledBackgroundColor: const Color(0xFFD9DFE5),
+          disabledForegroundColor: const Color(0xFF85909D),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(
+              DriverD03D04Metrics.primaryRadius,
+            ),
+          ),
+        ),
+        child: Text(
+          pendingSync
+              ? 'Pending sync — not confirmed'
+              : submitting
+              ? 'Sending to server…'
+              : 'Confirm pickup',
+          style: _pickupTextStyle(
+            color: onPressed == null ? const Color(0xFF85909D) : Colors.white,
+            size: DriverD03D04Metrics.primarySize,
+            height: 1,
+            weight: DriverD03D04Metrics.primaryWeight,
+          ),
+        ),
       ),
     ),
   );
@@ -565,6 +736,8 @@ class _ManifestLine extends StatelessWidget {
     required this.reference,
     required this.recipient,
     required this.checked,
+    required this.compact,
+    required this.isLast,
     required this.onTap,
     super.key,
   });
@@ -572,88 +745,153 @@ class _ManifestLine extends StatelessWidget {
   final String reference;
   final String recipient;
   final bool checked;
+  final bool compact;
+  final bool isLast;
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => InkWell(
-    onTap: onTap,
-    child: Container(
-      constraints: const BoxConstraints(minHeight: 70),
-      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 10),
-      decoration: BoxDecoration(
-        color: checked ? const Color(0xFFFBFEFC) : Colors.white,
-        border: const Border(top: BorderSide(color: Color(0xFFEDEFF2))),
-      ),
-      child: Row(
-        children: [
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 120),
-            width: 29,
-            height: 29,
-            decoration: BoxDecoration(
-              color: checked ? const Color(0xFF168B50) : Colors.white,
-              border: Border.all(
-                color: checked
-                    ? const Color(0xFF168B50)
-                    : const Color(0xFFCBD4DC),
-                width: 2,
-              ),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: checked
-                ? const Icon(Icons.check, size: 19, color: Colors.white)
-                : null,
+  Widget build(BuildContext context) {
+    final lineHeight = compact
+        ? DriverD03D04Metrics.compactManifestLineHeight
+        : DriverD03D04Metrics.manifestLineHeight;
+    final horizontalPadding = compact
+        ? DriverD03D04Metrics.compactManifestLinePaddingHorizontal
+        : DriverD03D04Metrics.manifestLinePaddingHorizontal;
+    final columnGap = compact
+        ? DriverD03D04Metrics.compactManifestLineColumnGap
+        : DriverD03D04Metrics.manifestLineColumnGap;
+    return Material(
+      color: checked ? const Color(0xFFFBFEFC) : RoundsColors.surface,
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          height: lineHeight,
+          padding: EdgeInsets.symmetric(
+            horizontal: horizontalPadding,
+            vertical: DriverD03D04Metrics.manifestLinePaddingVertical,
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.description,
-                  style: const TextStyle(
-                    color: Color(0xFF172238),
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '$reference · $recipient',
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Color(0xFF748094),
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
+          decoration: BoxDecoration(
+            border: isLast
+                ? null
+                : const Border(bottom: BorderSide(color: Color(0xFFEDEFF2))),
           ),
-          const SizedBox(width: 8),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
+          child: Row(
             children: [
-              Text(
-                '×${item.quantity}',
-                style: const TextStyle(
-                  color: Color(0xFF172238),
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-              if (item.handlingNote != null)
-                Text(
-                  item.handlingNote!,
-                  style: TextStyle(
-                    color: item.handlingNote!.toLowerCase().contains('cool')
-                        ? const Color(0xFF3269B7)
-                        : const Color(0xFFFF6420),
-                    fontSize: 10.8,
-                    fontWeight: FontWeight.w800,
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 120),
+                width: DriverD03D04Metrics.manifestCheckSize,
+                height: DriverD03D04Metrics.manifestCheckSize,
+                decoration: BoxDecoration(
+                  color: checked ? RoundsColors.green : RoundsColors.surface,
+                  border: Border.all(
+                    color: checked
+                        ? RoundsColors.green
+                        : RoundsColors.lineStrong,
+                    width: DriverD03D04Metrics.manifestCheckBorderWidth,
+                  ),
+                  borderRadius: BorderRadius.circular(
+                    DriverD03D04Metrics.manifestCheckRadius,
                   ),
                 ),
+                child: checked
+                    ? const Icon(
+                        Icons.check,
+                        size: DriverD03D04Metrics.manifestCheckIconSize,
+                        color: Colors.white,
+                      )
+                    : null,
+              ),
+              SizedBox(width: columnGap),
+              Expanded(
+                child: Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text: item.description,
+                        style: _pickupTextStyle(
+                          color: RoundsColors.ink,
+                          size: compact
+                              ? DriverD03D04Metrics.compactManifestTitleSize
+                              : DriverD03D04Metrics.manifestTitleSize,
+                          height: DriverD03D04Metrics.manifestTitleHeight,
+                          weight: DriverD03D04Metrics.manifestTitleWeight,
+                          tracking: DriverD03D04Metrics.manifestTitleTracking,
+                        ),
+                      ),
+                      TextSpan(
+                        text: '$reference · $recipient',
+                        style: _pickupTextStyle(
+                          color: RoundsColors.muted,
+                          size: compact
+                              ? DriverD03D04Metrics.compactManifestMetaSize
+                              : DriverD03D04Metrics.manifestMetaSize,
+                          height: DriverD03D04Metrics.manifestMetaHeight,
+                          weight: 400,
+                        ),
+                      ),
+                    ],
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              SizedBox(width: columnGap),
+              ConstrainedBox(
+                constraints: const BoxConstraints(
+                  minWidth: DriverD03D04Metrics.manifestSideMinWidth,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      '×${item.quantity}',
+                      style: _pickupTextStyle(
+                        color: RoundsColors.ink,
+                        size: DriverD03D04Metrics.manifestQuantitySize,
+                        height: 1,
+                        weight: DriverD03D04Metrics.manifestQuantityWeight,
+                      ),
+                    ),
+                    if (item.handlingNote != null) ...[
+                      const SizedBox(
+                        height: DriverD03D04Metrics.manifestCareGap,
+                      ),
+                      Text(
+                        item.handlingNote!,
+                        style: _pickupTextStyle(
+                          color:
+                              item.handlingNote!.toLowerCase().contains('cool')
+                              ? const Color(0xFF3269B7)
+                              : RoundsColors.orange,
+                          size: DriverD03D04Metrics.manifestCareSize,
+                          height: 1,
+                          weight: DriverD03D04Metrics.manifestCareWeight,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
             ],
           ),
-        ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 }
+
+TextStyle _pickupTextStyle({
+  required Color color,
+  required double size,
+  required double height,
+  required double weight,
+  double tracking = 0,
+}) => TextStyle(
+  color: color,
+  fontSize: size,
+  height: height,
+  fontWeight: FontWeight.values[(weight / 100).round().clamp(1, 9) - 1],
+  fontVariations: [FontVariation('wght', weight)],
+  letterSpacing: tracking,
+);

@@ -21,7 +21,7 @@ class AssignedRoundScreen extends StatelessWidget {
   final bool enableNativeNavigation;
   final DriverSessionModel? session;
 
-  static const _demoRound = DriverRoundModel(
+  static const demoRound = DriverRoundModel(
     id: 'ROUND-DEMO',
     reference: 'ROUND-DEMO-001',
     serviceDate: '2026-09-01',
@@ -66,7 +66,7 @@ class AssignedRoundScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final round =
         session?.currentRound ??
-        (controller.driverConfigured ? null : _demoRound);
+        (controller.driverConfigured ? null : demoRound);
     return Scaffold(
       backgroundColor: RoundsColors.canvas,
       body: SafeArea(

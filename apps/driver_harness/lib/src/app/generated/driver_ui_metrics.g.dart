@@ -7,6 +7,105 @@ abstract final class DriverReferenceViewport {
   static const double compactBreakpoint = 350.0;
 }
 
+abstract final class DriverD03D04Metrics {
+  static const String source = 'ux/driver/en/screens/ROUNDS-D03-D04-PICKUP-CONFIRM-v6-10OF10.html';
+
+  static const double topBarHeight = 60.0;
+  static const double topBarPaddingHorizontal = 18.0;
+  static const double topButtonSize = 42.0;
+  static const double topButtonRadius = 7.0;
+  static const double topIconSize = 21.0;
+  static const double topColumnGap = 12.0;
+  static const double topEyebrowSize = 11.0;
+  static const double topEyebrowWeight = 850.0;
+  static const double topEyebrowTracking = 0.88;
+  static const double topNameGap = 4.0;
+  static const double topNameSize = 15.0;
+  static const double topNameWeight = 810.0;
+  static const double topMetaGap = 10.0;
+  static const double topMetaSize = 12.5;
+  static const double topMetaWeight = 760.0;
+
+  static const double contentPaddingTop = 24.0;
+  static const double contentPaddingHorizontal = 18.0;
+  static const double compactContentPaddingHorizontal = 16.0;
+  static const double contentPaddingBottom = 118.0;
+  static const double heroPaddingBottom = 22.0;
+  static const double heroColumnGap = 16.0;
+  static const double heroTitleSize = 31.0;
+  static const double compactHeroTitleSize = 28.0;
+  static const double heroTitleHeight = 0.98;
+  static const double heroTitleWeight = 900.0;
+  static const double heroTitleTracking = -1.705;
+  static const double progressSize = 27.0;
+  static const double compactProgressSize = 24.0;
+  static const double progressHeight = 1.0;
+  static const double progressWeight = 880.0;
+  static const double progressTracking = -1.215;
+  static const double progressLabelGap = 5.0;
+  static const double progressLabelSize = 11.5;
+  static const double progressLabelWeight = 720.0;
+  static const double summaryGap = 12.0;
+  static const double summarySize = 13.0;
+  static const double summaryWeight = 730.0;
+  static const double summaryStrongWeight = 790.0;
+
+  static const double manifestMarginTop = 20.0;
+  static const double manifestRadius = 8.0;
+  static const double manifestBorderWidth = 1.0;
+  static const double manifestHeadHeight = 54.0;
+  static const double manifestHeadPaddingHorizontal = 14.0;
+  static const double manifestHeadColumnGap = 12.0;
+  static const double manifestHeadTitleSize = 13.0;
+  static const double manifestHeadTitleWeight = 820.0;
+  static const double manifestHeadMetaSize = 11.5;
+  static const double manifestHeadMetaWeight = 700.0;
+  static const double manifestLineHeight = 70.0;
+  static const double compactManifestLineHeight = 66.0;
+  static const double manifestLinePaddingHorizontal = 13.0;
+  static const double compactManifestLinePaddingHorizontal = 11.0;
+  static const double manifestLinePaddingVertical = 10.0;
+  static const double manifestLineColumnGap = 11.0;
+  static const double compactManifestLineColumnGap = 9.0;
+  static const double manifestCheckSize = 28.0;
+  static const double manifestCheckRadius = 6.0;
+  static const double manifestCheckBorderWidth = 2.0;
+  static const double manifestCheckIconSize = 16.0;
+  static const double manifestTitleSize = 14.5;
+  static const double compactManifestTitleSize = 13.5;
+  static const double manifestTitleHeight = 1.22;
+  static const double manifestTitleWeight = 810.0;
+  static const double manifestTitleTracking = -0.174;
+  static const double manifestMetaGap = 5.0;
+  static const double manifestMetaSize = 11.8;
+  static const double compactManifestMetaSize = 11.0;
+  static const double manifestMetaHeight = 1.3;
+  static const double manifestSideMinWidth = 46.0;
+  static const double manifestQuantitySize = 15.0;
+  static const double manifestQuantityWeight = 860.0;
+  static const double manifestCareGap = 5.0;
+  static const double manifestCareSize = 10.8;
+  static const double manifestCareWeight = 800.0;
+
+  static const double problemHeight = 56.0;
+  static const double problemMarginTop = 14.0;
+  static const double problemRadius = 7.0;
+  static const double problemPaddingHorizontal = 14.0;
+  static const double problemSize = 13.5;
+  static const double problemWeight = 800.0;
+  static const double problemIconSize = 20.0;
+
+  static const double footerHeight = 93.0;
+  static const double footerPaddingTop = 10.0;
+  static const double footerPaddingHorizontal = 18.0;
+  static const double compactFooterPaddingHorizontal = 16.0;
+  static const double footerPaddingBottom = 18.0;
+  static const double primaryHeight = 64.0;
+  static const double primaryRadius = 7.0;
+  static const double primarySize = 17.0;
+  static const double primaryWeight = 840.0;
+}
+
 abstract final class DriverE01Metrics {
   static const String source = 'ux/driver/en/screens/ROUNDS-E01-ACTIVE-ROUND-OVERVIEW-v5-10OF10.html';
 

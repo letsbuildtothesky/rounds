@@ -34,6 +34,12 @@ void main(List<String> arguments) {
 String generateDriverUiMetrics(Map<String, dynamic> json) {
   final viewport = json['referenceViewport'] as Map<String, dynamic>;
   final screens = json['screens'] as Map<String, dynamic>;
+  final d03d04 = screens['D03D04'] as Map<String, dynamic>;
+  final pickupTop = d03d04['topBar'] as Map<String, dynamic>;
+  final pickupContent = d03d04['content'] as Map<String, dynamic>;
+  final pickupManifest = d03d04['manifest'] as Map<String, dynamic>;
+  final pickupProblem = d03d04['problem'] as Map<String, dynamic>;
+  final pickupFooter = d03d04['footer'] as Map<String, dynamic>;
   final e01 = screens['E01'] as Map<String, dynamic>;
   final e01Top = e01['topBar'] as Map<String, dynamic>;
   final e01Summary = e01['mapSummary'] as Map<String, dynamic>;
@@ -50,6 +56,105 @@ abstract final class DriverReferenceViewport {
   static const double width = ${_double(viewport['width'])};
   static const double height = ${_double(viewport['height'])};
   static const double compactBreakpoint = ${_double(viewport['compactBreakpoint'])};
+}
+
+abstract final class DriverD03D04Metrics {
+  static const String source = '${d03d04['source']}';
+
+  static const double topBarHeight = ${_double(pickupTop['height'])};
+  static const double topBarPaddingHorizontal = ${_double(pickupTop['paddingHorizontal'])};
+  static const double topButtonSize = ${_double(pickupTop['buttonSize'])};
+  static const double topButtonRadius = ${_double(pickupTop['buttonRadius'])};
+  static const double topIconSize = ${_double(pickupTop['iconSize'])};
+  static const double topColumnGap = ${_double(pickupTop['columnGap'])};
+  static const double topEyebrowSize = ${_double(pickupTop['eyebrowSize'])};
+  static const double topEyebrowWeight = ${_double(pickupTop['eyebrowWeight'])};
+  static const double topEyebrowTracking = ${_double(pickupTop['eyebrowTracking'])};
+  static const double topNameGap = ${_double(pickupTop['nameGap'])};
+  static const double topNameSize = ${_double(pickupTop['nameSize'])};
+  static const double topNameWeight = ${_double(pickupTop['nameWeight'])};
+  static const double topMetaGap = ${_double(pickupTop['metaGap'])};
+  static const double topMetaSize = ${_double(pickupTop['metaSize'])};
+  static const double topMetaWeight = ${_double(pickupTop['metaWeight'])};
+
+  static const double contentPaddingTop = ${_double(pickupContent['paddingTop'])};
+  static const double contentPaddingHorizontal = ${_double(pickupContent['paddingHorizontal'])};
+  static const double compactContentPaddingHorizontal = ${_double(pickupContent['compactPaddingHorizontal'])};
+  static const double contentPaddingBottom = ${_double(pickupContent['paddingBottom'])};
+  static const double heroPaddingBottom = ${_double(pickupContent['heroPaddingBottom'])};
+  static const double heroColumnGap = ${_double(pickupContent['heroColumnGap'])};
+  static const double heroTitleSize = ${_double(pickupContent['heroTitleSize'])};
+  static const double compactHeroTitleSize = ${_double(pickupContent['compactHeroTitleSize'])};
+  static const double heroTitleHeight = ${_double(pickupContent['heroTitleHeight'])};
+  static const double heroTitleWeight = ${_double(pickupContent['heroTitleWeight'])};
+  static const double heroTitleTracking = ${_double(pickupContent['heroTitleTracking'])};
+  static const double progressSize = ${_double(pickupContent['progressSize'])};
+  static const double compactProgressSize = ${_double(pickupContent['compactProgressSize'])};
+  static const double progressHeight = ${_double(pickupContent['progressHeight'])};
+  static const double progressWeight = ${_double(pickupContent['progressWeight'])};
+  static const double progressTracking = ${_double(pickupContent['progressTracking'])};
+  static const double progressLabelGap = ${_double(pickupContent['progressLabelGap'])};
+  static const double progressLabelSize = ${_double(pickupContent['progressLabelSize'])};
+  static const double progressLabelWeight = ${_double(pickupContent['progressLabelWeight'])};
+  static const double summaryGap = ${_double(pickupContent['summaryGap'])};
+  static const double summarySize = ${_double(pickupContent['summarySize'])};
+  static const double summaryWeight = ${_double(pickupContent['summaryWeight'])};
+  static const double summaryStrongWeight = ${_double(pickupContent['summaryStrongWeight'])};
+
+  static const double manifestMarginTop = ${_double(pickupManifest['marginTop'])};
+  static const double manifestRadius = ${_double(pickupManifest['radius'])};
+  static const double manifestBorderWidth = ${_double(pickupManifest['borderWidth'])};
+  static const double manifestHeadHeight = ${_double(pickupManifest['headHeight'])};
+  static const double manifestHeadPaddingHorizontal = ${_double(pickupManifest['headPaddingHorizontal'])};
+  static const double manifestHeadColumnGap = ${_double(pickupManifest['headColumnGap'])};
+  static const double manifestHeadTitleSize = ${_double(pickupManifest['headTitleSize'])};
+  static const double manifestHeadTitleWeight = ${_double(pickupManifest['headTitleWeight'])};
+  static const double manifestHeadMetaSize = ${_double(pickupManifest['headMetaSize'])};
+  static const double manifestHeadMetaWeight = ${_double(pickupManifest['headMetaWeight'])};
+  static const double manifestLineHeight = ${_double(pickupManifest['lineHeight'])};
+  static const double compactManifestLineHeight = ${_double(pickupManifest['compactLineHeight'])};
+  static const double manifestLinePaddingHorizontal = ${_double(pickupManifest['linePaddingHorizontal'])};
+  static const double compactManifestLinePaddingHorizontal = ${_double(pickupManifest['compactLinePaddingHorizontal'])};
+  static const double manifestLinePaddingVertical = ${_double(pickupManifest['linePaddingVertical'])};
+  static const double manifestLineColumnGap = ${_double(pickupManifest['lineColumnGap'])};
+  static const double compactManifestLineColumnGap = ${_double(pickupManifest['compactLineColumnGap'])};
+  static const double manifestCheckSize = ${_double(pickupManifest['checkSize'])};
+  static const double manifestCheckRadius = ${_double(pickupManifest['checkRadius'])};
+  static const double manifestCheckBorderWidth = ${_double(pickupManifest['checkBorderWidth'])};
+  static const double manifestCheckIconSize = ${_double(pickupManifest['checkIconSize'])};
+  static const double manifestTitleSize = ${_double(pickupManifest['lineTitleSize'])};
+  static const double compactManifestTitleSize = ${_double(pickupManifest['compactLineTitleSize'])};
+  static const double manifestTitleHeight = ${_double(pickupManifest['lineTitleHeight'])};
+  static const double manifestTitleWeight = ${_double(pickupManifest['lineTitleWeight'])};
+  static const double manifestTitleTracking = ${_double(pickupManifest['lineTitleTracking'])};
+  static const double manifestMetaGap = ${_double(pickupManifest['lineMetaGap'])};
+  static const double manifestMetaSize = ${_double(pickupManifest['lineMetaSize'])};
+  static const double compactManifestMetaSize = ${_double(pickupManifest['compactLineMetaSize'])};
+  static const double manifestMetaHeight = ${_double(pickupManifest['lineMetaHeight'])};
+  static const double manifestSideMinWidth = ${_double(pickupManifest['lineSideMinWidth'])};
+  static const double manifestQuantitySize = ${_double(pickupManifest['quantitySize'])};
+  static const double manifestQuantityWeight = ${_double(pickupManifest['quantityWeight'])};
+  static const double manifestCareGap = ${_double(pickupManifest['careGap'])};
+  static const double manifestCareSize = ${_double(pickupManifest['careSize'])};
+  static const double manifestCareWeight = ${_double(pickupManifest['careWeight'])};
+
+  static const double problemHeight = ${_double(pickupProblem['height'])};
+  static const double problemMarginTop = ${_double(pickupProblem['marginTop'])};
+  static const double problemRadius = ${_double(pickupProblem['radius'])};
+  static const double problemPaddingHorizontal = ${_double(pickupProblem['paddingHorizontal'])};
+  static const double problemSize = ${_double(pickupProblem['size'])};
+  static const double problemWeight = ${_double(pickupProblem['weight'])};
+  static const double problemIconSize = ${_double(pickupProblem['iconSize'])};
+
+  static const double footerHeight = ${_double(pickupFooter['height'])};
+  static const double footerPaddingTop = ${_double(pickupFooter['paddingTop'])};
+  static const double footerPaddingHorizontal = ${_double(pickupFooter['paddingHorizontal'])};
+  static const double compactFooterPaddingHorizontal = ${_double(pickupFooter['compactPaddingHorizontal'])};
+  static const double footerPaddingBottom = ${_double(pickupFooter['paddingBottom'])};
+  static const double primaryHeight = ${_double(pickupFooter['primaryHeight'])};
+  static const double primaryRadius = ${_double(pickupFooter['primaryRadius'])};
+  static const double primarySize = ${_double(pickupFooter['primarySize'])};
+  static const double primaryWeight = ${_double(pickupFooter['primaryWeight'])};
 }
 
 abstract final class DriverE01Metrics {
