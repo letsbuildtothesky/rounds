@@ -6,6 +6,7 @@ import '../app/generated/driver_ui_metrics.g.dart';
 import '../app/harness_app_controller.dart';
 import '../driver/driver_session.dart';
 import 'components/round_overview_map.dart';
+import 'components/rounds_action_drawer.dart';
 import 'navigation_harness_screen.dart';
 import 'pickup_confirmation_screen.dart';
 
@@ -264,7 +265,7 @@ class _RoundTopBar extends StatelessWidget {
               SizedBox(
                 width: buttonSize,
                 height: buttonSize,
-                child: PopupMenuButton<String>(
+                child: IconButton(
                   key: const Key('e01-round-actions'),
                   tooltip: 'Round actions',
                   padding: EdgeInsets.zero,
@@ -272,22 +273,7 @@ class _RoundTopBar extends StatelessWidget {
                     Icons.more_horiz,
                     size: DriverE01Metrics.topIconSize,
                   ),
-                  onSelected: (value) => _onAction(value),
-                  itemBuilder: (_) => [
-                    const PopupMenuItem(
-                      value: 'refresh',
-                      child: Text('Refresh Round'),
-                    ),
-                    PopupMenuItem(
-                      value: 'language',
-                      child: Text(controller.strings.chooseLanguage),
-                    ),
-                    if (controller.driverConfigured)
-                      const PopupMenuItem(
-                        value: 'signout',
-                        child: Text('Sign out'),
-                      ),
-                  ],
+                  onPressed: () => _openActions(context),
                 ),
               ),
             ],
@@ -295,6 +281,33 @@ class _RoundTopBar extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _openActions(BuildContext context) async {
+    final action = await showRoundsActionDrawer(
+      context,
+      title: 'Round actions',
+      actions: [
+        const RoundsDrawerAction(
+          value: 'refresh',
+          label: 'Refresh Round',
+          icon: Icons.refresh,
+        ),
+        RoundsDrawerAction(
+          value: 'language',
+          label: controller.strings.chooseLanguage,
+          icon: Icons.language,
+        ),
+        if (controller.driverConfigured)
+          const RoundsDrawerAction(
+            value: 'signout',
+            label: 'Sign out',
+            icon: Icons.logout,
+            destructive: true,
+          ),
+      ],
+    );
+    if (action != null && context.mounted) _onAction(action);
   }
 
   void _onAction(String value) {

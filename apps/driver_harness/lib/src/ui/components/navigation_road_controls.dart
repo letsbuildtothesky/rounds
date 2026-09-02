@@ -52,14 +52,9 @@ class NavigationRoadControlButton extends StatelessWidget {
 }
 
 class NavigationRoadMenuButton extends StatelessWidget {
-  const NavigationRoadMenuButton({
-    required this.itemBuilder,
-    required this.onSelected,
-    super.key,
-  });
+  const NavigationRoadMenuButton({required this.onPressed, super.key});
 
-  final PopupMenuItemBuilder<String> itemBuilder;
-  final ValueChanged<String> onSelected;
+  final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -83,20 +78,15 @@ class NavigationRoadMenuButton extends StatelessWidget {
           ),
         ),
         clipBehavior: Clip.antiAlias,
-        child: PopupMenuButton<String>(
+        child: InkWell(
           key: const Key('navigation-more'),
-          tooltip: 'More actions',
-          padding: EdgeInsets.zero,
-          icon: const Icon(
+          onTap: onPressed,
+          child: const Icon(
             Icons.more_horiz,
             color: RoundsColors.ink,
             size: DriverE02Metrics.roadControlIconSize,
+            semanticLabel: 'More actions',
           ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(DriverE02Metrics.dockRadius),
-          ),
-          onSelected: onSelected,
-          itemBuilder: itemBuilder,
         ),
       ),
     );

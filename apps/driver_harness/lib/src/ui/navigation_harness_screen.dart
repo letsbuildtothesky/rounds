@@ -7,6 +7,7 @@ import '../driver/driver_session.dart';
 import '../navigation/google_navigation_surface.dart';
 import 'components/navigation_road_controls.dart';
 import 'components/navigation_stop_dock.dart';
+import 'components/rounds_action_drawer.dart';
 import 'proof_of_delivery_screen.dart';
 
 class NavigationHarnessScreen extends StatefulWidget {
@@ -123,10 +124,7 @@ class _NavigationHarnessScreenState extends State<NavigationHarnessScreen> {
                     icon: Icons.arrow_back,
                     onPressed: () => Navigator.of(context).pop(),
                   ),
-                  NavigationRoadMenuButton(
-                    onSelected: _onMenuSelected,
-                    itemBuilder: _navigationMenuItems,
-                  ),
+                  NavigationRoadMenuButton(onPressed: _openNavigationActions),
                 ],
               ),
             ),
@@ -197,35 +195,26 @@ class _NavigationHarnessScreenState extends State<NavigationHarnessScreen> {
     ).showSnackBar(SnackBar(content: Text(message)));
   }
 
-  List<PopupMenuEntry<String>> _navigationMenuItems(BuildContext context) => [
-    PopupMenuItem(
-      value: 'contact',
-      child: Row(
-        children: [
-          const Icon(Icons.support_agent, size: 20),
-          const SizedBox(width: RoundsSpace.sm),
-          Text(widget.controller.strings.contactOperations),
-        ],
-      ),
-    ),
-    PopupMenuItem(
-      value: 'exception',
-      child: Row(
-        children: [
-          const Icon(
-            Icons.warning_amber_rounded,
-            size: 20,
-            color: RoundsColors.red,
-          ),
-          const SizedBox(width: RoundsSpace.sm),
-          Text(
-            widget.controller.strings.reportException,
-            style: const TextStyle(color: RoundsColors.red),
-          ),
-        ],
-      ),
-    ),
-  ];
+  Future<void> _openNavigationActions() async {
+    final action = await showRoundsActionDrawer(
+      context,
+      title: 'Navigation actions',
+      actions: [
+        RoundsDrawerAction(
+          value: 'contact',
+          label: widget.controller.strings.contactOperations,
+          icon: Icons.support_agent,
+        ),
+        RoundsDrawerAction(
+          value: 'exception',
+          label: widget.controller.strings.reportException,
+          icon: Icons.warning_amber_rounded,
+          destructive: true,
+        ),
+      ],
+    );
+    if (action != null && mounted) _onMenuSelected(action);
+  }
 
   Future<void> _confirmArrival() async {
     setState(() => _submittingArrival = true);
