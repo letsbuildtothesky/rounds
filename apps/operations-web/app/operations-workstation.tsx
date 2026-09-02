@@ -10,6 +10,7 @@ import type {
   UnplannedDeliverySummary,
 } from "@rounds/contracts";
 import { OperationsMap, type OperationsMapCamera, type OperationsMapMode } from "./operations-map";
+import { OperationsMenuIcon, OperationsSectionSheet, type OperationsSectionKey } from "./operations-section-sheet";
 
 const roundsApiUrl = process.env.NEXT_PUBLIC_ROUNDS_API_URL ?? "http://127.0.0.1:8080";
 
@@ -88,6 +89,7 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
   const [stale, setStale] = useState(false);
   const [error, setError] = useState("");
   const [profileOpen, setProfileOpen] = useState(false);
+  const [sectionMenuOpen, setSectionMenuOpen] = useState(false);
   const [mapMode, setMapMode] = useState<OperationsMapMode>("operations");
   const [mapMenuOpen, setMapMenuOpen] = useState(false);
   const [mapCamera, setMapCamera] = useState<OperationsMapCamera>({ bearing: 0, pitch: 0 });
@@ -185,10 +187,11 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
       <div className="v45-workspace"><b>{tenant.displayName}</b><span>Bangkok · Automatic dispatch</span></div>
       <nav className="v45-nav" aria-label="Operations sections">
         <button className="on">Dispatch</button>
-        <button type="button">Drivers</button>
+        <button type="button" disabled title="Drivers workspace is not connected yet">Drivers</button>
         <button type="button" onClick={onHistory}>History</button>
-        <button type="button">Settings</button>
+        <button type="button" disabled title="Settings workspace is not connected yet">Settings</button>
       </nav>
+      <button className="v45-section-trigger" type="button" aria-haspopup="dialog" aria-expanded={sectionMenuOpen} onClick={() => setSectionMenuOpen(true)}><span>Dispatch</span><OperationsMenuIcon /></button>
       <div className="v45-spacer" />
       <button className="v45-network" type="button"><i /><span>Network enabled</span><ChevronIcon /></button>
       <button className="v45-util" type="button" title="Driver communications" onClick={() => onCommunications()}><MessageIcon />{buckets.action.length > 0 && <b>{buckets.action.length}</b>}</button>
@@ -197,6 +200,18 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
     </header>
 
     {stale && <div className="v45-system-strip"><i /><b>Last-known operational view</b><span>Live refresh is paused. Decisions are withheld until current truth returns.</span><button onClick={() => void load()}>Retry</button></div>}
+
+    <OperationsSectionSheet
+      open={sectionMenuOpen}
+      current="action"
+      onClose={() => setSectionMenuOpen(false)}
+      onSelect={(section: OperationsSectionKey) => {
+        if (section === "deliveries") onAddDelivery();
+        else if (section === "communications") onCommunications();
+        else if (section === "history") onHistory();
+      }}
+      onSignOut={onSignOut}
+    />
 
     <div className="v45-board">
       <aside className="v45-rail">

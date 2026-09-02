@@ -17,6 +17,7 @@ import { HistoryPanel } from "./history-panel";
 import { CommunicationsPanel } from "./communications-panel";
 import { ActionPanel } from "./action-panel";
 import { OperationsWorkstation } from "./operations-workstation";
+import { OperationsMenuIcon, OperationsSectionSheet, type OperationsSectionKey } from "./operations-section-sheet";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const supabasePublishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? "";
@@ -72,6 +73,7 @@ export default function OperationsPage() {
   const [section, setSection] = useState<"action" | "deliveries" | "dispatch" | "communications" | "history">("action");
   const [communicationThreadId, setCommunicationThreadId] = useState("");
   const [developmentPreview, setDevelopmentPreview] = useState(false);
+  const [sectionMenuOpen, setSectionMenuOpen] = useState(false);
 
   const selectedTenant = operationsSession?.tenants.find((tenant) => tenant.id === selectedTenantId)
     ?? operationsSession?.tenants[0];
@@ -222,7 +224,16 @@ export default function OperationsPage() {
           <div><strong>{operationsSession?.user.displayName ?? authSession.user.email}</strong><small>{selectedTenant ? roleLabel(selectedTenant.role) : "No access"}</small></div>
           <button type="button" onClick={() => void signOut()}>Sign out</button>
         </div>
+        <button className="app-mobile-nav" type="button" aria-haspopup="dialog" aria-expanded={sectionMenuOpen} onClick={() => setSectionMenuOpen(true)}><span>{section === "action" ? "Dispatch" : section[0]!.toUpperCase() + section.slice(1)}</span><OperationsMenuIcon /></button>
       </header>
+
+      <OperationsSectionSheet
+        open={sectionMenuOpen}
+        current={(section === "dispatch" ? "action" : section) as OperationsSectionKey}
+        onClose={() => setSectionMenuOpen(false)}
+        onSelect={(nextSection) => setSection(nextSection)}
+        onSignOut={() => void signOut()}
+      />
 
       <main className={`operations-main ${section !== "deliveries" ? "dispatch-main" : ""}`}>
         {section === "action" && selectedTenant ? <ActionPanel accessToken={authSession.access_token} tenant={selectedTenant} onOpenThread={openCommunicationThread} /> : section === "dispatch" && selectedTenant ? <DispatchPanel accessToken={authSession.access_token} tenant={selectedTenant} /> : section === "communications" && selectedTenant ? <CommunicationsPanel accessToken={authSession.access_token} tenant={selectedTenant} initialThreadId={communicationThreadId} /> : section === "history" && selectedTenant ? <HistoryPanel accessToken={authSession.access_token} tenant={selectedTenant} /> : <>

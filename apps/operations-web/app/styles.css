@@ -33,6 +33,24 @@ svg { width: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-l
 .account strong { font-size: .78rem; }
 .account small { color: var(--muted); font-size: .68rem; }
 .account button { padding: 8px 11px; border: 1px solid var(--line); border-radius: 8px; color: var(--ink); background: white; font-size: .72rem; font-weight: 700; }
+.app-mobile-nav { display: none; }
+
+.operations-section-scrim { position: fixed; inset: 0; z-index: 200; display: flex; align-items: flex-end; justify-content: center; padding: 18px; background: rgba(15, 24, 39, .44); backdrop-filter: blur(3px); }
+.operations-section-sheet { width: min(620px, 100%); max-height: min(720px, calc(100vh - 36px)); overflow: auto; border: 1px solid #cad4dc; border-radius: 18px 18px 8px 8px; background: #fff; box-shadow: 0 -18px 60px rgba(21, 32, 51, .22); color: #152033; }
+.operations-section-sheet > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; padding: 26px 26px 22px; border-bottom: 1px solid #dfe4e8; }
+.operations-section-sheet > header small { display: block; margin-bottom: 7px; color: #ff6a21; font-size: 11px; font-weight: 900; letter-spacing: .09em; }
+.operations-section-sheet > header h2 { margin: 0; font-size: 25px; line-height: 1.12; letter-spacing: -.035em; }
+.operations-section-sheet > header > button { display: grid; width: 42px; height: 42px; flex: 0 0 auto; place-items: center; border: 1px solid #cad4dc; border-radius: 7px; color: #536173; background: #fff; }
+.operations-section-sheet svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.operations-section-sheet nav { display: grid; padding: 8px 26px 0; }
+.operations-section-sheet nav button { display: flex; min-height: 74px; align-items: center; justify-content: space-between; gap: 18px; padding: 14px 0; border: 0; border-bottom: 1px solid #e3e7ea; color: #344256; background: #fff; text-align: left; }
+.operations-section-sheet nav button.active { color: #152033; }
+.operations-section-sheet nav button.active b::after { display: inline-block; width: 7px; height: 7px; margin-left: 9px; border-radius: 50%; background: #ff6a21; content: ""; vertical-align: 2px; }
+.operations-section-sheet nav span, .operations-section-sheet nav b, .operations-section-sheet nav small { display: block; }
+.operations-section-sheet nav b { font-size: 16px; }
+.operations-section-sheet nav small { margin-top: 5px; color: #758193; font-size: 12.5px; line-height: 1.4; }
+.operations-section-sheet nav button > svg { color: #758193; }
+.operations-section-signout { width: calc(100% - 52px); height: 46px; margin: 18px 26px 26px; border: 1px solid #d8b9b2; border-radius: 7px; color: #9c3b27; background: #fff; font-size: 13px; font-weight: 800; }
 
 .operations-main { width: min(980px, calc(100% - 40px)); margin: 0 auto; padding: 52px 0 90px; }
 .page-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 30px; }
@@ -315,6 +333,9 @@ svg { width: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-l
 @media (max-width: 840px) {
   .app-header { grid-template-columns: 1fr auto; padding: 0 18px; }
   .app-header nav { display: none; }
+  .account { display: none; }
+  .app-mobile-nav { display: flex; min-width: 132px; height: 42px; align-items: center; justify-content: space-between; gap: 12px; padding: 0 12px; border: 1px solid #cad4dc; border-radius: 7px; color: #344256; background: #fff; font-size: 13px; font-weight: 800; }
+  .app-mobile-nav svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; }
   .operations-main { width: min(100% - 28px, 720px); padding-top: 32px; }
   .page-heading { align-items: flex-start; flex-direction: column; }
   .field-grid.two, .pin-fields { grid-template-columns: 1fr; }
@@ -348,4 +369,9 @@ svg { width: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-l
   .action-metrics { grid-template-columns: 1fr; }
   .exception-context { grid-template-columns: 1fr; }
   .exception-card footer { align-items: stretch; flex-direction: column; }
+  .operations-section-scrim { padding: 0; }
+  .operations-section-sheet { max-height: 88vh; border-right: 0; border-bottom: 0; border-left: 0; border-radius: 20px 20px 0 0; }
+  .operations-section-sheet > header { padding: 23px 20px 19px; }
+  .operations-section-sheet nav { padding: 6px 20px 0; }
+  .operations-section-signout { width: calc(100% - 40px); margin: 16px 20px 22px; }
 }
