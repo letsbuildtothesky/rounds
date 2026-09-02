@@ -154,6 +154,7 @@ class _ActiveRoundOverview extends StatelessWidget {
   }
 
   void _openPrimary(BuildContext context, DriverRoundStopModel firstStop) {
+    if (firstStop.state == 'exception') return;
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => round.state == 'active'
@@ -437,6 +438,7 @@ class _NextStopDock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final waitingForOperations = stop.state == 'exception';
     final padding = EdgeInsets.fromLTRB(
       compact
           ? DriverE01Metrics.compactDockPaddingHorizontal
@@ -477,7 +479,9 @@ class _NextStopDock extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'NEXT STOP · ${stop.sequence} OF ${round.stops.length}',
+                        waitingForOperations
+                            ? 'STOP ${stop.sequence} OF ${round.stops.length} · OPERATIONS HOLD'
+                            : 'NEXT STOP · ${stop.sequence} OF ${round.stops.length}',
                         key: const Key('e01-next-kicker'),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -530,7 +534,7 @@ class _NextStopDock extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        'Ready',
+                        waitingForOperations ? 'Hold' : 'Ready',
                         key: const Key('e01-next-eta'),
                         style: _e01Style(
                           color: RoundsColors.ink,
@@ -576,7 +580,9 @@ class _NextStopDock extends StatelessWidget {
                 const SizedBox(width: DriverE01Metrics.taskGap),
                 Expanded(
                   child: Text(
-                    task == null
+                    waitingForOperations
+                        ? 'Damaged package · Operations reviewing'
+                        : task == null
                         ? 'Manifest ready'
                         : '${task.quantity}× ${task.description}',
                     key: const Key('e01-task-line'),
@@ -603,14 +609,18 @@ class _NextStopDock extends StatelessWidget {
                   : DriverE01Metrics.primaryHeight,
               child: FilledButton(
                 key: Key(
-                  round.state == 'active'
+                  waitingForOperations
+                      ? 'waiting-operations'
+                      : round.state == 'active'
                       ? 'start-navigation'
                       : 'verify-pickup',
                 ),
-                onPressed: onPrimary,
+                onPressed: waitingForOperations ? null : onPrimary,
                 style: FilledButton.styleFrom(
                   padding: EdgeInsets.zero,
                   backgroundColor: RoundsColors.ink,
+                  disabledBackgroundColor: const Color(0xFFD9DFE5),
+                  disabledForegroundColor: const Color(0xFF687381),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(
                       DriverE01Metrics.primaryRadius,
@@ -618,7 +628,9 @@ class _NextStopDock extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  round.state == 'active'
+                  waitingForOperations
+                      ? 'Waiting for Operations'
+                      : round.state == 'active'
                       ? 'Navigate to Stop ${stop.sequence}'
                       : 'Verify pickup manifest',
                   style: _e01Style(

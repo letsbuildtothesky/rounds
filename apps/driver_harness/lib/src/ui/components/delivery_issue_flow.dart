@@ -43,6 +43,7 @@ Future<bool> openDeliveryIssueFlow(
             builder: (_) => DeliveryPackageProblemScreen(
               controller: controller,
               stop: stop,
+              initialNote: draft.note,
             ),
           ),
         ) ??

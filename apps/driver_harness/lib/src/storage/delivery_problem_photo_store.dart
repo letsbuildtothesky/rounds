@@ -31,6 +31,17 @@ class DeliveryProblemPhotoStore {
     return file;
   }
 
+  String restoreNote(String stopId) =>
+      _preferences.getString(_noteKey(stopId)) ?? '';
+
+  Future<void> saveNote(String stopId, String note) async {
+    if (note.isEmpty) {
+      await _preferences.remove(_noteKey(stopId));
+      return;
+    }
+    await _preferences.setString(_noteKey(stopId), note);
+  }
+
   Future<File> retain(String stopId, String capturedPath) async {
     final source = File(capturedPath);
     if (!await source.exists() || await source.length() == 0) {
@@ -59,8 +70,12 @@ class DeliveryProblemPhotoStore {
       final file = File(savedPath);
       if (await file.exists()) await file.delete();
     }
-    await _preferences.remove(_key(stopId));
+    await Future.wait([
+      _preferences.remove(_key(stopId)),
+      _preferences.remove(_noteKey(stopId)),
+    ]);
   }
 
   String _key(String stopId) => 'delivery_problem_photo_$stopId';
+  String _noteKey(String stopId) => 'delivery_problem_note_$stopId';
 }
