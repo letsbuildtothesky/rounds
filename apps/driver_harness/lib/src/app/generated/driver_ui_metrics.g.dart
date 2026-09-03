@@ -123,6 +123,92 @@ abstract final class DriverA01BMetrics {
   static const double thaiButtonTracking = 0.0;
 }
 
+abstract final class DriverB00Metrics {
+  static const String sourceEnglish = 'ux/driver/en/screens/ROUNDS-B00-START-SHIFT-v1-10OF10.html';
+  static const String sourceThai = 'ux/driver/th/ROUNDS-B00-START-SHIFT-TH-v1-10OF10.html';
+
+  static const double topBarHeight = 56.0;
+  static const double topBarPaddingHorizontal = 20.0;
+  static const double brandSize = 20.0;
+  static const double brandTracking = -1.0;
+  static const double brandDotSize = 6.0;
+  static const double notificationSize = 40.0;
+  static const double notificationIconSize = 19.0;
+
+  static const double heroPaddingHorizontal = 20.0;
+  static const double englishHeroPaddingTop = 24.0;
+  static const double englishHeroPaddingBottom = 25.0;
+  static const double thaiHeroPaddingTop = 26.0;
+  static const double thaiHeroPaddingBottom = 27.0;
+  static const double thaiCompactHeroPaddingTop = 23.0;
+  static const double thaiCompactHeroPaddingBottom = 24.0;
+  static const double heroStateGap = 7.0;
+  static const double heroStateDotSize = 7.0;
+  static const double englishStateSize = 13.0;
+  static const double thaiStateSize = 13.5;
+  static const double thaiCompactStateSize = 12.7;
+  static const double englishStateBottom = 10.0;
+  static const double thaiStateBottom = 8.0;
+  static const double englishTitleSize = 31.0;
+  static const double thaiTitleSize = 40.0;
+  static const double thaiCompactTitleSize = 36.0;
+
+  static const double shiftPaddingHorizontal = 20.0;
+  static const double englishShiftPaddingTop = 29.0;
+  static const double englishShiftPaddingBottom = 30.0;
+  static const double thaiShiftPaddingTop = 27.0;
+  static const double thaiShiftPaddingBottom = 29.0;
+  static const double thaiCompactShiftPaddingTop = 24.0;
+  static const double thaiCompactShiftPaddingBottom = 26.0;
+  static const double englishShiftLabelSize = 11.5;
+  static const double thaiShiftLabelSize = 12.5;
+  static const double thaiCompactShiftLabelSize = 12.0;
+  static const double englishShiftLabelBottom = 13.0;
+  static const double thaiShiftLabelBottom = 9.0;
+  static const double englishShiftTimeSize = 39.0;
+  static const double thaiShiftTimeSize = 38.0;
+  static const double thaiCompactShiftTimeSize = 34.0;
+  static const double englishShiftMetaTop = 13.0;
+  static const double thaiShiftMetaTop = 12.0;
+  static const double englishShiftMetaSize = 13.5;
+  static const double thaiShiftMetaSize = 13.0;
+  static const double thaiCompactShiftMetaSize = 12.2;
+
+  static const double dispatchPaddingHorizontal = 20.0;
+  static const double compactDispatchPaddingHorizontal = 16.0;
+  static const double dispatchHeight = 82.0;
+  static const double englishDispatchLabelSize = 11.5;
+  static const double thaiDispatchLabelSize = 12.0;
+  static const double englishDispatchLabelBottom = 7.0;
+  static const double thaiDispatchLabelBottom = 4.0;
+  static const double englishDispatchNameSize = 16.0;
+  static const double thaiDispatchNameSize = 15.0;
+  static const double dispatchActionSize = 44.0;
+  static const double dispatchActionGap = 7.0;
+  static const double dispatchActionIconSize = 19.0;
+
+  static const double startPaddingTop = 14.0;
+  static const double startPaddingHorizontal = 20.0;
+  static const double compactStartPaddingHorizontal = 16.0;
+  static const double startPaddingBottom = 18.0;
+  static const double startButtonHeight = 62.0;
+  static const double startButtonRadius = 8.0;
+  static const double startButtonSize = 17.0;
+  static const double compactStartButtonSize = 16.0;
+  static const double startButtonIconSize = 20.0;
+  static const double startButtonGap = 9.0;
+
+  static const double bottomNavHeight = 76.0;
+  static const double bottomNavPaddingTop = 7.0;
+  static const double bottomNavPaddingHorizontal = 4.0;
+  static const double bottomNavPaddingBottom = 9.0;
+  static const double bottomNavIconSize = 20.0;
+  static const double bottomNavGap = 5.0;
+  static const double englishBottomNavLabelSize = 11.5;
+  static const double thaiBottomNavLabelSize = 10.8;
+  static const double thaiCompactBottomNavLabelSize = 10.1;
+}
+
 abstract final class DriverD01Metrics {
   static const String source = 'ux/driver/en/screens/ROUNDS-D01-NAVIGATE-TO-PICKUP-v5-10OF10.html';
 

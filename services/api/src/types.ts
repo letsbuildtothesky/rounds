@@ -67,6 +67,9 @@ import type {
   SetDriverShiftExceptionCommand,
   SetDriverShiftExceptionPayload,
   SetDriverShiftExceptionResult,
+  StartDriverShiftCommand,
+  StartDriverShiftPayload,
+  StartDriverShiftResult,
 } from "@rounds/contracts";
 import type { PlanningRouteContext, PlanningRouteService } from "./planning-route-service.js";
 
@@ -157,6 +160,13 @@ export interface DriverCommunicationsGateway {
     command: LogContactAttemptCommand,
     identity: AuthenticatedIdentity,
   ): Promise<LogContactAttemptResult>;
+}
+
+export interface DriverShiftGateway {
+  startDriverShift(
+    command: StartDriverShiftCommand,
+    identity: AuthenticatedIdentity,
+  ): Promise<StartDriverShiftResult>;
 }
 
 export interface OperationsCommunicationsGateway {
@@ -361,6 +371,13 @@ export type DriverSessionDependencies = {
   identity: IdentityGateway;
   uuid: () => string;
 };
+
+export type DriverShiftDependencies = DriverSessionDependencies & {
+  shifts: DriverShiftGateway;
+  now: () => Date;
+};
+
+export type StartDriverShiftRequestBody = StartDriverShiftPayload;
 
 export type ConfirmPickupDependencies = DriverSessionDependencies & {
   pickup: PickupGateway;

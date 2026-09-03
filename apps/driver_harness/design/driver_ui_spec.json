@@ -127,6 +127,97 @@
         "thaiButtonTracking": 0
       }
     },
+    "B00": {
+      "sourceEnglish": "ux/driver/en/screens/ROUNDS-B00-START-SHIFT-v1-10OF10.html",
+      "sourceThai": "ux/driver/th/ROUNDS-B00-START-SHIFT-TH-v1-10OF10.html",
+      "topBar": {
+        "height": 56,
+        "paddingHorizontal": 20,
+        "brandSize": 20,
+        "brandTracking": -1,
+        "brandDotSize": 6,
+        "notificationSize": 40,
+        "notificationIconSize": 19
+      },
+      "hero": {
+        "paddingHorizontal": 20,
+        "englishPaddingTop": 24,
+        "englishPaddingBottom": 25,
+        "thaiPaddingTop": 26,
+        "thaiPaddingBottom": 27,
+        "thaiCompactPaddingTop": 23,
+        "thaiCompactPaddingBottom": 24,
+        "stateGap": 7,
+        "stateDotSize": 7,
+        "englishStateSize": 13,
+        "thaiStateSize": 13.5,
+        "thaiCompactStateSize": 12.7,
+        "englishStateBottom": 10,
+        "thaiStateBottom": 8,
+        "englishTitleSize": 31,
+        "thaiTitleSize": 40,
+        "thaiCompactTitleSize": 36
+      },
+      "shift": {
+        "paddingHorizontal": 20,
+        "englishPaddingTop": 29,
+        "englishPaddingBottom": 30,
+        "thaiPaddingTop": 27,
+        "thaiPaddingBottom": 29,
+        "thaiCompactPaddingTop": 24,
+        "thaiCompactPaddingBottom": 26,
+        "englishLabelSize": 11.5,
+        "thaiLabelSize": 12.5,
+        "thaiCompactLabelSize": 12,
+        "englishLabelBottom": 13,
+        "thaiLabelBottom": 9,
+        "englishTimeSize": 39,
+        "thaiTimeSize": 38,
+        "thaiCompactTimeSize": 34,
+        "englishMetaTop": 13,
+        "thaiMetaTop": 12,
+        "englishMetaSize": 13.5,
+        "thaiMetaSize": 13,
+        "thaiCompactMetaSize": 12.2
+      },
+      "dispatch": {
+        "paddingHorizontal": 20,
+        "compactPaddingHorizontal": 16,
+        "height": 82,
+        "englishLabelSize": 11.5,
+        "thaiLabelSize": 12,
+        "englishLabelBottom": 7,
+        "thaiLabelBottom": 4,
+        "englishNameSize": 16,
+        "thaiNameSize": 15,
+        "actionSize": 44,
+        "actionGap": 7,
+        "actionIconSize": 19
+      },
+      "start": {
+        "paddingTop": 14,
+        "paddingHorizontal": 20,
+        "compactPaddingHorizontal": 16,
+        "paddingBottom": 18,
+        "buttonHeight": 62,
+        "buttonRadius": 8,
+        "buttonSize": 17,
+        "compactButtonSize": 16,
+        "buttonIconSize": 20,
+        "buttonGap": 9
+      },
+      "bottomNav": {
+        "height": 76,
+        "paddingTop": 7,
+        "paddingHorizontal": 4,
+        "paddingBottom": 9,
+        "iconSize": 20,
+        "gap": 5,
+        "englishLabelSize": 11.5,
+        "thaiLabelSize": 10.8,
+        "thaiCompactLabelSize": 10.1
+      }
+    },
     "D01": {
       "source": "ux/driver/en/screens/ROUNDS-D01-NAVIGATE-TO-PICKUP-v5-10OF10.html",
       "roadControl": {

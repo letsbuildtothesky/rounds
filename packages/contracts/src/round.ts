@@ -750,7 +750,43 @@ export type DriverSession = {
   user: { id: string; displayName: string };
   driver: { id: string; preferredLocale: string; vehicleLabel?: string; vehiclePlate?: string };
   team?: { tenantId: string; displayName: string; status: "active" };
+  shift?: DriverShiftProjection;
   currentRound?: DriverRound;
   pendingLiveChange?: DriverLiveDeliveryChange;
   completedRounds?: DriverCompletedRound[];
 };
+
+export type DriverEffectiveShift = {
+  serviceDate: string;
+  timezone: string;
+  source: "recurring" | "exception";
+  startAt: string;
+  endAt: string;
+  startLocal: string;
+  endLocal: string;
+  crossesMidnight: boolean;
+};
+
+export type DriverShiftAttendance = {
+  id: string;
+  version: number;
+  serviceDate: string;
+  startedAt: string;
+  endedAt?: string;
+};
+
+export type DriverShiftProjection = {
+  effective: DriverEffectiveShift;
+  attendance?: DriverShiftAttendance;
+};
+
+export type StartDriverShiftPayload = { serviceDate: string };
+export type StartDriverShiftCommand = CommandEnvelope<"driver.start_shift", StartDriverShiftPayload>;
+export type DriverShiftStartedPayload = DriverShiftAttendance & {
+  driverId: string;
+  scheduledStartAt: string;
+  scheduledEndAt: string;
+  scheduleSource: "recurring" | "exception";
+};
+export type DriverShiftStartedEvent = DomainEventEnvelope<"driver.shift_started", DriverShiftStartedPayload>;
+export type StartDriverShiftResult = CommandResult<DriverShiftStartedPayload, DriverShiftStartedEvent>;

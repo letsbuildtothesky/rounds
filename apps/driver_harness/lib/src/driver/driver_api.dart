@@ -132,6 +132,22 @@ class DriverApi {
     _storage.delete(key: _refreshTokenKey),
   ]);
 
+  Future<DriverCommandOutcome> startShift(DriverSessionModel session) {
+    final shift = session.shift;
+    if (shift == null) {
+      throw const DriverApiException('No Team shift is scheduled today');
+    }
+    return _queueAndSend(
+      commandType: 'driver.start_shift',
+      aggregateId: session.driverId,
+      expectedVersion: 0,
+      idempotencyKey:
+          'driver-shift:${session.driverId}:${shift.effective.serviceDate}',
+      endpoint: '/v1/driver/shifts/start',
+      payload: {'serviceDate': shift.effective.serviceDate},
+    );
+  }
+
   Future<DriverOperationsThreadModel> getOperationsThread({
     required DriverRoundModel round,
     required DriverRoundStopModel stop,

@@ -42,6 +42,8 @@ import type {
   ReportLocationProblemPayload,
   ReportDriverEmergencyCommand,
   ReportDriverEmergencyPayload,
+  StartDriverShiftCommand,
+  StartDriverShiftPayload,
 } from "./round.js";
 import { driverEmergencySafetyStatuses } from "./round.js";
 import {
@@ -58,6 +60,33 @@ import {
 } from "./operations.js";
 
 export class ContractError extends Error {}
+
+function validateServiceDate(serviceDate: string): void {
+  const parsed = new Date(`${serviceDate}T00:00:00Z`);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(serviceDate)
+    || Number.isNaN(parsed.valueOf())
+    || parsed.toISOString().slice(0, 10) !== serviceDate) {
+    throw new ContractError("serviceDate must be a real YYYY-MM-DD date");
+  }
+}
+
+export function validateStartDriverShiftPayload(payload: StartDriverShiftPayload): void {
+  validateServiceDate(payload.serviceDate);
+}
+
+export function validateStartDriverShiftCommand(command: StartDriverShiftCommand): void {
+  if (command.schemaVersion !== 1 || command.commandType !== "driver.start_shift") {
+    throw new ContractError("unsupported StartDriverShift command envelope");
+  }
+  assertUuid(command.commandId, "commandId");
+  assertUuid(command.traceId, "traceId");
+  assertUuid(command.tenantId, "tenantId");
+  assertUuid(command.aggregateId, "aggregateId");
+  assertNonEmpty(command.idempotencyKey, "idempotencyKey");
+  if (command.idempotencyKey.length > 200) throw new ContractError("idempotencyKey exceeds 200 characters");
+  if (command.expectedVersion !== 0) throw new ContractError("StartDriverShift expectedVersion must be 0");
+  validateStartDriverShiftPayload(command.payload);
+}
 
 export function validateSetDriverRecurringSchedulePayload(payload: SetDriverRecurringSchedulePayload): void {
   if (!Array.isArray(payload.weekdays) || payload.weekdays.length < 1 || payload.weekdays.length > 7) {

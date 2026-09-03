@@ -6,6 +6,7 @@ class DriverSessionModel {
     this.teamName,
     this.vehicleLabel,
     this.vehiclePlate,
+    this.shift,
     this.completedRounds = const [],
     this.currentRound,
     this.pendingLiveChange,
@@ -17,6 +18,7 @@ class DriverSessionModel {
   final String? teamName;
   final String? vehicleLabel;
   final String? vehiclePlate;
+  final DriverShiftModel? shift;
   final List<DriverCompletedRoundModel> completedRounds;
   final DriverRoundModel? currentRound;
   final DriverLiveDeliveryChangeModel? pendingLiveChange;
@@ -33,6 +35,9 @@ class DriverSessionModel {
       teamName: team?['displayName'] as String?,
       vehicleLabel: driver['vehicleLabel'] as String?,
       vehiclePlate: driver['vehiclePlate'] as String?,
+      shift: json['shift'] is Map<String, dynamic>
+          ? DriverShiftModel.fromJson(json['shift'] as Map<String, dynamic>)
+          : null,
       completedRounds: (json['completedRounds'] as List<dynamic>? ?? const [])
           .map(
             (item) => DriverCompletedRoundModel.fromJson(
@@ -60,12 +65,119 @@ class DriverSessionModel {
       if (vehiclePlate != null) 'vehiclePlate': vehiclePlate,
     },
     if (teamName != null) 'team': {'displayName': teamName},
+    if (shift != null) 'shift': shift!.toJson(),
     'completedRounds': completedRounds
         .map((round) => round.toJson())
         .toList(growable: false),
     'currentRound': currentRound?.toJson(),
     if (pendingLiveChange != null)
       'pendingLiveChange': pendingLiveChange!.toJson(),
+  };
+}
+
+class DriverShiftModel {
+  const DriverShiftModel({required this.effective, this.attendance});
+
+  final DriverEffectiveShiftModel effective;
+  final DriverShiftAttendanceModel? attendance;
+
+  factory DriverShiftModel.fromJson(Map<String, dynamic> json) =>
+      DriverShiftModel(
+        effective: DriverEffectiveShiftModel.fromJson(
+          json['effective'] as Map<String, dynamic>,
+        ),
+        attendance: json['attendance'] is Map<String, dynamic>
+            ? DriverShiftAttendanceModel.fromJson(
+                json['attendance'] as Map<String, dynamic>,
+              )
+            : null,
+      );
+
+  Map<String, Object?> toJson() => {
+    'effective': effective.toJson(),
+    if (attendance != null) 'attendance': attendance!.toJson(),
+  };
+}
+
+class DriverEffectiveShiftModel {
+  const DriverEffectiveShiftModel({
+    required this.serviceDate,
+    required this.timezone,
+    required this.source,
+    required this.startAt,
+    required this.endAt,
+    required this.startLocal,
+    required this.endLocal,
+    required this.crossesMidnight,
+  });
+
+  final String serviceDate;
+  final String timezone;
+  final String source;
+  final DateTime startAt;
+  final DateTime endAt;
+  final String startLocal;
+  final String endLocal;
+  final bool crossesMidnight;
+
+  int get scheduledMinutes => endAt.difference(startAt).inMinutes;
+
+  factory DriverEffectiveShiftModel.fromJson(Map<String, dynamic> json) =>
+      DriverEffectiveShiftModel(
+        serviceDate: json['serviceDate'] as String,
+        timezone: json['timezone'] as String,
+        source: json['source'] as String,
+        startAt: DateTime.parse(json['startAt'] as String),
+        endAt: DateTime.parse(json['endAt'] as String),
+        startLocal: json['startLocal'] as String,
+        endLocal: json['endLocal'] as String,
+        crossesMidnight: json['crossesMidnight'] as bool,
+      );
+
+  Map<String, Object?> toJson() => {
+    'serviceDate': serviceDate,
+    'timezone': timezone,
+    'source': source,
+    'startAt': startAt.toUtc().toIso8601String(),
+    'endAt': endAt.toUtc().toIso8601String(),
+    'startLocal': startLocal,
+    'endLocal': endLocal,
+    'crossesMidnight': crossesMidnight,
+  };
+}
+
+class DriverShiftAttendanceModel {
+  const DriverShiftAttendanceModel({
+    required this.id,
+    required this.version,
+    required this.serviceDate,
+    required this.startedAt,
+    this.endedAt,
+  });
+
+  final String id;
+  final int version;
+  final String serviceDate;
+  final DateTime startedAt;
+  final DateTime? endedAt;
+
+  factory DriverShiftAttendanceModel.fromJson(Map<String, dynamic> json) =>
+      DriverShiftAttendanceModel(
+        id: json['id'] as String,
+        version: json['version'] as int,
+        serviceDate: json['serviceDate'] as String,
+        startedAt: DateTime.parse(json['startedAt'] as String),
+        endedAt: json['endedAt'] is String
+            ? DateTime.parse(json['endedAt'] as String)
+            : null,
+      );
+
+  Map<String, Object?> toJson() => {
+    'id': id,
+    'version': version,
+    'serviceDate': serviceDate,
+    'startedAt': startedAt.toUtc().toIso8601String(),
+    if (endedAt != null) 'endedAt': endedAt!.toUtc().toIso8601String(),
   };
 }
 

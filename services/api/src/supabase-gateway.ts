@@ -5,6 +5,7 @@ import type {
   ActorContext,
   DeliveryCommandGateway,
   DriverCommunicationsGateway,
+  DriverShiftGateway,
   DriverStopGateway,
   IdentityGateway,
   OperationsRole,
@@ -80,6 +81,8 @@ import type {
   AcknowledgeLiveDeliveryChangeCommand,
   AcknowledgeLiveDeliveryChangeResult,
   DriverLiveDeliveryChange,
+  StartDriverShiftCommand,
+  StartDriverShiftResult,
 } from "@rounds/contracts";
 
 type MembershipRow = {
@@ -187,6 +190,18 @@ function addCalendarDay(serviceDate: string): string {
   return value.toISOString().slice(0, 10);
 }
 
+function localServiceDate(now: Date, timezone: string): string {
+  const parts = new Intl.DateTimeFormat("en", {
+    timeZone: timezone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(now);
+  const value = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((part) => part.type === type)?.value;
+  return `${value("year")}-${value("month")}-${value("day")}`;
+}
+
 function zonedLocalIso(serviceDate: string, localTime: string, timezone: string): string {
   const [year, month, day] = serviceDate.split("-").map(Number);
   const [hour, minute] = localTime.split(":").map(Number);
@@ -212,7 +227,7 @@ function initials(displayName: string): string {
   return displayName.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]!.toUpperCase()).join("") || "DR";
 }
 
-export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway, RoundGateway, PickupGateway, DriverStopGateway, DriverCommunicationsGateway, OperationsCommunicationsGateway, PodGateway, OperationsHistoryGateway, OperationsActionGateway, OperationsDeliveriesGateway, OperationsDriversGateway, OperationsRoundDetailGateway, PlanningRouteContextGateway, RoundMoveGateway, LiveDeliveryChangeGateway {
+export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway, RoundGateway, PickupGateway, DriverStopGateway, DriverCommunicationsGateway, DriverShiftGateway, OperationsCommunicationsGateway, PodGateway, OperationsHistoryGateway, OperationsActionGateway, OperationsDeliveriesGateway, OperationsDriversGateway, OperationsRoundDetailGateway, PlanningRouteContextGateway, RoundMoveGateway, LiveDeliveryChangeGateway {
   private readonly admin: SupabaseClient;
 
   constructor(
@@ -1032,6 +1047,23 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     });
     if (error) throw error;
     return data as ConfirmPickupResult;
+  }
+
+  async startDriverShift(
+    command: StartDriverShiftCommand,
+    identity: AuthenticatedIdentity,
+  ): Promise<StartDriverShiftResult> {
+    const actorPersonId = await this.driverActorPersonId(identity);
+    if (!actorPersonId) return {
+      status: "rejected",
+      error: { code: "NOT_AUTHORIZED", message: "Driver identity is not linked" },
+    };
+    const { data, error } = await this.admin.rpc("start_driver_shift_command", {
+      p_command: command,
+      p_actor_person_id: actorPersonId,
+    });
+    if (error) throw error;
+    return data as StartDriverShiftResult;
   }
 
   async reportPickupProblem(
@@ -1983,6 +2015,81 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     if (tenantError) throw tenantError;
     if (!tenant) return null;
 
+    type DriverScheduleRow = {
+      weekdays: number[];
+      start_local: string;
+      end_local: string;
+    };
+    type DriverShiftExceptionRow = {
+      exception_kind: "shift" | "off";
+      start_local: string | null;
+      end_local: string | null;
+    };
+    type DriverShiftAttendanceRow = {
+      id: string;
+      service_date: string;
+      started_at: string;
+      ended_at: string | null;
+      version: number;
+    };
+    const serviceDate = localServiceDate(new Date(), tenant.timezone);
+    const isoDay = new Date(`${serviceDate}T00:00:00.000Z`).getUTCDay() || 7;
+    const [scheduleResult, shiftExceptionResult, attendanceResult] = await Promise.all([
+      this.admin.from("driver_recurring_schedules")
+        .select("weekdays, start_local, end_local")
+        .eq("tenant_id", tenant.id).eq("driver_id", driver.id).eq("active", true)
+        .is("deleted_at", null).maybeSingle<DriverScheduleRow>(),
+      this.admin.from("driver_shift_exceptions")
+        .select("exception_kind, start_local, end_local")
+        .eq("tenant_id", tenant.id).eq("driver_id", driver.id).eq("service_date", serviceDate)
+        .is("deleted_at", null).maybeSingle<DriverShiftExceptionRow>(),
+      this.admin.from("driver_shift_attendance")
+        .select("id, service_date, started_at, ended_at, version")
+        .eq("tenant_id", tenant.id).eq("driver_id", driver.id).eq("service_date", serviceDate)
+        .maybeSingle<DriverShiftAttendanceRow>(),
+    ]);
+    if (scheduleResult.error) throw scheduleResult.error;
+    if (shiftExceptionResult.error) throw shiftExceptionResult.error;
+    if (attendanceResult.error) throw attendanceResult.error;
+    const shiftException = shiftExceptionResult.data;
+    const schedule = scheduleResult.data;
+    const exceptionShift = shiftException?.exception_kind === "shift"
+      && shiftException.start_local && shiftException.end_local
+      ? {
+          source: "exception" as const,
+          startLocal: compactLocalTime(shiftException.start_local),
+          endLocal: compactLocalTime(shiftException.end_local),
+        }
+      : undefined;
+    const recurringShift = !shiftException && schedule?.weekdays.includes(isoDay)
+      ? {
+          source: "recurring" as const,
+          startLocal: compactLocalTime(schedule.start_local),
+          endLocal: compactLocalTime(schedule.end_local),
+        }
+      : undefined;
+    const effectiveShift = exceptionShift ?? recurringShift;
+    const crossesMidnight = !!effectiveShift && effectiveShift.endLocal <= effectiveShift.startLocal;
+    const shiftProjection = effectiveShift ? {
+      effective: {
+        serviceDate,
+        timezone: tenant.timezone,
+        source: effectiveShift.source,
+        startAt: zonedLocalIso(serviceDate, effectiveShift.startLocal, tenant.timezone),
+        endAt: zonedLocalIso(crossesMidnight ? addCalendarDay(serviceDate) : serviceDate, effectiveShift.endLocal, tenant.timezone),
+        startLocal: effectiveShift.startLocal,
+        endLocal: effectiveShift.endLocal,
+        crossesMidnight,
+      },
+      ...(attendanceResult.data ? { attendance: {
+        id: attendanceResult.data.id,
+        version: attendanceResult.data.version,
+        serviceDate: attendanceResult.data.service_date,
+        startedAt: attendanceResult.data.started_at,
+        ...(attendanceResult.data.ended_at ? { endedAt: attendanceResult.data.ended_at } : {}),
+      } } : {}),
+    } : undefined;
+
     const session: DriverSession = {
       user: { id: identity.authUserId, displayName: person.display_name },
       driver: {
@@ -1992,6 +2099,7 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
         ...(driver.vehicle_plate ? { vehiclePlate: driver.vehicle_plate } : {}),
       },
       team: { tenantId: tenant.id, displayName: tenant.display_name, status: "active" },
+      ...(shiftProjection ? { shift: shiftProjection } : {}),
       completedRounds: [],
     };
 

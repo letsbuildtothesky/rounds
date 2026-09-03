@@ -42,6 +42,13 @@ String generateDriverUiMetrics(Map<String, dynamic> json) {
   final a01bContent = a01b['content'] as Map<String, dynamic>;
   final a01bList = a01b['languageList'] as Map<String, dynamic>;
   final a01bFooter = a01b['footer'] as Map<String, dynamic>;
+  final b00 = screens['B00'] as Map<String, dynamic>;
+  final b00Top = b00['topBar'] as Map<String, dynamic>;
+  final b00Hero = b00['hero'] as Map<String, dynamic>;
+  final b00Shift = b00['shift'] as Map<String, dynamic>;
+  final b00Dispatch = b00['dispatch'] as Map<String, dynamic>;
+  final b00Start = b00['start'] as Map<String, dynamic>;
+  final b00BottomNav = b00['bottomNav'] as Map<String, dynamic>;
   final d01 = screens['D01'] as Map<String, dynamic>;
   final d01Control = d01['roadControl'] as Map<String, dynamic>;
   final d01Instruction = d01['instruction'] as Map<String, dynamic>;
@@ -268,6 +275,92 @@ abstract final class DriverA01BMetrics {
   static const double englishButtonTracking = ${_double(a01bFooter['englishButtonTracking'])};
   static const double thaiButtonWeight = ${_double(a01bFooter['thaiButtonWeight'])};
   static const double thaiButtonTracking = ${_double(a01bFooter['thaiButtonTracking'])};
+}
+
+abstract final class DriverB00Metrics {
+  static const String sourceEnglish = '${b00['sourceEnglish']}';
+  static const String sourceThai = '${b00['sourceThai']}';
+
+  static const double topBarHeight = ${_double(b00Top['height'])};
+  static const double topBarPaddingHorizontal = ${_double(b00Top['paddingHorizontal'])};
+  static const double brandSize = ${_double(b00Top['brandSize'])};
+  static const double brandTracking = ${_double(b00Top['brandTracking'])};
+  static const double brandDotSize = ${_double(b00Top['brandDotSize'])};
+  static const double notificationSize = ${_double(b00Top['notificationSize'])};
+  static const double notificationIconSize = ${_double(b00Top['notificationIconSize'])};
+
+  static const double heroPaddingHorizontal = ${_double(b00Hero['paddingHorizontal'])};
+  static const double englishHeroPaddingTop = ${_double(b00Hero['englishPaddingTop'])};
+  static const double englishHeroPaddingBottom = ${_double(b00Hero['englishPaddingBottom'])};
+  static const double thaiHeroPaddingTop = ${_double(b00Hero['thaiPaddingTop'])};
+  static const double thaiHeroPaddingBottom = ${_double(b00Hero['thaiPaddingBottom'])};
+  static const double thaiCompactHeroPaddingTop = ${_double(b00Hero['thaiCompactPaddingTop'])};
+  static const double thaiCompactHeroPaddingBottom = ${_double(b00Hero['thaiCompactPaddingBottom'])};
+  static const double heroStateGap = ${_double(b00Hero['stateGap'])};
+  static const double heroStateDotSize = ${_double(b00Hero['stateDotSize'])};
+  static const double englishStateSize = ${_double(b00Hero['englishStateSize'])};
+  static const double thaiStateSize = ${_double(b00Hero['thaiStateSize'])};
+  static const double thaiCompactStateSize = ${_double(b00Hero['thaiCompactStateSize'])};
+  static const double englishStateBottom = ${_double(b00Hero['englishStateBottom'])};
+  static const double thaiStateBottom = ${_double(b00Hero['thaiStateBottom'])};
+  static const double englishTitleSize = ${_double(b00Hero['englishTitleSize'])};
+  static const double thaiTitleSize = ${_double(b00Hero['thaiTitleSize'])};
+  static const double thaiCompactTitleSize = ${_double(b00Hero['thaiCompactTitleSize'])};
+
+  static const double shiftPaddingHorizontal = ${_double(b00Shift['paddingHorizontal'])};
+  static const double englishShiftPaddingTop = ${_double(b00Shift['englishPaddingTop'])};
+  static const double englishShiftPaddingBottom = ${_double(b00Shift['englishPaddingBottom'])};
+  static const double thaiShiftPaddingTop = ${_double(b00Shift['thaiPaddingTop'])};
+  static const double thaiShiftPaddingBottom = ${_double(b00Shift['thaiPaddingBottom'])};
+  static const double thaiCompactShiftPaddingTop = ${_double(b00Shift['thaiCompactPaddingTop'])};
+  static const double thaiCompactShiftPaddingBottom = ${_double(b00Shift['thaiCompactPaddingBottom'])};
+  static const double englishShiftLabelSize = ${_double(b00Shift['englishLabelSize'])};
+  static const double thaiShiftLabelSize = ${_double(b00Shift['thaiLabelSize'])};
+  static const double thaiCompactShiftLabelSize = ${_double(b00Shift['thaiCompactLabelSize'])};
+  static const double englishShiftLabelBottom = ${_double(b00Shift['englishLabelBottom'])};
+  static const double thaiShiftLabelBottom = ${_double(b00Shift['thaiLabelBottom'])};
+  static const double englishShiftTimeSize = ${_double(b00Shift['englishTimeSize'])};
+  static const double thaiShiftTimeSize = ${_double(b00Shift['thaiTimeSize'])};
+  static const double thaiCompactShiftTimeSize = ${_double(b00Shift['thaiCompactTimeSize'])};
+  static const double englishShiftMetaTop = ${_double(b00Shift['englishMetaTop'])};
+  static const double thaiShiftMetaTop = ${_double(b00Shift['thaiMetaTop'])};
+  static const double englishShiftMetaSize = ${_double(b00Shift['englishMetaSize'])};
+  static const double thaiShiftMetaSize = ${_double(b00Shift['thaiMetaSize'])};
+  static const double thaiCompactShiftMetaSize = ${_double(b00Shift['thaiCompactMetaSize'])};
+
+  static const double dispatchPaddingHorizontal = ${_double(b00Dispatch['paddingHorizontal'])};
+  static const double compactDispatchPaddingHorizontal = ${_double(b00Dispatch['compactPaddingHorizontal'])};
+  static const double dispatchHeight = ${_double(b00Dispatch['height'])};
+  static const double englishDispatchLabelSize = ${_double(b00Dispatch['englishLabelSize'])};
+  static const double thaiDispatchLabelSize = ${_double(b00Dispatch['thaiLabelSize'])};
+  static const double englishDispatchLabelBottom = ${_double(b00Dispatch['englishLabelBottom'])};
+  static const double thaiDispatchLabelBottom = ${_double(b00Dispatch['thaiLabelBottom'])};
+  static const double englishDispatchNameSize = ${_double(b00Dispatch['englishNameSize'])};
+  static const double thaiDispatchNameSize = ${_double(b00Dispatch['thaiNameSize'])};
+  static const double dispatchActionSize = ${_double(b00Dispatch['actionSize'])};
+  static const double dispatchActionGap = ${_double(b00Dispatch['actionGap'])};
+  static const double dispatchActionIconSize = ${_double(b00Dispatch['actionIconSize'])};
+
+  static const double startPaddingTop = ${_double(b00Start['paddingTop'])};
+  static const double startPaddingHorizontal = ${_double(b00Start['paddingHorizontal'])};
+  static const double compactStartPaddingHorizontal = ${_double(b00Start['compactPaddingHorizontal'])};
+  static const double startPaddingBottom = ${_double(b00Start['paddingBottom'])};
+  static const double startButtonHeight = ${_double(b00Start['buttonHeight'])};
+  static const double startButtonRadius = ${_double(b00Start['buttonRadius'])};
+  static const double startButtonSize = ${_double(b00Start['buttonSize'])};
+  static const double compactStartButtonSize = ${_double(b00Start['compactButtonSize'])};
+  static const double startButtonIconSize = ${_double(b00Start['buttonIconSize'])};
+  static const double startButtonGap = ${_double(b00Start['buttonGap'])};
+
+  static const double bottomNavHeight = ${_double(b00BottomNav['height'])};
+  static const double bottomNavPaddingTop = ${_double(b00BottomNav['paddingTop'])};
+  static const double bottomNavPaddingHorizontal = ${_double(b00BottomNav['paddingHorizontal'])};
+  static const double bottomNavPaddingBottom = ${_double(b00BottomNav['paddingBottom'])};
+  static const double bottomNavIconSize = ${_double(b00BottomNav['iconSize'])};
+  static const double bottomNavGap = ${_double(b00BottomNav['gap'])};
+  static const double englishBottomNavLabelSize = ${_double(b00BottomNav['englishLabelSize'])};
+  static const double thaiBottomNavLabelSize = ${_double(b00BottomNav['thaiLabelSize'])};
+  static const double thaiCompactBottomNavLabelSize = ${_double(b00BottomNav['thaiCompactLabelSize'])};
 }
 
 abstract final class DriverD01Metrics {

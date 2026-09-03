@@ -9,6 +9,7 @@ import '../ui/language_screen.dart';
 import '../ui/live_delivery_change_screen.dart';
 import '../ui/operations_chat_screen.dart';
 import '../ui/pickup_confirmation_screen.dart';
+import '../ui/start_shift_screen.dart';
 import '../connectivity/offline_reconnecting_screen.dart';
 import '../driver/driver_session.dart';
 import 'app_strings.dart';
@@ -128,6 +129,13 @@ class _RoundsHarnessAppState extends State<RoundsHarnessApp> {
           ),
         );
       }
+    }
+    final shift = session?.shift;
+    if (session != null &&
+        shift != null &&
+        shift.attendance == null &&
+        (round == null || round.state == 'approved')) {
+      return StartShiftScreen(controller: widget.controller, session: session);
     }
     return AssignedRoundScreen(
       controller: widget.controller,

@@ -69,9 +69,9 @@ These are evidence-based planning estimates, not release claims. Recalculate the
 | Surface | Weighted functional coverage | Production readiness | Full roadmap context |
 |---|---:|---:|---:|
 | Driver · English Pilot business path only | 67.5% (`34.45 / 51`) | gate incomplete | not comparable to the complete board set |
-| Driver · all currently authorized own-fleet depth | 52.7% (`40.60 / 77`) | gate incomplete | approximately 30% of the complete Driver V1 board set; roadmap estimate only |
+| Driver · all currently authorized own-fleet depth | 53.6% (`41.30 / 77`) | gate incomplete | approximately 30% of the complete Driver V1 board set; roadmap estimate only |
 | Operations · currently authorized own-fleet depth | 71.2% (`39.85 / 56`) | gate incomplete | approximately 35% of the complete Operations vision; roadmap estimate only |
-| Combined authorized English own-fleet work | 60.5% (`80.45 / 133`) | **not release-ready** | approximately 20–25% of Slices 1–7; roadmap estimate only |
+| Combined authorized English own-fleet work | 61.0% (`81.15 / 133`) | **not release-ready** | approximately 20–25% of Slices 1–7; roadmap estimate only |
 
 The Driver percentage is higher for the narrow delivery loop than for the complete 47-board product because Network onboarding, offers, earnings and marketplace behavior are deliberately outside the current own-fleet slice.
 
@@ -88,7 +88,7 @@ Canonical inventory: `specs/product/ROUNDS-DRIVER-CANONICAL-MANIFEST-v6.md` and 
 | A02–A05 Entry / Team invite | Pilot P0 | `PARTIAL` | Protected Team email login and pilot one-tap login exist. | Replace pilot shortcut for release; implement canonical phone/OTP/invite path or record an approved product amendment. |
 | A06 Team About You | Later onboarding depth | `DEFERRED` | No production onboarding form. | Promote with self-service Team onboarding. |
 | A06B–A12 Independent identity/payment | Network | `DEFERRED` | Intentionally absent. | Build only with Network promotion and trust/payment policies. |
-| B00 Start Shift | Slice 2 P1 | `SPECIFIED` | Operations schedules exist; Driver shift command does not. | Add server-authoritative shift start and effective-shift truth. |
+| B00 Start Shift | Slice 2 P1 | `PARTIAL` | The authenticated Driver session now projects today's effective recurring/date-exception shift and any real attendance. The canonical measured English/Thai B00 surface commits one explicit server-timed, versioned and idempotent shift start; the database snapshots schedule source/window and emits audit/domain evidence without changing assignment or custody. Automated contract/API/widget/golden coverage passes and migration `202609030017` compiled and applied remotely. Unsupported notification/Hours actions remain inactive rather than fabricated. | Exercise the real button-to-database transition on the Samsung, run the pgTAP behavior suite in a Docker-capable environment, and define a real shift-level Operations contact identity/thread when no Round-scoped contact exists. Ending/overtime remain B01D–B01F work. |
 | B01 / B01B Team Home + assigned Round | Pilot P0 | `PARTIAL` | Waiting state, assigned Round projection and active overview exist. | Complete canonical home/assignment states, refresh behavior and visual acceptance. |
 | B01C Switch to Network | Network | `DEFERRED` | Intentionally absent. | Slice 5+ only. |
 | B01D–B01F Shift ending/overtime/end | Slice 2 P1 | `SPECIFIED` | Operations shift boundaries exist. | Add warnings, overtime policy and versioned end-shift command. |

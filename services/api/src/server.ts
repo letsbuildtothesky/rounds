@@ -32,6 +32,7 @@ import { prepareExceptionMediaHandler } from "./prepare-exception-media-handler.
 import { reportDeliveryProblemHandler } from "./report-delivery-problem-handler.js";
 import { reportLocationProblemHandler } from "./report-location-problem-handler.js";
 import { reportDriverEmergencyHandler } from "./report-driver-emergency-handler.js";
+import { startDriverShiftHandler } from "./start-driver-shift-handler.js";
 import { logContactAttemptHandler } from "./log-contact-attempt-handler.js";
 import { SupabaseGateway } from "./supabase-gateway.js";
 
@@ -323,6 +324,17 @@ const server = createServer(async (request, response) => {
         uuid: () => crypto.randomUUID(),
       });
       sendNode(response, driverResponse);
+      return;
+    }
+    if (request.method === "POST" && request.url === "/v1/driver/shifts/start") {
+      const webRequest = await toWebRequest(request);
+      const shiftResponse = await startDriverShiftHandler(webRequest, {
+        identity: gateway,
+        shifts: gateway,
+        uuid: () => crypto.randomUUID(),
+        now: () => new Date(),
+      });
+      sendNode(response, shiftResponse);
       return;
     }
     const liveChangeAckMatch = request.url?.match(/^\/v1\/driver\/live-delivery-changes\/([0-9a-f-]+)\/acknowledge$/i);

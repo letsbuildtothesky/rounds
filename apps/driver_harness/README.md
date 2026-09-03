@@ -16,6 +16,13 @@ from that same session. It provides the real persisted English/Thai selector,
 Round-scoped Operations support and confirmed sign-out without presenting
 unimplemented Network, payout, notification or verification claims.
 
+Before assigned work begins, a scheduled Team Driver sees the measured English
+or Thai B00 Start Shift board. Its button commits one durable, authenticated
+attendance command against the server-resolved effective schedule. Active
+custody is never hidden behind this gate. Notifications, Hours and shift-level
+contact without a real Round remain inactive until their authoritative
+capabilities are implemented.
+
 The Profile permissions entry uses the canonical N01 measurements and inspects
 the phone's actual location-service and app-permission state. Denied and
 permanently blocked access lead to real OS permission/settings recovery, and

@@ -13,6 +13,7 @@ Implemented now:
 - `GET /v1/operations/planning` purpose-limited unplanned delivery and Team-driver projection;
 - `POST /v1/rounds` manual ordered Team Round approval;
 - `GET /v1/driver/session` authenticated assigned/current Round plus the Driver's tenant-scoped completed Team Round history;
+- `POST /v1/driver/shifts/start` explicit, idempotent Team shift attendance start against the server-resolved effective schedule;
 - `POST /v1/driver/rounds/:roundId/pickup` exact manifest verification and custody commit;
 - `POST /v1/driver/stops/:stopId/contact-attempts` audited native-phone outcome selected by the assigned Driver;
 - `POST /v1/driver/stops/:stopId/location-problem` typed pickup/delivery location observation with optional real-device GPS evidence and an explicit Operations hold;
@@ -71,6 +72,11 @@ The same session exposes the authenticated Driver's active Team name and the
 existing assigned vehicle label/plate for the read-only Team profile. It does
 not infer verification, Network membership, payout details or editable account
 authority.
+
+For a scheduled Team Driver, the session also exposes the current local service
+date's effective recurring/date-exception shift and any committed attendance.
+Starting that shift uses server time as operational truth, retains device time
+only as evidence, and never changes schedule, assignment or custody state.
 
 ## Commands
 
