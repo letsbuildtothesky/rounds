@@ -67,6 +67,11 @@ records and the immutable planned route snapshot. Planned distance and duration
 remain explicitly labelled as planned; Network fares and actual route metrics
 are never inferred.
 
+The same session exposes the authenticated Driver's active Team name and the
+existing assigned vehicle label/plate for the read-only Team profile. It does
+not infer verification, Network membership, payout details or editable account
+authority.
+
 ## Commands
 
 ```bash

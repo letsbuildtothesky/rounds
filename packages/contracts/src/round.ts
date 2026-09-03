@@ -602,6 +602,7 @@ export type DriverCompletedRound = {
 export type DriverSession = {
   user: { id: string; displayName: string };
   driver: { id: string; preferredLocale: string; vehicleLabel?: string; vehiclePlate?: string };
+  team?: { tenantId: string; displayName: string; status: "active" };
   currentRound?: DriverRound;
   completedRounds?: DriverCompletedRound[];
 };

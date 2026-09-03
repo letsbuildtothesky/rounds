@@ -9,11 +9,13 @@ class MyRoundsScreen extends StatelessWidget {
   const MyRoundsScreen({
     required this.session,
     required this.onReturnToRound,
+    required this.onProfile,
     super.key,
   });
 
   final DriverSessionModel session;
   final VoidCallback onReturnToRound;
+  final VoidCallback onProfile;
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +42,7 @@ class MyRoundsScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              _MyRoundsBottomNav(onHome: onReturnToRound),
+              _MyRoundsBottomNav(onHome: onReturnToRound, onProfile: onProfile),
             ],
           ),
         ),
@@ -517,9 +519,10 @@ class _CompletedRoundRow extends StatelessWidget {
 }
 
 class _MyRoundsBottomNav extends StatelessWidget {
-  const _MyRoundsBottomNav({required this.onHome});
+  const _MyRoundsBottomNav({required this.onHome, required this.onProfile});
 
   final VoidCallback onHome;
+  final VoidCallback onProfile;
 
   @override
   Widget build(BuildContext context) => Container(
@@ -554,8 +557,12 @@ class _MyRoundsBottomNav extends StatelessWidget {
         const Expanded(
           child: _NavItem(icon: Icons.schedule, label: 'Hours'),
         ),
-        const Expanded(
-          child: _NavItem(icon: Icons.person_outline, label: 'Profile'),
+        Expanded(
+          child: _NavItem(
+            icon: Icons.person_outline,
+            label: 'Profile',
+            onTap: onProfile,
+          ),
         ),
       ],
     ),

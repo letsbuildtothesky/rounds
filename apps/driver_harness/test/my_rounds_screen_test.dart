@@ -50,6 +50,7 @@ void main() {
         home: MyRoundsScreen(
           session: _session,
           onReturnToRound: () => returned = true,
+          onProfile: () {},
         ),
       ),
     );

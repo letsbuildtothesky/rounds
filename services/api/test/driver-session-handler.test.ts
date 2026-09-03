@@ -7,6 +7,7 @@ import type { ActorContext, AuthenticatedIdentity, IdentityGateway } from "../sr
 const session: DriverSession = {
   user: { id: "auth-user", displayName: "Johannes" },
   driver: { id: "driver-1", preferredLocale: "en" },
+  team: { tenantId: "tenant-1", displayName: "UrbanFlowers", status: "active" },
   completedRounds: [{
     id: "round-complete-1",
     reference: "ROUND-001",
@@ -49,6 +50,7 @@ test("assigned driver receives authoritative completed Round history", async () 
   assert.equal(response.status, 200);
   const body = await response.json() as DriverSession;
   assert.equal(body.completedRounds?.length, 1);
+  assert.equal(body.team?.displayName, "UrbanFlowers");
   assert.equal(body.completedRounds?.[0]?.podCount, 1);
   assert.equal(body.completedRounds?.[0]?.plannedDistanceMeters, 4800);
 });

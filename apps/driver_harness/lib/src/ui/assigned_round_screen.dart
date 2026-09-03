@@ -10,6 +10,7 @@ import 'components/round_overview_map.dart';
 import 'components/rounds_action_drawer.dart';
 import 'contact_history_screen.dart';
 import 'debug_pod_acceptance_screen.dart';
+import 'driver_profile_screen.dart';
 import 'my_rounds_screen.dart';
 import 'navigation_harness_screen.dart';
 import 'pickup_navigation_screen.dart';
@@ -335,6 +336,12 @@ class _RoundTopBar extends StatelessWidget {
             label: 'My Rounds',
             icon: Icons.route_outlined,
           ),
+        if (controller.driverSession != null)
+          const RoundsDrawerAction(
+            value: 'profile',
+            label: 'Profile',
+            icon: Icons.person_outline,
+          ),
         const RoundsDrawerAction(
           value: 'contact-history',
           label: 'Contact history',
@@ -369,14 +376,10 @@ class _RoundTopBar extends StatelessWidget {
     }
     if (value == 'signout') controller.signOutDriver();
     if (value == 'my-rounds' && controller.driverSession != null) {
-      Navigator.of(context).push<void>(
-        MaterialPageRoute(
-          builder: (screenContext) => MyRoundsScreen(
-            session: controller.driverSession!,
-            onReturnToRound: () => Navigator.of(screenContext).pop(),
-          ),
-        ),
-      );
+      _openMyRounds(context);
+    }
+    if (value == 'profile' && controller.driverSession != null) {
+      _openProfile(context);
     }
     if (value == 'contact-history') {
       Navigator.of(context).push<void>(
@@ -396,6 +399,33 @@ class _RoundTopBar extends StatelessWidget {
         ),
       );
     }
+  }
+
+  void _openMyRounds(BuildContext context) {
+    Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder: (screenContext) => MyRoundsScreen(
+          session: controller.driverSession!,
+          onReturnToRound: () =>
+              Navigator.of(screenContext).popUntil((route) => route.isFirst),
+          onProfile: () => _openProfile(screenContext),
+        ),
+      ),
+    );
+  }
+
+  void _openProfile(BuildContext context) {
+    Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder: (screenContext) => DriverProfileScreen(
+          controller: controller,
+          session: controller.driverSession!,
+          onHome: () =>
+              Navigator.of(screenContext).popUntil((route) => route.isFirst),
+          onJobs: () => _openMyRounds(screenContext),
+        ),
+      ),
+    );
   }
 }
 

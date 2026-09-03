@@ -10,7 +10,11 @@ physical manifest line and commit pickup through the server-authoritative
 custody command. The canonical My Rounds surface also shows the signed-in
 Driver's real current and completed Team Rounds, including durable POD/return
 evidence and explicitly planned route figures. The original no-configuration demo
-fixture remains available for Phase 0 tests.
+fixture remains available for Phase 0 tests. The measured Team Profile surface
+uses the authenticated Driver, active merchant relationship and assigned vehicle
+from that same session. It provides the real persisted English/Thai selector,
+Round-scoped Operations support and confirmed sign-out without presenting
+unimplemented Network, payout, notification or verification claims.
 
 The pickup screen never claims custody from local button state. Until the API
 commit succeeds it remains unconfirmed; durable offline outbox support is the

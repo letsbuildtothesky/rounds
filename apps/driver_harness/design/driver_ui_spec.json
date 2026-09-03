@@ -745,6 +745,92 @@
         "buttonRadius": 7,
         "buttonSize": 16
       }
+    },
+    "L01": {
+      "source": "ux/driver/en/screens/ROUNDS-L01-DRIVER-PROFILE-v3-10OF10.html",
+      "topBar": {
+        "height": 58,
+        "paddingHorizontal": 20,
+        "brandSize": 20,
+        "buttonSize": 38,
+        "iconSize": 20
+      },
+      "body": {
+        "bottomNavHeight": 76
+      },
+      "header": {
+        "paddingTop": 24,
+        "paddingHorizontal": 20,
+        "paddingBottom": 20,
+        "eyebrowSize": 11.5,
+        "eyebrowBottom": 11,
+        "titleSize": 34
+      },
+      "identity": {
+        "paddingTop": 24,
+        "paddingHorizontal": 20,
+        "paddingBottom": 23,
+        "avatarSize": 72,
+        "avatarRadius": 8,
+        "avatarTextSize": 24,
+        "columnGap": 15,
+        "nameSize": 25,
+        "subTop": 7,
+        "subSize": 13,
+        "statusTop": 9,
+        "statusSize": 12.5,
+        "statusDotSize": 8
+      },
+      "work": {
+        "paddingVertical": 17,
+        "paddingHorizontal": 20,
+        "nameSize": 16,
+        "subTop": 6,
+        "subSize": 12.5,
+        "stateSize": 12.5
+      },
+      "section": {
+        "paddingTop": 21,
+        "paddingHorizontal": 20,
+        "paddingBottom": 4,
+        "titleSize": 14,
+        "titleBottom": 8,
+        "rowMinHeight": 65,
+        "rowTitleSize": 15,
+        "rowSubTop": 6,
+        "rowSubSize": 12.5,
+        "rowValueSize": 12.5,
+        "chevronSize": 17
+      },
+      "bottomNav": {
+        "paddingTop": 7,
+        "paddingHorizontal": 4,
+        "paddingBottom": 9,
+        "iconSize": 20,
+        "labelSize": 11.5,
+        "gap": 5
+      },
+      "sheet": {
+        "paddingTop": 10,
+        "paddingHorizontal": 20,
+        "paddingBottom": 20,
+        "radius": 20,
+        "grabWidth": 38,
+        "grabHeight": 4,
+        "grabBottom": 18,
+        "kickerSize": 11.5,
+        "kickerBottom": 10,
+        "titleSize": 28,
+        "subTop": 8,
+        "subSize": 13.5,
+        "choiceMinHeight": 58,
+        "primaryHeight": 56,
+        "secondaryHeight": 52,
+        "buttonTop": 18,
+        "buttonRadius": 7,
+        "primarySize": 16,
+        "secondarySize": 15
+      }
     }
   }
 }

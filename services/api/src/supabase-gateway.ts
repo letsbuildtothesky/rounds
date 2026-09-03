@@ -1889,6 +1889,7 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
         ...(driver.vehicle_label ? { vehicleLabel: driver.vehicle_label } : {}),
         ...(driver.vehicle_plate ? { vehiclePlate: driver.vehicle_plate } : {}),
       },
+      team: { tenantId: tenant.id, displayName: tenant.display_name, status: "active" },
       completedRounds: [],
     };
 

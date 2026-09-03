@@ -3,6 +3,9 @@ class DriverSessionModel {
     required this.userName,
     required this.driverId,
     required this.preferredLocale,
+    this.teamName,
+    this.vehicleLabel,
+    this.vehiclePlate,
     this.completedRounds = const [],
     this.currentRound,
   });
@@ -10,17 +13,24 @@ class DriverSessionModel {
   final String userName;
   final String driverId;
   final String preferredLocale;
+  final String? teamName;
+  final String? vehicleLabel;
+  final String? vehiclePlate;
   final List<DriverCompletedRoundModel> completedRounds;
   final DriverRoundModel? currentRound;
 
   factory DriverSessionModel.fromJson(Map<String, dynamic> json) {
     final user = json['user'] as Map<String, dynamic>;
     final driver = json['driver'] as Map<String, dynamic>;
+    final team = json['team'] as Map<String, dynamic>?;
     final round = json['currentRound'];
     return DriverSessionModel(
       userName: user['displayName'] as String,
       driverId: driver['id'] as String,
       preferredLocale: driver['preferredLocale'] as String,
+      teamName: team?['displayName'] as String?,
+      vehicleLabel: driver['vehicleLabel'] as String?,
+      vehiclePlate: driver['vehiclePlate'] as String?,
       completedRounds: (json['completedRounds'] as List<dynamic>? ?? const [])
           .map(
             (item) => DriverCompletedRoundModel.fromJson(
