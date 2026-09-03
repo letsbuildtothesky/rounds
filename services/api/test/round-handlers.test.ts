@@ -6,6 +6,7 @@ import type {
   OperationsSession,
   PlanRoundCommand,
   PlanRoundResult,
+  PlanningRoutePreview,
 } from "@rounds/contracts";
 import { driverSessionHandler } from "../src/driver-session-handler.js";
 import { operationsPlanningHandler } from "../src/operations-planning-handler.js";
@@ -40,6 +41,24 @@ const driverSession: DriverSession = {
   user: { id: "auth-user", displayName: "Demo Driver" },
   driver: { id: projection.drivers[0]!.id, preferredLocale: "en" },
 };
+const routePreview: PlanningRoutePreview = {
+  tenantId,
+  status: "fits",
+  serviceDate: "2026-09-02",
+  driverId: projection.drivers[0]!.id,
+  stopIds: [projection.unplannedDeliveries[0]!.stopId],
+  calculatedAt: "2026-09-01T12:00:00.000Z",
+  departureAt: "2026-09-02T01:00:00.000Z",
+  finishAt: "2026-09-02T02:00:00.000Z",
+  distanceMeters: 2500,
+  durationSeconds: 900,
+  provider: { name: "mapbox", profile: "driving-traffic", freshness: "live" },
+  stops: [{ stopId: projection.unplannedDeliveries[0]!.stopId, sequence: 1, eta: "2026-09-02T01:15:00.000Z", departureAt: "2026-09-02T02:00:00.000Z", windowStart: "2026-09-02T02:00:00.000Z", windowEnd: "2026-09-02T04:00:00.000Z", promiseStatus: "early", waitingSeconds: 2700, latenessSeconds: 0, legDurationSeconds: 900, legDistanceMeters: 2500 }],
+  blockingReasons: [],
+  warnings: [],
+  geometry: { type: "LineString", coordinates: [[100.5, 13.7], [100.6, 13.8]] },
+};
+const routes = { preview: async () => routePreview };
 
 class FakeGateway implements IdentityGateway, RoundGateway {
   authenticated = true;
@@ -107,7 +126,7 @@ test("viewer can inspect planning but cannot approve a Round", async () => {
       driverId: projection.drivers[0]!.id,
       stopIds: [projection.unplannedDeliveries[0]!.stopId],
     }),
-  }), { identity: gateway, planning: gateway, uuid: ids(), now: () => new Date("2026-09-01T12:00:00Z") });
+  }), { identity: gateway, planning: gateway, routes, uuid: ids(), now: () => new Date("2026-09-01T12:00:00Z") });
   assert.equal(response.status, 403);
   assert.equal(gateway.lastCommand, null);
 });
@@ -128,10 +147,28 @@ test("commits the explicit Stop order under the authenticated tenant", async () 
       driverId: projection.drivers[0]!.id,
       stopIds: [projection.unplannedDeliveries[0]!.stopId],
     }),
-  }), { identity: gateway, planning: gateway, uuid: ids(), now: () => new Date("2026-09-01T12:00:00Z") });
+  }), { identity: gateway, planning: gateway, routes, uuid: ids(), now: () => new Date("2026-09-01T12:00:00Z") });
   assert.equal(response.status, 201);
   assert.equal(gateway.lastCommand?.tenantId, tenantId);
   assert.deepEqual(gateway.lastCommand?.payload.stopIds, [projection.unplannedDeliveries[0]!.stopId]);
+  assert.equal(gateway.lastCommand?.payload.routePlan.provider.name, "mapbox");
+  assert.equal("geometry" in (gateway.lastCommand?.payload.routePlan ?? {}), false);
+});
+
+test("never reaches the database when server routing misses a promise", async () => {
+  const gateway = new FakeGateway();
+  const blockedRoutes = { preview: async (): Promise<PlanningRoutePreview> => ({
+    ...routePreview,
+    status: "blocked",
+    blockingReasons: ["Stop 1 arrives after its promised window."],
+  }) };
+  const response = await planRoundHandler(new Request("http://test/v1/rounds", {
+    method: "POST",
+    headers: { authorization: "Bearer token", "content-type": "application/json", "x-rounds-tenant-id": tenantId, "idempotency-key": "round:blocked" },
+    body: JSON.stringify({ reference: "ROUND-BLOCKED", serviceDate: "2026-09-02", driverId: projection.drivers[0]!.id, stopIds: [projection.unplannedDeliveries[0]!.stopId] }),
+  }), { identity: gateway, planning: gateway, routes: blockedRoutes, uuid: ids(), now: () => new Date("2026-09-01T12:00:00Z") });
+  assert.equal(response.status, 409);
+  assert.equal(gateway.lastCommand, null);
 });
 
 test("returns the authenticated Team-driver session", async () => {

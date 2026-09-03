@@ -1,10 +1,13 @@
 import {
   ContractError,
+  validatePlanningRoutePreviewRequest,
   validatePlanRoundCommand,
-  type PlanRoundPayload,
+  type PlanningRouteSnapshot,
 } from "@rounds/contracts";
-import type { PlanRoundDependencies } from "./types.js";
+import type { PlanRoundDependencies, PlanRoundRequestBody } from "./types.js";
 import { bearerToken, json, statusForCommandError } from "./http.js";
+import { routeSnapshot } from "./planning-route-service.js";
+import { RoutingProviderError } from "./routing-provider.js";
 
 export async function planRoundHandler(
   request: Request,
@@ -27,12 +30,36 @@ export async function planRoundHandler(
     return json(403, { error: { code: "NOT_AUTHORIZED", message: "Round approval is not permitted" } }, traceId);
   }
 
-  let payload: PlanRoundPayload;
+  let requestBody: PlanRoundRequestBody;
   try {
-    payload = await request.json() as PlanRoundPayload;
-  } catch {
-    return json(400, { error: { code: "VALIDATION_FAILED", message: "Request body must be JSON" } }, traceId);
+    requestBody = await request.json() as PlanRoundRequestBody;
+    if (!requestBody || typeof requestBody.reference !== "string" || !requestBody.reference.trim()) {
+      throw new ContractError("reference is required");
+    }
+    validatePlanningRoutePreviewRequest(requestBody);
+  } catch (error) {
+    return json(400, { error: { code: "VALIDATION_FAILED", message: error instanceof ContractError ? error.message : "Request body must be JSON" } }, traceId);
   }
+
+  let routePlan: PlanningRouteSnapshot;
+  try {
+    const preview = await dependencies.routes.preview(actor, requestBody, dependencies.now());
+    if (preview.status !== "fits") {
+      return json(409, { error: {
+        code: "INVALID_STATE",
+        message: preview.blockingReasons[0] ?? "The proposed Round does not fit its promised windows or driver shift.",
+        routePlan: preview,
+      } }, traceId);
+    }
+    routePlan = routeSnapshot(preview);
+  } catch (error) {
+    if (error instanceof RoutingProviderError) {
+      return json(503, { error: { code: "PROVIDER_UNAVAILABLE", message: error.message } }, traceId);
+    }
+    return json(409, { error: { code: "INVALID_STATE", message: error instanceof Error ? error.message : "Round route cannot be evaluated" } }, traceId);
+  }
+
+  const payload = { ...requestBody, reference: requestBody.reference.trim(), routePlan };
 
   const command = {
     schemaVersion: 1 as const,

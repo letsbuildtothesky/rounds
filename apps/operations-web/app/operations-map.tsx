@@ -13,6 +13,7 @@ type Props = {
   rounds: OperationsRoundSummary[];
   exceptions: OperationsActionException[];
   planningDeliveries: UnplannedDeliverySummary[];
+  routeGeometry?: { type: "LineString"; coordinates: [number, number][] };
   onCameraChange: (camera: OperationsMapCamera) => void;
   onSelectRound: (round: OperationsRoundSummary) => void;
   onSelectException: (exception: OperationsActionException) => void;
@@ -34,7 +35,7 @@ function styleForMode(mode: OperationsMapMode): string {
     : "mapbox://styles/mapbox/light-v11";
 }
 
-export function OperationsMap({ mode, mapMode, rounds, exceptions, planningDeliveries, onCameraChange, onSelectRound, onSelectException, onSelectDelivery }: Props) {
+export function OperationsMap({ mode, mapMode, rounds, exceptions, planningDeliveries, routeGeometry, onCameraChange, onSelectRound, onSelectException, onSelectDelivery }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MapboxMap | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
@@ -110,6 +111,20 @@ export function OperationsMap({ mode, mapMode, rounds, exceptions, planningDeliv
   useEffect(() => {
     const map = mapRef.current;
     if (!map || state !== "ready") return;
+    const sourceId = "rounds-proposed-route";
+    const source = map.getSource(sourceId) as mapboxgl.GeoJSONSource | undefined;
+    const data = { type: "Feature" as const, properties: {}, geometry: routeGeometry ?? { type: "LineString" as const, coordinates: [] } };
+    if (source) source.setData(data);
+    else {
+      map.addSource(sourceId, { type: "geojson", data });
+      map.addLayer({ id: "rounds-proposed-route-casing", type: "line", source: sourceId, paint: { "line-color": "#ffffff", "line-width": 8, "line-opacity": 0.9 } });
+      map.addLayer({ id: "rounds-proposed-route", type: "line", source: sourceId, paint: { "line-color": "#f4511e", "line-width": 5, "line-opacity": 0.95, "line-dasharray": [1.2, 0.6] } });
+    }
+  }, [mapMode, routeGeometry, state]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || state !== "ready") return;
     markersRef.current.forEach((marker) => marker.remove());
     markersRef.current = [];
 
@@ -144,14 +159,16 @@ export function OperationsMap({ mode, mapMode, rounds, exceptions, planningDeliv
       markersRef.current.push(new mapboxgl.Marker({ element }).setLngLat(coordinate).addTo(map));
     });
 
-    if (coordinates.length) {
-      boundsRef.current = coordinates.reduce((bounds, coordinate) => bounds.extend(coordinate), new mapboxgl.LngLatBounds(coordinates[0], coordinates[0]));
+    const routeCoordinates = routeGeometry?.coordinates ?? [];
+    const focusCoordinates = routeCoordinates.length ? routeCoordinates : coordinates;
+    if (focusCoordinates.length) {
+      boundsRef.current = focusCoordinates.reduce((bounds, coordinate) => bounds.extend(coordinate), new mapboxgl.LngLatBounds(focusCoordinates[0], focusCoordinates[0]));
       map.fitBounds(boundsRef.current, { padding: { top: 95, right: 90, bottom: 80, left: 90 }, maxZoom: 14.5, duration: 650 });
     } else {
       boundsRef.current = null;
       map.easeTo({ center: bangkokCenter as LngLatLike, zoom: 12.55, duration: 450 });
     }
-  }, [exceptions, mapMode, mode, planningDeliveries, rounds, state]);
+  }, [exceptions, mapMode, mode, planningDeliveries, rounds, routeGeometry, state]);
 
   return <>
     <div className="v45-mapbox" ref={containerRef} />

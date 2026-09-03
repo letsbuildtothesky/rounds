@@ -17,6 +17,7 @@ import type {
   PreparePodMediaPayload,
   PlanRoundCommand,
   PlanRoundPayload,
+  PlanningRoutePreviewRequest,
   ReportPickupProblemCommand,
   ReportPickupProblemPayload,
   ReportDeliveryProblemCommand,
@@ -325,6 +326,32 @@ export function validatePlanRoundPayload(payload: PlanRoundPayload): void {
     throw new ContractError("serviceDate must be YYYY-MM-DD");
   }
   if (payload.stopIds.length === 0) throw new ContractError("stopIds cannot be empty");
+  if (new Set(payload.stopIds).size !== payload.stopIds.length) {
+    throw new ContractError("stopIds cannot contain duplicates");
+  }
+  payload.stopIds.forEach((stopId, index) => assertUuid(stopId, `stopIds[${index}]`));
+  if (!payload.routePlan || payload.routePlan.status !== "fits") {
+    throw new ContractError("routePlan must be a server-calculated fit");
+  }
+  if (payload.routePlan.driverId !== payload.driverId || payload.routePlan.serviceDate !== payload.serviceDate) {
+    throw new ContractError("routePlan driver and service date must match the Round");
+  }
+  if (JSON.stringify(payload.routePlan.stopIds) !== JSON.stringify(payload.stopIds)) {
+    throw new ContractError("routePlan stop order must match stopIds");
+  }
+  if (!Number.isFinite(payload.routePlan.durationSeconds) || payload.routePlan.durationSeconds < 0) {
+    throw new ContractError("routePlan durationSeconds must be non-negative");
+  }
+}
+
+export function validatePlanningRoutePreviewRequest(payload: PlanningRoutePreviewRequest): void {
+  assertUuid(payload.driverId, "driverId");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(payload.serviceDate)) {
+    throw new ContractError("serviceDate must be YYYY-MM-DD");
+  }
+  if (!Array.isArray(payload.stopIds) || payload.stopIds.length === 0) {
+    throw new ContractError("stopIds cannot be empty");
+  }
   if (new Set(payload.stopIds).size !== payload.stopIds.length) {
     throw new ContractError("stopIds cannot contain duplicates");
   }

@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(16);
+select plan(18);
 
 select has_function(
   'public',
@@ -123,10 +123,42 @@ select 'round', jsonb_build_object(
     'driverId', '30000000-0000-4000-8000-000000000002',
     'stopIds', jsonb_build_array(
       (select id from public.delivery_stops where delivery_id = '30000000-0000-4000-8000-000000000100')
+    ),
+    'routePlan', jsonb_build_object(
+      'status', 'fits',
+      'serviceDate', '2026-09-02',
+      'driverId', '30000000-0000-4000-8000-000000000002',
+      'stopIds', jsonb_build_array(
+        (select id from public.delivery_stops where delivery_id = '30000000-0000-4000-8000-000000000100')
+      ),
+      'calculatedAt', '2026-09-01T12:00:00Z',
+      'departureAt', '2026-09-02T01:00:00Z',
+      'finishAt', '2026-09-02T02:15:00Z',
+      'distanceMeters', 2500,
+      'durationSeconds', 900,
+      'provider', jsonb_build_object('name', 'mapbox', 'profile', 'driving-traffic', 'freshness', 'live'),
+      'stops', jsonb_build_array(jsonb_build_object(
+        'stopId', (select id from public.delivery_stops where delivery_id = '30000000-0000-4000-8000-000000000100'),
+        'sequence', 1, 'eta', '2026-09-02T01:15:00Z', 'departureAt', '2026-09-02T02:00:00Z',
+        'windowStart', '2026-09-02T02:00:00Z', 'windowEnd', '2026-09-02T04:00:00Z',
+        'promiseStatus', 'early', 'waitingSeconds', 2700, 'latenessSeconds', 0,
+        'legDurationSeconds', 900, 'legDistanceMeters', 2500
+      )),
+      'blockingReasons', jsonb_build_array(),
+      'warnings', jsonb_build_array()
     )
   )
 )
 from round_test_commands where name = 'delivery';
+
+select is(
+  (public.plan_and_approve_round_command(
+    (select body #- '{payload,routePlan}' from round_test_commands where name = 'round'),
+    '30000000-0000-4000-8000-000000000007'
+  ) -> 'error' ->> 'code'),
+  'INVALID_STATE',
+  'a Round cannot be approved without a matching server route fit'
+);
 
 select is(
   (public.plan_and_approve_round_command((select body from round_test_commands where name = 'round'), '30000000-0000-4000-8000-000000000007') ->> 'status'),
@@ -147,6 +179,11 @@ select is(
   (select sequence from public.round_stops where round_id = '30000000-0000-4000-8000-000000000110'),
   1,
   'explicit Stop order is persisted'
+);
+select is(
+  (select route_plan_snapshot -> 'provider' ->> 'name' from public.rounds where id = '30000000-0000-4000-8000-000000000110'),
+  'mapbox',
+  'the provider-neutral route evidence is snapshotted on approval'
 );
 select is(
   (select state::text from public.deliveries where id = '30000000-0000-4000-8000-000000000100'),

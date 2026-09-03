@@ -29,6 +29,8 @@ import type {
   OperationsPlanningProjection,
   PlanRoundCommand,
   PlanRoundPayload,
+  PlanningRoutePreview,
+  PlanningRoutePreviewRequest,
   PlanRoundResult,
   ReportPickupProblemCommand,
   ReportPickupProblemPayload,
@@ -49,6 +51,7 @@ import type {
   SetDriverShiftExceptionPayload,
   SetDriverShiftExceptionResult,
 } from "@rounds/contracts";
+import type { PlanningRouteContext, PlanningRouteService } from "./planning-route-service.js";
 
 export type { OperationsRole } from "@rounds/contracts";
 import type { OperationsRole } from "@rounds/contracts";
@@ -80,6 +83,16 @@ export interface DeliveryCommandGateway {
 export interface RoundGateway {
   getOperationsPlanning(actor: ActorContext): Promise<OperationsPlanningProjection>;
   planRound(command: PlanRoundCommand, actor: ActorContext): Promise<PlanRoundResult>;
+}
+
+export interface PlanningRouteContextGateway {
+  getPlanningRouteContext(
+    actor: ActorContext,
+    driverId: string,
+    serviceDate: string,
+    stopIds: string[],
+    observedAt: Date,
+  ): Promise<PlanningRouteContext>;
 }
 
 export interface PickupGateway {
@@ -252,10 +265,21 @@ export type OperationsCommunicationsDependencies = {
 };
 
 export type PlanRoundDependencies = OperationsPlanningDependencies & {
+  routes: PlanningRouteService;
   now: () => Date;
 };
 
-export type PlanRoundRequestBody = PlanRoundPayload;
+export type PlanRoundRequestBody = Omit<PlanRoundPayload, "routePlan">;
+
+export type PlanningRouteDependencies = {
+  identity: IdentityGateway;
+  routes: PlanningRouteService;
+  uuid: () => string;
+  now: () => Date;
+};
+
+export type PlanningRouteResponse = PlanningRoutePreview;
+export type PlanningRouteRequestBody = PlanningRoutePreviewRequest;
 
 export type DriverSessionDependencies = {
   identity: IdentityGateway;

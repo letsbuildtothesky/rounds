@@ -42,6 +42,54 @@ export type OperationsPlanningProjection = {
   activeRounds: OperationsRoundSummary[];
 };
 
+export type PlanningRouteStop = {
+  stopId: string;
+  sequence: number;
+  eta: string;
+  departureAt: string;
+  windowStart: string;
+  windowEnd: string;
+  promiseStatus: "early" | "safe" | "late";
+  waitingSeconds: number;
+  latenessSeconds: number;
+  legDurationSeconds: number;
+  legDistanceMeters: number;
+};
+
+export type PlanningRouteSnapshot = {
+  status: "fits" | "blocked";
+  serviceDate: string;
+  driverId: string;
+  stopIds: string[];
+  calculatedAt: string;
+  departureAt: string;
+  finishAt: string;
+  distanceMeters: number;
+  durationSeconds: number;
+  provider: {
+    name: "mapbox";
+    profile: "driving-traffic";
+    freshness: "live" | "current_snapshot";
+  };
+  stops: PlanningRouteStop[];
+  blockingReasons: string[];
+  warnings: string[];
+};
+
+export type PlanningRoutePreviewRequest = {
+  serviceDate: string;
+  driverId: string;
+  stopIds: string[];
+};
+
+export type PlanningRoutePreview = PlanningRouteSnapshot & {
+  tenantId: string;
+  geometry: {
+    type: "LineString";
+    coordinates: [number, number][];
+  };
+};
+
 export type OperationsRoundSummary = {
   id: string;
   reference: string;
@@ -107,6 +155,7 @@ export type PlanRoundPayload = {
   serviceDate: string;
   driverId: string;
   stopIds: string[];
+  routePlan: PlanningRouteSnapshot;
 };
 
 export type PlanRoundCommand = CommandEnvelope<"round.plan_and_approve", PlanRoundPayload>;

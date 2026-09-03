@@ -16,6 +16,7 @@ import type {
   OperationsDriversGateway,
   OperationsRoundDetailGateway,
   OperationsCommunicationsGateway,
+  PlanningRouteContextGateway,
   PodGateway,
 } from "./types.js";
 import type {
@@ -172,7 +173,7 @@ function initials(displayName: string): string {
   return displayName.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]!.toUpperCase()).join("") || "DR";
 }
 
-export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway, RoundGateway, PickupGateway, DriverStopGateway, DriverCommunicationsGateway, OperationsCommunicationsGateway, PodGateway, OperationsHistoryGateway, OperationsActionGateway, OperationsDeliveriesGateway, OperationsDriversGateway, OperationsRoundDetailGateway {
+export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway, RoundGateway, PickupGateway, DriverStopGateway, DriverCommunicationsGateway, OperationsCommunicationsGateway, PodGateway, OperationsHistoryGateway, OperationsActionGateway, OperationsDeliveriesGateway, OperationsDriversGateway, OperationsRoundDetailGateway, PlanningRouteContextGateway {
   private readonly admin: SupabaseClient;
 
   constructor(
@@ -791,6 +792,51 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     });
     if (error) throw error;
     return data as PlanRoundResult;
+  }
+
+  async getPlanningRouteContext(
+    actor: ActorContext,
+    driverId: string,
+    serviceDate: string,
+    stopIds: string[],
+    observedAt: Date,
+  ) {
+    const [planning, capacity, tenantResult] = await Promise.all([
+      this.getOperationsPlanning(actor),
+      this.getOperationsDrivers(actor, serviceDate, observedAt),
+      this.admin.from("tenants").select("timezone").eq("id", actor.tenantId).single<{ timezone: string }>(),
+    ]);
+    if (tenantResult.error) throw tenantResult.error;
+    const driver = capacity.drivers.find((item) => item.driverId === driverId);
+    if (!driver) throw new Error("Driver is not an active own-team driver for this tenant.");
+    const deliveryByStop = new Map(planning.unplannedDeliveries.map((delivery) => [delivery.stopId, delivery]));
+    const stops = stopIds.flatMap((stopId) => {
+      const delivery = deliveryByStop.get(stopId);
+      return delivery ? [delivery] : [];
+    });
+    if (stops.length !== stopIds.length) throw new Error("One or more Stops are no longer in the unplanned pool.");
+    if (stops.some((stop) => stop.serviceDate !== serviceDate)) throw new Error("Every Stop must match the planning service date.");
+    const pickupIds = [...new Set(stops.map((stop) => stop.pickupLocationId))];
+    if (pickupIds.length !== 1) throw new Error("Every Stop in a Round must use the same pickup location.");
+    if (stops.some((stop) => !stop.coordinate)) throw new Error("Every Stop needs a verified destination coordinate before routing.");
+    const pickupResult = await this.admin.from("tenant_locations")
+      .select("id, position").eq("tenant_id", actor.tenantId).eq("id", pickupIds[0]!)
+      .eq("active", true).is("deleted_at", null).maybeSingle<{ id: string; position: unknown }>();
+    if (pickupResult.error) throw pickupResult.error;
+    const pickupCoordinate = pickupResult.data ? parseDatabasePoint(pickupResult.data.position) : undefined;
+    if (!pickupResult.data || !pickupCoordinate) throw new Error("Pickup location needs a verified coordinate before routing.");
+    return {
+      timezone: tenantResult.data.timezone,
+      pickup: { id: pickupResult.data.id, coordinate: pickupCoordinate },
+      driver,
+      stops,
+      blockingReasons: [] as string[],
+      warnings: [
+        "Cargo fit is not verified for deliveries without a configured cargo class.",
+        ...(driver.vehicleProfile?.requiresReview
+          ? ["Vehicle profile is a conservative migrated default and requires Operations review."] : []),
+      ],
+    };
   }
 
   async confirmPickup(

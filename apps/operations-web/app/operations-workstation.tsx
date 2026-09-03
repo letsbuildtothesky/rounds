@@ -11,6 +11,7 @@ import type {
   OperationsRoundSummary,
   OperationsTenant,
   PlanRoundResult,
+  PlanningRoutePreview,
   UnplannedDeliverySummary,
 } from "@rounds/contracts";
 import { OperationsMap, type OperationsMapCamera, type OperationsMapMode } from "./operations-map";
@@ -118,6 +119,19 @@ function shortTime(value: string, timezone: string): string {
   return new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: timezone }).format(new Date(value));
 }
 
+function localHour(value: string, timezone: string): number {
+  const parts = new Intl.DateTimeFormat("en-GB", { timeZone: timezone, hour: "2-digit", minute: "2-digit", hourCycle: "h23" })
+    .formatToParts(new Date(value));
+  const hour = Number(parts.find((part) => part.type === "hour")?.value ?? 0);
+  const minute = Number(parts.find((part) => part.type === "minute")?.value ?? 0);
+  return hour + minute / 60;
+}
+
+function hourLabel(value: number): string {
+  const normalized = ((Math.round(value * 60) % 1440) + 1440) % 1440;
+  return `${String(Math.floor(normalized / 60)).padStart(2, "0")}:${String(normalized % 60).padStart(2, "0")}`;
+}
+
 function nextRoundReference(deliveries: UnplannedDeliverySummary[]): string {
   const serviceDate = deliveries[0]?.serviceDate ?? new Date().toISOString().slice(0, 10);
   const time = new Intl.DateTimeFormat("en-GB", {
@@ -142,6 +156,9 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
   const [roundError, setRoundError] = useState("");
   const [roundSuccess, setRoundSuccess] = useState<Extract<PlanRoundResult, { status: "committed" }> | null>(null);
   const [roundIdempotencyKey, setRoundIdempotencyKey] = useState(() => crypto.randomUUID());
+  const [routePreview, setRoutePreview] = useState<PlanningRoutePreview | null>(null);
+  const [routeLoading, setRouteLoading] = useState(false);
+  const [routeError, setRouteError] = useState("");
   const [dispatchMode, setDispatchMode] = useState<"live" | "plan">("live");
   const [tab, setTab] = useState<QueueTab>("action");
   const [query, setQuery] = useState("");
@@ -283,6 +300,40 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
     : chosenDriver.vehicleProfile.departurePattern === "return_after_every_delivery" && selectedStops.length > 1 ? "Vehicle rules require returning to pickup after every delivery."
     : "";
 
+  useEffect(() => {
+    setRoutePreview(null);
+    setRouteError("");
+    if (dispatchMode !== "plan" || demoMode || capacityIssue || !planningDriverId || selectedStops.length === 0) {
+      setRouteLoading(false);
+      return;
+    }
+    const controller = new AbortController();
+    const timer = window.setTimeout(async () => {
+      setRouteLoading(true);
+      try {
+        const response = await fetch(`${roundsApiUrl}/v1/operations/planning/route-preview`, {
+          method: "POST",
+          signal: controller.signal,
+          headers: {
+            authorization: `Bearer ${accessToken}`,
+            "content-type": "application/json",
+            "x-rounds-tenant-id": tenant.id,
+            "x-trace-id": crypto.randomUUID(),
+          },
+          body: JSON.stringify({ serviceDate: planningDate, driverId: planningDriverId, stopIds: selectedStops }),
+        });
+        const body = await response.json() as PlanningRoutePreview | ApiError;
+        if (!response.ok) throw new Error((body as ApiError).error?.message ?? `Route preview HTTP ${response.status}`);
+        setRoutePreview(body as PlanningRoutePreview);
+      } catch (caught) {
+        if (!controller.signal.aborted) setRouteError(caught instanceof Error ? caught.message : "Route could not be calculated");
+      } finally {
+        if (!controller.signal.aborted) setRouteLoading(false);
+      }
+    }, 250);
+    return () => { window.clearTimeout(timer); controller.abort(); };
+  }, [accessToken, capacityIssue, demoMode, dispatchMode, planningDate, planningDriverId, selectedStops, tenant.id]);
+
   function togglePlanningDelivery(delivery: UnplannedDeliverySummary) {
     if (planningAnchor && !selectedStops.includes(delivery.stopId) && (planningAnchor.serviceDate !== delivery.serviceDate || planningAnchor.pickupLocationId !== delivery.pickupLocationId)) return;
     setRoundError("");
@@ -387,6 +438,7 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
             rounds={projection?.rounds ?? []}
             exceptions={projection?.exceptions ?? []}
             planningDeliveries={planning?.unplannedDeliveries.filter((delivery) => delivery.serviceDate === planningDate) ?? []}
+            routeGeometry={routePreview?.geometry}
             onCameraChange={setMapCamera}
             onSelectRound={(round) => { setDispatchMode("live"); setTab(round.state === "complete" ? "done" : round.state === "active" ? "live" : "ready"); setSelection({ kind: "round", item: round }); }}
             onSelectException={(item) => { setDispatchMode("live"); setTab("action"); setSelection({ kind: "exception", item }); }}
@@ -399,7 +451,7 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
             </div>
           </div>
           {demoMode && <div className="v45-preview-badge"><b>PREVIEW DATA</b><span>Positions shown here are UX samples, not live drivers.</span></div>}
-          {!demoMode && !loading && <div className="v45-map-truth"><b>Live map truth</b><span>Only server-reported driver positions and saved destination pins are shown. Routes appear after server routing is connected.</span></div>}
+          {!demoMode && !loading && <div className="v45-map-truth"><b>{routePreview ? "Server-routed proposal" : "Live map truth"}</b><span>{routePreview ? `${(routePreview.distanceMeters / 1000).toFixed(1)} km · ${Math.ceil(routePreview.durationSeconds / 60)} min · ${routePreview.provider.profile}` : "Only server-reported driver positions and saved destination pins are shown."}</span></div>}
           {mapHint && <div className="v45-map-hint"><strong>{mapHint.split(" · ")[0]}</strong> · {mapHint.split(" · ").slice(1).join(" · ")}</div>}
           <div className="v45-legend"><span><i className="own" />Driver position</span><span><i className="destination" />Destination</span></div>
           <button className="v45-focus" type="button" onClick={() => window.dispatchEvent(new CustomEvent("rounds-map-control", { detail: "focus" }))}><FocusIcon />Focus map</button>
@@ -424,6 +476,9 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
           roundReference={roundReference}
           setRoundReference={setRoundReference}
           capacityIssue={capacityIssue}
+          routePreview={routePreview}
+          routeLoading={routeLoading}
+          routeError={routeError}
           roundError={roundError}
           roundSuccess={roundSuccess}
           submitting={roundSubmitting}
@@ -492,38 +547,59 @@ function PlanningRow({ item, inspected, selectedOrder, disabled, onInspect, onTo
   return <article className={`v45-order round planning ${inspected ? "selected" : ""} ${selectedOrder ? "proposed" : ""} ${disabled ? "disabled" : ""}`}><button type="button" className="v45-order-inspect" onClick={onInspect}><span className="v45-order-line"><span><b>{item.recipientName}</b><small>{item.rawAddress}</small></span><em>#{item.reference}</em></span><span className="v45-order-foot"><span>{shortTime(item.windowStart, timezone)}–{shortTime(item.windowEnd, timezone)}</span><span>{item.manifestSummary}</span><b>Ready</b></span></button><button className="v45-plan-toggle" type="button" disabled={disabled} aria-label={selectedOrder ? `Remove ${item.reference} from proposed Round` : `Add ${item.reference} to proposed Round`} onClick={onToggle}>{selectedOrder || "+"}</button></article>;
 }
 
-function PlanningTimeline({ projection, selectedDriverId, onSelectDriver, selectedStopCount, unplannedCount, serviceDate, timezone, roundReference, setRoundReference, capacityIssue, roundError, roundSuccess, submitting, viewer, onClear, onApprove }: { projection: OperationsDriversProjection | null; selectedDriverId: string; onSelectDriver: (driverId: string) => void; selectedStopCount: number; unplannedCount: number; serviceDate: string; timezone: string; roundReference: string; setRoundReference: (reference: string) => void; capacityIssue: string; roundError: string; roundSuccess: Extract<PlanRoundResult, { status: "committed" }> | null; submitting: boolean; viewer: boolean; onClear: () => void; onApprove: () => void }) {
+function PlanningTimeline({ projection, selectedDriverId, onSelectDriver, selectedStopCount, unplannedCount, serviceDate, timezone, roundReference, setRoundReference, capacityIssue, routePreview, routeLoading, routeError, roundError, roundSuccess, submitting, viewer, onClear, onApprove }: { projection: OperationsDriversProjection | null; selectedDriverId: string; onSelectDriver: (driverId: string) => void; selectedStopCount: number; unplannedCount: number; serviceDate: string; timezone: string; roundReference: string; setRoundReference: (reference: string) => void; capacityIssue: string; routePreview: PlanningRoutePreview | null; routeLoading: boolean; routeError: string; roundError: string; roundSuccess: Extract<PlanRoundResult, { status: "committed" }> | null; submitting: boolean; viewer: boolean; onClear: () => void; onApprove: () => void }) {
   const driver = projection?.drivers.find((item) => item.driverId === selectedDriverId);
-  const warnings = [
-    "Travel time and promised-window fit await server routing.",
-    "Cargo fit awaits delivery cargo classification.",
-    ...(driver?.vehicleProfile?.requiresReview ? ["Vehicle profile is a conservative migrated default."] : []),
-  ];
+  const routeBlocked = routePreview?.status === "blocked";
+  const routeReady = routePreview?.status === "fits";
+  const routeMinutes = routePreview ? Math.ceil(routePreview.durationSeconds / 60) : 0;
+  const routeKm = routePreview ? (routePreview.distanceMeters / 1000).toFixed(1) : "0";
+  const explainKind = capacityIssue || routeBlocked || routeError ? "risk" : routeReady ? "good" : "";
+  const explainLabel = capacityIssue ? "CAPACITY CHECK" : routeLoading ? "ROUTING" : routeError ? "ROUTE UNAVAILABLE" : routeBlocked ? "PROMISE CONFLICT" : routeReady ? "ROUTE + WINDOW FIT" : selectedStopCount ? "ROUTE REQUIRED" : "PLANNING TRUTH";
+  const explainText = capacityIssue || routeError || routePreview?.blockingReasons[0]
+    || (routeLoading ? "Calculating live road time and each promised-window arrival…"
+      : routeReady ? `${driver?.displayName ?? "Driver"} · ${routeKm} km · ${routeMinutes} min road time · finishes ${shortTime(routePreview.finishAt, timezone)}. ${routePreview.warnings[0] ?? "All promised windows fit."}`
+        : selectedStopCount ? "Waiting for a server-calculated route before approval." : "Select deliveries, then choose the driver lane. No assignment occurs before approval.");
+  const shifts = projection?.drivers.flatMap((item) => item.effectiveShift ? [item.effectiveShift] : []) ?? [];
+  const startHour = shifts.length ? Math.max(0, Math.floor(Math.min(...shifts.map((shift) => localHour(shift.startAt, timezone))))) : 8;
+  const endHour = shifts.length ? Math.min(30, Math.ceil(Math.max(...shifts.map((shift) => {
+    const start = localHour(shift.startAt, timezone);
+    const end = localHour(shift.endAt, timezone);
+    return end <= start ? end + 24 : end;
+  })))) : 20;
+  const horizonEnd = Math.max(startHour + 4, endHour);
+  const axisLabels = Array.from({ length: 4 }, (_, index) => hourLabel(startHour + (horizonEnd - startHour) * index / 3));
   return <section className="v45-planning-timeline" aria-label="Driver and vehicle planning timeline">
     <div className="v45-plan-resize"><span /></div>
     <header>
       <div className="v45-plan-title"><small>{selectedStopCount ? "PROPOSED PLAN" : "PLAN ROUNDS"}</small><b>{selectedStopCount ? `${selectedStopCount} Stop${selectedStopCount === 1 ? "" : "s"} selected` : "Turn the unplanned pool into physical Rounds."}</b><span>{serviceDate} · Own-team capacity only</span></div>
       <div className="v45-plan-summary"><div><span>Unplanned</span><b>{unplannedCount}</b></div><div><span>Own drivers</span><b>{projection?.summary.ownDrivers ?? "—"}</b></div><div><span>Scheduled</span><b>{projection?.summary.scheduled ?? "—"}</b></div><div><span>Selected</span><b>{selectedStopCount}</b></div></div>
-      <div className="v45-plan-head-actions"><label>Round reference<input value={roundReference} onChange={(event) => setRoundReference(event.target.value)} placeholder="ROUND-YYYYMMDD-01" /></label>{selectedStopCount > 0 && <button type="button" onClick={onClear}>Clear</button>}<button className="primary" type="button" disabled={submitting || viewer || !selectedStopCount || !selectedDriverId || !roundReference.trim() || Boolean(capacityIssue)} onClick={onApprove}>{submitting ? "Approving…" : viewer ? "Viewer cannot approve" : "Approve plan"}</button></div>
+      <div className="v45-plan-head-actions"><label>Round reference<input value={roundReference} onChange={(event) => setRoundReference(event.target.value)} placeholder="ROUND-YYYYMMDD-01" /></label>{selectedStopCount > 0 && <button type="button" onClick={onClear}>Clear</button>}<button className="primary" type="button" disabled={submitting || viewer || !selectedStopCount || !selectedDriverId || !roundReference.trim() || Boolean(capacityIssue) || !routeReady} onClick={onApprove}>{submitting ? "Approving…" : viewer ? "Viewer cannot approve" : routeLoading ? "Calculating route…" : "Approve plan"}</button></div>
     </header>
-    <div className={`v45-plan-explain ${capacityIssue ? "risk" : selectedStopCount ? "good" : ""}`}><i /><b>{capacityIssue ? "CAPACITY CHECK" : selectedStopCount ? "STATIC FIT" : "PLANNING TRUTH"}</b><span>{capacityIssue || (selectedStopCount ? `${driver?.displayName ?? "Driver"} fits the effective shift and vehicle Stop limit. ${warnings.join(" ")}` : "Select deliveries, then choose the driver lane. No assignment occurs before approval.")}</span>{roundError && <em>{roundError}</em>}{roundSuccess && <em className="success">{roundSuccess.state.reference} assigned</em>}</div>
+    <div className={`v45-plan-explain ${explainKind}`}><i /><b>{explainLabel}</b><span>{explainText}</span>{roundError && <em>{roundError}</em>}{roundSuccess && <em className="success">{roundSuccess.state.reference} assigned</em>}</div>
     <div className="v45-plan-lanes">
-      <div className="v45-plan-axis"><b>Driver · vehicle</b><span>08:00</span><span>12:00</span><span>16:00</span><span>20:00</span></div>
-      {!projection ? <div className="v45-plan-empty">Loading effective shifts and vehicle rules…</div> : projection.drivers.length === 0 ? <div className="v45-plan-empty">No own-team drivers are configured.</div> : projection.drivers.map((item) => <PlanningDriverLane key={item.driverId} driver={item} selected={item.driverId === selectedDriverId} selectedStopCount={selectedStopCount} timezone={timezone} onSelect={() => onSelectDriver(item.driverId)} />)}
+      <div className="v45-plan-axis"><b>Driver · vehicle</b>{axisLabels.map((label) => <span key={label}>{label}</span>)}</div>
+      {!projection ? <div className="v45-plan-empty">Loading effective shifts and vehicle rules…</div> : projection.drivers.length === 0 ? <div className="v45-plan-empty">No own-team drivers are configured.</div> : projection.drivers.map((item) => <PlanningDriverLane key={item.driverId} driver={item} selected={item.driverId === selectedDriverId} selectedStopCount={selectedStopCount} timezone={timezone} horizonStart={startHour} horizonEnd={horizonEnd} routePreview={item.driverId === selectedDriverId ? routePreview : null} onSelect={() => onSelectDriver(item.driverId)} />)}
     </div>
   </section>;
 }
 
-function PlanningDriverLane({ driver, selected, selectedStopCount, timezone, onSelect }: { driver: OperationsDriverCapacityItem; selected: boolean; selectedStopCount: number; timezone: string; onSelect: () => void }) {
+function PlanningDriverLane({ driver, selected, selectedStopCount, timezone, horizonStart, horizonEnd, routePreview, onSelect }: { driver: OperationsDriverCapacityItem; selected: boolean; selectedStopCount: number; timezone: string; horizonStart: number; horizonEnd: number; routePreview: PlanningRoutePreview | null; onSelect: () => void }) {
   const maxStops = driver.vehicleProfile?.maxStopsPerDeparture;
   const fits = Boolean(driver.effectiveShift && maxStops && selectedStopCount <= maxStops && !(driver.vehicleProfile?.departurePattern === "return_after_every_delivery" && selectedStopCount > 1));
-  const start = driver.effectiveShift ? Number(new Intl.DateTimeFormat("en-GB", { timeZone: timezone, hour: "2-digit", hour12: false }).format(new Date(driver.effectiveShift.startAt))) : 8;
-  const end = driver.effectiveShift ? Number(new Intl.DateTimeFormat("en-GB", { timeZone: timezone, hour: "2-digit", hour12: false }).format(new Date(driver.effectiveShift.endAt))) : start;
-  const left = Math.max(0, Math.min(100, ((start - 8) / 12) * 100));
-  const width = Math.max(0, Math.min(100 - left, ((end <= start ? end + 24 : end) - start) / 12 * 100));
+  const horizon = horizonEnd - horizonStart;
+  const start = driver.effectiveShift ? localHour(driver.effectiveShift.startAt, timezone) : horizonStart;
+  const rawEnd = driver.effectiveShift ? localHour(driver.effectiveShift.endAt, timezone) : start;
+  const end = rawEnd <= start ? rawEnd + 24 : rawEnd;
+  const left = Math.max(0, Math.min(100, ((start - horizonStart) / horizon) * 100));
+  const width = Math.max(0, Math.min(100 - left, (end - start) / horizon * 100));
+  const routeStart = routePreview ? localHour(routePreview.departureAt, timezone) : start;
+  const rawRouteEnd = routePreview ? localHour(routePreview.finishAt, timezone) : routeStart;
+  const routeEnd = rawRouteEnd < routeStart ? rawRouteEnd + 24 : rawRouteEnd;
+  const routeLeft = Math.max(0, Math.min(96, ((routeStart - horizonStart) / horizon) * 100));
+  const routeWidth = Math.max(4, Math.min(100 - routeLeft, (routeEnd - routeStart) / horizon * 100));
   return <button type="button" className={`v45-plan-lane ${selected ? "selected" : ""} ${driver.effectiveShift ? "" : "off"}`} onClick={onSelect}>
     <span className="v45-plan-driver"><i>{driver.initials}</i><span><b>{driver.displayName}</b><em>{driver.vehicleProfile?.displayName ?? "Vehicle required"} · {maxStops ?? 0} Stop max</em><small>{driver.dateException ? `Date exception · ${driver.dateException.kind}` : driver.effectiveShift ? `${shortTime(driver.effectiveShift.startAt, timezone)}–${shortTime(driver.effectiveShift.endAt, timezone)}` : "Off shift"}</small></span></span>
-    <span className="v45-plan-track"><i className="shift" style={{ left: `${left}%`, width: `${width}%` }} />{selected && selectedStopCount > 0 && <strong className={fits ? "fit" : "risk"}>{selectedStopCount} Stop{selectedStopCount === 1 ? "" : "s"} · {fits ? "static fit" : "blocked"}</strong>}{driver.currentRound && <em className="current">{driver.currentRound.reference}</em>}</span>
+    <span className="v45-plan-track"><i className="shift" style={{ left: `${left}%`, width: `${width}%` }} />{selected && selectedStopCount > 0 && <strong className={routePreview?.status === "blocked" || !fits ? "risk" : "fit"} style={routePreview ? { left: `${routeLeft}%`, width: `${routeWidth}%` } : undefined}>{selectedStopCount} Stop{selectedStopCount === 1 ? "" : "s"} · {routePreview ? routePreview.status === "fits" ? "routed fit" : "blocked" : fits ? "checking route" : "blocked"}</strong>}{driver.currentRound && <em className="current">{driver.currentRound.reference}</em>}</span>
   </button>;
 }
 

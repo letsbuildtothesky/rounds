@@ -21,6 +21,9 @@ import { operationsRoundDetailHandler } from "./operations-round-detail-handler.
 import { resolveOperationsExceptionHandler } from "./resolve-operations-exception-handler.js";
 import { confirmDeliveryReturnHandler } from "./confirm-delivery-return-handler.js";
 import { planRoundHandler } from "./plan-round-handler.js";
+import { planningRouteHandler } from "./planning-route-handler.js";
+import { createPlanningRouteService } from "./planning-route-service.js";
+import { MapboxRoutingProvider } from "./routing-provider.js";
 import { reportPickupProblemHandler } from "./report-pickup-problem-handler.js";
 import { preparePodMediaHandler } from "./prepare-pod-media-handler.js";
 import { prepareExceptionMediaHandler } from "./prepare-exception-media-handler.js";
@@ -32,6 +35,10 @@ const gateway = new SupabaseGateway(
   config.supabaseUrl,
   config.supabasePublishableKey,
   config.supabaseSecretKey,
+);
+const routeService = createPlanningRouteService(
+  gateway,
+  new MapboxRoutingProvider(config.mapboxRoutingAccessToken),
 );
 
 function authorizedHealth(request: IncomingMessage): boolean {
@@ -216,6 +223,17 @@ const server = createServer(async (request, response) => {
       sendNode(response, addOperationsCors(planningResponse, request.headers.origin));
       return;
     }
+    if (request.method === "POST" && request.url === "/v1/operations/planning/route-preview") {
+      const webRequest = await toWebRequest(request);
+      const routeResponse = await planningRouteHandler(webRequest, {
+        identity: gateway,
+        routes: routeService,
+        uuid: () => crypto.randomUUID(),
+        now: () => new Date(),
+      });
+      sendNode(response, addOperationsCors(routeResponse, request.headers.origin));
+      return;
+    }
     if (request.method === "GET" && request.url === "/v1/operations/history") {
       const webRequest = await toWebRequest(request);
       const historyResponse = await operationsHistoryHandler(webRequest, {
@@ -254,6 +272,7 @@ const server = createServer(async (request, response) => {
       const roundResponse = await planRoundHandler(webRequest, {
         identity: gateway,
         planning: gateway,
+        routes: routeService,
         uuid: () => crypto.randomUUID(),
         now: () => new Date(),
       });

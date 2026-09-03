@@ -8,6 +8,7 @@ export type ApiConfig = {
   supabaseSecretKey: string;
   healthToken: string;
   operationsWebOrigin: string;
+  mapboxRoutingAccessToken: string;
 };
 
 function required(name: string, env: NodeJS.ProcessEnv): string {
@@ -33,5 +34,6 @@ export function readConfig(env: NodeJS.ProcessEnv = process.env): ApiConfig {
     supabaseSecretKey: required("SUPABASE_SECRET_KEY", env),
     healthToken: required("ROUNDS_HEALTH_TOKEN", env),
     operationsWebOrigin: required("ROUNDS_OPERATIONS_WEB_ORIGIN", env),
+    mapboxRoutingAccessToken: required("MAPBOX_ROUTING_ACCESS_TOKEN", env),
   };
 }

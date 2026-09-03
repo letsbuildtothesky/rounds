@@ -9,6 +9,7 @@ import {
   validatePreparePodMediaPayload,
   validatePlanRoundCommand,
   validatePlanRoundPayload,
+  validatePlanningRoutePreviewRequest,
   validateReportPickupProblemCommand,
   validateReportDeliveryProblemCommand,
 } from "../src/index.js";
@@ -18,6 +19,21 @@ const payload = () => ({
   serviceDate: "2026-09-02",
   driverId: "10000000-0000-4000-8000-000000000002",
   stopIds: ["10000000-0000-4000-8000-000000000005"],
+  routePlan: {
+    status: "fits" as const,
+    serviceDate: "2026-09-02",
+    driverId: "10000000-0000-4000-8000-000000000002",
+    stopIds: ["10000000-0000-4000-8000-000000000005"],
+    calculatedAt: "2026-09-01T12:00:00.000Z",
+    departureAt: "2026-09-02T01:00:00.000Z",
+    finishAt: "2026-09-02T02:30:00.000Z",
+    distanceMeters: 2500,
+    durationSeconds: 900,
+    provider: { name: "mapbox" as const, profile: "driving-traffic" as const, freshness: "live" as const },
+    stops: [{ stopId: "10000000-0000-4000-8000-000000000005", sequence: 1, eta: "2026-09-02T01:15:00.000Z", departureAt: "2026-09-02T02:00:00.000Z", windowStart: "2026-09-02T02:00:00.000Z", windowEnd: "2026-09-02T04:00:00.000Z", promiseStatus: "early" as const, waitingSeconds: 2700, latenessSeconds: 0, legDurationSeconds: 900, legDistanceMeters: 2500 }],
+    blockingReasons: [],
+    warnings: [],
+  },
 });
 
 test("accepts an explicitly ordered Team Round", () => {
@@ -28,6 +44,14 @@ test("rejects duplicate Stops", () => {
   const input = payload();
   input.stopIds.push(input.stopIds[0]!);
   assert.throws(() => validatePlanRoundPayload(input), ContractError);
+});
+
+test("validates route preview identity and ordered Stops", () => {
+  assert.doesNotThrow(() => validatePlanningRoutePreviewRequest({
+    serviceDate: payload().serviceDate,
+    driverId: payload().driverId,
+    stopIds: payload().stopIds,
+  }));
 });
 
 test("requires a new aggregate command", () => {
