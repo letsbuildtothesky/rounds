@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../app/harness_app_controller.dart';
 import '../driver/driver_session.dart';
+import '../permissions/driver_permissions_screen.dart';
 import '../storage/pod_draft_photo_store.dart';
 
 typedef DeliveryPhotoCapture = Future<XFile?> Function();
@@ -300,12 +301,17 @@ class _ProofOfDeliveryScreenState extends State<ProofOfDeliveryScreen> {
         _photo = XFile(retained.path);
         _capturingPhoto = false;
       });
-    } catch (_) {
+    } catch (error) {
       if (!mounted) return;
       setState(() {
         _capturingPhoto = false;
-        _photoError = 'The delivery photo could not be retained. Try again.';
+        _photoError = isCameraPermissionError(error)
+            ? 'Camera access is required for delivery evidence.'
+            : 'The delivery photo could not be retained. Try again.';
       });
+      if (isCameraPermissionError(error)) {
+        await showCameraPermissionRecovery(context);
+      }
     }
   }
 

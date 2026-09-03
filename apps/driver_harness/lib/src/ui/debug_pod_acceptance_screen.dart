@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../app/driver_design_system.dart';
+import '../permissions/driver_permissions_screen.dart';
 import '../debug/debug_acceptance_photo_store.dart';
 import '../driver/driver_session.dart';
 
@@ -260,12 +261,17 @@ class _DebugPodAcceptanceScreenState extends State<DebugPodAcceptanceScreen> {
         _photo = retained;
         _capturing = false;
       });
-    } catch (_) {
+    } catch (error) {
       if (!mounted) return;
       setState(() {
         _capturing = false;
-        _error = 'The camera photo could not be retained. Please try again.';
+        _error = isCameraPermissionError(error)
+            ? 'Camera access is required for this test photo.'
+            : 'The camera photo could not be retained. Please try again.';
       });
+      if (isCameraPermissionError(error)) {
+        await showCameraPermissionRecovery(context);
+      }
     }
   }
 

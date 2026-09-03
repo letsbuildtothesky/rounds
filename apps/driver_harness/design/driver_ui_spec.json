@@ -831,6 +831,78 @@
         "primarySize": 16,
         "secondarySize": 15
       }
+    },
+    "N01": {
+      "source": "ux/driver/en/screens/ROUNDS-N01-PERMISSIONS-v3-10OF10.html",
+      "topBar": {
+        "height": 58,
+        "paddingHorizontal": 20,
+        "brandSize": 20,
+        "stepSize": 12
+      },
+      "main": {
+        "paddingTop": 30,
+        "paddingHorizontal": 20,
+        "paddingBottom": 24,
+        "kickerSize": 12,
+        "kickerBottom": 14,
+        "iconSize": 72,
+        "iconRadius": 8,
+        "iconGlyphSize": 32,
+        "iconBottom": 30,
+        "titleSize": 39,
+        "titleHeight": 0.98,
+        "leadTop": 18,
+        "leadSize": 17,
+        "leadHeight": 1.42,
+        "truthTop": 30,
+        "truthRowMinHeight": 61,
+        "truthGap": 13,
+        "truthIconSize": 26,
+        "truthGlyphSize": 21,
+        "truthCopySize": 14,
+        "truthCopyHeight": 1.3
+      },
+      "actions": {
+        "primaryHeight": 62,
+        "primaryRadius": 7,
+        "primarySize": 17,
+        "secondaryHeight": 50,
+        "secondaryTop": 7,
+        "secondarySize": 14
+      },
+      "compact": {
+        "mainPaddingTop": 24,
+        "mainPaddingHorizontal": 16,
+        "mainPaddingBottom": 19,
+        "iconSize": 64,
+        "iconGlyphSize": 29,
+        "iconBottom": 23,
+        "titleSize": 34,
+        "leadTop": 15,
+        "leadSize": 15.5,
+        "leadHeight": 1.38,
+        "truthTop": 22,
+        "truthRowMinHeight": 55,
+        "truthCopySize": 13,
+        "primaryHeight": 58,
+        "secondaryHeight": 45
+      },
+      "short": {
+        "breakpointHeight": 720,
+        "mainPaddingTop": 22,
+        "mainPaddingBottom": 19,
+        "iconSize": 60,
+        "iconGlyphSize": 27,
+        "iconBottom": 20,
+        "titleSize": 32,
+        "leadTop": 13,
+        "leadSize": 15,
+        "truthTop": 18,
+        "truthRowMinHeight": 50,
+        "primaryHeight": 56,
+        "secondaryHeight": 42
+      }
     }
   }
 }

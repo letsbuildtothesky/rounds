@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 
+import '../permissions/location_access.dart';
 import '../storage/harness_database.dart';
 import '../storage/telemetry_buffer.dart';
 import 'operational_location_settings.dart';
@@ -20,18 +21,7 @@ class OperationalLocationRecorder {
   int _nextSequence = 1;
 
   Future<void> start() async {
-    if (!await Geolocator.isLocationServiceEnabled()) {
-      throw StateError('Location services are disabled.');
-    }
-
-    var permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-    }
-    if (permission == LocationPermission.denied ||
-        permission == LocationPermission.deniedForever) {
-      throw StateError('Location permission was not granted.');
-    }
+    await requireOperationalLocationAccess();
 
     final database = await HarnessDatabase.open();
     _database = database;

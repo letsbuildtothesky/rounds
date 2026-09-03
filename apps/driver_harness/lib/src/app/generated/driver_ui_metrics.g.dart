@@ -772,3 +772,67 @@ abstract final class DriverL01Metrics {
   static const double sheetPrimarySize = 16.0;
   static const double sheetSecondarySize = 15.0;
 }
+
+abstract final class DriverN01Metrics {
+  static const String source = 'ux/driver/en/screens/ROUNDS-N01-PERMISSIONS-v3-10OF10.html';
+
+  static const double topBarHeight = 58.0;
+  static const double topBarPaddingHorizontal = 20.0;
+  static const double brandSize = 20.0;
+  static const double stepSize = 12.0;
+  static const double mainPaddingTop = 30.0;
+  static const double mainPaddingHorizontal = 20.0;
+  static const double mainPaddingBottom = 24.0;
+  static const double kickerSize = 12.0;
+  static const double kickerBottom = 14.0;
+  static const double iconSize = 72.0;
+  static const double iconRadius = 8.0;
+  static const double iconGlyphSize = 32.0;
+  static const double iconBottom = 30.0;
+  static const double titleSize = 39.0;
+  static const double titleHeight = 0.98;
+  static const double leadTop = 18.0;
+  static const double leadSize = 17.0;
+  static const double leadHeight = 1.42;
+  static const double truthTop = 30.0;
+  static const double truthRowMinHeight = 61.0;
+  static const double truthGap = 13.0;
+  static const double truthIconSize = 26.0;
+  static const double truthGlyphSize = 21.0;
+  static const double truthCopySize = 14.0;
+  static const double truthCopyHeight = 1.3;
+  static const double primaryHeight = 62.0;
+  static const double primaryRadius = 7.0;
+  static const double primarySize = 17.0;
+  static const double secondaryHeight = 50.0;
+  static const double secondaryTop = 7.0;
+  static const double secondarySize = 14.0;
+  static const double compactMainPaddingTop = 24.0;
+  static const double compactMainPaddingHorizontal = 16.0;
+  static const double compactMainPaddingBottom = 19.0;
+  static const double compactIconSize = 64.0;
+  static const double compactIconGlyphSize = 29.0;
+  static const double compactIconBottom = 23.0;
+  static const double compactTitleSize = 34.0;
+  static const double compactLeadTop = 15.0;
+  static const double compactLeadSize = 15.5;
+  static const double compactLeadHeight = 1.38;
+  static const double compactTruthTop = 22.0;
+  static const double compactTruthRowMinHeight = 55.0;
+  static const double compactTruthCopySize = 13.0;
+  static const double compactPrimaryHeight = 58.0;
+  static const double compactSecondaryHeight = 45.0;
+  static const double shortBreakpointHeight = 720.0;
+  static const double shortMainPaddingTop = 22.0;
+  static const double shortMainPaddingBottom = 19.0;
+  static const double shortIconSize = 60.0;
+  static const double shortIconGlyphSize = 27.0;
+  static const double shortIconBottom = 20.0;
+  static const double shortTitleSize = 32.0;
+  static const double shortLeadTop = 13.0;
+  static const double shortLeadSize = 15.0;
+  static const double shortTruthTop = 18.0;
+  static const double shortTruthRowMinHeight = 50.0;
+  static const double shortPrimaryHeight = 56.0;
+  static const double shortSecondaryHeight = 42.0;
+}

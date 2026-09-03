@@ -16,6 +16,14 @@ from that same session. It provides the real persisted English/Thai selector,
 Round-scoped Operations support and confirmed sign-out without presenting
 unimplemented Network, payout, notification or verification claims.
 
+The Profile permissions entry uses the canonical N01 measurements and inspects
+the phone's actual location-service and app-permission state. Denied and
+permanently blocked access lead to real OS permission/settings recovery, and
+navigation shows that recovery instead of an indefinite loading spinner.
+Camera permission remains contextual: a denied POD, damage or acceptance-photo
+request opens a settings drawer without claiming that evidence was captured.
+Notification permission is not requested until a real push channel is promoted.
+
 The pickup screen never claims custody from local button state. Until the API
 commit succeeds it remains unconfirmed; durable offline outbox support is the
 next Driver reliability checkpoint.

@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import '../app/driver_design_system.dart';
 import '../app/harness_app_controller.dart';
 import '../driver/driver_session.dart';
+import '../permissions/driver_permissions_screen.dart';
 import '../storage/delivery_problem_photo_store.dart';
 
 typedef DamagePhotoCapture = Future<XFile?> Function();
@@ -298,12 +299,17 @@ class _DeliveryPackageProblemScreenState
         _photo = retained;
         _capturing = false;
       });
-    } catch (_) {
+    } catch (error) {
       if (!mounted) return;
       setState(() {
         _capturing = false;
-        _error = 'The damage photo could not be saved. Try again.';
+        _error = isCameraPermissionError(error)
+            ? 'Camera access is required for damage evidence.'
+            : 'The damage photo could not be saved. Try again.';
       });
+      if (isCameraPermissionError(error)) {
+        await showCameraPermissionRecovery(context);
+      }
     }
   }
 

@@ -5,6 +5,7 @@ import '../app/driver_design_system.dart';
 import '../app/generated/driver_ui_metrics.g.dart';
 import '../app/harness_app_controller.dart';
 import '../driver/driver_session.dart';
+import '../permissions/driver_permissions_screen.dart';
 import 'operations_chat_screen.dart';
 import 'post_delivery_screen.dart';
 
@@ -59,6 +60,12 @@ class DriverProfileScreen extends StatelessWidget {
                             : 'English',
                         onTap: () => _showLanguage(context),
                       ),
+                      _ProfileRowData(
+                        key: const Key('l01-permissions'),
+                        title: 'Permissions',
+                        subtitle: 'Location and contextual camera access',
+                        onTap: () => _openPermissions(context),
+                      ),
                       if (_supportStop(session) != null)
                         _ProfileRowData(
                           key: const Key('l01-support'),
@@ -110,6 +117,12 @@ class DriverProfileScreen extends StatelessWidget {
           stop: stop,
         ),
       ),
+    );
+  }
+
+  void _openPermissions(BuildContext context) {
+    Navigator.of(context).push<void>(
+      MaterialPageRoute(builder: (_) => const DriverPermissionsScreen()),
     );
   }
 

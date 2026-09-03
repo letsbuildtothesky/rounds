@@ -9,6 +9,8 @@ import '../app/generated/driver_ui_metrics.g.dart';
 import '../app/harness_app_controller.dart';
 import '../driver/driver_api.dart';
 import '../driver/driver_session.dart';
+import '../permissions/driver_permissions_screen.dart';
+import '../permissions/location_access.dart';
 import 'components/rounds_action_drawer.dart';
 import 'operations_chat_screen.dart';
 import 'call_contact_screen.dart';
@@ -509,6 +511,10 @@ class _LocationProblemScreenState extends State<LocationProblemScreen> {
     try {
       return await widget.locationProvider();
     } catch (error) {
+      if (error is DriverLocationAccessException && mounted) {
+        await showLocationPermissionRecovery(context, error);
+        return null;
+      }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -1241,17 +1247,7 @@ class _PositionEvidencePainter extends CustomPainter {
 }
 
 Future<DriverLocationEvidence> _currentLocation() async {
-  if (!await Geolocator.isLocationServiceEnabled()) {
-    throw StateError('Location services are disabled');
-  }
-  var permission = await Geolocator.checkPermission();
-  if (permission == LocationPermission.denied) {
-    permission = await Geolocator.requestPermission();
-  }
-  if (permission == LocationPermission.denied ||
-      permission == LocationPermission.deniedForever) {
-    throw StateError('Location permission was not granted');
-  }
+  await requireOperationalLocationAccess();
   final position = await Geolocator.getCurrentPosition(
     locationSettings: const LocationSettings(
       accuracy: LocationAccuracy.high,

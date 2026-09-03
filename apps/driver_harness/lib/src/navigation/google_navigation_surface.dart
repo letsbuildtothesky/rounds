@@ -5,6 +5,8 @@ import 'package:google_navigation_flutter/google_navigation_flutter.dart';
 import 'package:uuid/uuid.dart';
 
 import '../app/app_strings.dart';
+import '../permissions/driver_permissions_screen.dart';
+import '../permissions/location_access.dart';
 import '../storage/harness_database.dart';
 import '../storage/harness_event_log.dart';
 import '../storage/sqlite_navigation_intent_store.dart';
@@ -84,6 +86,8 @@ class _GoogleNavigationSurfaceState extends State<GoogleNavigationSurface>
   bool _guidanceActive = false;
   String? _error;
   String? _diagnosticResult;
+  DriverLocationAccessException? _locationFailure;
+  bool _surfaceOpenedRecorded = false;
 
   @override
   void initState() {
@@ -102,19 +106,23 @@ class _GoogleNavigationSurfaceState extends State<GoogleNavigationSurface>
 
   Future<void> _initialize() async {
     try {
-      final database = await HarnessDatabase.open();
-      _database = database;
-      _events = HarnessEventLog(database);
-      await _events?.record(
-        'navigation_surface_opened',
-        payload: {
-          'stop_id': widget.stopId,
-          'destination_version': widget.destinationVersion,
-        },
-      );
+      final database = _database ?? await HarnessDatabase.open();
+      _database ??= database;
+      _events ??= HarnessEventLog(database);
+      if (!_surfaceOpenedRecorded) {
+        await _events?.record(
+          'navigation_surface_opened',
+          payload: {
+            'stop_id': widget.stopId,
+            'destination_version': widget.destinationVersion,
+          },
+        );
+        _surfaceOpenedRecorded = true;
+      }
 
       widget.onStatus('Requesting precise location…');
       await _recorder.start();
+      if (mounted) setState(() => _locationFailure = null);
       await _uploader.start();
 
       var accepted = await GoogleMapsNavigator.areTermsAccepted();
@@ -223,8 +231,21 @@ class _GoogleNavigationSurfaceState extends State<GoogleNavigationSurface>
         'navigation_plugin_error',
         payload: {'error': error.toString()},
       );
-      _setStatus('Navigation unavailable: $error', isError: true);
+      if (error is DriverLocationAccessException && mounted) {
+        setState(() => _locationFailure = error);
+        widget.onStatus('Navigation needs location access');
+      } else {
+        _setStatus('Navigation unavailable: $error', isError: true);
+      }
     }
+  }
+
+  Future<void> _reviewLocationAccess() async {
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute(builder: (_) => const DriverPermissionsScreen()),
+    );
+    if (!mounted) return;
+    await _initialize();
   }
 
   Future<void> _onViewCreated(GoogleNavigationViewController controller) async {
@@ -406,6 +427,58 @@ class _GoogleNavigationSurfaceState extends State<GoogleNavigationSurface>
 
   @override
   Widget build(BuildContext context) {
+    final locationFailure = _locationFailure;
+    if (locationFailure != null) {
+      return ColoredBox(
+        color: const Color(0xFFEEF1F4),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.location_off_outlined,
+                  size: 42,
+                  color: Color(0xFFFF6420),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Location access needed',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Color(0xFF172238),
+                    fontSize: 24,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  locationFailure.toString(),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Color(0xFF748094),
+                    fontSize: 14,
+                    height: 1.4,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 18),
+                FilledButton(
+                  key: const Key('navigation-location-recovery'),
+                  onPressed: _reviewLocationAccess,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFF172238),
+                    minimumSize: const Size.fromHeight(54),
+                  ),
+                  child: const Text('Review location access'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
     if (!_sessionReady) {
       return const ColoredBox(
         color: Color(0xFFD7DDD7),
