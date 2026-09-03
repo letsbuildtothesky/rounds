@@ -33,7 +33,7 @@ function route(driverId: string, stopIds: string[]): PlanningRoutePreview {
 
 function stop(stopId: string, sequence: number) {
   return {
-    stopId, sequence, stopState: "assigned", stopVersion: 2,
+    stopId, sequence, stopState: "assigned", stopVersion: 2, destinationVersion: 1,
     deliveryId: stopId.replace(/003[0-2]$/, "0040"), deliveryReference: `UF-${sequence}`, deliveryState: "assigned",
     recipientName: `Recipient ${sequence}`, recipientPhone: "+66000000000", rawAddress: "Bangkok",
     coordinate: { latitude: 13.7 + sequence / 100, longitude: 100.5 + sequence / 100 },

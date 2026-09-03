@@ -53,6 +53,12 @@ String generateDriverUiMetrics(Map<String, dynamic> json) {
   final control = e02['roadControl'] as Map<String, dynamic>;
   final dock = e02['stopDock'] as Map<String, dynamic>;
   final type = e02['typography'] as Map<String, dynamic>;
+  final e04e06 = screens['E04E06'] as Map<String, dynamic>;
+  final e04Top = e04e06['topBar'] as Map<String, dynamic>;
+  final e04Map = e04e06['map'] as Map<String, dynamic>;
+  final e04Panel = e04e06['panel'] as Map<String, dynamic>;
+  final e04Actions = e04e06['actions'] as Map<String, dynamic>;
+  final e04Short = e04e06['short'] as Map<String, dynamic>;
   final f08 = screens['F08'] as Map<String, dynamic>;
   final f08Complete = f08['completeBar'] as Map<String, dynamic>;
   final f08Dock = f08['nextDock'] as Map<String, dynamic>;
@@ -439,6 +445,47 @@ abstract final class DriverE02Metrics {
   static const double distanceWeight = ${_double(type['distanceWeight'])};
   static const double arrivalSize = ${_double(type['arrivalSize'])};
   static const double arrivalWeight = ${_double(type['arrivalWeight'])};
+}
+
+abstract final class DriverE04E06Metrics {
+  static const String source = '${e04e06['source']}';
+
+  static const double topBarHeight = ${_double(e04Top['height'])};
+  static const double topBarPaddingHorizontal = ${_double(e04Top['paddingHorizontal'])};
+  static const double topBarGap = ${_double(e04Top['gap'])};
+  static const double stateSize = ${_double(e04Top['stateSize'])};
+  static const double topTitleSize = ${_double(e04Top['titleSize'])};
+
+  static const double mapHeight = ${_double(e04Map['height'])};
+  static const double compactMapHeight = ${_double(e04Map['compactHeight'])};
+  static const double shortMapHeight = ${_double(e04Map['shortHeight'])};
+
+  static const double panelPaddingTop = ${_double(e04Panel['paddingTop'])};
+  static const double panelPaddingHorizontal = ${_double(e04Panel['paddingHorizontal'])};
+  static const double panelPaddingBottom = ${_double(e04Panel['paddingBottom'])};
+  static const double compactPanelPaddingTop = ${_double(e04Panel['compactPaddingTop'])};
+  static const double compactPanelPaddingHorizontal = ${_double(e04Panel['compactPaddingHorizontal'])};
+  static const double shortPanelPaddingTop = ${_double(e04Panel['shortPaddingTop'])};
+  static const double titleSize = ${_double(e04Panel['titleSize'])};
+  static const double compactTitleSize = ${_double(e04Panel['compactTitleSize'])};
+  static const double shortTitleSize = ${_double(e04Panel['shortTitleSize'])};
+  static const double diffTop = ${_double(e04Panel['diffTop'])};
+  static const double shortDiffTop = ${_double(e04Panel['shortDiffTop'])};
+  static const double diffRowHeight = ${_double(e04Panel['diffRowHeight'])};
+  static const double shortDiffRowHeight = ${_double(e04Panel['shortDiffRowHeight'])};
+  static const double impactTop = ${_double(e04Panel['impactTop'])};
+  static const double shortImpactTop = ${_double(e04Panel['shortImpactTop'])};
+  static const double actionsTop = ${_double(e04Panel['actionsTop'])};
+  static const double shortActionsTop = ${_double(e04Panel['shortActionsTop'])};
+
+  static const double primaryHeight = ${_double(e04Actions['primaryHeight'])};
+  static const double compactPrimaryHeight = ${_double(e04Actions['compactPrimaryHeight'])};
+  static const double shortPrimaryHeight = ${_double(e04Actions['shortPrimaryHeight'])};
+  static const double secondaryHeight = ${_double(e04Actions['secondaryHeight'])};
+  static const double shortSecondaryHeight = ${_double(e04Actions['shortSecondaryHeight'])};
+  static const double actionRadius = ${_double(e04Actions['radius'])};
+
+  static const double shortBreakpointHeight = ${_double(e04Short['breakpointHeight'])};
 }
 
 abstract final class DriverF08Metrics {

@@ -33,6 +33,11 @@ import type {
   MoveRoundStopCommand,
   MoveRoundStopRequest,
   MoveRoundStopResult,
+  ApplyLiveDeliveryChangeCommand,
+  ApplyLiveDeliveryChangeResult,
+  AcknowledgeLiveDeliveryChangeCommand,
+  AcknowledgeLiveDeliveryChangeResult,
+  LiveDeliveryChangeRequest,
   PlanRoundCommand,
   PlanRoundPayload,
   PlanningRoutePreview,
@@ -222,6 +227,11 @@ export interface RoundMoveGateway {
   moveRoundStop(command: MoveRoundStopCommand, actor: ActorContext): Promise<MoveRoundStopResult>;
 }
 
+export interface LiveDeliveryChangeGateway {
+  applyLiveDeliveryChange(command: ApplyLiveDeliveryChangeCommand, actor: ActorContext): Promise<ApplyLiveDeliveryChangeResult>;
+  acknowledgeLiveDeliveryChange(command: AcknowledgeLiveDeliveryChangeCommand, identity: AuthenticatedIdentity): Promise<AcknowledgeLiveDeliveryChangeResult>;
+}
+
 export type CreateDeliveryDependencies = {
   identity: IdentityGateway;
   commands: DeliveryCommandGateway;
@@ -322,6 +332,23 @@ export type RoundMoveDependencies = {
 };
 
 export type MoveRoundStopRequestBody = MoveRoundStopRequest;
+
+export type LiveDeliveryChangeDependencies = {
+  identity: IdentityGateway;
+  changes: OperationsRoundDetailGateway & LiveDeliveryChangeGateway;
+  routes: PlanningRouteService;
+  uuid: () => string;
+  now: () => Date;
+};
+
+export type LiveDeliveryChangeRequestBody = LiveDeliveryChangeRequest;
+
+export type DriverLiveDeliveryChangeDependencies = {
+  identity: IdentityGateway;
+  changes: LiveDeliveryChangeGateway;
+  uuid: () => string;
+  now: () => Date;
+};
 
 export type DriverSessionDependencies = {
   identity: IdentityGateway;

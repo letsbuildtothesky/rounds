@@ -14,7 +14,7 @@ const detail: OperationsRoundDetail = {
   pickup: { id: "10000000-0000-4000-8000-000000000030", displayName: "UrbanFlowers" },
   custodyStopCount: 1, openExceptionCount: 0,
   stops: [{
-    stopId: "10000000-0000-4000-8000-000000000040", sequence: 1, stopState: "en_route", stopVersion: 2,
+    stopId: "10000000-0000-4000-8000-000000000040", sequence: 1, stopState: "en_route", stopVersion: 2, destinationVersion: 1,
     deliveryId: "10000000-0000-4000-8000-000000000050", deliveryReference: "UF-001", deliveryState: "en_route",
     recipientName: "Siriporn", recipientPhone: "+66000000000", rawAddress: "Bangkok",
     windowStart: "2026-09-02T02:00:00.000Z", windowEnd: "2026-09-02T05:00:00.000Z",

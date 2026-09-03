@@ -53,12 +53,47 @@ void main() {
             },
           ],
         },
+        'pendingLiveChange': {
+          'id': 'change-1',
+          'changeVersion': 2,
+          'roundId': 'round-1',
+          'stopId': 'stop-1',
+          'appliedAt': '2026-09-02T01:30:00Z',
+          'before': {
+            'sequence': 1,
+            'rawAddress': 'Wireless Road, Bangkok',
+            'latitude': 13.7439,
+            'longitude': 100.547,
+            'accessNote': 'Tower A lobby',
+            'windowStart': '2026-09-02T02:00:00Z',
+            'windowEnd': '2026-09-02T04:00:00Z',
+          },
+          'after': {
+            'sequence': 1,
+            'rawAddress': 'Wireless Road, Bangkok',
+            'latitude': 13.7439,
+            'longitude': 100.547,
+            'accessNote': 'Gate B',
+            'windowStart': '2026-09-02T02:00:00Z',
+            'windowEnd': '2026-09-02T04:00:00Z',
+          },
+          'impact': {
+            'distanceDeltaMeters': 0,
+            'durationDeltaSeconds': 120,
+            'downstreamStopCount': 0,
+            'promiseStatus': 'safe',
+            'shiftSafe': true,
+          },
+          'driverAckStatus': 'pending',
+        },
       });
 
       expect(session.currentRound?.reference, 'ROUND-001');
       expect(session.currentRound?.pickup.id, 'pickup-1');
       expect(session.currentRound?.pickup.latitude, 13.7338);
       expect(session.currentRound?.pickup.longitude, 100.5766);
+      expect(session.pendingLiveChange?.after.accessNote, 'Gate B');
+      expect(session.pendingLiveChange?.changeVersion, 2);
       expect(session.currentRound?.stops.single.sequence, 1);
       expect(session.currentRound?.stops.single.latitude, 13.7439);
       expect(
@@ -72,6 +107,7 @@ void main() {
       expect(cached.currentRound?.reference, 'ROUND-001');
       expect(cached.currentRound?.stops.single.recipientName, 'Siriporn');
       expect(cached.currentRound?.pickup.latitude, 13.7338);
+      expect(cached.pendingLiveChange?.before.accessNote, 'Tower A lobby');
     },
   );
 }

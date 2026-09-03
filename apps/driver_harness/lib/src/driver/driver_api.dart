@@ -191,6 +191,17 @@ class DriverApi {
     );
   }
 
+  Future<DriverCommandOutcome> acknowledgeLiveDeliveryChange(
+    DriverLiveDeliveryChangeModel change,
+  ) => _queueAndSend(
+    commandType: 'driver.acknowledge_live_change',
+    aggregateId: change.id,
+    expectedVersion: 1,
+    idempotencyKey: 'driver-live-change:${change.id}:v${change.changeVersion}',
+    endpoint: '/v1/driver/live-delivery-changes/${change.id}/acknowledge',
+    payload: {'expectedChangeVersion': 1},
+  );
+
   Future<List<DriverContactAttemptModel>> pendingContactAttempts(
     DriverRoundStopModel stop,
   ) async {

@@ -19,6 +19,7 @@ import { setDriverRecurringScheduleHandler } from "./set-driver-recurring-schedu
 import { clearDriverShiftExceptionHandler, setDriverShiftExceptionHandler } from "./set-driver-shift-exception-handler.js";
 import { operationsRoundDetailHandler } from "./operations-round-detail-handler.js";
 import { roundMoveHandler, roundMovePreviewHandler } from "./round-move-handler.js";
+import { acknowledgeLiveDeliveryChangeHandler, applyLiveDeliveryChangeHandler, liveDeliveryChangePreviewHandler } from "./live-delivery-change-handler.js";
 import { resolveOperationsExceptionHandler } from "./resolve-operations-exception-handler.js";
 import { confirmDeliveryReturnHandler } from "./confirm-delivery-return-handler.js";
 import { planRoundHandler } from "./plan-round-handler.js";
@@ -220,6 +221,22 @@ const server = createServer(async (request, response) => {
       sendNode(response, addOperationsCors(moveResponse, request.headers.origin));
       return;
     }
+    if (request.method === "POST" && request.url === "/v1/operations/live-delivery-changes/preview") {
+      const webRequest = await toWebRequest(request);
+      const changeResponse = await liveDeliveryChangePreviewHandler(webRequest, {
+        identity: gateway, changes: gateway, routes: routeService, uuid: () => crypto.randomUUID(), now: () => new Date(),
+      });
+      sendNode(response, addOperationsCors(changeResponse, request.headers.origin));
+      return;
+    }
+    if (request.method === "POST" && request.url === "/v1/operations/live-delivery-changes") {
+      const webRequest = await toWebRequest(request);
+      const changeResponse = await applyLiveDeliveryChangeHandler(webRequest, {
+        identity: gateway, changes: gateway, routes: routeService, uuid: () => crypto.randomUUID(), now: () => new Date(),
+      });
+      sendNode(response, addOperationsCors(changeResponse, request.headers.origin));
+      return;
+    }
     const operationsRoundMatch = request.url?.match(/^\/v1\/operations\/rounds\/([0-9a-f-]+)$/i);
     if (request.method === "GET" && operationsRoundMatch) {
       const webRequest = await toWebRequest(request);
@@ -305,6 +322,15 @@ const server = createServer(async (request, response) => {
         uuid: () => crypto.randomUUID(),
       });
       sendNode(response, driverResponse);
+      return;
+    }
+    const liveChangeAckMatch = request.url?.match(/^\/v1\/driver\/live-delivery-changes\/([0-9a-f-]+)\/acknowledge$/i);
+    if (request.method === "POST" && liveChangeAckMatch) {
+      const webRequest = await toWebRequest(request);
+      const ackResponse = await acknowledgeLiveDeliveryChangeHandler(webRequest, liveChangeAckMatch[1]!, {
+        identity: gateway, changes: gateway, uuid: () => crypto.randomUUID(), now: () => new Date(),
+      });
+      sendNode(response, ackResponse);
       return;
     }
     const driverThreadMatch = request.url?.match(/^\/v1\/driver\/rounds\/([0-9a-f-]+)\/stops\/([0-9a-f-]+)\/thread$/i);

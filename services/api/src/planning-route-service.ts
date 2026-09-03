@@ -12,6 +12,14 @@ import { evaluateCapacity } from "./capacity-validator.js";
 export type PlanningRouteService = {
   preview(actor: ActorContext, request: PlanningRoutePreviewRequest, now: Date): Promise<PlanningRoutePreview>;
   previewAssigned?(actor: ActorContext, allowedRoundIds: string[], request: PlanningRoutePreviewRequest, now: Date): Promise<PlanningRoutePreview>;
+  previewAssignedChange?(
+    actor: ActorContext,
+    allowedRoundIds: string[],
+    request: PlanningRoutePreviewRequest,
+    now: Date,
+    changes: { stopId: string; coordinate?: { latitude: number; longitude: number }; windowStart?: string; windowEnd?: string },
+    origin?: { latitude: number; longitude: number },
+  ): Promise<PlanningRoutePreview>;
 };
 
 function localServiceDate(now: Date, timezone: string): string {
@@ -138,6 +146,20 @@ export function createPlanningRouteService(
     async previewAssigned(actor, allowedRoundIds, request, now) {
       if (!gateway.getAssignedPlanningRouteContext) throw new Error("Assigned Round routing is unavailable");
       return calculate(actor, request, now, await gateway.getAssignedPlanningRouteContext(actor, allowedRoundIds, request.driverId, request.serviceDate, request.stopIds, now));
+    },
+    async previewAssignedChange(actor, allowedRoundIds, request, now, changes, origin) {
+      if (!gateway.getAssignedPlanningRouteContext) throw new Error("Assigned Round routing is unavailable");
+      const context = await gateway.getAssignedPlanningRouteContext(actor, allowedRoundIds, request.driverId, request.serviceDate, request.stopIds, now);
+      return calculate(actor, request, now, {
+        ...context,
+        ...(context.pickup ? { pickup: origin ? { ...context.pickup, coordinate: origin } : context.pickup } : {}),
+        stops: context.stops.map((stop) => stop.stopId === changes.stopId ? {
+          ...stop,
+          ...(changes.coordinate ? { coordinate: changes.coordinate } : {}),
+          ...(changes.windowStart ? { windowStart: changes.windowStart } : {}),
+          ...(changes.windowEnd ? { windowEnd: changes.windowEnd } : {}),
+        } : stop),
+      });
     },
   };
 }

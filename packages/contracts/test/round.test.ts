@@ -9,6 +9,7 @@ import {
   validatePreparePodMediaPayload,
   validateMoveRoundStopCommand,
   validateMoveRoundStopRequest,
+  validateLiveDeliveryChangeRequest,
   validatePlanRoundCommand,
   validatePlanRoundPayload,
   validatePlanningRoutePreviewRequest,
@@ -113,6 +114,20 @@ test("accepts a dual-version Stop move with exact resulting route orders", () =>
 
 test("rejects a Stop move to the same Round or against an invalid version", () => {
   assert.throws(() => validateMoveRoundStopRequest({ sourceRoundId: "10000000-0000-4000-8000-000000000010", targetRoundId: "10000000-0000-4000-8000-000000000010", stopId: "10000000-0000-4000-8000-000000000012", sourceExpectedVersion: 3, targetExpectedVersion: 0 }), ContractError);
+});
+
+test("accepts only bounded versioned live delivery changes", () => {
+  const request = {
+    roundId: "10000000-0000-4000-8000-000000000010",
+    stopId: "10000000-0000-4000-8000-000000000012",
+    expectedRoundVersion: 7,
+    expectedStopVersion: 4,
+    expectedDestinationVersion: 2,
+    changes: { sequence: 2, accessNote: "Use Gate B" },
+  };
+  assert.doesNotThrow(() => validateLiveDeliveryChangeRequest(request));
+  assert.throws(() => validateLiveDeliveryChangeRequest({ ...request, changes: { sequence: 0 } }), /sequence/);
+  assert.throws(() => validateLiveDeliveryChangeRequest({ ...request, changes: { latitude: 13.7 } }), /together/);
 });
 
 const pickupPayload = {

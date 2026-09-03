@@ -335,6 +335,14 @@
         "arrivalWeight": 820
       }
     },
+    "E04E06": {
+      "source": "ux/driver/en/screens/ROUNDS-E04-E05-E06-LIVE-ROUND-CHANGE-v3-10OF10.html",
+      "topBar": { "height": 64, "paddingHorizontal": 18, "gap": 12, "stateSize": 11, "titleSize": 16 },
+      "map": { "height": 370, "compactHeight": 346, "shortHeight": 286 },
+      "panel": { "paddingTop": 20, "paddingHorizontal": 18, "paddingBottom": 16, "compactPaddingTop": 17, "compactPaddingHorizontal": 15, "shortPaddingTop": 15, "titleSize": 31, "compactTitleSize": 28, "shortTitleSize": 27, "diffTop": 18, "shortDiffTop": 12, "diffRowHeight": 62, "shortDiffRowHeight": 52, "impactTop": 15, "shortImpactTop": 10, "actionsTop": 18, "shortActionsTop": 11 },
+      "actions": { "primaryHeight": 60, "compactPrimaryHeight": 56, "shortPrimaryHeight": 52, "secondaryHeight": 48, "shortSecondaryHeight": 44, "radius": 7 },
+      "short": { "breakpointHeight": 740 }
+    },
     "F08": {
       "source": "ux/driver/en/screens/ROUNDS-F08-STOP-COMPLETE-NEXT-STOP-v4-10OF10.html",
       "completeBar": {

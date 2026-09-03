@@ -27,6 +27,9 @@ import type {
   PreparePodMediaPayload,
   MoveRoundStopCommand,
   MoveRoundStopRequest,
+  LiveDeliveryChangeRequest,
+  ApplyLiveDeliveryChangeCommand,
+  AcknowledgeLiveDeliveryChangeCommand,
   PlanRoundCommand,
   PlanRoundPayload,
   PlanningRoutePreviewRequest,
@@ -465,6 +468,51 @@ export function validateMoveRoundStopCommand(command: MoveRoundStopCommand): voi
       throw new ContractError("every resulting route must be a server-calculated fit");
     }
   }
+}
+
+export function validateLiveDeliveryChangeRequest(payload: LiveDeliveryChangeRequest): void {
+  assertUuid(payload.roundId, "roundId");
+  assertUuid(payload.stopId, "stopId");
+  for (const [name, value] of [["expectedRoundVersion", payload.expectedRoundVersion], ["expectedStopVersion", payload.expectedStopVersion], ["expectedDestinationVersion", payload.expectedDestinationVersion]] as const) {
+    if (!Number.isInteger(value) || value < 1) throw new ContractError(`${name} must be a positive integer`);
+  }
+  const changes = payload.changes;
+  if (!changes || Object.keys(changes).length === 0) throw new ContractError("changes cannot be empty");
+  if (changes.sequence !== undefined && (!Number.isInteger(changes.sequence) || changes.sequence < 1)) throw new ContractError("sequence must be a positive integer");
+  if (changes.rawAddress !== undefined && (changes.rawAddress.trim().length < 1 || changes.rawAddress.trim().length > 500)) throw new ContractError("rawAddress must contain 1 to 500 characters");
+  if (changes.accessNote !== undefined && changes.accessNote.trim().length > 1000) throw new ContractError("accessNote exceeds 1000 characters");
+  if ((changes.latitude === undefined) !== (changes.longitude === undefined)) throw new ContractError("latitude and longitude must be supplied together");
+  if (changes.latitude !== undefined && (!Number.isFinite(changes.latitude) || changes.latitude < -90 || changes.latitude > 90)) throw new ContractError("latitude is invalid");
+  if (changes.longitude !== undefined && (!Number.isFinite(changes.longitude) || changes.longitude < -180 || changes.longitude > 180)) throw new ContractError("longitude is invalid");
+  if ((changes.windowStart === undefined) !== (changes.windowEnd === undefined)) throw new ContractError("windowStart and windowEnd must be supplied together");
+  if (changes.windowStart !== undefined) {
+    const start = Date.parse(changes.windowStart);
+    const end = Date.parse(changes.windowEnd!);
+    if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) throw new ContractError("delivery window is invalid");
+  }
+}
+
+export function validateApplyLiveDeliveryChangeCommand(command: ApplyLiveDeliveryChangeCommand): void {
+  if (command.schemaVersion !== 1 || command.commandType !== "delivery.apply_live_change") throw new ContractError("unsupported ApplyLiveDeliveryChange command envelope");
+  assertUuid(command.commandId, "commandId"); assertUuid(command.traceId, "traceId"); assertUuid(command.tenantId, "tenantId"); assertUuid(command.aggregateId, "aggregateId");
+  assertNonEmpty(command.idempotencyKey, "idempotencyKey");
+  if (command.idempotencyKey.length > 200) throw new ContractError("idempotencyKey exceeds 200 characters");
+  if (command.aggregateId !== command.payload.stopId) throw new ContractError("aggregateId must be the Stop");
+  if (command.expectedVersion !== command.payload.expectedStopVersion) throw new ContractError("expectedVersion must match expectedStopVersion");
+  validateLiveDeliveryChangeRequest(command.payload);
+  if (!Array.isArray(command.payload.stopOrderAfter) || command.payload.stopOrderAfter.length === 0) throw new ContractError("stopOrderAfter cannot be empty");
+  command.payload.stopOrderAfter.forEach((stopId) => assertUuid(stopId, "stopOrderAfter stopId"));
+  if (new Set(command.payload.stopOrderAfter).size !== command.payload.stopOrderAfter.length || !command.payload.stopOrderAfter.includes(command.payload.stopId)) throw new ContractError("stopOrderAfter must contain each Stop exactly once");
+  if (command.payload.routePlan.status !== "fits" || command.payload.routePlan.blockingReasons.length || command.payload.routePlan.capacity.status !== "fits") throw new ContractError("routePlan must be a server-calculated fit");
+}
+
+export function validateAcknowledgeLiveDeliveryChangeCommand(command: AcknowledgeLiveDeliveryChangeCommand): void {
+  if (command.schemaVersion !== 1 || command.commandType !== "driver.acknowledge_live_change") throw new ContractError("unsupported AcknowledgeLiveDeliveryChange command envelope");
+  assertUuid(command.commandId, "commandId"); assertUuid(command.traceId, "traceId"); assertUuid(command.tenantId, "tenantId"); assertUuid(command.aggregateId, "aggregateId");
+  assertNonEmpty(command.idempotencyKey, "idempotencyKey");
+  assertUuid(command.payload.changeId, "changeId");
+  if (command.aggregateId !== command.payload.changeId) throw new ContractError("aggregateId must be the live change");
+  if (!Number.isInteger(command.payload.expectedChangeVersion) || command.payload.expectedChangeVersion < 1 || command.expectedVersion !== command.payload.expectedChangeVersion) throw new ContractError("expectedChangeVersion must match expectedVersion");
 }
 
 export function validateConfirmPickupPayload(payload: ConfirmPickupPayload): void {

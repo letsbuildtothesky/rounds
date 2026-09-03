@@ -322,6 +322,47 @@ abstract final class DriverE02Metrics {
   static const double arrivalWeight = 820.0;
 }
 
+abstract final class DriverE04E06Metrics {
+  static const String source = 'ux/driver/en/screens/ROUNDS-E04-E05-E06-LIVE-ROUND-CHANGE-v3-10OF10.html';
+
+  static const double topBarHeight = 64.0;
+  static const double topBarPaddingHorizontal = 18.0;
+  static const double topBarGap = 12.0;
+  static const double stateSize = 11.0;
+  static const double topTitleSize = 16.0;
+
+  static const double mapHeight = 370.0;
+  static const double compactMapHeight = 346.0;
+  static const double shortMapHeight = 286.0;
+
+  static const double panelPaddingTop = 20.0;
+  static const double panelPaddingHorizontal = 18.0;
+  static const double panelPaddingBottom = 16.0;
+  static const double compactPanelPaddingTop = 17.0;
+  static const double compactPanelPaddingHorizontal = 15.0;
+  static const double shortPanelPaddingTop = 15.0;
+  static const double titleSize = 31.0;
+  static const double compactTitleSize = 28.0;
+  static const double shortTitleSize = 27.0;
+  static const double diffTop = 18.0;
+  static const double shortDiffTop = 12.0;
+  static const double diffRowHeight = 62.0;
+  static const double shortDiffRowHeight = 52.0;
+  static const double impactTop = 15.0;
+  static const double shortImpactTop = 10.0;
+  static const double actionsTop = 18.0;
+  static const double shortActionsTop = 11.0;
+
+  static const double primaryHeight = 60.0;
+  static const double compactPrimaryHeight = 56.0;
+  static const double shortPrimaryHeight = 52.0;
+  static const double secondaryHeight = 48.0;
+  static const double shortSecondaryHeight = 44.0;
+  static const double actionRadius = 7.0;
+
+  static const double shortBreakpointHeight = 740.0;
+}
+
 abstract final class DriverF08Metrics {
   static const String source = 'ux/driver/en/screens/ROUNDS-F08-STOP-COMPLETE-NEXT-STOP-v4-10OF10.html';
 

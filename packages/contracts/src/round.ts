@@ -117,12 +117,14 @@ export type OperationsRoundStopDetail = {
   sequence: number;
   stopState: string;
   stopVersion: number;
+  destinationVersion: number;
   deliveryId: string;
   deliveryReference: string;
   deliveryState: string;
   recipientName: string;
   recipientPhone: string;
   rawAddress: string;
+  accessNote?: string;
   coordinate?: { latitude: number; longitude: number };
   windowStart: string;
   windowEnd: string;
@@ -137,6 +139,7 @@ export type OperationsRoundStopDetail = {
   completedAt?: string;
   openExceptionCount: number;
   operationsThreadId?: string;
+  latestLiveChange?: DriverLiveDeliveryChange;
 };
 
 export type OperationsRoundDetail = {
@@ -244,6 +247,107 @@ export type MoveRoundStopState = RoundStopMovedPayload & {
 };
 
 export type MoveRoundStopResult = CommandResult<MoveRoundStopState, RoundStopMovedEvent>;
+
+export type LiveDeliveryChangeValues = {
+  sequence?: number;
+  rawAddress?: string;
+  latitude?: number;
+  longitude?: number;
+  accessNote?: string;
+  windowStart?: string;
+  windowEnd?: string;
+};
+
+export type LiveDeliveryChangeRequest = {
+  roundId: string;
+  stopId: string;
+  expectedRoundVersion: number;
+  expectedStopVersion: number;
+  expectedDestinationVersion: number;
+  changes: LiveDeliveryChangeValues;
+};
+
+export type LiveDeliveryChangeImpact = {
+  distanceDeltaMeters: number;
+  durationDeltaSeconds: number;
+  etaBefore?: string;
+  etaAfter?: string;
+  finishBefore?: string;
+  finishAfter?: string;
+  downstreamStopCount: number;
+  promiseStatus: "safe" | "early" | "late";
+  shiftSafe: boolean;
+};
+
+export type LiveDeliveryChangePreview = {
+  tenantId: string;
+  calculatedAt: string;
+  roundId: string;
+  stopId: string;
+  applicable: boolean;
+  blockingReasons: string[];
+  before: Required<Pick<LiveDeliveryChangeValues, "sequence" | "rawAddress" | "latitude" | "longitude" | "windowStart" | "windowEnd">> & { accessNote?: string };
+  after: Required<Pick<LiveDeliveryChangeValues, "sequence" | "rawAddress" | "latitude" | "longitude" | "windowStart" | "windowEnd">> & { accessNote?: string };
+  impact?: LiveDeliveryChangeImpact;
+  routeAfter?: PlanningRoutePreview;
+  custody: { driverId: string; manifestId: string; manifestVersion: number; verified: true };
+};
+
+export type ApplyLiveDeliveryChangePayload = LiveDeliveryChangeRequest & {
+  before: LiveDeliveryChangePreview["before"];
+  after: LiveDeliveryChangePreview["after"];
+  impact: LiveDeliveryChangeImpact;
+  routePlan: PlanningRouteSnapshot;
+  stopOrderAfter: string[];
+};
+
+export type ApplyLiveDeliveryChangeCommand = CommandEnvelope<"delivery.apply_live_change", ApplyLiveDeliveryChangePayload>;
+
+export type LiveDeliveryChangedState = {
+  changeId: string;
+  changeVersion: number;
+  roundId: string;
+  roundVersion: number;
+  stopId: string;
+  stopVersion: number;
+  destinationVersion: number;
+  driverAckStatus: "pending";
+};
+
+export type LiveDeliveryChangedEvent = DomainEventEnvelope<"delivery.live_changed", LiveDeliveryChangedState>;
+export type ApplyLiveDeliveryChangeResult = CommandResult<LiveDeliveryChangedState, LiveDeliveryChangedEvent>;
+
+export type DriverLiveDeliveryChange = {
+  id: string;
+  changeVersion: number;
+  roundId: string;
+  stopId: string;
+  appliedAt: string;
+  before: LiveDeliveryChangePreview["before"];
+  after: LiveDeliveryChangePreview["after"];
+  impact: LiveDeliveryChangeImpact;
+  driverAckStatus: "pending" | "acknowledged";
+  acknowledgedAt?: string;
+};
+
+export type AcknowledgeLiveDeliveryChangePayload = {
+  changeId: string;
+  expectedChangeVersion: number;
+};
+
+export type AcknowledgeLiveDeliveryChangeCommand = CommandEnvelope<"driver.acknowledge_live_change", AcknowledgeLiveDeliveryChangePayload>;
+
+export type LiveDeliveryChangeAcknowledgedState = {
+  changeId: string;
+  changeVersion: number;
+  roundId: string;
+  stopId: string;
+  driverAckStatus: "acknowledged";
+  acknowledgedAt: string;
+};
+
+export type LiveDeliveryChangeAcknowledgedEvent = DomainEventEnvelope<"delivery.live_change_acknowledged", LiveDeliveryChangeAcknowledgedState>;
+export type AcknowledgeLiveDeliveryChangeResult = CommandResult<LiveDeliveryChangeAcknowledgedState, LiveDeliveryChangeAcknowledgedEvent>;
 
 export type PickupStopVerification = {
   stopId: string;
@@ -604,5 +708,6 @@ export type DriverSession = {
   driver: { id: string; preferredLocale: string; vehicleLabel?: string; vehiclePlate?: string };
   team?: { tenantId: string; displayName: string; status: "active" };
   currentRound?: DriverRound;
+  pendingLiveChange?: DriverLiveDeliveryChange;
   completedRounds?: DriverCompletedRound[];
 };

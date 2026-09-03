@@ -18,6 +18,7 @@ import type {
   OperationsCommunicationsGateway,
   PlanningRouteContextGateway,
   RoundMoveGateway,
+  LiveDeliveryChangeGateway,
   PodGateway,
 } from "./types.js";
 import type {
@@ -72,6 +73,11 @@ import type {
   SetDriverRecurringScheduleResult,
   SetDriverShiftExceptionCommand,
   SetDriverShiftExceptionResult,
+  ApplyLiveDeliveryChangeCommand,
+  ApplyLiveDeliveryChangeResult,
+  AcknowledgeLiveDeliveryChangeCommand,
+  AcknowledgeLiveDeliveryChangeResult,
+  DriverLiveDeliveryChange,
 } from "@rounds/contracts";
 
 type MembershipRow = {
@@ -186,7 +192,7 @@ function initials(displayName: string): string {
   return displayName.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]!.toUpperCase()).join("") || "DR";
 }
 
-export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway, RoundGateway, PickupGateway, DriverStopGateway, DriverCommunicationsGateway, OperationsCommunicationsGateway, PodGateway, OperationsHistoryGateway, OperationsActionGateway, OperationsDeliveriesGateway, OperationsDriversGateway, OperationsRoundDetailGateway, PlanningRouteContextGateway, RoundMoveGateway {
+export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway, RoundGateway, PickupGateway, DriverStopGateway, DriverCommunicationsGateway, OperationsCommunicationsGateway, PodGateway, OperationsHistoryGateway, OperationsActionGateway, OperationsDeliveriesGateway, OperationsDriversGateway, OperationsRoundDetailGateway, PlanningRouteContextGateway, RoundMoveGateway, LiveDeliveryChangeGateway {
   private readonly admin: SupabaseClient;
 
   constructor(
@@ -477,12 +483,18 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     type DetailStopRow = StopRow & { arrived_at: string | null; completed_at: string | null };
     type DetailDeliveryRow = {
       id: string; reference: string; state: string; pickup_location_id: string; recipient_name: string;
-      recipient_phone: string; destination_raw_address: string; destination_position: unknown;
+      recipient_phone: string; destination_raw_address: string; destination_position: unknown; access_note: string | null;
     };
     type DetailManifestRow = ManifestRow & { state: string };
     type DetailVerificationRow = { stop_id: string };
     type DetailExceptionRow = { stop_id: string };
     type DetailThreadRow = { id: string; stop_id: string; updated_at: string };
+    type DetailLiveChangeRow = {
+      id: string; stop_id: string; change_version: number; round_id: string; applied_at: string;
+      before_state: DriverLiveDeliveryChange["before"]; after_state: DriverLiveDeliveryChange["after"];
+      route_impact: DriverLiveDeliveryChange["impact"]; driver_ack_status: "pending" | "acknowledged";
+      acknowledged_at: string | null;
+    };
 
     const { data: round, error: roundError } = await this.admin.from("rounds")
       .select("id, tenant_id, reference, service_date, state, version, driver_id, route_plan_snapshot")
@@ -536,7 +548,7 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
       ...(currentPosition ? { currentPosition } : {}),
     };
 
-    const [stopResult, verificationResult, exceptionResult, threadResult] = await Promise.all([
+    const [stopResult, verificationResult, exceptionResult, threadResult, liveChangeResult] = await Promise.all([
       this.admin.from("delivery_stops").select("id, delivery_id, state, version, destination_version, arrived_at, completed_at")
         .eq("tenant_id", actor.tenantId).in("id", stopIds).returns<DetailStopRow[]>(),
       this.admin.from("manifest_verifications").select("stop_id").eq("tenant_id", actor.tenantId)
@@ -545,16 +557,21 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
         .eq("round_id", roundId).eq("status", "open").returns<DetailExceptionRow[]>(),
       this.admin.from("operations_threads").select("id, stop_id, updated_at").eq("tenant_id", actor.tenantId)
         .eq("round_id", roundId).order("updated_at", { ascending: false }).returns<DetailThreadRow[]>(),
+      this.admin.from("live_delivery_changes")
+        .select("id, stop_id, change_version, round_id, applied_at, before_state, after_state, route_impact, driver_ack_status, acknowledged_at")
+        .eq("tenant_id", actor.tenantId).eq("round_id", roundId)
+        .order("applied_at", { ascending: false }).returns<DetailLiveChangeRow[]>(),
     ]);
     if (stopResult.error) throw stopResult.error;
     if (verificationResult.error) throw verificationResult.error;
     if (exceptionResult.error) throw exceptionResult.error;
     if (threadResult.error) throw threadResult.error;
+    if (liveChangeResult.error) throw liveChangeResult.error;
     const stops = stopResult.data ?? [];
     const deliveryIds = [...new Set(stops.map((stop) => stop.delivery_id))];
 
     const [deliveryResult, promiseResult, manifestResult] = await Promise.all([
-      this.admin.from("deliveries").select("id, reference, state, pickup_location_id, recipient_name, recipient_phone, destination_raw_address, destination_position")
+      this.admin.from("deliveries").select("id, reference, state, pickup_location_id, recipient_name, recipient_phone, destination_raw_address, destination_position, access_note")
         .eq("tenant_id", actor.tenantId).in("id", deliveryIds).is("deleted_at", null).returns<DetailDeliveryRow[]>(),
       this.admin.from("delivery_promises").select("delivery_id, window_start, window_end")
         .eq("tenant_id", actor.tenantId).in("delivery_id", deliveryIds).returns<PromiseRow[]>(),
@@ -593,6 +610,22 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     for (const exception of exceptionResult.data ?? []) exceptionCountByStop.set(exception.stop_id, (exceptionCountByStop.get(exception.stop_id) ?? 0) + 1);
     const threadByStop = new Map<string, string>();
     for (const thread of threadResult.data ?? []) if (!threadByStop.has(thread.stop_id)) threadByStop.set(thread.stop_id, thread.id);
+    const liveChangeByStop = new Map<string, DriverLiveDeliveryChange>();
+    for (const change of liveChangeResult.data ?? []) {
+      if (liveChangeByStop.has(change.stop_id)) continue;
+      liveChangeByStop.set(change.stop_id, {
+        id: change.id,
+        changeVersion: change.change_version,
+        roundId: change.round_id,
+        stopId: change.stop_id,
+        appliedAt: change.applied_at,
+        before: change.before_state,
+        after: change.after_state,
+        impact: change.route_impact,
+        driverAckStatus: change.driver_ack_status,
+        ...(change.acknowledged_at ? { acknowledgedAt: change.acknowledged_at } : {}),
+      });
+    }
 
     const detailStops = ordered.flatMap((entry) => {
       const stop = stopById.get(entry.stop_id);
@@ -602,11 +635,12 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
       if (!stop || !delivery || !promise || !manifest) return [];
       const coordinate = parseDatabasePoint(delivery.destination_position);
       const operationsThreadId = threadByStop.get(stop.id);
+      const latestLiveChange = liveChangeByStop.get(stop.id);
       return [{
-        stopId: stop.id, sequence: entry.sequence, stopState: stop.state, stopVersion: stop.version,
+        stopId: stop.id, sequence: entry.sequence, stopState: stop.state, stopVersion: stop.version, destinationVersion: stop.destination_version,
         deliveryId: delivery.id, deliveryReference: delivery.reference, deliveryState: delivery.state,
         recipientName: delivery.recipient_name, recipientPhone: delivery.recipient_phone,
-        rawAddress: delivery.destination_raw_address, ...(coordinate ? { coordinate } : {}),
+        rawAddress: delivery.destination_raw_address, ...(delivery.access_note ? { accessNote: delivery.access_note } : {}), ...(coordinate ? { coordinate } : {}),
         windowStart: promise.window_start, windowEnd: promise.window_end,
         manifest: {
           id: manifest.id, state: manifest.state, version: manifest.version,
@@ -621,6 +655,7 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
         ...(stop.completed_at ? { completedAt: stop.completed_at } : {}),
         openExceptionCount: exceptionCountByStop.get(stop.id) ?? 0,
         ...(operationsThreadId ? { operationsThreadId } : {}),
+        ...(latestLiveChange ? { latestLiveChange } : {}),
       }];
     });
 
@@ -828,6 +863,28 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     });
     if (error) throw error;
     return data as MoveRoundStopResult;
+  }
+
+  async applyLiveDeliveryChange(command: ApplyLiveDeliveryChangeCommand, actor: ActorContext): Promise<ApplyLiveDeliveryChangeResult> {
+    const { data, error } = await this.admin.rpc("apply_live_delivery_change_command", {
+      p_command: command,
+      p_actor_person_id: actor.personId,
+    });
+    if (error) throw error;
+    return data as ApplyLiveDeliveryChangeResult;
+  }
+
+  async acknowledgeLiveDeliveryChange(command: AcknowledgeLiveDeliveryChangeCommand, identity: AuthenticatedIdentity): Promise<AcknowledgeLiveDeliveryChangeResult> {
+    const { data: linked, error: linkedError } = await this.admin.from("auth_identities")
+      .select("person_id").eq("auth_user_id", identity.authUserId).maybeSingle<{ person_id: string }>();
+    if (linkedError) throw linkedError;
+    if (!linked) return { status: "rejected", error: { code: "NOT_AUTHORIZED", message: "Driver identity is unavailable" } };
+    const { data, error } = await this.admin.rpc("acknowledge_live_delivery_change_command", {
+      p_command: command,
+      p_actor_person_id: linked.person_id,
+    });
+    if (error) throw error;
+    return data as AcknowledgeLiveDeliveryChangeResult;
   }
 
   async getPlanningRouteContext(
@@ -2051,6 +2108,28 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
       },
       stops: driverStops,
       ...(round.route_plan_snapshot ? { routePlan: round.route_plan_snapshot } : {}),
+    };
+    const { data: pendingChange, error: pendingChangeError } = await this.admin.from("live_delivery_changes")
+      .select("id, change_version, round_id, stop_id, applied_at, before_state, after_state, route_impact, driver_ack_status, acknowledged_at")
+      .eq("tenant_id", tenant.id).eq("driver_id", driver.id).eq("round_id", round.id)
+      .eq("driver_ack_status", "pending").order("applied_at", { ascending: false }).limit(1)
+      .maybeSingle<{
+        id: string; change_version: number; round_id: string; stop_id: string; applied_at: string;
+        before_state: DriverLiveDeliveryChange["before"]; after_state: DriverLiveDeliveryChange["after"];
+        route_impact: DriverLiveDeliveryChange["impact"]; driver_ack_status: "pending" | "acknowledged"; acknowledged_at: string | null;
+      }>();
+    if (pendingChangeError) throw pendingChangeError;
+    if (pendingChange) session.pendingLiveChange = {
+      id: pendingChange.id,
+      changeVersion: pendingChange.change_version,
+      roundId: pendingChange.round_id,
+      stopId: pendingChange.stop_id,
+      appliedAt: pendingChange.applied_at,
+      before: pendingChange.before_state,
+      after: pendingChange.after_state,
+      impact: pendingChange.route_impact,
+      driverAckStatus: pendingChange.driver_ack_status,
+      ...(pendingChange.acknowledged_at ? { acknowledgedAt: pendingChange.acknowledged_at } : {}),
     };
     return session;
   }

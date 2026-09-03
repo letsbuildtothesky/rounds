@@ -40,6 +40,8 @@ class HarnessAppController extends ChangeNotifier {
   DriverSyncSnapshot _syncSnapshot = const DriverSyncSnapshot.online();
   bool _showConnectionSurface = false;
   StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
+  Timer? _sessionRefreshTimer;
+  bool _silentRefreshRunning = false;
 
   HarnessLocale get locale => _locale;
   bool get hasSelectedLanguage => _hasSelectedLanguage;
@@ -84,6 +86,7 @@ class HarnessAppController extends ChangeNotifier {
     if (controller.driverConfigured) {
       await controller._restoreCachedSession();
       await controller._startConnectivityMonitoring();
+      controller._startSessionRefresh();
     }
     return controller;
   }
@@ -156,6 +159,37 @@ class HarnessAppController extends ChangeNotifier {
     await restoreDriverSession();
   }
 
+  void _startSessionRefresh() {
+    _sessionRefreshTimer?.cancel();
+    _sessionRefreshTimer = Timer.periodic(
+      const Duration(seconds: 10),
+      (_) => unawaited(_refreshDriverSessionQuietly()),
+    );
+  }
+
+  Future<void> _refreshDriverSessionQuietly() async {
+    if (_driverSession == null || _driverLoading || _silentRefreshRunning) {
+      return;
+    }
+    _silentRefreshRunning = true;
+    try {
+      final refreshed = await _driverApi.restore().timeout(
+        const Duration(seconds: 8),
+      );
+      if (refreshed == null) return;
+      final changed =
+          jsonEncode(refreshed.toJson()) !=
+          jsonEncode(_driverSession!.toJson());
+      _driverSession = refreshed;
+      await _saveSession(refreshed);
+      if (changed) notifyListeners();
+    } catch (_) {
+      // Connectivity monitoring owns the visible offline/reconnecting state.
+    } finally {
+      _silentRefreshRunning = false;
+    }
+  }
+
   Future<void> signOutDriver() async {
     await _driverApi.signOut();
     _driverSession = null;
@@ -222,6 +256,11 @@ class HarnessAppController extends ChangeNotifier {
     () =>
         _driverApi.sendOperationsMessage(round: round, stop: stop, body: body),
   );
+
+  Future<DriverCommandOutcome?> acknowledgeLiveDeliveryChange(
+    DriverLiveDeliveryChangeModel change,
+  ) =>
+      _runDriverCommand(() => _driverApi.acknowledgeLiveDeliveryChange(change));
 
   Future<List<DriverContactAttemptModel>> pendingContactAttempts(
     DriverRoundStopModel stop,
@@ -429,6 +468,7 @@ class HarnessAppController extends ChangeNotifier {
 
   @override
   void dispose() {
+    _sessionRefreshTimer?.cancel();
     unawaited(_connectivitySubscription?.cancel());
     super.dispose();
   }

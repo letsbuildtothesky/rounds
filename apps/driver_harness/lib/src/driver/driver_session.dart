@@ -8,6 +8,7 @@ class DriverSessionModel {
     this.vehiclePlate,
     this.completedRounds = const [],
     this.currentRound,
+    this.pendingLiveChange,
   });
 
   final String userName;
@@ -18,6 +19,7 @@ class DriverSessionModel {
   final String? vehiclePlate;
   final List<DriverCompletedRoundModel> completedRounds;
   final DriverRoundModel? currentRound;
+  final DriverLiveDeliveryChangeModel? pendingLiveChange;
 
   factory DriverSessionModel.fromJson(Map<String, dynamic> json) {
     final user = json['user'] as Map<String, dynamic>;
@@ -41,6 +43,11 @@ class DriverSessionModel {
       currentRound: round is Map<String, dynamic>
           ? DriverRoundModel.fromJson(round)
           : null,
+      pendingLiveChange: json['pendingLiveChange'] is Map<String, dynamic>
+          ? DriverLiveDeliveryChangeModel.fromJson(
+              json['pendingLiveChange'] as Map<String, dynamic>,
+            )
+          : null,
     );
   }
 
@@ -57,6 +64,150 @@ class DriverSessionModel {
         .map((round) => round.toJson())
         .toList(growable: false),
     'currentRound': currentRound?.toJson(),
+    if (pendingLiveChange != null)
+      'pendingLiveChange': pendingLiveChange!.toJson(),
+  };
+}
+
+class DriverLiveDeliveryChangeModel {
+  const DriverLiveDeliveryChangeModel({
+    required this.id,
+    required this.changeVersion,
+    required this.roundId,
+    required this.stopId,
+    required this.appliedAt,
+    required this.before,
+    required this.after,
+    required this.impact,
+  });
+
+  final String id;
+  final int changeVersion;
+  final String roundId;
+  final String stopId;
+  final DateTime appliedAt;
+  final DriverLiveDeliveryValuesModel before;
+  final DriverLiveDeliveryValuesModel after;
+  final DriverLiveDeliveryImpactModel impact;
+
+  factory DriverLiveDeliveryChangeModel.fromJson(Map<String, dynamic> json) =>
+      DriverLiveDeliveryChangeModel(
+        id: json['id'] as String,
+        changeVersion: json['changeVersion'] as int,
+        roundId: json['roundId'] as String,
+        stopId: json['stopId'] as String,
+        appliedAt: DateTime.parse(json['appliedAt'] as String),
+        before: DriverLiveDeliveryValuesModel.fromJson(
+          json['before'] as Map<String, dynamic>,
+        ),
+        after: DriverLiveDeliveryValuesModel.fromJson(
+          json['after'] as Map<String, dynamic>,
+        ),
+        impact: DriverLiveDeliveryImpactModel.fromJson(
+          json['impact'] as Map<String, dynamic>,
+        ),
+      );
+
+  Map<String, Object?> toJson() => {
+    'id': id,
+    'changeVersion': changeVersion,
+    'roundId': roundId,
+    'stopId': stopId,
+    'appliedAt': appliedAt.toUtc().toIso8601String(),
+    'before': before.toJson(),
+    'after': after.toJson(),
+    'impact': impact.toJson(),
+    'driverAckStatus': 'pending',
+  };
+}
+
+class DriverLiveDeliveryValuesModel {
+  const DriverLiveDeliveryValuesModel({
+    required this.sequence,
+    required this.rawAddress,
+    required this.latitude,
+    required this.longitude,
+    required this.windowStart,
+    required this.windowEnd,
+    this.accessNote,
+  });
+
+  final int sequence;
+  final String rawAddress;
+  final double latitude;
+  final double longitude;
+  final String windowStart;
+  final String windowEnd;
+  final String? accessNote;
+
+  factory DriverLiveDeliveryValuesModel.fromJson(Map<String, dynamic> json) =>
+      DriverLiveDeliveryValuesModel(
+        sequence: json['sequence'] as int,
+        rawAddress: json['rawAddress'] as String,
+        latitude: (json['latitude'] as num).toDouble(),
+        longitude: (json['longitude'] as num).toDouble(),
+        windowStart: json['windowStart'] as String,
+        windowEnd: json['windowEnd'] as String,
+        accessNote: json['accessNote'] as String?,
+      );
+
+  Map<String, Object?> toJson() => {
+    'sequence': sequence,
+    'rawAddress': rawAddress,
+    'latitude': latitude,
+    'longitude': longitude,
+    if (accessNote != null) 'accessNote': accessNote,
+    'windowStart': windowStart,
+    'windowEnd': windowEnd,
+  };
+}
+
+class DriverLiveDeliveryImpactModel {
+  const DriverLiveDeliveryImpactModel({
+    required this.distanceDeltaMeters,
+    required this.durationDeltaSeconds,
+    required this.downstreamStopCount,
+    required this.promiseStatus,
+    required this.shiftSafe,
+    this.etaBefore,
+    this.etaAfter,
+    this.finishBefore,
+    this.finishAfter,
+  });
+
+  final int distanceDeltaMeters;
+  final int durationDeltaSeconds;
+  final int downstreamStopCount;
+  final String promiseStatus;
+  final bool shiftSafe;
+  final String? etaBefore;
+  final String? etaAfter;
+  final String? finishBefore;
+  final String? finishAfter;
+
+  factory DriverLiveDeliveryImpactModel.fromJson(Map<String, dynamic> json) =>
+      DriverLiveDeliveryImpactModel(
+        distanceDeltaMeters: (json['distanceDeltaMeters'] as num).round(),
+        durationDeltaSeconds: (json['durationDeltaSeconds'] as num).round(),
+        downstreamStopCount: json['downstreamStopCount'] as int,
+        promiseStatus: json['promiseStatus'] as String,
+        shiftSafe: json['shiftSafe'] as bool,
+        etaBefore: json['etaBefore'] as String?,
+        etaAfter: json['etaAfter'] as String?,
+        finishBefore: json['finishBefore'] as String?,
+        finishAfter: json['finishAfter'] as String?,
+      );
+
+  Map<String, Object?> toJson() => {
+    'distanceDeltaMeters': distanceDeltaMeters,
+    'durationDeltaSeconds': durationDeltaSeconds,
+    'downstreamStopCount': downstreamStopCount,
+    'promiseStatus': promiseStatus,
+    'shiftSafe': shiftSafe,
+    if (etaBefore != null) 'etaBefore': etaBefore,
+    if (etaAfter != null) 'etaAfter': etaAfter,
+    if (finishBefore != null) 'finishBefore': finishBefore,
+    if (finishAfter != null) 'finishAfter': finishAfter,
   };
 }
 
