@@ -6,6 +6,7 @@ import '../../app/harness_app_controller.dart';
 import '../../driver/driver_session.dart';
 import '../delivery_package_problem_screen.dart';
 import '../location_problem_screen.dart';
+import '../recipient_unavailable_screen.dart';
 import 'operations_contact_flow.dart';
 
 class DeliveryIssueDraft {
@@ -65,6 +66,21 @@ Future<bool> openDeliveryIssueFlow(
       ),
     );
     return false;
+  }
+
+  if (draft.category == 'Recipient unavailable') {
+    if (controller == null) return false;
+    return await Navigator.of(context).push<bool>(
+          MaterialPageRoute(
+            builder: (_) => RecipientUnavailableScreen(
+              controller: controller,
+              round: round,
+              stop: stop,
+              launcher: launcher,
+            ),
+          ),
+        ) ??
+        false;
   }
 
   final phone = round.pickup.contactPhone.trim();

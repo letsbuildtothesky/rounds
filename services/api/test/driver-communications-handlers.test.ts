@@ -3,11 +3,14 @@ import test from "node:test";
 import type {
   DriverOperationsThread,
   DriverSession,
+  LogContactAttemptCommand,
+  LogContactAttemptResult,
   OperationsSession,
   SendDriverMessageCommand,
   SendDriverMessageResult,
 } from "@rounds/contracts";
 import { driverOperationsThreadHandler } from "../src/driver-operations-thread-handler.js";
+import { logContactAttemptHandler } from "../src/log-contact-attempt-handler.js";
 import { sendDriverMessageHandler } from "../src/send-driver-message-handler.js";
 import type {
   ActorContext,
@@ -65,6 +68,7 @@ const session: DriverSession = {
 class FakeCommunicationsGateway implements IdentityGateway, DriverCommunicationsGateway {
   driverSession: DriverSession | null = session;
   command: SendDriverMessageCommand | null = null;
+  contactCommand: LogContactAttemptCommand | null = null;
   readonly thread: DriverOperationsThread = { id: threadId, roundId, stopId, version: 3, messages: [] };
   async authenticate(): Promise<AuthenticatedIdentity | null> { return { authUserId: "auth-user" }; }
   async authorizeTenant(): Promise<ActorContext | null> { return null; }
@@ -83,6 +87,27 @@ class FakeCommunicationsGateway implements IdentityGateway, DriverCommunications
           sender: "driver",
           body: command.payload.body,
           sentAt: "2026-09-02T03:00:00Z",
+        },
+      },
+      events: [],
+    };
+  }
+  async logContactAttempt(command: LogContactAttemptCommand): Promise<LogContactAttemptResult> {
+    this.contactCommand = command;
+    return {
+      status: "committed",
+      aggregateVersion: command.expectedVersion,
+      state: {
+        stopId,
+        deliveryId: "10000000-0000-4000-8000-000000000013",
+        roundId,
+        operationsThreadId: threadId,
+        attempt: {
+          id: "10000000-0000-4000-8000-000000000031",
+          target: command.payload.target,
+          channel: command.payload.channel,
+          outcome: command.payload.outcome,
+          occurredAt: "2026-09-02T03:00:00Z",
         },
       },
       events: [],
@@ -130,4 +155,21 @@ test("driver cannot read a thread outside the current assignment", async () => {
     headers: { authorization: "Bearer token" },
   }), roundId, stopId, dependencies(gateway));
   assert.equal(response.status, 403);
+});
+
+test("assigned driver records a native recipient-call outcome", async () => {
+  const gateway = new FakeCommunicationsGateway();
+  const response = await logContactAttemptHandler(new Request("http://test/contact-attempts", {
+    method: "POST",
+    headers: {
+      authorization: "Bearer token",
+      "content-type": "application/json",
+      "idempotency-key": "contact:one",
+    },
+    body: JSON.stringify({ target: "recipient", channel: "native_phone", outcome: "no_answer" }),
+  }), stopId, dependencies(gateway));
+  assert.equal(response.status, 201);
+  assert.equal(gateway.contactCommand?.aggregateId, stopId);
+  assert.equal(gateway.contactCommand?.expectedVersion, 4);
+  assert.equal(gateway.contactCommand?.payload.outcome, "no_answer");
 });

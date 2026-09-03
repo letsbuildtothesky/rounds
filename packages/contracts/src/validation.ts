@@ -1,9 +1,13 @@
 import type { CreateDeliveryCommand, CreateDeliveryPayload } from "./delivery.js";
-import type {
-  SendDriverMessageCommand,
-  SendDriverMessagePayload,
-  SendOperationsMessageCommand,
-  SendOperationsMessagePayload,
+import {
+  contactOutcomes,
+  contactTargets,
+  type LogContactAttemptCommand,
+  type LogContactAttemptPayload,
+  type SendDriverMessageCommand,
+  type SendDriverMessagePayload,
+  type SendOperationsMessageCommand,
+  type SendOperationsMessagePayload,
 } from "./communications.js";
 import type { LocationBatch, PositionSample } from "./location.js";
 import {
@@ -208,6 +212,20 @@ export function validateSendOperationsMessageCommand(command: SendOperationsMess
     throw new ContractError("SendOperationsMessage expectedVersion must be a positive integer");
   }
   validateSendOperationsMessagePayload(command.payload);
+}
+
+export function validateLogContactAttemptPayload(payload: LogContactAttemptPayload): void {
+  if (!contactTargets.includes(payload.target)) throw new ContractError("contact target is not supported");
+  if (payload.channel !== "native_phone") throw new ContractError("contact channel is not supported");
+  if (!contactOutcomes.includes(payload.outcome)) throw new ContractError("contact outcome is not supported");
+}
+
+export function validateLogContactAttemptCommand(command: LogContactAttemptCommand): void {
+  if (command.schemaVersion !== 1 || command.commandType !== "stop.log_contact_attempt") {
+    throw new ContractError("unsupported LogContactAttempt command envelope");
+  }
+  validateStopCommandEnvelope(command, "LogContactAttempt");
+  validateLogContactAttemptPayload(command.payload);
 }
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -644,7 +662,7 @@ export function validateCompleteStopPodCommand(command: CompleteStopPodCommand):
 }
 
 function validateStopCommandEnvelope(
-  command: ReportPickupProblemCommand | ReportDeliveryProblemCommand | ReportLocationProblemCommand | ConfirmStopArrivalCommand | CompleteStopPodCommand,
+  command: ReportPickupProblemCommand | ReportDeliveryProblemCommand | ReportLocationProblemCommand | ConfirmStopArrivalCommand | CompleteStopPodCommand | LogContactAttemptCommand,
   name: string,
 ): void {
   assertUuid(command.commandId, "commandId");

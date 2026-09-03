@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../app/driver_design_system.dart';
+import '../../app/harness_app_controller.dart';
 import '../../driver/driver_session.dart';
+import '../call_contact_screen.dart';
 import 'rounds_action_drawer.dart';
 
 typedef RoundsExternalLauncher = Future<bool> Function(Uri uri);
@@ -12,6 +14,7 @@ Future<void> openOperationsContactFlow(
   BuildContext context, {
   required DriverRoundModel round,
   required DriverRoundStopModel stop,
+  HarnessAppController? controller,
   RoundsOperationsMessageAction? onMessage,
   RoundsExternalLauncher launcher = _launchExternal,
 }) async {
@@ -38,15 +41,29 @@ Future<void> openOperationsContactFlow(
     return;
   }
 
+  if (action == 'call' && controller != null) {
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder: (_) => CallContactScreen(
+          controller: controller,
+          round: round,
+          stop: stop,
+          target: CallContactTarget.operations,
+          onMessageOperations: onMessage,
+          launcher: launcher,
+        ),
+      ),
+    );
+    return;
+  }
+
   final phone = round.pickup.contactPhone.trim();
   final uri = action == 'call'
       ? Uri(scheme: 'tel', path: phone)
       : Uri(
           scheme: 'sms',
           path: phone,
-          queryParameters: {
-            'body': _operationsMessage(round: round, stop: stop),
-          },
+          queryParameters: {'body': _operationsMessage(round: round, stop: stop)},
         );
   final opened = phone.isNotEmpty && await launcher(uri);
   if (!opened && context.mounted) {

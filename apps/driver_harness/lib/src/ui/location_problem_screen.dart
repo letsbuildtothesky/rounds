@@ -11,6 +11,7 @@ import '../driver/driver_api.dart';
 import '../driver/driver_session.dart';
 import 'components/rounds_action_drawer.dart';
 import 'operations_chat_screen.dart';
+import 'call_contact_screen.dart';
 
 class DriverLocationEvidence {
   const DriverLocationEvidence({
@@ -606,6 +607,20 @@ class _LocationProblemScreenState extends State<LocationProblemScreen> {
   );
 
   Future<void> _callContact() async {
+    if (!_pickup) {
+      await Navigator.of(context).push<void>(
+        MaterialPageRoute(
+          builder: (_) => CallContactScreen(
+            controller: widget.controller,
+            round: widget.round,
+            stop: widget.stop,
+            target: CallContactTarget.recipient,
+            launcher: widget.launcher,
+          ),
+        ),
+      );
+      return;
+    }
     final phone = _pickup
         ? widget.round.pickup.contactPhone.trim()
         : widget.stop.recipientPhone.trim();

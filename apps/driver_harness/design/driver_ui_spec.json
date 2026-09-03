@@ -366,6 +366,90 @@
         "remainingMarginTop": 7
       }
     },
+    "G01": {
+      "source": "ux/driver/en/screens/ROUNDS-G01-RECIPIENT-UNAVAILABLE-v2-10OF10.html",
+      "topBar": {
+        "height": 66,
+        "paddingHorizontal": 20,
+        "buttonSize": 42,
+        "columnGap": 13,
+        "eyebrowSize": 12,
+        "eyebrowTracking": 0.96,
+        "titleGap": 3,
+        "titleSize": 17,
+        "iconSize": 25
+      },
+      "content": {
+        "paddingTop": 24,
+        "paddingHorizontal": 22,
+        "paddingBottom": 24,
+        "issueDotSize": 9,
+        "issueGap": 9,
+        "issueSize": 12,
+        "issueTracking": 1.56,
+        "heroGap": 12,
+        "heroSize": 39,
+        "heroHeight": 0.98,
+        "heroTracking": -2.145,
+        "locationGap": 12,
+        "locationSize": 16,
+        "locationHeight": 1.35,
+        "sectionGap": 29
+      },
+      "recipient": {
+        "marginTop": 27,
+        "paddingTop": 20,
+        "columnGap": 18,
+        "eyebrowSize": 11,
+        "eyebrowTracking": 1.21,
+        "eyebrowBottom": 5,
+        "nameSize": 23,
+        "nameHeight": 1.05,
+        "nameTracking": -0.805,
+        "noteGap": 7,
+        "noteSize": 14,
+        "noteHeight": 1.35,
+        "itemPaddingTop": 17,
+        "itemDotSize": 8,
+        "itemDotGap": 7,
+        "itemSize": 13
+      },
+      "ledger": {
+        "titleSize": 13,
+        "titleTracking": 1.17,
+        "titleBottom": 9,
+        "emptyHeight": 62,
+        "rowHeight": 61,
+        "timeColumnWidth": 56,
+        "timeSize": 13,
+        "titleSizeRow": 14.5,
+        "outcomeSize": 13
+      },
+      "footer": {
+        "paddingTop": 11,
+        "paddingHorizontal": 22,
+        "paddingBottom": 18,
+        "primaryHeight": 62,
+        "primaryRadius": 7,
+        "secondaryHeight": 48,
+        "secondaryGap": 8
+      },
+      "sheet": {
+        "radius": 22,
+        "paddingTop": 10,
+        "paddingHorizontal": 18,
+        "paddingBottom": 18,
+        "handleWidth": 42,
+        "handleHeight": 4,
+        "handleBottom": 18,
+        "titleSize": 22,
+        "titleBottom": 12,
+        "rowHeight": 64,
+        "rowPaddingHorizontal": 4,
+        "rowSize": 16,
+        "detailSize": 13
+      }
+    },
     "G02": {
       "source": "ux/driver/en/screens/ROUNDS-G02-ADDRESS-PROBLEM-v2-10OF10.html",
       "topBar": {

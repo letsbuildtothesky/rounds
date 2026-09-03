@@ -2,9 +2,37 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   ContractError,
+  validateLogContactAttemptCommand,
   validateSendDriverMessageCommand,
   validateSendOperationsMessageCommand,
 } from "../src/index.js";
+
+test("accepts a typed native-phone outcome", () => {
+  assert.doesNotThrow(() => validateLogContactAttemptCommand({
+    schemaVersion: 1,
+    commandType: "stop.log_contact_attempt",
+    commandId: "10000000-0000-4000-8000-000000000051",
+    traceId: "10000000-0000-4000-8000-000000000052",
+    idempotencyKey: "contact:one",
+    tenantId: "10000000-0000-4000-8000-000000000001",
+    aggregateId: "10000000-0000-4000-8000-000000000011",
+    expectedVersion: 4,
+    occurredFromDeviceAt: "2026-09-03T04:00:00Z",
+    payload: { target: "recipient", channel: "native_phone", outcome: "no_answer" },
+  }));
+  assert.throws(() => validateLogContactAttemptCommand({
+    schemaVersion: 1,
+    commandType: "stop.log_contact_attempt",
+    commandId: "10000000-0000-4000-8000-000000000051",
+    traceId: "10000000-0000-4000-8000-000000000052",
+    idempotencyKey: "contact:bad",
+    tenantId: "10000000-0000-4000-8000-000000000001",
+    aggregateId: "10000000-0000-4000-8000-000000000011",
+    expectedVersion: 4,
+    occurredFromDeviceAt: "2026-09-03T04:00:00Z",
+    payload: { target: "recipient", channel: "native_phone", outcome: "connected" as never },
+  }), ContractError);
+});
 
 const base = {
   schemaVersion: 1 as const,

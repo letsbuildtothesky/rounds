@@ -118,6 +118,7 @@ class DriverRoundStopModel {
     required this.windowStart,
     required this.windowEnd,
     required this.manifestItems,
+    this.contactAttempts = const [],
     this.accessNote,
   });
 
@@ -137,33 +138,67 @@ class DriverRoundStopModel {
   final String windowStart;
   final String windowEnd;
   final List<DriverManifestItemModel> manifestItems;
+  final List<DriverContactAttemptModel> contactAttempts;
   final String? accessNote;
 
-  factory DriverRoundStopModel.fromJson(Map<String, dynamic> json) =>
-      DriverRoundStopModel(
+  factory DriverRoundStopModel.fromJson(
+    Map<String, dynamic> json,
+  ) => DriverRoundStopModel(
+    id: json['id'] as String,
+    sequence: json['sequence'] as int,
+    state: json['state'] as String,
+    version: json['version'] as int,
+    destinationVersion: json['destinationVersion'] as int,
+    manifestId: json['manifestId'] as String,
+    manifestVersion: json['manifestVersion'] as int,
+    deliveryReference: json['deliveryReference'] as String,
+    recipientName: json['recipientName'] as String,
+    recipientPhone: json['recipientPhone'] as String,
+    rawAddress: json['rawAddress'] as String,
+    latitude: (json['latitude'] as num).toDouble(),
+    longitude: (json['longitude'] as num).toDouble(),
+    windowStart: json['windowStart'] as String,
+    windowEnd: json['windowEnd'] as String,
+    accessNote: json['accessNote'] as String?,
+    manifestItems: (json['manifestItems'] as List<dynamic>)
+        .map(
+          (item) =>
+              DriverManifestItemModel.fromJson(item as Map<String, dynamic>),
+        )
+        .toList(growable: false),
+    contactAttempts: (json['contactAttempts'] as List<dynamic>? ?? const [])
+        .map(
+          (item) =>
+              DriverContactAttemptModel.fromJson(item as Map<String, dynamic>),
+        )
+        .toList(growable: false),
+  );
+}
+
+class DriverContactAttemptModel {
+  const DriverContactAttemptModel({
+    required this.id,
+    required this.target,
+    required this.channel,
+    required this.outcome,
+    required this.occurredAt,
+    this.savedLocally = false,
+  });
+
+  final String id;
+  final String target;
+  final String channel;
+  final String outcome;
+  final DateTime occurredAt;
+  final bool savedLocally;
+
+  factory DriverContactAttemptModel.fromJson(Map<String, dynamic> json) =>
+      DriverContactAttemptModel(
         id: json['id'] as String,
-        sequence: json['sequence'] as int,
-        state: json['state'] as String,
-        version: json['version'] as int,
-        destinationVersion: json['destinationVersion'] as int,
-        manifestId: json['manifestId'] as String,
-        manifestVersion: json['manifestVersion'] as int,
-        deliveryReference: json['deliveryReference'] as String,
-        recipientName: json['recipientName'] as String,
-        recipientPhone: json['recipientPhone'] as String,
-        rawAddress: json['rawAddress'] as String,
-        latitude: (json['latitude'] as num).toDouble(),
-        longitude: (json['longitude'] as num).toDouble(),
-        windowStart: json['windowStart'] as String,
-        windowEnd: json['windowEnd'] as String,
-        accessNote: json['accessNote'] as String?,
-        manifestItems: (json['manifestItems'] as List<dynamic>)
-            .map(
-              (item) => DriverManifestItemModel.fromJson(
-                item as Map<String, dynamic>,
-              ),
-            )
-            .toList(growable: false),
+        target: json['target'] as String,
+        channel: json['channel'] as String,
+        outcome: json['outcome'] as String,
+        occurredAt: DateTime.parse(json['occurredAt'] as String),
       );
 }
 

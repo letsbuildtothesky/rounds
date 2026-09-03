@@ -14,6 +14,7 @@ Implemented now:
 - `POST /v1/rounds` manual ordered Team Round approval;
 - `GET /v1/driver/session` authenticated assigned/current Round projection;
 - `POST /v1/driver/rounds/:roundId/pickup` exact manifest verification and custody commit;
+- `POST /v1/driver/stops/:stopId/contact-attempts` audited native-phone outcome selected by the assigned Driver;
 - `POST /v1/driver/stops/:stopId/location-problem` typed pickup/delivery location observation with optional real-device GPS evidence and an explicit Operations hold;
 - Supabase access-token verification;
 - active tenant-membership authorization;
@@ -53,6 +54,12 @@ manifest and destination version, and creates an audited Operations exception
 and thread entry. Existing generic exception resolvers are blocked from
 resolving these categories until the address-correction and Driver-
 acknowledgement policies in GAP-006/GAP-007 are approved.
+
+Contact-attempt reporting records the Driver-selected result of a native phone
+handoff (`reached`, `no_answer`, `busy` or `call_failed`). It is not carrier or
+telephony-provider proof. Each attempt is authenticated, tenant-scoped,
+versioned and idempotent, and is projected into both the Driver Stop ledger and
+the Operations communication thread without changing Stop or custody state.
 
 ## Commands
 

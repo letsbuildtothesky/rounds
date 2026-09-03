@@ -352,6 +352,85 @@ abstract final class DriverF08Metrics {
   static const double remainingMarginTop = 7.0;
 }
 
+abstract final class DriverG01Metrics {
+  static const String source = 'ux/driver/en/screens/ROUNDS-G01-RECIPIENT-UNAVAILABLE-v2-10OF10.html';
+
+  static const double topBarHeight = 66.0;
+  static const double topBarPaddingHorizontal = 20.0;
+  static const double topButtonSize = 42.0;
+  static const double topColumnGap = 13.0;
+  static const double topEyebrowSize = 12.0;
+  static const double topEyebrowTracking = 0.96;
+  static const double topTitleGap = 3.0;
+  static const double topTitleSize = 17.0;
+  static const double topIconSize = 25.0;
+
+  static const double contentPaddingTop = 24.0;
+  static const double contentPaddingHorizontal = 22.0;
+  static const double contentPaddingBottom = 24.0;
+  static const double issueDotSize = 9.0;
+  static const double issueGap = 9.0;
+  static const double issueSize = 12.0;
+  static const double issueTracking = 1.56;
+  static const double heroGap = 12.0;
+  static const double heroSize = 39.0;
+  static const double heroHeight = 0.98;
+  static const double heroTracking = -2.145;
+  static const double locationGap = 12.0;
+  static const double locationSize = 16.0;
+  static const double locationHeight = 1.35;
+  static const double sectionGap = 29.0;
+
+  static const double recipientMarginTop = 27.0;
+  static const double recipientPaddingTop = 20.0;
+  static const double recipientColumnGap = 18.0;
+  static const double recipientEyebrowSize = 11.0;
+  static const double recipientEyebrowTracking = 1.21;
+  static const double recipientEyebrowBottom = 5.0;
+  static const double recipientNameSize = 23.0;
+  static const double recipientNameHeight = 1.05;
+  static const double recipientNameTracking = -0.805;
+  static const double recipientNoteGap = 7.0;
+  static const double recipientNoteSize = 14.0;
+  static const double recipientNoteHeight = 1.35;
+  static const double itemPaddingTop = 17.0;
+  static const double itemDotSize = 8.0;
+  static const double itemDotGap = 7.0;
+  static const double itemSize = 13.0;
+
+  static const double ledgerTitleSize = 13.0;
+  static const double ledgerTitleTracking = 1.17;
+  static const double ledgerTitleBottom = 9.0;
+  static const double ledgerEmptyHeight = 62.0;
+  static const double ledgerRowHeight = 61.0;
+  static const double ledgerTimeColumnWidth = 56.0;
+  static const double ledgerTimeSize = 13.0;
+  static const double ledgerRowTitleSize = 14.5;
+  static const double ledgerOutcomeSize = 13.0;
+
+  static const double footerPaddingTop = 11.0;
+  static const double footerPaddingHorizontal = 22.0;
+  static const double footerPaddingBottom = 18.0;
+  static const double primaryHeight = 62.0;
+  static const double primaryRadius = 7.0;
+  static const double secondaryHeight = 48.0;
+  static const double secondaryGap = 8.0;
+
+  static const double sheetRadius = 22.0;
+  static const double sheetPaddingTop = 10.0;
+  static const double sheetPaddingHorizontal = 18.0;
+  static const double sheetPaddingBottom = 18.0;
+  static const double sheetHandleWidth = 42.0;
+  static const double sheetHandleHeight = 4.0;
+  static const double sheetHandleBottom = 18.0;
+  static const double sheetTitleSize = 22.0;
+  static const double sheetTitleBottom = 12.0;
+  static const double sheetRowHeight = 64.0;
+  static const double sheetRowPaddingHorizontal = 4.0;
+  static const double sheetRowSize = 16.0;
+  static const double sheetDetailSize = 13.0;
+}
+
 abstract final class DriverG02Metrics {
   static const String source = 'ux/driver/en/screens/ROUNDS-G02-ADDRESS-PROBLEM-v2-10OF10.html';
 

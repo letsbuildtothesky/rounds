@@ -191,6 +191,49 @@ class DriverApi {
     );
   }
 
+  Future<List<DriverContactAttemptModel>> pendingContactAttempts(
+    DriverRoundStopModel stop,
+  ) async {
+    final records = await (await _commandOutbox()).pendingByType(
+      'stop.log_contact_attempt',
+    );
+    return records
+        .where((record) => record.aggregateId == stop.id)
+        .map((record) {
+          final payload =
+              jsonDecode(record.payloadJson) as Map<String, dynamic>;
+          return DriverContactAttemptModel(
+            id: record.id,
+            target: payload['target'] as String,
+            channel: payload['channel'] as String,
+            outcome: payload['outcome'] as String,
+            occurredAt: DateTime.parse(record.occurredFromDeviceAt),
+            savedLocally: true,
+          );
+        })
+        .toList(growable: false);
+  }
+
+  Future<DriverCommandOutcome> logContactAttempt({
+    required DriverRoundStopModel stop,
+    required String target,
+    required String outcome,
+  }) {
+    final nonce = DateTime.now().toUtc().microsecondsSinceEpoch;
+    return _queueAndSend(
+      commandType: 'stop.log_contact_attempt',
+      aggregateId: stop.id,
+      expectedVersion: stop.version,
+      idempotencyKey: 'contact:${stop.id}:$target:$nonce',
+      endpoint: '/v1/driver/stops/${stop.id}/contact-attempts',
+      payload: {
+        'target': target,
+        'channel': 'native_phone',
+        'outcome': outcome,
+      },
+    );
+  }
+
   Future<DriverCommandOutcome> confirmPickup(DriverRoundModel round) =>
       _queueAndSend(
         commandType: 'round.confirm_pickup',

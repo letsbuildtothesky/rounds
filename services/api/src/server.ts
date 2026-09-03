@@ -30,6 +30,7 @@ import { preparePodMediaHandler } from "./prepare-pod-media-handler.js";
 import { prepareExceptionMediaHandler } from "./prepare-exception-media-handler.js";
 import { reportDeliveryProblemHandler } from "./report-delivery-problem-handler.js";
 import { reportLocationProblemHandler } from "./report-location-problem-handler.js";
+import { logContactAttemptHandler } from "./log-contact-attempt-handler.js";
 import { SupabaseGateway } from "./supabase-gateway.js";
 
 const config = readConfig();
@@ -364,6 +365,18 @@ const server = createServer(async (request, response) => {
         now: () => new Date(),
       });
       sendNode(response, problemResponse);
+      return;
+    }
+    const contactAttemptMatch = request.url?.match(/^\/v1\/driver\/stops\/([0-9a-f-]+)\/contact-attempts$/i);
+    if (request.method === "POST" && contactAttemptMatch) {
+      const webRequest = await toWebRequest(request);
+      const contactResponse = await logContactAttemptHandler(webRequest, contactAttemptMatch[1]!, {
+        identity: gateway,
+        communications: gateway,
+        uuid: () => crypto.randomUUID(),
+        now: () => new Date(),
+      });
+      sendNode(response, contactResponse);
       return;
     }
     const arrivalMatch = request.url?.match(/^\/v1\/driver\/stops\/([0-9a-f-]+)\/arrival$/i);

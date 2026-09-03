@@ -228,6 +228,7 @@ class _NavigationHarnessScreenState extends State<NavigationHarnessScreen> {
         context,
         round: widget.round,
         stop: widget.stop,
+        controller: widget.controller,
         onMessage: () => Navigator.of(context).push<void>(
           MaterialPageRoute(
             builder: (_) => OperationsChatScreen(

@@ -165,6 +165,22 @@ class HarnessAppController extends ChangeNotifier {
         _driverApi.sendOperationsMessage(round: round, stop: stop, body: body),
   );
 
+  Future<List<DriverContactAttemptModel>> pendingContactAttempts(
+    DriverRoundStopModel stop,
+  ) => _driverApi.pendingContactAttempts(stop);
+
+  Future<DriverCommandOutcome?> logContactAttempt({
+    required DriverRoundStopModel stop,
+    required String target,
+    required String outcome,
+  }) => _runDriverCommand(
+    () => _driverApi.logContactAttempt(
+      stop: stop,
+      target: target,
+      outcome: outcome,
+    ),
+  );
+
   Future<DriverCommandOutcome?> completePod({
     required DriverRoundStopModel stop,
     required String capturedPhotoPath,

@@ -37,6 +37,8 @@ import type {
   DriverRoundStop,
   DriverSession,
   DriverOperationsThread,
+  LogContactAttemptCommand,
+  LogContactAttemptResult,
   OperationsLocation,
   OperationsPlanningProjection,
   OperationsHistoryProjection,
@@ -1035,6 +1037,23 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     return data as SendDriverMessageResult;
   }
 
+  async logContactAttempt(
+    command: LogContactAttemptCommand,
+    identity: AuthenticatedIdentity,
+  ): Promise<LogContactAttemptResult> {
+    const actorPersonId = await this.driverActorPersonId(identity);
+    if (!actorPersonId) return {
+      status: "rejected",
+      error: { code: "NOT_AUTHORIZED", message: "Driver identity is not linked" },
+    };
+    const { data, error } = await this.admin.rpc("log_contact_attempt_command", {
+      p_command: command,
+      p_actor_person_id: actorPersonId,
+    });
+    if (error) throw error;
+    return data as LogContactAttemptResult;
+  }
+
   async getOperationsCommunications(actor: ActorContext): Promise<OperationsCommunicationsProjection> {
     type ThreadRow = {
       id: string; round_id: string; stop_id: string; driver_id: string;
@@ -1886,16 +1905,21 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
       .select("id, delivery_id, state, version, destination_version").in("id", stopIds).returns<StopRow[]>();
     if (stopsError) throw stopsError;
     const deliveryIds = (stops ?? []).map((stop) => stop.delivery_id);
-    const [deliveryResult, promiseResult, manifestResult] = await Promise.all([
+    const [deliveryResult, promiseResult, manifestResult, contactResult] = await Promise.all([
       this.admin.from("deliveries")
         .select("id, reference, service_date, pickup_location_id, recipient_name, recipient_phone, destination_raw_address, destination_position, access_note, delivery_note, is_surprise")
         .in("id", deliveryIds).returns<DeliveryRow[]>(),
       this.admin.from("delivery_promises").select("delivery_id, window_start, window_end").in("delivery_id", deliveryIds).returns<PromiseRow[]>(),
       this.admin.from("manifests").select("id, delivery_id, version").in("delivery_id", deliveryIds).returns<ManifestRow[]>(),
+      this.admin.from("contact_attempts")
+        .select("id, stop_id, target, channel, outcome, occurred_from_device_at, recorded_at")
+        .in("stop_id", stopIds).order("recorded_at")
+        .returns<{ id: string; stop_id: string; target: "recipient" | "operations"; channel: "native_phone"; outcome: "reached" | "no_answer" | "busy" | "call_failed"; occurred_from_device_at: string | null; recorded_at: string }[]>(),
     ]);
     if (deliveryResult.error) throw deliveryResult.error;
     if (promiseResult.error) throw promiseResult.error;
     if (manifestResult.error) throw manifestResult.error;
+    if (contactResult.error) throw contactResult.error;
     const deliveries = deliveryResult.data ?? [];
     const manifests = manifestResult.data ?? [];
     const itemResult = await this.admin.from("manifest_items")
@@ -1946,6 +1970,13 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
           description: item.description,
           quantity: item.quantity,
           ...(item.handling_note ? { handlingNote: item.handling_note } : {}),
+        })),
+        contactAttempts: (contactResult.data ?? []).filter((attempt) => attempt.stop_id === stop.id).map((attempt) => ({
+          id: attempt.id,
+          target: attempt.target,
+          channel: attempt.channel,
+          outcome: attempt.outcome,
+          occurredAt: attempt.occurred_from_device_at ?? attempt.recorded_at,
         })),
       }];
     });

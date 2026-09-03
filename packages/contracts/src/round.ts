@@ -1,4 +1,5 @@
 import type { CommandEnvelope, CommandResult, DomainEventEnvelope } from "./command.js";
+import type { ContactAttempt } from "./communications.js";
 import type { CapacityEvaluation, CargoRequirement } from "./capacity.js";
 
 export const roundStates = [
@@ -561,6 +562,7 @@ export type DriverRoundStop = {
   manifestId: string;
   manifestVersion: number;
   manifestItems: DriverManifestItem[];
+  contactAttempts?: ContactAttempt[];
 };
 
 export type DriverRound = {

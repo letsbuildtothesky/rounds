@@ -18,6 +18,9 @@ import type {
   CreateDeliveryResult,
   DriverSession,
   DriverOperationsThread,
+  LogContactAttemptCommand,
+  LogContactAttemptPayload,
+  LogContactAttemptResult,
   OperationsSession,
   OperationsHistoryProjection,
   OperationsActionProjection,
@@ -138,6 +141,10 @@ export interface DriverCommunicationsGateway {
     command: SendDriverMessageCommand,
     identity: AuthenticatedIdentity,
   ): Promise<SendDriverMessageResult>;
+  logContactAttempt(
+    command: LogContactAttemptCommand,
+    identity: AuthenticatedIdentity,
+  ): Promise<LogContactAttemptResult>;
 }
 
 export interface OperationsCommunicationsGateway {
@@ -223,6 +230,7 @@ export type CreateDeliveryDependencies = {
 };
 
 export type CreateDeliveryRequestBody = CreateDeliveryPayload;
+export type LogContactAttemptRequestBody = LogContactAttemptPayload;
 
 export type OperationsSessionDependencies = {
   identity: IdentityGateway;

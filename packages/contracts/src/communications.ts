@@ -71,3 +71,46 @@ export type SendOperationsMessageResult = CommandResult<
   DriverMessageSentPayload,
   DriverMessageSentEvent
 >;
+
+export const contactTargets = ["recipient", "operations"] as const;
+export type ContactTarget = (typeof contactTargets)[number];
+
+export const contactOutcomes = ["reached", "no_answer", "busy", "call_failed"] as const;
+export type ContactOutcome = (typeof contactOutcomes)[number];
+
+export type ContactAttempt = {
+  id: string;
+  target: ContactTarget;
+  channel: "native_phone";
+  outcome: ContactOutcome;
+  occurredAt: string;
+};
+
+export type LogContactAttemptPayload = {
+  target: ContactTarget;
+  channel: "native_phone";
+  outcome: ContactOutcome;
+};
+
+export type LogContactAttemptCommand = CommandEnvelope<
+  "stop.log_contact_attempt",
+  LogContactAttemptPayload
+>;
+
+export type ContactAttemptRecordedPayload = {
+  stopId: string;
+  deliveryId: string;
+  roundId: string;
+  operationsThreadId: string;
+  attempt: ContactAttempt;
+};
+
+export type ContactAttemptRecordedEvent = DomainEventEnvelope<
+  "stop.contact_attempt_recorded",
+  ContactAttemptRecordedPayload
+>;
+
+export type LogContactAttemptResult = CommandResult<
+  ContactAttemptRecordedPayload,
+  ContactAttemptRecordedEvent
+>;
