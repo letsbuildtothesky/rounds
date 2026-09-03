@@ -12,7 +12,7 @@ Implemented now:
 - `POST /v1/operations/exceptions/:exceptionId/confirm-return` audited confirmation that a delivery-stage damaged item is physically back with the merchant;
 - `GET /v1/operations/planning` purpose-limited unplanned delivery and Team-driver projection;
 - `POST /v1/rounds` manual ordered Team Round approval;
-- `GET /v1/driver/session` authenticated assigned/current Round projection;
+- `GET /v1/driver/session` authenticated assigned/current Round plus the Driver's tenant-scoped completed Team Round history;
 - `POST /v1/driver/rounds/:roundId/pickup` exact manifest verification and custody commit;
 - `POST /v1/driver/stops/:stopId/contact-attempts` audited native-phone outcome selected by the assigned Driver;
 - `POST /v1/driver/stops/:stopId/location-problem` typed pickup/delivery location observation with optional real-device GPS evidence and an explicit Operations hold;
@@ -60,6 +60,12 @@ handoff (`reached`, `no_answer`, `busy` or `call_failed`). It is not carrier or
 telephony-provider proof. Each attempt is authenticated, tenant-scoped,
 versioned and idempotent, and is projected into both the Driver Stop ledger and
 the Operations communication thread without changing Stop or custody state.
+
+The Driver session includes up to 30 completed Team Rounds assigned to that
+Driver. History is derived from authoritative Round/Stop state, durable POD
+records and the immutable planned route snapshot. Planned distance and duration
+remain explicitly labelled as planned; Network fares and actual route metrics
+are never inferred.
 
 ## Commands
 

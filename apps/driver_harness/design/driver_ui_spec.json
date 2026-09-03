@@ -652,6 +652,99 @@
         "primaryRadius": 7,
         "primarySize": 17
       }
+    },
+    "J01": {
+      "source": "ux/driver/en/screens/ROUNDS-J01-MY-ROUNDS-v7-10OF10.html",
+      "topBar": {
+        "height": 58,
+        "paddingHorizontal": 20,
+        "brandSize": 20,
+        "buttonSize": 38,
+        "iconSize": 20
+      },
+      "body": {
+        "bottomNavHeight": 76
+      },
+      "header": {
+        "paddingTop": 24,
+        "paddingHorizontal": 20,
+        "paddingBottom": 22,
+        "eyebrowSize": 11.5,
+        "eyebrowBottom": 11,
+        "titleSize": 34
+      },
+      "active": {
+        "paddingTop": 24,
+        "paddingHorizontal": 20,
+        "paddingBottom": 25,
+        "borderLeft": 4,
+        "kickerSize": 11.5,
+        "kickerBottom": 12,
+        "merchantSize": 14,
+        "merchantBottom": 7,
+        "titleSize": 37,
+        "nextTop": 10,
+        "nextSize": 16,
+        "sideSize": 32,
+        "sideLabelTop": 7,
+        "sideLabelSize": 12.5,
+        "metaTop": 19,
+        "metaSize": 13.5,
+        "buttonTop": 21,
+        "buttonHeight": 60,
+        "buttonRadius": 7,
+        "buttonSize": 17
+      },
+      "completed": {
+        "paddingTop": 23,
+        "paddingHorizontal": 20,
+        "paddingBottom": 28,
+        "sectionSize": 15,
+        "sectionCountSize": 12.5,
+        "sectionBottom": 11,
+        "rowMinHeight": 92,
+        "rowPaddingVertical": 15,
+        "rowTitleSize": 17,
+        "kindSize": 10.5,
+        "subTop": 8,
+        "subSize": 13,
+        "proofTop": 5,
+        "proofSize": 12.5,
+        "proofDotSize": 7,
+        "sideSize": 16,
+        "sideMetaTop": 8,
+        "sideMetaSize": 11.5
+      },
+      "bottomNav": {
+        "paddingTop": 7,
+        "paddingHorizontal": 4,
+        "paddingBottom": 9,
+        "iconSize": 20,
+        "labelSize": 11.5,
+        "gap": 5
+      },
+      "sheet": {
+        "paddingTop": 10,
+        "paddingHorizontal": 20,
+        "paddingBottom": 20,
+        "radius": 20,
+        "grabWidth": 38,
+        "grabHeight": 4,
+        "grabBottom": 18,
+        "kickerSize": 11.5,
+        "kickerBottom": 10,
+        "titleSize": 28,
+        "subTop": 8,
+        "subSize": 13.5,
+        "evidenceTop": 21,
+        "rowHeight": 55,
+        "rowLabelSize": 13,
+        "rowValueSize": 14,
+        "buttonTop": 18,
+        "buttonHeight": 56,
+        "buttonRadius": 7,
+        "buttonSize": 16
+      }
     }
   }
 }

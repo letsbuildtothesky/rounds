@@ -10,6 +10,7 @@ import 'components/round_overview_map.dart';
 import 'components/rounds_action_drawer.dart';
 import 'contact_history_screen.dart';
 import 'debug_pod_acceptance_screen.dart';
+import 'my_rounds_screen.dart';
 import 'navigation_harness_screen.dart';
 import 'pickup_navigation_screen.dart';
 import 'post_delivery_screen.dart';
@@ -328,6 +329,12 @@ class _RoundTopBar extends StatelessWidget {
           label: controller.strings.chooseLanguage,
           icon: Icons.language,
         ),
+        if (controller.driverSession != null)
+          const RoundsDrawerAction(
+            value: 'my-rounds',
+            label: 'My Rounds',
+            icon: Icons.route_outlined,
+          ),
         const RoundsDrawerAction(
           value: 'contact-history',
           label: 'Contact history',
@@ -361,6 +368,16 @@ class _RoundTopBar extends StatelessWidget {
       );
     }
     if (value == 'signout') controller.signOutDriver();
+    if (value == 'my-rounds' && controller.driverSession != null) {
+      Navigator.of(context).push<void>(
+        MaterialPageRoute(
+          builder: (screenContext) => MyRoundsScreen(
+            session: controller.driverSession!,
+            onReturnToRound: () => Navigator.of(screenContext).pop(),
+          ),
+        ),
+      );
+    }
     if (value == 'contact-history') {
       Navigator.of(context).push<void>(
         MaterialPageRoute(

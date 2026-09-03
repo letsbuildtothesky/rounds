@@ -582,10 +582,26 @@ export type DriverRound = {
     longitude?: number;
   };
   stops: DriverRoundStop[];
+  routePlan?: PlanningRouteSnapshot;
+};
+
+export type DriverCompletedRound = {
+  id: string;
+  reference: string;
+  serviceDate: string;
+  tenant: { id: string; displayName: string; timezone: string };
+  completedAt: string;
+  stopCount: number;
+  deliveredStopCount: number;
+  formallyClosedStopCount: number;
+  podCount: number;
+  plannedDistanceMeters?: number;
+  plannedDurationSeconds?: number;
 };
 
 export type DriverSession = {
   user: { id: string; displayName: string };
   driver: { id: string; preferredLocale: string; vehicleLabel?: string; vehiclePlate?: string };
   currentRound?: DriverRound;
+  completedRounds?: DriverCompletedRound[];
 };

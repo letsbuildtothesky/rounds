@@ -116,6 +116,10 @@ type PromiseRow = { delivery_id: string; window_start: string; window_end: strin
 type ManifestRow = { id: string; delivery_id: string; version: number };
 type ManifestItemRow = { manifest_id: string; line_number: number; description: string; quantity: number; cargo_class: string | null; handling_note: string | null };
 type RoundRow = { id: string; tenant_id: string; reference: string; service_date: string; state: RoundState; version: number };
+type DriverHistoryRoundRow = RoundRow & { updated_at: string; route_plan_snapshot: PlanningRouteSnapshot | null };
+type DriverHistoryRoundStopRow = { round_id: string; stop_id: string };
+type DriverHistoryStopRow = { id: string; state: string };
+type DriverHistoryPodRow = { round_id: string; stop_id: string };
 type RoundStopRow = { stop_id: string; sequence: number };
 type PlanningRoundStopRow = { round_id: string; stop_id: string };
 type PickupVerificationRow = { round_id: string; stop_id: string };
@@ -1885,13 +1889,61 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
         ...(driver.vehicle_label ? { vehicleLabel: driver.vehicle_label } : {}),
         ...(driver.vehicle_plate ? { vehiclePlate: driver.vehicle_plate } : {}),
       },
+      completedRounds: [],
     };
 
+    const { data: completedRounds, error: completedRoundsError } = await this.admin.from("rounds")
+      .select("id, tenant_id, reference, service_date, state, version, updated_at, route_plan_snapshot")
+      .eq("tenant_id", tenant.id).eq("driver_id", driver.id).eq("state", "complete")
+      .is("deleted_at", null).order("updated_at", { ascending: false }).limit(30)
+      .returns<DriverHistoryRoundRow[]>();
+    if (completedRoundsError) throw completedRoundsError;
+    const completedRoundIds = (completedRounds ?? []).map((item) => item.id);
+    if (completedRoundIds.length) {
+      const [historyAssignments, historyPods] = await Promise.all([
+        this.admin.from("round_stops").select("round_id, stop_id")
+          .eq("tenant_id", tenant.id).in("round_id", completedRoundIds)
+          .returns<DriverHistoryRoundStopRow[]>(),
+        this.admin.from("pod_records").select("round_id, stop_id")
+          .eq("tenant_id", tenant.id).in("round_id", completedRoundIds)
+          .returns<DriverHistoryPodRow[]>(),
+      ]);
+      if (historyAssignments.error) throw historyAssignments.error;
+      if (historyPods.error) throw historyPods.error;
+      const historyStopIds = [...new Set((historyAssignments.data ?? []).map((item) => item.stop_id))];
+      const historyStops = historyStopIds.length
+        ? await this.admin.from("delivery_stops").select("id, state")
+          .eq("tenant_id", tenant.id).in("id", historyStopIds)
+          .returns<DriverHistoryStopRow[]>()
+        : { data: [] as DriverHistoryStopRow[], error: null };
+      if (historyStops.error) throw historyStops.error;
+      const stopById = new Map((historyStops.data ?? []).map((item) => [item.id, item]));
+      session.completedRounds = (completedRounds ?? []).map((item) => {
+        const assignments = (historyAssignments.data ?? []).filter((entry) => entry.round_id === item.id);
+        const states = assignments.map((entry) => stopById.get(entry.stop_id)?.state);
+        const route = item.route_plan_snapshot;
+        return {
+          id: item.id,
+          reference: item.reference,
+          serviceDate: item.service_date,
+          tenant: { id: tenant.id, displayName: tenant.display_name, timezone: tenant.timezone },
+          completedAt: item.updated_at,
+          stopCount: assignments.length,
+          deliveredStopCount: states.filter((state) => state === "completed").length,
+          formallyClosedStopCount: states.filter((state) => state === "cancelled").length,
+          podCount: (historyPods.data ?? []).filter((pod) => pod.round_id === item.id).length,
+          ...(route && Number.isFinite(route.distanceMeters) ? { plannedDistanceMeters: route.distanceMeters } : {}),
+          ...(route && Number.isFinite(route.durationSeconds) ? { plannedDurationSeconds: route.durationSeconds } : {}),
+        };
+      });
+    }
+
     const { data: round, error: roundError } = await this.admin.from("rounds")
-      .select("id, tenant_id, reference, service_date, state, version")
+      .select("id, tenant_id, reference, service_date, state, version, route_plan_snapshot")
       .eq("tenant_id", tenant.id).eq("driver_id", driver.id)
       .in("state", ["approved", "loading", "active"])
-      .is("deleted_at", null).order("service_date").order("created_at").limit(1).maybeSingle<RoundRow>();
+      .is("deleted_at", null).order("service_date").order("created_at").limit(1)
+      .maybeSingle<RoundRow & { route_plan_snapshot: PlanningRouteSnapshot | null }>();
     if (roundError) throw roundError;
     if (!round) return session;
 
@@ -1997,6 +2049,7 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
         ...(pickupCoordinate ? pickupCoordinate : {}),
       },
       stops: driverStops,
+      ...(round.route_plan_snapshot ? { routePlan: round.route_plan_snapshot } : {}),
     };
     return session;
   }

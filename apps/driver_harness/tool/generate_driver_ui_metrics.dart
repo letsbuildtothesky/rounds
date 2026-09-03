@@ -80,6 +80,14 @@ String generateDriverUiMetrics(Map<String, dynamic> json) {
   final i01Hero = i01['hero'] as Map<String, dynamic>;
   final i01Continuation = i01['continuation'] as Map<String, dynamic>;
   final i01Footer = i01['footer'] as Map<String, dynamic>;
+  final j01 = screens['J01'] as Map<String, dynamic>;
+  final j01Top = j01['topBar'] as Map<String, dynamic>;
+  final j01Body = j01['body'] as Map<String, dynamic>;
+  final j01Header = j01['header'] as Map<String, dynamic>;
+  final j01Active = j01['active'] as Map<String, dynamic>;
+  final j01Completed = j01['completed'] as Map<String, dynamic>;
+  final j01BottomNav = j01['bottomNav'] as Map<String, dynamic>;
+  final j01Sheet = j01['sheet'] as Map<String, dynamic>;
 
   return '''// GENERATED CODE - DO NOT MODIFY BY HAND.
 // Source: $_sourcePath
@@ -701,6 +709,87 @@ abstract final class DriverI01Metrics {
   static const double primaryHeight = ${_double(i01Footer['primaryHeight'])};
   static const double primaryRadius = ${_double(i01Footer['primaryRadius'])};
   static const double primarySize = ${_double(i01Footer['primarySize'])};
+}
+
+abstract final class DriverJ01Metrics {
+  static const String source = '${j01['source']}';
+
+  static const double topBarHeight = ${_double(j01Top['height'])};
+  static const double topBarPaddingHorizontal = ${_double(j01Top['paddingHorizontal'])};
+  static const double brandSize = ${_double(j01Top['brandSize'])};
+  static const double topButtonSize = ${_double(j01Top['buttonSize'])};
+  static const double topIconSize = ${_double(j01Top['iconSize'])};
+  static const double bottomNavHeight = ${_double(j01Body['bottomNavHeight'])};
+  static const double headerPaddingTop = ${_double(j01Header['paddingTop'])};
+  static const double headerPaddingHorizontal = ${_double(j01Header['paddingHorizontal'])};
+  static const double headerPaddingBottom = ${_double(j01Header['paddingBottom'])};
+  static const double eyebrowSize = ${_double(j01Header['eyebrowSize'])};
+  static const double eyebrowBottom = ${_double(j01Header['eyebrowBottom'])};
+  static const double titleSize = ${_double(j01Header['titleSize'])};
+  static const double activePaddingTop = ${_double(j01Active['paddingTop'])};
+  static const double activePaddingHorizontal = ${_double(j01Active['paddingHorizontal'])};
+  static const double activePaddingBottom = ${_double(j01Active['paddingBottom'])};
+  static const double activeBorderLeft = ${_double(j01Active['borderLeft'])};
+  static const double activeKickerSize = ${_double(j01Active['kickerSize'])};
+  static const double activeKickerBottom = ${_double(j01Active['kickerBottom'])};
+  static const double activeMerchantSize = ${_double(j01Active['merchantSize'])};
+  static const double activeMerchantBottom = ${_double(j01Active['merchantBottom'])};
+  static const double activeTitleSize = ${_double(j01Active['titleSize'])};
+  static const double activeNextTop = ${_double(j01Active['nextTop'])};
+  static const double activeNextSize = ${_double(j01Active['nextSize'])};
+  static const double activeSideSize = ${_double(j01Active['sideSize'])};
+  static const double activeSideLabelTop = ${_double(j01Active['sideLabelTop'])};
+  static const double activeSideLabelSize = ${_double(j01Active['sideLabelSize'])};
+  static const double activeMetaTop = ${_double(j01Active['metaTop'])};
+  static const double activeMetaSize = ${_double(j01Active['metaSize'])};
+  static const double activeButtonTop = ${_double(j01Active['buttonTop'])};
+  static const double activeButtonHeight = ${_double(j01Active['buttonHeight'])};
+  static const double activeButtonRadius = ${_double(j01Active['buttonRadius'])};
+  static const double activeButtonSize = ${_double(j01Active['buttonSize'])};
+  static const double completedPaddingTop = ${_double(j01Completed['paddingTop'])};
+  static const double completedPaddingHorizontal = ${_double(j01Completed['paddingHorizontal'])};
+  static const double completedPaddingBottom = ${_double(j01Completed['paddingBottom'])};
+  static const double completedSectionSize = ${_double(j01Completed['sectionSize'])};
+  static const double completedSectionCountSize = ${_double(j01Completed['sectionCountSize'])};
+  static const double completedSectionBottom = ${_double(j01Completed['sectionBottom'])};
+  static const double completedRowMinHeight = ${_double(j01Completed['rowMinHeight'])};
+  static const double completedRowPaddingVertical = ${_double(j01Completed['rowPaddingVertical'])};
+  static const double completedRowTitleSize = ${_double(j01Completed['rowTitleSize'])};
+  static const double completedKindSize = ${_double(j01Completed['kindSize'])};
+  static const double completedSubTop = ${_double(j01Completed['subTop'])};
+  static const double completedSubSize = ${_double(j01Completed['subSize'])};
+  static const double completedProofTop = ${_double(j01Completed['proofTop'])};
+  static const double completedProofSize = ${_double(j01Completed['proofSize'])};
+  static const double completedProofDotSize = ${_double(j01Completed['proofDotSize'])};
+  static const double completedSideSize = ${_double(j01Completed['sideSize'])};
+  static const double completedSideMetaTop = ${_double(j01Completed['sideMetaTop'])};
+  static const double completedSideMetaSize = ${_double(j01Completed['sideMetaSize'])};
+  static const double bottomNavPaddingTop = ${_double(j01BottomNav['paddingTop'])};
+  static const double bottomNavPaddingHorizontal = ${_double(j01BottomNav['paddingHorizontal'])};
+  static const double bottomNavPaddingBottom = ${_double(j01BottomNav['paddingBottom'])};
+  static const double bottomNavIconSize = ${_double(j01BottomNav['iconSize'])};
+  static const double bottomNavLabelSize = ${_double(j01BottomNav['labelSize'])};
+  static const double bottomNavGap = ${_double(j01BottomNav['gap'])};
+  static const double sheetPaddingTop = ${_double(j01Sheet['paddingTop'])};
+  static const double sheetPaddingHorizontal = ${_double(j01Sheet['paddingHorizontal'])};
+  static const double sheetPaddingBottom = ${_double(j01Sheet['paddingBottom'])};
+  static const double sheetRadius = ${_double(j01Sheet['radius'])};
+  static const double sheetGrabWidth = ${_double(j01Sheet['grabWidth'])};
+  static const double sheetGrabHeight = ${_double(j01Sheet['grabHeight'])};
+  static const double sheetGrabBottom = ${_double(j01Sheet['grabBottom'])};
+  static const double sheetKickerSize = ${_double(j01Sheet['kickerSize'])};
+  static const double sheetKickerBottom = ${_double(j01Sheet['kickerBottom'])};
+  static const double sheetTitleSize = ${_double(j01Sheet['titleSize'])};
+  static const double sheetSubTop = ${_double(j01Sheet['subTop'])};
+  static const double sheetSubSize = ${_double(j01Sheet['subSize'])};
+  static const double sheetEvidenceTop = ${_double(j01Sheet['evidenceTop'])};
+  static const double sheetRowHeight = ${_double(j01Sheet['rowHeight'])};
+  static const double sheetRowLabelSize = ${_double(j01Sheet['rowLabelSize'])};
+  static const double sheetRowValueSize = ${_double(j01Sheet['rowValueSize'])};
+  static const double sheetButtonTop = ${_double(j01Sheet['buttonTop'])};
+  static const double sheetButtonHeight = ${_double(j01Sheet['buttonHeight'])};
+  static const double sheetButtonRadius = ${_double(j01Sheet['buttonRadius'])};
+  static const double sheetButtonSize = ${_double(j01Sheet['buttonSize'])};
 }
 ''';
 }
