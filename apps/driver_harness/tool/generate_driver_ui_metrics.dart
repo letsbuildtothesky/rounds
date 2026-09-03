@@ -69,6 +69,12 @@ String generateDriverUiMetrics(Map<String, dynamic> json) {
   final g01Ledger = g01['ledger'] as Map<String, dynamic>;
   final g01Footer = g01['footer'] as Map<String, dynamic>;
   final g01Sheet = g01['sheet'] as Map<String, dynamic>;
+  final g04 = screens['G04'] as Map<String, dynamic>;
+  final g04Top = g04['topBar'] as Map<String, dynamic>;
+  final g04Content = g04['content'] as Map<String, dynamic>;
+  final g04Package = g04['package'] as Map<String, dynamic>;
+  final g04Choice = g04['choice'] as Map<String, dynamic>;
+  final g04Footer = g04['footer'] as Map<String, dynamic>;
   final g02 = screens['G02'] as Map<String, dynamic>;
   final g02Top = g02['topBar'] as Map<String, dynamic>;
   final g02Content = g02['content'] as Map<String, dynamic>;
@@ -595,6 +601,73 @@ abstract final class DriverG01Metrics {
   static const double sheetRowPaddingHorizontal = ${_double(g01Sheet['rowPaddingHorizontal'])};
   static const double sheetRowSize = ${_double(g01Sheet['rowSize'])};
   static const double sheetDetailSize = ${_double(g01Sheet['detailSize'])};
+}
+
+abstract final class DriverG04Metrics {
+  static const String source = '${g04['source']}';
+
+  static const double topBarHeight = ${_double(g04Top['height'])};
+  static const double topBarPaddingHorizontal = ${_double(g04Top['paddingHorizontal'])};
+  static const double topButtonSize = ${_double(g04Top['buttonSize'])};
+  static const double topColumnGap = ${_double(g04Top['columnGap'])};
+  static const double topEyebrowSize = ${_double(g04Top['eyebrowSize'])};
+  static const double topEyebrowTracking = ${_double(g04Top['eyebrowTracking'])};
+  static const double topTitleGap = ${_double(g04Top['titleGap'])};
+  static const double topTitleSize = ${_double(g04Top['titleSize'])};
+  static const double topIconSize = ${_double(g04Top['iconSize'])};
+
+  static const double contentPaddingTop = ${_double(g04Content['paddingTop'])};
+  static const double contentPaddingHorizontal = ${_double(g04Content['paddingHorizontal'])};
+  static const double contentPaddingBottom = ${_double(g04Content['paddingBottom'])};
+  static const double issueDotSize = ${_double(g04Content['issueDotSize'])};
+  static const double issueGap = ${_double(g04Content['issueGap'])};
+  static const double issueSize = ${_double(g04Content['issueSize'])};
+  static const double issueTracking = ${_double(g04Content['issueTracking'])};
+  static const double heroGap = ${_double(g04Content['heroGap'])};
+  static const double heroSize = ${_double(g04Content['heroSize'])};
+  static const double heroHeight = ${_double(g04Content['heroHeight'])};
+  static const double heroTracking = ${_double(g04Content['heroTracking'])};
+  static const double locationGap = ${_double(g04Content['locationGap'])};
+  static const double locationSize = ${_double(g04Content['locationSize'])};
+  static const double locationHeight = ${_double(g04Content['locationHeight'])};
+  static const double sectionGap = ${_double(g04Content['sectionGap'])};
+
+  static const double packageMarginTop = ${_double(g04Package['marginTop'])};
+  static const double packagePaddingTop = ${_double(g04Package['paddingTop'])};
+  static const double packageColumnGap = ${_double(g04Package['columnGap'])};
+  static const double packageEyebrowSize = ${_double(g04Package['eyebrowSize'])};
+  static const double packageEyebrowTracking = ${_double(g04Package['eyebrowTracking'])};
+  static const double packageNameGap = ${_double(g04Package['nameGap'])};
+  static const double packageNameSize = ${_double(g04Package['nameSize'])};
+  static const double packageNameHeight = ${_double(g04Package['nameHeight'])};
+  static const double packageNameTracking = ${_double(g04Package['nameTracking'])};
+  static const double packageNoteGap = ${_double(g04Package['noteGap'])};
+  static const double packageNoteSize = ${_double(g04Package['noteSize'])};
+  static const double quantityPaddingTop = ${_double(g04Package['quantityPaddingTop'])};
+  static const double quantitySize = ${_double(g04Package['quantitySize'])};
+  static const double custodyGap = ${_double(g04Package['custodyGap'])};
+  static const double custodySize = ${_double(g04Package['custodySize'])};
+
+  static const double choiceTitleSize = ${_double(g04Choice['titleSize'])};
+  static const double choiceTitleTracking = ${_double(g04Choice['titleTracking'])};
+  static const double choiceTitleBottom = ${_double(g04Choice['titleBottom'])};
+  static const double choiceRowHeight = ${_double(g04Choice['rowHeight'])};
+  static const double choiceIconColumnWidth = ${_double(g04Choice['iconColumnWidth'])};
+  static const double choiceColumnGap = ${_double(g04Choice['columnGap'])};
+  static const double choiceIconSize = ${_double(g04Choice['iconSize'])};
+  static const double choiceNameSize = ${_double(g04Choice['nameSize'])};
+  static const double choiceNameHeight = ${_double(g04Choice['nameHeight'])};
+  static const double choiceDetailGap = ${_double(g04Choice['detailGap'])};
+  static const double choiceDetailSize = ${_double(g04Choice['detailSize'])};
+
+  static const double footerPaddingTop = ${_double(g04Footer['paddingTop'])};
+  static const double footerPaddingHorizontal = ${_double(g04Footer['paddingHorizontal'])};
+  static const double footerPaddingBottom = ${_double(g04Footer['paddingBottom'])};
+  static const double primaryHeight = ${_double(g04Footer['primaryHeight'])};
+  static const double primaryRadius = ${_double(g04Footer['primaryRadius'])};
+  static const double primarySize = ${_double(g04Footer['primarySize'])};
+  static const double secondaryHeight = ${_double(g04Footer['secondaryHeight'])};
+  static const double secondaryGap = ${_double(g04Footer['secondaryGap'])};
 }
 
 abstract final class DriverG02Metrics {

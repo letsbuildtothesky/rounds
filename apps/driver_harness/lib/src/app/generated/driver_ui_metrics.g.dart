@@ -472,6 +472,73 @@ abstract final class DriverG01Metrics {
   static const double sheetDetailSize = 13.0;
 }
 
+abstract final class DriverG04Metrics {
+  static const String source = 'ux/driver/en/screens/ROUNDS-G04-CANNOT-COMPLETE-DELIVERY-v2-10OF10.html';
+
+  static const double topBarHeight = 64.0;
+  static const double topBarPaddingHorizontal = 18.0;
+  static const double topButtonSize = 44.0;
+  static const double topColumnGap = 10.0;
+  static const double topEyebrowSize = 10.5;
+  static const double topEyebrowTracking = 0.945;
+  static const double topTitleGap = 5.0;
+  static const double topTitleSize = 17.0;
+  static const double topIconSize = 22.0;
+
+  static const double contentPaddingTop = 27.0;
+  static const double contentPaddingHorizontal = 22.0;
+  static const double contentPaddingBottom = 26.0;
+  static const double issueDotSize = 8.0;
+  static const double issueGap = 8.0;
+  static const double issueSize = 11.0;
+  static const double issueTracking = 1.045;
+  static const double heroGap = 10.0;
+  static const double heroSize = 39.0;
+  static const double heroHeight = 0.98;
+  static const double heroTracking = -2.145;
+  static const double locationGap = 12.0;
+  static const double locationSize = 15.0;
+  static const double locationHeight = 1.35;
+  static const double sectionGap = 29.0;
+
+  static const double packageMarginTop = 25.0;
+  static const double packagePaddingTop = 19.0;
+  static const double packageColumnGap = 14.0;
+  static const double packageEyebrowSize = 10.5;
+  static const double packageEyebrowTracking = 0.8925;
+  static const double packageNameGap = 6.0;
+  static const double packageNameSize = 20.0;
+  static const double packageNameHeight = 1.08;
+  static const double packageNameTracking = -0.6;
+  static const double packageNoteGap = 6.0;
+  static const double packageNoteSize = 13.5;
+  static const double quantityPaddingTop = 17.0;
+  static const double quantitySize = 18.0;
+  static const double custodyGap = 13.0;
+  static const double custodySize = 12.5;
+
+  static const double choiceTitleSize = 12.0;
+  static const double choiceTitleTracking = 1.02;
+  static const double choiceTitleBottom = 7.0;
+  static const double choiceRowHeight = 68.0;
+  static const double choiceIconColumnWidth = 34.0;
+  static const double choiceColumnGap = 12.0;
+  static const double choiceIconSize = 23.0;
+  static const double choiceNameSize = 16.0;
+  static const double choiceNameHeight = 1.15;
+  static const double choiceDetailGap = 4.0;
+  static const double choiceDetailSize = 12.5;
+
+  static const double footerPaddingTop = 11.0;
+  static const double footerPaddingHorizontal = 22.0;
+  static const double footerPaddingBottom = 17.0;
+  static const double primaryHeight = 62.0;
+  static const double primaryRadius = 7.0;
+  static const double primarySize = 17.0;
+  static const double secondaryHeight = 48.0;
+  static const double secondaryGap = 7.0;
+}
+
 abstract final class DriverG02Metrics {
   static const String source = 'ux/driver/en/screens/ROUNDS-G02-ADDRESS-PROBLEM-v2-10OF10.html';
 

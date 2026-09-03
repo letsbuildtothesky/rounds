@@ -458,6 +458,77 @@
         "detailSize": 13
       }
     },
+    "G04": {
+      "source": "ux/driver/en/screens/ROUNDS-G04-CANNOT-COMPLETE-DELIVERY-v2-10OF10.html",
+      "topBar": {
+        "height": 64,
+        "paddingHorizontal": 18,
+        "buttonSize": 44,
+        "columnGap": 10,
+        "eyebrowSize": 10.5,
+        "eyebrowTracking": 0.945,
+        "titleGap": 5,
+        "titleSize": 17,
+        "iconSize": 22
+      },
+      "content": {
+        "paddingTop": 27,
+        "paddingHorizontal": 22,
+        "paddingBottom": 26,
+        "issueDotSize": 8,
+        "issueGap": 8,
+        "issueSize": 11,
+        "issueTracking": 1.045,
+        "heroGap": 10,
+        "heroSize": 39,
+        "heroHeight": 0.98,
+        "heroTracking": -2.145,
+        "locationGap": 12,
+        "locationSize": 15,
+        "locationHeight": 1.35,
+        "sectionGap": 29
+      },
+      "package": {
+        "marginTop": 25,
+        "paddingTop": 19,
+        "columnGap": 14,
+        "eyebrowSize": 10.5,
+        "eyebrowTracking": 0.8925,
+        "nameGap": 6,
+        "nameSize": 20,
+        "nameHeight": 1.08,
+        "nameTracking": -0.6,
+        "noteGap": 6,
+        "noteSize": 13.5,
+        "quantityPaddingTop": 17,
+        "quantitySize": 18,
+        "custodyGap": 13,
+        "custodySize": 12.5
+      },
+      "choice": {
+        "titleSize": 12,
+        "titleTracking": 1.02,
+        "titleBottom": 7,
+        "rowHeight": 68,
+        "iconColumnWidth": 34,
+        "columnGap": 12,
+        "iconSize": 23,
+        "nameSize": 16,
+        "nameHeight": 1.15,
+        "detailGap": 4,
+        "detailSize": 12.5
+      },
+      "footer": {
+        "paddingTop": 11,
+        "paddingHorizontal": 22,
+        "paddingBottom": 17,
+        "primaryHeight": 62,
+        "primaryRadius": 7,
+        "primarySize": 17,
+        "secondaryHeight": 48,
+        "secondaryGap": 7
+      }
+    },
     "G02": {
       "source": "ux/driver/en/screens/ROUNDS-G02-ADDRESS-PROBLEM-v2-10OF10.html",
       "topBar": {

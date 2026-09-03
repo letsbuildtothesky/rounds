@@ -35,7 +35,7 @@ void main() {
     expect(launched?.path, round.pickup.contactPhone);
   });
 
-  testWidgets('exception message carries exact Round and Stop context', (
+  testWidgets('emergency message carries exact Round and Stop context', (
     tester,
   ) async {
     Uri? launched;
@@ -55,7 +55,7 @@ void main() {
     await tester.tap(find.byKey(const Key('open-flow')));
     await tester.pumpAndSettle();
     await tester.tap(
-      find.byKey(const Key('delivery-issue-cannot-complete-delivery')),
+      find.byKey(const Key('delivery-issue-emergency-or-safety-issue')),
     );
     await tester.enterText(
       find.byKey(const Key('delivery-issue-note')),
@@ -73,7 +73,7 @@ void main() {
     final body = launched?.queryParameters['body'] ?? '';
     expect(body, contains(round.reference));
     expect(body, contains(stop.deliveryReference));
-    expect(body, contains('Cannot complete delivery'));
+    expect(body, contains('Emergency or safety issue'));
     expect(body, contains('Security will not allow entry.'));
   });
 

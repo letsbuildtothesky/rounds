@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../app/driver_design_system.dart';
 import '../../app/harness_app_controller.dart';
 import '../../driver/driver_session.dart';
+import '../cannot_complete_delivery_screen.dart';
 import '../delivery_package_problem_screen.dart';
 import '../location_problem_screen.dart';
 import '../recipient_unavailable_screen.dart';
@@ -76,6 +77,22 @@ Future<bool> openDeliveryIssueFlow(
               controller: controller,
               round: round,
               stop: stop,
+              launcher: launcher,
+            ),
+          ),
+        ) ??
+        false;
+  }
+
+  if (draft.category == 'Cannot complete delivery') {
+    if (controller == null) return false;
+    return await Navigator.of(context).push<bool>(
+          MaterialPageRoute(
+            builder: (_) => CannotCompleteDeliveryScreen(
+              controller: controller,
+              round: round,
+              stop: stop,
+              initialNote: draft.note,
               launcher: launcher,
             ),
           ),
@@ -284,16 +301,17 @@ class _DeliveryIssueSheetState extends State<_DeliveryIssueSheet> {
                                 note: _note.text,
                               ),
                             ),
-                      icon: Icon(
-                        _category == 'Damaged package'
-                            ? Icons.camera_alt_outlined
-                            : Icons.sms_outlined,
-                      ),
-                      label: Text(
-                        _category == 'Damaged package'
-                            ? 'Continue to damage photo'
-                            : 'Continue to Messages',
-                      ),
+                      icon: Icon(switch (_category) {
+                        'Damaged package' => Icons.camera_alt_outlined,
+                        'Cannot complete delivery' =>
+                          Icons.report_problem_outlined,
+                        _ => Icons.sms_outlined,
+                      }),
+                      label: Text(switch (_category) {
+                        'Damaged package' => 'Continue to damage photo',
+                        'Cannot complete delivery' => 'Continue to reasons',
+                        _ => 'Continue',
+                      }),
                       style: FilledButton.styleFrom(
                         backgroundColor: RoundsColors.red,
                         disabledBackgroundColor: const Color(0xFFD9DFE5),
