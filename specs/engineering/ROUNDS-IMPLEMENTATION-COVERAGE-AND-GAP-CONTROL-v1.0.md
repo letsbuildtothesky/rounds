@@ -135,8 +135,8 @@ Canonical visual source: `ux/operations/rounds-operations-current-v45.html`. The
 | Deliveries workspace | Pilot P1 | `VERIFIED` | Server-backed delivery list/details and operational states exist. | Complete filters, edit boundaries and remaining v45 record states. |
 | Manual plan construction | Slice 2 P0 | `VERIFIED` | Date, ordered Stop selection, own driver, shared multidimensional capacity check, real route/window preview and explicit approval exist. | Configure production cargo values and add service dwell after the responsible business decisions. |
 | Automatic plan generation | Slice 2 P1 | `SPECIFIED` | Intentionally not simulated in React. | Explainable heuristic, proposed plan persistence, uncovered-work truth and tests. |
-| Plan adjustment before approval | Slice 2 P0 | `VERIFIED` | Canonical Stop-order/departure controls and existing-Round Stop movement use fresh server route/window/shift/cargo previews. Moving a Stop recalculates only source/target Rounds, shows both consequences and commits through one dual-version atomic database command. | Run a signed-in browser acceptance with two eligible approved Rounds and production-approved cargo values. |
-| Round approval/assignment | Pilot/Slice 2 P0 | `VERIFIED` | Server recalculates route, validates window/shift/cargo, database independently recalculates multidimensional capacity, requires fitting snapshots, then atomically assigns. | Run live cargo-configured acceptance and add service dwell before declaring full BS-09 approval. |
+| Plan adjustment before approval | Slice 2 P0 | `ACCEPTED` | Canonical Stop-order/departure controls and existing-Round Stop movement use fresh server route/window/shift/cargo previews. Moving a Stop recalculates only source/target Rounds, shows both consequences and commits through one dual-version atomic database command. Signed-in live acceptance passed with two approved, explicitly configured demo Rounds. | Production-approved cargo values and service dwell remain before full operating approval. |
+| Round approval/assignment | Pilot/Slice 2 P0 | `ACCEPTED` | Server recalculates route, validates window/shift/cargo, database independently recalculates multidimensional capacity, requires fitting snapshots, then atomically assigns. Live cargo-configured approval passed with explicit demo values. | Production cargo taxonomy and service dwell remain before declaring full BS-09 approval. |
 | Round execution detail | Pilot P0 | `VERIFIED` | Server-backed Stop/custody/exception state and communication links exist. | Remaining v45 Round actions and realtime projection depth. |
 | Pickup exception resolution | Pilot P0 | `VERIFIED` | Audited correction returns Stop to assigned and requires manifest recheck. | Broader pickup outcomes/evidence views. |
 | Delivery exception resolution | Pilot/Slice 2 P0 | `PARTIAL` | Damaged-item hold, return confirmation and reconciliation exist. | Recipient/address/cannot-complete/emergency outcomes and performance treatment. |
@@ -192,12 +192,12 @@ This sequence does not promote later slices; it orders the already authorized En
 - Planning preview uses one common application validator; approval independently recalculates the same dimensions in the database guard.
 - Automated tests prove cargo and max-Stop bottlenecks independently, including aggregation and disallowed cargo.
 
-### Checkpoint B — canonical Round management
+### Checkpoint B — canonical Round management · **COMPLETED 2026-09-03**
 
 - Connect server-backed Round overview/detail actions required by v45.
 - **Completed B1 2026-09-03:** pre-approval Stop reorder and departure adjustment recalculate route/window/shift/cargo truth and commit the matching departure through the versioned approval boundary.
 - **Completed B2 2026-09-03:** future pre-custody Stops move between existing approved own-team Rounds through source/target version checks, affected-Round-only route/capacity/promise recalculation and one atomic audited command.
-- The canonical destination picker and consequence preview are connected in Round detail. Live browser acceptance remains pending because the current service date has no two eligible approved test Rounds.
+- The canonical destination picker and consequence preview are connected in Round detail. Signed-in browser acceptance moved one Stop between two approved live test Rounds, verified both resulting orders and versions, and confirmed the audit/idempotency/outbox records.
 - Keep automatic plan generation absent until its real heuristic and persistence exist.
 
 ### Checkpoint C — remaining own-driver operational states

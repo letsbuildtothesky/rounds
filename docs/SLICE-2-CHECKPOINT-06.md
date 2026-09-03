@@ -1,6 +1,6 @@
 # Slice 2 · Checkpoint 06
 
-**Status:** canonical existing-Round Stop movement accepted against the live linked project; Slice 2 remains in progress
+**Status:** canonical existing-Round Stop movement accepted against the live linked project; Checkpoint B complete; Slice 2 remains in progress
 
 **Date:** 2026-09-03
 
@@ -28,7 +28,8 @@
 - `git diff --check` passes.
 - Signed-in browser acceptance and linked-database verification both pass for the real two-Round move.
 
-## Remaining Checkpoint B work
+## Next: Checkpoint C
 
-- Continue the v45 inventory from the next unconnected Round overview/detail action.
+- Complete the canonical D01 pickup-navigation states against the supplied English Driver boards.
+- Then continue the authorized own-driver exception/contact states, stopping where the recorded business-policy gaps require a human decision.
 - Keep using the supplied English/Thai driver boards and canonical Operations v45 file as UX contracts; do not invent substitute screens.
