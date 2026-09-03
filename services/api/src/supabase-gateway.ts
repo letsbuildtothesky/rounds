@@ -1089,27 +1089,51 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
       receiver_name: string | null; receiver_relationship: string | null; left_at_location: string | null;
       delivered_at: string; manifest_version: number;
     };
-    const { data: pods, error: podsError } = await this.admin.from("pod_records")
-      .select("id, delivery_id, stop_id, round_id, driver_id, media_asset_id, handoff_type, receiver_name, receiver_relationship, left_at_location, delivered_at, manifest_version")
-      .eq("tenant_id", actor.tenantId).order("delivered_at", { ascending: false }).limit(100).returns<PodRow[]>();
+    type ReturnedExceptionRow = {
+      id: string; delivery_id: string; stop_id: string; round_id: string; driver_id: string;
+      media_asset_id: string | null; category: "damaged_item"; note: string | null;
+      reported_at: string; resolved_at: string | null; command_id: string; manifest_version: number;
+    };
+    const [podResult, returnedResult] = await Promise.all([
+      this.admin.from("pod_records")
+        .select("id, delivery_id, stop_id, round_id, driver_id, media_asset_id, handoff_type, receiver_name, receiver_relationship, left_at_location, delivered_at, manifest_version")
+        .eq("tenant_id", actor.tenantId).order("delivered_at", { ascending: false }).limit(100).returns<PodRow[]>(),
+      this.admin.from("delivery_exceptions")
+        .select("id, delivery_id, stop_id, round_id, driver_id, media_asset_id, category, note, reported_at, resolved_at, command_id, manifest_version")
+        .eq("tenant_id", actor.tenantId).eq("stage", "delivery").eq("category", "damaged_item")
+        .eq("status", "resolved").order("resolved_at", { ascending: false }).limit(100).returns<ReturnedExceptionRow[]>(),
+    ]);
+    const { data: pods, error: podsError } = podResult;
+    const { data: returnedExceptions, error: returnedError } = returnedResult;
     if (podsError) throw podsError;
-    if (!pods?.length) return { tenantId: actor.tenantId, deliveries: [] };
-    const deliveryIds = [...new Set(pods.map((pod) => pod.delivery_id))];
-    const roundIds = [...new Set(pods.map((pod) => pod.round_id))];
-    const driverIds = [...new Set(pods.map((pod) => pod.driver_id))];
-    const mediaIds = [...new Set(pods.map((pod) => pod.media_asset_id))];
-    const [deliveryResult, roundResult, driverResult, mediaResult] = await Promise.all([
-      this.admin.from("deliveries").select("id, reference, recipient_name, destination_raw_address").in("id", deliveryIds)
-        .returns<{ id: string; reference: string; recipient_name: string; destination_raw_address: string }[]>(),
+    if (returnedError) throw returnedError;
+    const podRows = pods ?? [];
+    const returnRows = returnedExceptions ?? [];
+    if (!podRows.length && !returnRows.length) return { tenantId: actor.tenantId, deliveries: [] };
+    const allRows = [...podRows, ...returnRows];
+    const deliveryIds = [...new Set(allRows.map((item) => item.delivery_id))];
+    const roundIds = [...new Set(allRows.map((item) => item.round_id))];
+    const driverIds = [...new Set(allRows.map((item) => item.driver_id))];
+    const mediaIds = [...new Set(allRows.flatMap((item) => item.media_asset_id ? [item.media_asset_id] : []))];
+    const returnedStopIds = [...new Set(returnRows.map((item) => item.stop_id))];
+    const [deliveryResult, roundResult, driverResult, mediaResult, returnAuditResult] = await Promise.all([
+      this.admin.from("deliveries").select("id, reference, recipient_name, destination_raw_address, state").in("id", deliveryIds)
+        .returns<{ id: string; reference: string; recipient_name: string; destination_raw_address: string; state: string }[]>(),
       this.admin.from("rounds").select("id, reference").in("id", roundIds).returns<{ id: string; reference: string }[]>(),
       this.admin.from("driver_profiles").select("id, person_id").in("id", driverIds).returns<{ id: string; person_id: string }[]>(),
       this.admin.from("media_assets").select("id, state").in("id", mediaIds).eq("state", "committed")
         .returns<{ id: string; state: "committed" }[]>(),
+      this.admin.from("audit_events").select("aggregate_id, semantic_change, occurred_at")
+        .eq("tenant_id", actor.tenantId).eq("action", "operations.delivery_return_confirmed")
+        .in("aggregate_id", returnedStopIds.length ? returnedStopIds : ["00000000-0000-0000-0000-000000000000"])
+        .order("occurred_at", { ascending: false })
+        .returns<{ aggregate_id: string; semantic_change: unknown; occurred_at: string }[]>(),
     ]);
     if (deliveryResult.error) throw deliveryResult.error;
     if (roundResult.error) throw roundResult.error;
     if (driverResult.error) throw driverResult.error;
     if (mediaResult.error) throw mediaResult.error;
+    if (returnAuditResult.error) throw returnAuditResult.error;
     const personIds = (driverResult.data ?? []).map((driver) => driver.person_id);
     const { data: people, error: peopleError } = await this.admin.from("persons")
       .select("id, display_name").in("id", personIds).returns<{ id: string; display_name: string }[]>();
@@ -1119,36 +1143,87 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     const personById = new Map((people ?? []).map((row) => [row.id, row]));
     const personIdByDriver = new Map((driverResult.data ?? []).map((row) => [row.id, row.person_id]));
     const committedMedia = new Set((mediaResult.data ?? []).map((row) => row.id));
+    const returnAuditByStop = new Map<string, { note?: string; occurredAt: string }>();
+    for (const audit of returnAuditResult.data ?? []) {
+      if (returnAuditByStop.has(audit.aggregate_id)) continue;
+      const semantic = audit.semantic_change && typeof audit.semantic_change === "object"
+        ? audit.semantic_change as Record<string, unknown>
+        : {};
+      const note = typeof semantic.note === "string" ? semantic.note.trim() : "";
+      returnAuditByStop.set(audit.aggregate_id, {
+        ...(note ? { note } : {}),
+        occurredAt: audit.occurred_at,
+      });
+    }
+    const driverName = (driverId: string) =>
+      personById.get(personIdByDriver.get(driverId) ?? "")?.display_name ?? "Team driver";
+    const deliveredItems = podRows.flatMap((pod) => {
+      const delivery = deliveryById.get(pod.delivery_id);
+      const round = roundById.get(pod.round_id);
+      if (!delivery || !round || !committedMedia.has(pod.media_asset_id)) return [];
+      const receiverLabel = pod.handoff_type === "left_at_location"
+        ? pod.left_at_location ?? "Approved location"
+        : pod.receiver_relationship
+          ? `${pod.receiver_name ?? "Receiver"} · ${pod.receiver_relationship}`
+          : pod.receiver_name ?? delivery.recipient_name;
+      return [{
+        outcome: "delivered" as const,
+        recordId: `pod:${pod.id}`,
+        podId: pod.id,
+        deliveryId: pod.delivery_id,
+        stopId: pod.stop_id,
+        roundId: pod.round_id,
+        deliveryReference: delivery.reference,
+        roundReference: round.reference,
+        recipientName: delivery.recipient_name,
+        rawAddress: delivery.destination_raw_address,
+        driverName: driverName(pod.driver_id),
+        handoffType: pod.handoff_type,
+        receiverLabel,
+        deliveredAt: pod.delivered_at,
+        occurredAt: pod.delivered_at,
+        manifestVersion: pod.manifest_version,
+        verifiedPhotoCount: 1 as const,
+        mediaAssetId: pod.media_asset_id,
+        mediaState: "committed" as const,
+      }];
+    });
+    const returnedItems = returnRows.flatMap((exception) => {
+      const delivery = deliveryById.get(exception.delivery_id);
+      const round = roundById.get(exception.round_id);
+      if (!delivery || delivery.state !== "returned" || !round || !exception.media_asset_id
+        || !exception.resolved_at || !committedMedia.has(exception.media_asset_id)) return [];
+      const audit = returnAuditByStop.get(exception.stop_id);
+      const returnedAt = audit?.occurredAt ?? exception.resolved_at;
+      return [{
+        outcome: "returned" as const,
+        recordId: `exception:${exception.id}`,
+        exceptionId: exception.id,
+        deliveryId: exception.delivery_id,
+        stopId: exception.stop_id,
+        roundId: exception.round_id,
+        deliveryReference: delivery.reference,
+        roundReference: round.reference,
+        recipientName: delivery.recipient_name,
+        rawAddress: delivery.destination_raw_address,
+        driverName: driverName(exception.driver_id),
+        category: exception.category,
+        ...(exception.note?.trim() ? { exceptionNote: exception.note.trim() } : {}),
+        ...(audit?.note ? { resolutionNote: audit.note } : {}),
+        reportedAt: exception.reported_at,
+        returnedAt,
+        occurredAt: returnedAt,
+        manifestVersion: exception.manifest_version,
+        verifiedPhotoCount: 1 as const,
+        mediaAssetId: exception.media_asset_id,
+        mediaState: "committed" as const,
+      }];
+    });
     return {
       tenantId: actor.tenantId,
-      deliveries: pods.flatMap((pod) => {
-        const delivery = deliveryById.get(pod.delivery_id);
-        const round = roundById.get(pod.round_id);
-        if (!delivery || !round || !committedMedia.has(pod.media_asset_id)) return [];
-        const receiverLabel = pod.handoff_type === "left_at_location"
-          ? pod.left_at_location ?? "Approved location"
-          : pod.receiver_relationship
-            ? `${pod.receiver_name ?? "Receiver"} · ${pod.receiver_relationship}`
-            : pod.receiver_name ?? delivery.recipient_name;
-        return [{
-          podId: pod.id,
-          deliveryId: pod.delivery_id,
-          stopId: pod.stop_id,
-          roundId: pod.round_id,
-          deliveryReference: delivery.reference,
-          roundReference: round.reference,
-          recipientName: delivery.recipient_name,
-          rawAddress: delivery.destination_raw_address,
-          driverName: personById.get(personIdByDriver.get(pod.driver_id) ?? "")?.display_name ?? "Team driver",
-          handoffType: pod.handoff_type,
-          receiverLabel,
-          deliveredAt: pod.delivered_at,
-          manifestVersion: pod.manifest_version,
-          verifiedPhotoCount: 1 as const,
-          mediaAssetId: pod.media_asset_id,
-          mediaState: "committed" as const,
-        }];
-      }),
+      deliveries: [...deliveredItems, ...returnedItems]
+        .sort((left, right) => Date.parse(right.occurredAt) - Date.parse(left.occurredAt))
+        .slice(0, 100),
     };
   }
 

@@ -37,8 +37,8 @@ export type OperationsSession = {
   tenants: OperationsTenant[];
 };
 
-export type OperationsHistoryItem = {
-  podId: string;
+type OperationsHistoryItemBase = {
+  recordId: string;
   deliveryId: string;
   stopId: string;
   roundId: string;
@@ -47,14 +47,33 @@ export type OperationsHistoryItem = {
   recipientName: string;
   rawAddress: string;
   driverName: string;
-  handoffType: "recipient" | "someone_else" | "left_at_location";
-  receiverLabel: string;
-  deliveredAt: string;
   manifestVersion: number;
   verifiedPhotoCount: 1;
   mediaAssetId: string;
   mediaState: "committed";
 };
+
+export type OperationsDeliveredHistoryItem = OperationsHistoryItemBase & {
+  outcome: "delivered";
+  podId: string;
+  handoffType: "recipient" | "someone_else" | "left_at_location";
+  receiverLabel: string;
+  deliveredAt: string;
+  occurredAt: string;
+};
+
+export type OperationsReturnedHistoryItem = OperationsHistoryItemBase & {
+  outcome: "returned";
+  exceptionId: string;
+  category: "damaged_item";
+  exceptionNote?: string;
+  resolutionNote?: string;
+  reportedAt: string;
+  returnedAt: string;
+  occurredAt: string;
+};
+
+export type OperationsHistoryItem = OperationsDeliveredHistoryItem | OperationsReturnedHistoryItem;
 
 export type OperationsHistoryProjection = {
   tenantId: string;
