@@ -41,6 +41,24 @@ insert into public.driver_tenant_relationships (
   '{"assigned_work":true}'::jsonb
 );
 
+insert into public.vehicle_profiles (
+  id, tenant_id, code, display_name, vehicle_group, departure_pattern,
+  max_stops_per_departure, planning_deliveries_per_block, pickup_turnaround_minutes
+) values (
+  '30000000-0000-4000-8000-000000000003',
+  '30000000-0000-4000-8000-000000000001',
+  'round-test-bike', 'Round Test Bike', 'motorbike', 'multi_stop', 4, 4, 15
+);
+
+insert into public.driver_recurring_schedules (
+  tenant_id, driver_id, weekdays, start_local, end_local, timezone, vehicle_profile_id, note
+) values (
+  '30000000-0000-4000-8000-000000000001',
+  '30000000-0000-4000-8000-000000000002',
+  array[1,2,3,4,5]::smallint[], '08:00', '18:00', 'Asia/Bangkok',
+  '30000000-0000-4000-8000-000000000003', 'Round command test capacity fixture'
+);
+
 insert into public.tenant_locations (
   id, tenant_id, code, display_name, raw_address, position, position_provenance,
   pickup_contact_name, pickup_contact_phone

@@ -6,6 +6,8 @@ import type {
   OperationsActionProjection,
   OperationsPlanningProjection,
   OperationsDeliveryItem,
+  OperationsDriverCapacityItem,
+  OperationsDriversProjection,
   OperationsRoundSummary,
   OperationsTenant,
   PlanRoundResult,
@@ -78,6 +80,29 @@ function demoPlanningProjection(tenantId: string): OperationsPlanningProjection 
   };
 }
 
+function demoCapacityProjection(tenantId: string, serviceDate: string): OperationsDriversProjection {
+  const startAt = `${serviceDate}T01:00:00.000Z`;
+  const endAt = `${serviceDate}T11:00:00.000Z`;
+  return {
+    tenantId, serviceDate, observedAt: new Date().toISOString(),
+    vehicleProfiles: [
+      { id: "demo-bike", code: "bike-box", displayName: "Motorbike + box", vehicleGroup: "motorbike", departurePattern: "return_after_round", maxStopsPerDeparture: 4, planningDeliveriesPerBlock: 4, pickupTurnaroundMinutes: 15, requiresReview: false, version: 1 },
+      { id: "demo-car", code: "car", displayName: "Car", vehicleGroup: "car", departurePattern: "return_after_round", maxStopsPerDeparture: 8, planningDeliveriesPerBlock: 8, pickupTurnaroundMinutes: 20, requiresReview: false, version: 1 },
+    ],
+    drivers: [
+      { driverId: "demo-somchai", displayName: "Somchai K.", initials: "SK", vehiclePlate: "1GX 1042", presence: { state: "live", capturedAt: new Date().toISOString() }, availability: { state: "available", label: "Available", projectionBasis: "Inside effective shift" }, effectiveShift: { source: "recurring", startAt, endAt, crossesMidnight: false }, vehicleProfile: { id: "demo-bike", code: "bike-box", displayName: "Motorbike + box", vehicleGroup: "motorbike", departurePattern: "return_after_round", maxStopsPerDeparture: 4, planningDeliveriesPerBlock: 4, pickupTurnaroundMinutes: 15, requiresReview: false, version: 1 }, completedDeliveriesToday: 3 },
+      { driverId: "demo-pim", displayName: "Pim T.", initials: "PT", vehiclePlate: "8KT 3318", presence: { state: "unknown" }, availability: { state: "available", label: "Available", projectionBasis: "Inside effective shift" }, effectiveShift: { source: "recurring", startAt, endAt, crossesMidnight: false }, vehicleProfile: { id: "demo-car", code: "car", displayName: "Car", vehicleGroup: "car", departurePattern: "return_after_round", maxStopsPerDeparture: 8, planningDeliveriesPerBlock: 8, pickupTurnaroundMinutes: 20, requiresReview: false, version: 1 }, completedDeliveriesToday: 2 },
+    ],
+    summary: { ownDrivers: 2, scheduled: 2, activeRounds: 0, availableNow: 2, scheduleRequired: 0, vehicleGroups: { motorbike: 1, car: 1 } },
+  };
+}
+
+function shiftCalendarDate(value: string, days: number): string {
+  const date = new Date(`${value}T12:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
 const exceptionLabels: Record<OperationsActionException["category"], string> = {
   missing_item: "Missing item",
   wrong_item: "Wrong item",
@@ -108,6 +133,7 @@ function nextRoundReference(deliveries: UnplannedDeliverySummary[]): string {
 export function OperationsWorkstation({ accessToken, tenant, userName, demoMode = false, deliveryIntake, deliveryIntakeOpen = false, deliveriesOpen = false, driversOpen = false, deliveryRefreshKey = 0, onCloseDeliveryIntake, onDeliveries, onDrivers, onCloseDeliveries, onCloseDrivers, onAddDelivery, onHistory, onCommunications, onSignOut }: Props) {
   const [projection, setProjection] = useState<OperationsActionProjection | null>(null);
   const [planning, setPlanning] = useState<OperationsPlanningProjection | null>(null);
+  const [driverCapacity, setDriverCapacity] = useState<OperationsDriversProjection | null>(null);
   const [planningDate, setPlanningDate] = useState(() => new Intl.DateTimeFormat("en-CA", { timeZone: tenant.timezone }).format(new Date()));
   const [selectedStops, setSelectedStops] = useState<string[]>([]);
   const [planningDriverId, setPlanningDriverId] = useState("");
@@ -191,6 +217,24 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
     }
   }, [accessToken, demoMode, tenant.id]);
 
+  const loadDriverCapacity = useCallback(async () => {
+    if (demoMode) { setDriverCapacity(demoCapacityProjection(tenant.id, planningDate)); return; }
+    if (!accessToken) return;
+    try {
+      const response = await fetch(`${roundsApiUrl}/v1/operations/drivers?serviceDate=${encodeURIComponent(planningDate)}`, {
+        headers: { authorization: `Bearer ${accessToken}`, "x-rounds-tenant-id": tenant.id, "x-trace-id": crypto.randomUUID() },
+      });
+      const body = await response.json() as OperationsDriversProjection | ApiError;
+      if (!response.ok) throw new Error((body as ApiError).error?.message ?? `Capacity HTTP ${response.status}`);
+      const data = body as OperationsDriversProjection;
+      setDriverCapacity(data);
+      setPlanningDriverId((current) => data.drivers.some((driver) => driver.driverId === current) ? current : data.drivers.find((driver) => driver.effectiveShift)?.driverId ?? data.drivers[0]?.driverId ?? "");
+    } catch (caught) {
+      setDriverCapacity(null);
+      setRoundError(caught instanceof Error ? caught.message : "Driver capacity could not be loaded");
+    }
+  }, [accessToken, demoMode, planningDate, tenant.id]);
+
   useEffect(() => {
     void load();
     const timer = window.setInterval(() => void load(true), 5000);
@@ -200,6 +244,10 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
   useEffect(() => {
     if (dispatchMode === "plan") void loadPlanning();
   }, [dispatchMode, loadPlanning]);
+
+  useEffect(() => {
+    if (dispatchMode === "plan") void loadDriverCapacity();
+  }, [dispatchMode, loadDriverCapacity]);
 
   useEffect(() => {
     setMapHint(`${mapModeCopy[mapMode].label} · ${mapModeCopy[mapMode].hint}`);
@@ -226,6 +274,14 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
   const activeRounds = buckets.live.length;
   const chosenDeliveries = useMemo(() => planning?.unplannedDeliveries.filter((delivery) => selectedStops.includes(delivery.stopId)) ?? [], [planning, selectedStops]);
   const planningAnchor = chosenDeliveries[0];
+  const chosenDriver = driverCapacity?.drivers.find((driver) => driver.driverId === planningDriverId);
+  const capacityIssue = !planningDriverId ? "Choose an own-team driver."
+    : !chosenDriver ? "Driver capacity is not loaded for this date."
+    : !chosenDriver.effectiveShift ? chosenDriver.dateException?.kind === "off" ? "Driver has a day-off exception for this date." : "Driver is not scheduled for this date."
+    : !chosenDriver.vehicleProfile ? "Driver has no active vehicle profile for this date."
+    : selectedStops.length > chosenDriver.vehicleProfile.maxStopsPerDeparture ? `${chosenDriver.vehicleProfile.displayName} allows ${chosenDriver.vehicleProfile.maxStopsPerDeparture} Stop${chosenDriver.vehicleProfile.maxStopsPerDeparture === 1 ? "" : "s"} per departure.`
+    : chosenDriver.vehicleProfile.departurePattern === "return_after_every_delivery" && selectedStops.length > 1 ? "Vehicle rules require returning to pickup after every delivery."
+    : "";
 
   function togglePlanningDelivery(delivery: UnplannedDeliverySummary) {
     if (planningAnchor && !selectedStops.includes(delivery.stopId) && (planningAnchor.serviceDate !== delivery.serviceDate || planningAnchor.pickupLocationId !== delivery.pickupLocationId)) return;
@@ -310,19 +366,11 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
         <div className="v45-rail-head">
           <div className="v45-rail-title"><div><h1>Dispatch</h1><p>What needs attention now.</p></div><button type="button" className="v45-add" onClick={onAddDelivery}>+ Deliveries</button></div>
           <div className="v45-mode"><button className={dispatchMode === "live" ? "on" : ""} type="button" onClick={() => { setDispatchMode("live"); setSelection(null); }}>Live</button><button className={dispatchMode === "plan" ? "on" : ""} type="button" onClick={() => { setDispatchMode("plan"); setSelection(null); }}>Plan <span>{planning?.unplannedDeliveries.length ?? buckets.ready.length}</span></button></div>
-          {dispatchMode === "plan" ? <div className="v45-plan-controls"><label>Planning date<input type="date" value={planningDate} onChange={(event) => { setPlanningDate(event.target.value); setSelectedStops([]); setRoundError(""); setRoundSuccess(null); }} /></label><p><span>Unplanned deliveries waiting</span><b>{planning?.unplannedDeliveries.filter((delivery) => delivery.serviceDate === planningDate).length ?? "—"}</b></p><button type="button" onClick={() => void loadPlanning()}>Refresh delivery pool</button><small>Select Stops in visit order. Nothing is assigned until explicit approval.</small></div> : <div className="v45-scope"><label>Delivery view<select defaultValue="all"><option value="all">All deliveries</option><option value="today">Today</option></select></label><p><b>{buckets.action.length} action</b><span>·</span><b>{activeRounds} live</b><span>·</span><span>{buckets.done.length} completed today</span></p></div>}
+          {dispatchMode === "plan" ? <div className="v45-plan-controls"><label>Planning date<div className="v45-plan-date"><button type="button" aria-label="Previous date" onClick={() => { setPlanningDate((date) => shiftCalendarDate(date, -1)); setSelectedStops([]); }}>‹</button><input type="date" value={planningDate} onChange={(event) => { setPlanningDate(event.target.value); setSelectedStops([]); setRoundError(""); setRoundSuccess(null); }} /><button type="button" aria-label="Next date" onClick={() => { setPlanningDate((date) => shiftCalendarDate(date, 1)); setSelectedStops([]); }}>›</button></div></label><p><span>Unplanned deliveries waiting</span><b>{planning?.unplannedDeliveries.filter((delivery) => delivery.serviceDate === planningDate).length ?? "—"}</b></p><button type="button" onClick={() => { void loadPlanning(); void loadDriverCapacity(); }}>Refresh planning truth</button><small>Select Stops in visit order. Nothing is assigned until explicit approval.</small></div> : <div className="v45-scope"><label>Delivery view<select defaultValue="all"><option value="all">All deliveries</option><option value="today">Today</option></select></label><p><b>{buckets.action.length} action</b><span>·</span><b>{activeRounds} live</b><span>·</span><span>{buckets.done.length} completed today</span></p></div>}
           {dispatchMode === "live" && <div className="v45-tabs" role="tablist">
             {(["action", "ready", "live", "done"] as QueueTab[]).map((item) => <button key={item} type="button" role="tab" aria-selected={tab === item} className={tab === item ? "on" : ""} onClick={() => { setTab(item); setSelection(null); }}><b>{buckets[item].length}</b>{item[0]!.toUpperCase() + item.slice(1)}</button>)}
           </div>}
           <label className="v45-search"><SearchIcon /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search order, customer or area" /></label>
-          {dispatchMode === "plan" && <section className="v45-plan-approval" aria-label="Round approval">
-            <div><span>PROPOSED ROUND</span><b>{selectedStops.length} Stop{selectedStops.length === 1 ? "" : "s"} selected</b>{selectedStops.length > 0 && <button type="button" onClick={() => setSelectedStops([])}>Clear</button>}</div>
-            <label>Round reference<input value={roundReference} onChange={(event) => setRoundReference(event.target.value)} placeholder="ROUND-YYYYMMDD-01" /></label>
-            <label>Team driver<select value={planningDriverId} onChange={(event) => setPlanningDriverId(event.target.value)}><option value="">Choose driver</option>{planning?.drivers.map((driver) => <option key={driver.id} value={driver.id}>{driver.displayName}{driver.vehiclePlate ? ` · ${driver.vehiclePlate}` : ""}</option>)}</select></label>
-            {roundError && <p role="alert">{roundError}</p>}
-            {roundSuccess && <p className="success" role="status">{roundSuccess.state.reference} assigned · {roundSuccess.state.stopIds.length} Stop{roundSuccess.state.stopIds.length === 1 ? "" : "s"}</p>}
-            <button className="primary" type="button" disabled={roundSubmitting || tenant.role === "viewer" || !selectedStops.length || !planningDriverId || !roundReference.trim()} onClick={() => void approveRound()}>{roundSubmitting ? "Approving…" : tenant.role === "viewer" ? "Viewer cannot approve" : "Approve & assign Round"}</button>
-          </section>}
         </div>
         <div className="v45-queue">
           {dispatchMode === "plan" ? <PlanningQueue planning={planning} planningDate={planningDate} query={query} selection={selection} selectedStops={selectedStops} anchor={planningAnchor} setSelection={setSelection} onToggle={togglePlanningDelivery} timezone={tenant.timezone} /> : <><div className={`v45-group ${tab === "action" ? "action" : ""}`}><b>{tab === "action" ? "Needs action" : tab === "ready" ? "Ready" : tab === "live" ? "Live deliveries" : "Recently completed"}</b><span>{visible.length}</span></div>
@@ -364,6 +412,25 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
             <button type="button" className={mapCamera.pitch >= 20 ? "on" : ""} title="Toggle 2D / 3D" onClick={() => window.dispatchEvent(new CustomEvent("rounds-map-control", { detail: "toggle-pitch" }))}>{mapCamera.pitch >= 20 ? "2D" : "3D"}</button>
           </div>
         </div>
+
+        {dispatchMode === "plan" && <PlanningTimeline
+          projection={driverCapacity}
+          selectedDriverId={planningDriverId}
+          onSelectDriver={setPlanningDriverId}
+          selectedStopCount={selectedStops.length}
+          unplannedCount={planning?.unplannedDeliveries.filter((delivery) => delivery.serviceDate === planningDate).length ?? 0}
+          serviceDate={planningDate}
+          timezone={tenant.timezone}
+          roundReference={roundReference}
+          setRoundReference={setRoundReference}
+          capacityIssue={capacityIssue}
+          roundError={roundError}
+          roundSuccess={roundSuccess}
+          submitting={roundSubmitting}
+          viewer={tenant.role === "viewer"}
+          onClear={() => setSelectedStops([])}
+          onApprove={() => void approveRound()}
+        />}
 
         <aside className={`v45-drawer ${selection ? "open" : ""}`} aria-hidden={!selection}>
           <header><div><small>{selection?.kind === "exception" ? "ORDER DECISION" : selection?.kind === "delivery" ? "PLANNING DELIVERY" : "LIVE ROUND"}</small><h2>{selection?.kind === "exception" ? selection.item.recipientName : selection?.kind === "round" ? selection.item.reference : selection?.kind === "delivery" ? selection.item.recipientName : ""}</h2><p>{selection?.kind === "exception" ? `#${selection.item.deliveryReference} · ${selection.item.rawAddress}` : selection?.kind === "round" ? `${selection.item.driverName} · ${selection.item.stopCount} Stops` : selection?.kind === "delivery" ? `#${selection.item.reference} · ${selection.item.rawAddress}` : ""}</p></div><button type="button" onClick={() => setSelection(null)} aria-label="Close drawer"><CloseIcon /></button></header>
@@ -423,6 +490,41 @@ function PlanningQueue({ planning, planningDate, query, selection, selectedStops
 
 function PlanningRow({ item, inspected, selectedOrder, disabled, onInspect, onToggle, timezone }: { item: UnplannedDeliverySummary; inspected: boolean; selectedOrder: number; disabled: boolean; onInspect: () => void; onToggle: () => void; timezone: string }) {
   return <article className={`v45-order round planning ${inspected ? "selected" : ""} ${selectedOrder ? "proposed" : ""} ${disabled ? "disabled" : ""}`}><button type="button" className="v45-order-inspect" onClick={onInspect}><span className="v45-order-line"><span><b>{item.recipientName}</b><small>{item.rawAddress}</small></span><em>#{item.reference}</em></span><span className="v45-order-foot"><span>{shortTime(item.windowStart, timezone)}–{shortTime(item.windowEnd, timezone)}</span><span>{item.manifestSummary}</span><b>Ready</b></span></button><button className="v45-plan-toggle" type="button" disabled={disabled} aria-label={selectedOrder ? `Remove ${item.reference} from proposed Round` : `Add ${item.reference} to proposed Round`} onClick={onToggle}>{selectedOrder || "+"}</button></article>;
+}
+
+function PlanningTimeline({ projection, selectedDriverId, onSelectDriver, selectedStopCount, unplannedCount, serviceDate, timezone, roundReference, setRoundReference, capacityIssue, roundError, roundSuccess, submitting, viewer, onClear, onApprove }: { projection: OperationsDriversProjection | null; selectedDriverId: string; onSelectDriver: (driverId: string) => void; selectedStopCount: number; unplannedCount: number; serviceDate: string; timezone: string; roundReference: string; setRoundReference: (reference: string) => void; capacityIssue: string; roundError: string; roundSuccess: Extract<PlanRoundResult, { status: "committed" }> | null; submitting: boolean; viewer: boolean; onClear: () => void; onApprove: () => void }) {
+  const driver = projection?.drivers.find((item) => item.driverId === selectedDriverId);
+  const warnings = [
+    "Travel time and promised-window fit await server routing.",
+    "Cargo fit awaits delivery cargo classification.",
+    ...(driver?.vehicleProfile?.requiresReview ? ["Vehicle profile is a conservative migrated default."] : []),
+  ];
+  return <section className="v45-planning-timeline" aria-label="Driver and vehicle planning timeline">
+    <div className="v45-plan-resize"><span /></div>
+    <header>
+      <div className="v45-plan-title"><small>{selectedStopCount ? "PROPOSED PLAN" : "PLAN ROUNDS"}</small><b>{selectedStopCount ? `${selectedStopCount} Stop${selectedStopCount === 1 ? "" : "s"} selected` : "Turn the unplanned pool into physical Rounds."}</b><span>{serviceDate} · Own-team capacity only</span></div>
+      <div className="v45-plan-summary"><div><span>Unplanned</span><b>{unplannedCount}</b></div><div><span>Own drivers</span><b>{projection?.summary.ownDrivers ?? "—"}</b></div><div><span>Scheduled</span><b>{projection?.summary.scheduled ?? "—"}</b></div><div><span>Selected</span><b>{selectedStopCount}</b></div></div>
+      <div className="v45-plan-head-actions"><label>Round reference<input value={roundReference} onChange={(event) => setRoundReference(event.target.value)} placeholder="ROUND-YYYYMMDD-01" /></label>{selectedStopCount > 0 && <button type="button" onClick={onClear}>Clear</button>}<button className="primary" type="button" disabled={submitting || viewer || !selectedStopCount || !selectedDriverId || !roundReference.trim() || Boolean(capacityIssue)} onClick={onApprove}>{submitting ? "Approving…" : viewer ? "Viewer cannot approve" : "Approve plan"}</button></div>
+    </header>
+    <div className={`v45-plan-explain ${capacityIssue ? "risk" : selectedStopCount ? "good" : ""}`}><i /><b>{capacityIssue ? "CAPACITY CHECK" : selectedStopCount ? "STATIC FIT" : "PLANNING TRUTH"}</b><span>{capacityIssue || (selectedStopCount ? `${driver?.displayName ?? "Driver"} fits the effective shift and vehicle Stop limit. ${warnings.join(" ")}` : "Select deliveries, then choose the driver lane. No assignment occurs before approval.")}</span>{roundError && <em>{roundError}</em>}{roundSuccess && <em className="success">{roundSuccess.state.reference} assigned</em>}</div>
+    <div className="v45-plan-lanes">
+      <div className="v45-plan-axis"><b>Driver · vehicle</b><span>08:00</span><span>12:00</span><span>16:00</span><span>20:00</span></div>
+      {!projection ? <div className="v45-plan-empty">Loading effective shifts and vehicle rules…</div> : projection.drivers.length === 0 ? <div className="v45-plan-empty">No own-team drivers are configured.</div> : projection.drivers.map((item) => <PlanningDriverLane key={item.driverId} driver={item} selected={item.driverId === selectedDriverId} selectedStopCount={selectedStopCount} timezone={timezone} onSelect={() => onSelectDriver(item.driverId)} />)}
+    </div>
+  </section>;
+}
+
+function PlanningDriverLane({ driver, selected, selectedStopCount, timezone, onSelect }: { driver: OperationsDriverCapacityItem; selected: boolean; selectedStopCount: number; timezone: string; onSelect: () => void }) {
+  const maxStops = driver.vehicleProfile?.maxStopsPerDeparture;
+  const fits = Boolean(driver.effectiveShift && maxStops && selectedStopCount <= maxStops && !(driver.vehicleProfile?.departurePattern === "return_after_every_delivery" && selectedStopCount > 1));
+  const start = driver.effectiveShift ? Number(new Intl.DateTimeFormat("en-GB", { timeZone: timezone, hour: "2-digit", hour12: false }).format(new Date(driver.effectiveShift.startAt))) : 8;
+  const end = driver.effectiveShift ? Number(new Intl.DateTimeFormat("en-GB", { timeZone: timezone, hour: "2-digit", hour12: false }).format(new Date(driver.effectiveShift.endAt))) : start;
+  const left = Math.max(0, Math.min(100, ((start - 8) / 12) * 100));
+  const width = Math.max(0, Math.min(100 - left, ((end <= start ? end + 24 : end) - start) / 12 * 100));
+  return <button type="button" className={`v45-plan-lane ${selected ? "selected" : ""} ${driver.effectiveShift ? "" : "off"}`} onClick={onSelect}>
+    <span className="v45-plan-driver"><i>{driver.initials}</i><span><b>{driver.displayName}</b><em>{driver.vehicleProfile?.displayName ?? "Vehicle required"} · {maxStops ?? 0} Stop max</em><small>{driver.dateException ? `Date exception · ${driver.dateException.kind}` : driver.effectiveShift ? `${shortTime(driver.effectiveShift.startAt, timezone)}–${shortTime(driver.effectiveShift.endAt, timezone)}` : "Off shift"}</small></span></span>
+    <span className="v45-plan-track"><i className="shift" style={{ left: `${left}%`, width: `${width}%` }} />{selected && selectedStopCount > 0 && <strong className={fits ? "fit" : "risk"}>{selectedStopCount} Stop{selectedStopCount === 1 ? "" : "s"} · {fits ? "static fit" : "blocked"}</strong>}{driver.currentRound && <em className="current">{driver.currentRound.reference}</em>}</span>
+  </button>;
 }
 
 function ExceptionDrawer({ item, accessToken, tenant, onCommunications, onResolved }: { item: OperationsActionException; accessToken?: string; tenant: OperationsTenant; onCommunications: (threadId?: string) => void; onResolved: () => void }) {

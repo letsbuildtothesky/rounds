@@ -203,6 +203,16 @@ export type OperationsDriverCapacityItem = {
     endLocal: string;
     note?: string;
   };
+  dateException?: {
+    id: string;
+    version: number;
+    serviceDate: string;
+    kind: "shift" | "off";
+    startLocal?: string;
+    endLocal?: string;
+    vehicleProfileId?: string;
+    note?: string;
+  };
   vehicleProfile?: OperationsVehicleProfileSummary;
   currentRound?: {
     id: string;
@@ -257,6 +267,58 @@ export type DriverRecurringScheduleSetEvent = DomainEventEnvelope<
 export type SetDriverRecurringScheduleResult = CommandResult<
   DriverRecurringScheduleSetPayload,
   DriverRecurringScheduleSetEvent
+>;
+
+export type SetDriverShiftExceptionPayload = {
+  serviceDate: string;
+  kind: "shift" | "off";
+  startLocal?: string;
+  endLocal?: string;
+  vehicleProfileId?: string;
+  note?: string;
+};
+
+export type SetDriverShiftExceptionCommand = CommandEnvelope<
+  "operations.set_driver_shift_exception",
+  SetDriverShiftExceptionPayload
+>;
+export type DriverShiftExceptionSetPayload = {
+  exceptionId: string;
+  driverId: string;
+  serviceDate: string;
+  kind: "shift" | "off";
+  startLocal?: string;
+  endLocal?: string;
+  vehicleProfileId?: string;
+  updatedAt: string;
+};
+export type DriverShiftExceptionSetEvent = DomainEventEnvelope<
+  "operations.driver_shift_exception_set",
+  DriverShiftExceptionSetPayload
+>;
+export type SetDriverShiftExceptionResult = CommandResult<
+  DriverShiftExceptionSetPayload,
+  DriverShiftExceptionSetEvent
+>;
+
+export type ClearDriverShiftExceptionPayload = { serviceDate: string };
+export type ClearDriverShiftExceptionCommand = CommandEnvelope<
+  "operations.clear_driver_shift_exception",
+  ClearDriverShiftExceptionPayload
+>;
+export type DriverShiftExceptionClearedPayload = {
+  exceptionId: string;
+  driverId: string;
+  serviceDate: string;
+  clearedAt: string;
+};
+export type DriverShiftExceptionClearedEvent = DomainEventEnvelope<
+  "operations.driver_shift_exception_cleared",
+  DriverShiftExceptionClearedPayload
+>;
+export type ClearDriverShiftExceptionResult = CommandResult<
+  DriverShiftExceptionClearedPayload,
+  DriverShiftExceptionClearedEvent
 >;
 
 export type OperationsDeliveryItem = {

@@ -2,13 +2,18 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import type {
   DriverSession,
+  ClearDriverShiftExceptionCommand,
+  ClearDriverShiftExceptionResult,
   OperationsDriversProjection,
   OperationsSession,
   SetDriverRecurringScheduleCommand,
   SetDriverRecurringScheduleResult,
+  SetDriverShiftExceptionCommand,
+  SetDriverShiftExceptionResult,
 } from "@rounds/contracts";
 import { operationsDriversHandler } from "../src/operations-drivers-handler.js";
 import { setDriverRecurringScheduleHandler } from "../src/set-driver-recurring-schedule-handler.js";
+import { clearDriverShiftExceptionHandler, setDriverShiftExceptionHandler } from "../src/set-driver-shift-exception-handler.js";
 import type { ActorContext, AuthenticatedIdentity, IdentityGateway, OperationsDriversGateway } from "../src/types.js";
 
 const tenantId = "94000000-0000-4000-8000-000000000001";
@@ -24,18 +29,28 @@ const committed: SetDriverRecurringScheduleResult = {
     scheduleId: "94000000-0000-4000-8000-000000000005", driverId, weekdays: [1, 2, 3, 4, 5], startLocal: "08:00", endLocal: "18:00", vehicleProfileId: profileId, updatedAt: "2026-09-03T04:00:00.000Z",
   },
 };
+const exceptionCommitted: SetDriverShiftExceptionResult = {
+  status: "committed", aggregateVersion: 1, events: [], state: {
+    exceptionId: "94000000-0000-4000-8000-000000000006", driverId, serviceDate: "2026-09-04",
+    kind: "off", updatedAt: "2026-09-03T04:00:00.000Z",
+  },
+};
 
 class FakeGateway implements IdentityGateway, OperationsDriversGateway {
   role: ActorContext["role"] = "dispatcher";
   authorized = true;
   serviceDate = "";
   command?: SetDriverRecurringScheduleCommand;
+  exceptionCommand?: SetDriverShiftExceptionCommand;
+  clearCommand?: ClearDriverShiftExceptionCommand;
   async authenticate(): Promise<AuthenticatedIdentity | null> { return { authUserId: "auth-user" }; }
   async authorizeTenant(): Promise<ActorContext | null> { return this.authorized ? { ...actor, role: this.role } : null; }
   async getOperationsSession(): Promise<OperationsSession | null> { return null; }
   async getDriverSession(): Promise<DriverSession | null> { return null; }
   async getOperationsDrivers(_actor: ActorContext, serviceDate: string): Promise<OperationsDriversProjection> { this.serviceDate = serviceDate; return projection; }
   async setDriverRecurringSchedule(command: SetDriverRecurringScheduleCommand): Promise<SetDriverRecurringScheduleResult> { this.command = command; return committed; }
+  async setDriverShiftException(command: SetDriverShiftExceptionCommand): Promise<SetDriverShiftExceptionResult> { this.exceptionCommand = command; return exceptionCommitted; }
+  async clearDriverShiftException(command: ClearDriverShiftExceptionCommand): Promise<ClearDriverShiftExceptionResult> { this.clearCommand = command; return { status: "committed", aggregateVersion: 2, events: [], state: { exceptionId: "94000000-0000-4000-8000-000000000006", driverId, serviceDate: command.payload.serviceDate, clearedAt: "2026-09-03T04:00:00.000Z" } }; }
 }
 
 function dependencies(gateway: FakeGateway) {
@@ -77,4 +92,30 @@ test("viewer cannot configure schedules and invalid days never reach the gateway
   const invalidGateway = new FakeGateway();
   assert.equal((await setDriverRecurringScheduleHandler(scheduleRequest({ ...scheduleBody, weekdays: [1, 1] }), driverId, dependencies(invalidGateway))).status, 422);
   assert.equal(invalidGateway.command, undefined);
+});
+
+function exceptionRequest(body: unknown): Request {
+  return new Request(`http://test/v1/operations/drivers/${driverId}/shift-exception`, { method: "POST", headers: { authorization: "Bearer valid", "content-type": "application/json", "idempotency-key": "exception-1", "if-match-version": "0", "x-rounds-tenant-id": tenantId }, body: JSON.stringify(body) });
+}
+
+test("dispatcher commits a date-specific day off", async () => {
+  const gateway = new FakeGateway();
+  const response = await setDriverShiftExceptionHandler(exceptionRequest({ serviceDate: "2026-09-04", kind: "off", note: "Personal day" }), driverId, dependencies(gateway));
+  assert.equal(response.status, 201);
+  assert.equal(gateway.exceptionCommand?.payload.kind, "off");
+});
+
+test("invalid shift exceptions never reach the gateway", async () => {
+  const gateway = new FakeGateway();
+  const response = await setDriverShiftExceptionHandler(exceptionRequest({ serviceDate: "2026-09-04", kind: "shift" }), driverId, dependencies(gateway));
+  assert.equal(response.status, 422);
+  assert.equal(gateway.exceptionCommand, undefined);
+});
+
+test("dispatcher restores the recurring schedule with an explicit version", async () => {
+  const gateway = new FakeGateway();
+  const request = new Request(`http://test/v1/operations/drivers/${driverId}/shift-exception`, { method: "DELETE", headers: { authorization: "Bearer valid", "content-type": "application/json", "idempotency-key": "clear-1", "if-match-version": "2", "x-rounds-tenant-id": tenantId }, body: JSON.stringify({ serviceDate: "2026-09-04" }) });
+  const response = await clearDriverShiftExceptionHandler(request, driverId, dependencies(gateway));
+  assert.equal(response.status, 201);
+  assert.equal(gateway.clearCommand?.expectedVersion, 2);
 });

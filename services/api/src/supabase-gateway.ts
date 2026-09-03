@@ -21,6 +21,8 @@ import type {
 import type {
   ConfirmDeliveryReturnCommand,
   ConfirmDeliveryReturnResult,
+  ClearDriverShiftExceptionCommand,
+  ClearDriverShiftExceptionResult,
   CreateDeliveryCommand,
   CreateDeliveryResult,
   ConfirmPickupCommand,
@@ -58,6 +60,8 @@ import type {
   SendOperationsMessageResult,
   SetDriverRecurringScheduleCommand,
   SetDriverRecurringScheduleResult,
+  SetDriverShiftExceptionCommand,
+  SetDriverShiftExceptionResult,
 } from "@rounds/contracts";
 
 type MembershipRow = {
@@ -1129,6 +1133,30 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     return data as SetDriverRecurringScheduleResult;
   }
 
+  async setDriverShiftException(
+    command: SetDriverShiftExceptionCommand,
+    actor: ActorContext,
+  ): Promise<SetDriverShiftExceptionResult> {
+    const { data, error } = await this.admin.rpc("set_driver_shift_exception_command", {
+      p_command: command,
+      p_actor_person_id: actor.personId,
+    });
+    if (error) throw error;
+    return data as SetDriverShiftExceptionResult;
+  }
+
+  async clearDriverShiftException(
+    command: ClearDriverShiftExceptionCommand,
+    actor: ActorContext,
+  ): Promise<ClearDriverShiftExceptionResult> {
+    const { data, error } = await this.admin.rpc("clear_driver_shift_exception_command", {
+      p_command: command,
+      p_actor_person_id: actor.personId,
+    });
+    if (error) throw error;
+    return data as ClearDriverShiftExceptionResult;
+  }
+
   async getOperationsDrivers(
     actor: ActorContext,
     serviceDate: string,
@@ -1149,8 +1177,8 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
       vehicle_profile_id: string; note: string | null; version: number;
     };
     type ShiftExceptionRow = {
-      driver_id: string; exception_kind: "shift" | "off"; start_local: string | null;
-      end_local: string | null; vehicle_profile_id: string | null;
+      id: string; driver_id: string; service_date: string; exception_kind: "shift" | "off"; start_local: string | null;
+      end_local: string | null; vehicle_profile_id: string | null; note: string | null; version: number;
     };
     type CurrentRoundRow = {
       id: string; reference: string; driver_id: string;
@@ -1188,7 +1216,7 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
         .eq("tenant_id", actor.tenantId).in("driver_id", driverIds).eq("active", true)
         .is("deleted_at", null).returns<ScheduleRow[]>(),
       this.admin.from("driver_shift_exceptions")
-        .select("driver_id, exception_kind, start_local, end_local, vehicle_profile_id")
+        .select("id, driver_id, service_date, exception_kind, start_local, end_local, vehicle_profile_id, note, version")
         .eq("tenant_id", actor.tenantId).in("driver_id", driverIds).eq("service_date", serviceDate)
         .is("deleted_at", null).returns<ShiftExceptionRow[]>(),
       this.admin.from("rounds").select("id, reference, driver_id, state, updated_at")
@@ -1275,7 +1303,7 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
         state: "loading", label: `${currentRound.reference} · ${currentRound.state}`,
         projectionBasis: "Assigned work blocks new capacity until the current Round is closed.",
       };
-      else if (!schedule) availability = {
+      else if (!shift && !schedule) availability = {
         state: "schedule_required", label: "Schedule required",
         projectionBasis: "No recurring own-team schedule has been configured.",
       };
@@ -1302,6 +1330,14 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
           id: schedule.id, version: schedule.version, weekdays: schedule.weekdays,
           startLocal: compactLocalTime(schedule.start_local), endLocal: compactLocalTime(schedule.end_local),
           ...(schedule.note ? { note: schedule.note } : {}),
+        } } : {}),
+        ...(exception ? { dateException: {
+          id: exception.id, version: exception.version, serviceDate: exception.service_date,
+          kind: exception.exception_kind,
+          ...(exception.start_local ? { startLocal: compactLocalTime(exception.start_local) } : {}),
+          ...(exception.end_local ? { endLocal: compactLocalTime(exception.end_local) } : {}),
+          ...(exception.vehicle_profile_id ? { vehicleProfileId: exception.vehicle_profile_id } : {}),
+          ...(exception.note ? { note: exception.note } : {}),
         } } : {}),
         ...(vehicleProfile ? { vehicleProfile } : {}),
         ...(currentRound ? { currentRound: {

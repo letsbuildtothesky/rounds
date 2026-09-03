@@ -30,6 +30,9 @@ import {
   type ResolveOperationsExceptionPayload,
   type SetDriverRecurringScheduleCommand,
   type SetDriverRecurringSchedulePayload,
+  type SetDriverShiftExceptionCommand,
+  type SetDriverShiftExceptionPayload,
+  type ClearDriverShiftExceptionCommand,
 } from "./operations.js";
 
 export class ContractError extends Error {}
@@ -64,6 +67,57 @@ export function validateSetDriverRecurringScheduleCommand(command: SetDriverRecu
     throw new ContractError("SetDriverRecurringSchedule expectedVersion must be a non-negative integer");
   }
   validateSetDriverRecurringSchedulePayload(command.payload);
+}
+
+export function validateSetDriverShiftExceptionPayload(payload: SetDriverShiftExceptionPayload): void {
+  const parsedServiceDate = new Date(`${payload.serviceDate}T00:00:00Z`);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(payload.serviceDate)
+    || Number.isNaN(parsedServiceDate.valueOf())
+    || parsedServiceDate.toISOString().slice(0, 10) !== payload.serviceDate) {
+    throw new ContractError("serviceDate must be a real YYYY-MM-DD date");
+  }
+  if (payload.kind !== "shift" && payload.kind !== "off") throw new ContractError("exception kind must be shift or off");
+  if (payload.kind === "off") {
+    if (payload.startLocal !== undefined || payload.endLocal !== undefined || payload.vehicleProfileId !== undefined) {
+      throw new ContractError("an off-day exception cannot include shift times or vehicle profile");
+    }
+  } else {
+    if (!payload.startLocal || !payload.endLocal || !payload.vehicleProfileId) {
+      throw new ContractError("a shift exception requires times and vehicle profile");
+    }
+    if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(payload.startLocal) || !/^([01]\d|2[0-3]):[0-5]\d$/.test(payload.endLocal)) {
+      throw new ContractError("exception times must use HH:mm");
+    }
+    if (payload.startLocal === payload.endLocal) throw new ContractError("exception start and end must differ");
+    assertUuid(payload.vehicleProfileId, "vehicleProfileId");
+  }
+  if (payload.note !== undefined && payload.note.trim().length > 500) throw new ContractError("note exceeds 500 characters");
+}
+
+export function validateSetDriverShiftExceptionCommand(command: SetDriverShiftExceptionCommand): void {
+  if (command.schemaVersion !== 1 || command.commandType !== "operations.set_driver_shift_exception") {
+    throw new ContractError("unsupported SetDriverShiftException command envelope");
+  }
+  assertUuid(command.commandId, "commandId");
+  assertUuid(command.traceId, "traceId");
+  assertUuid(command.tenantId, "tenantId");
+  assertUuid(command.aggregateId, "aggregateId");
+  assertNonEmpty(command.idempotencyKey, "idempotencyKey");
+  if (command.idempotencyKey.length > 200) throw new ContractError("idempotencyKey exceeds 200 characters");
+  if (!Number.isInteger(command.expectedVersion) || command.expectedVersion < 0) {
+    throw new ContractError("SetDriverShiftException expectedVersion must be a non-negative integer");
+  }
+  validateSetDriverShiftExceptionPayload(command.payload);
+}
+
+export function validateClearDriverShiftExceptionCommand(command: ClearDriverShiftExceptionCommand): void {
+  if (command.schemaVersion !== 1 || command.commandType !== "operations.clear_driver_shift_exception") throw new ContractError("unsupported ClearDriverShiftException command envelope");
+  assertUuid(command.commandId, "commandId"); assertUuid(command.traceId, "traceId"); assertUuid(command.tenantId, "tenantId"); assertUuid(command.aggregateId, "aggregateId");
+  assertNonEmpty(command.idempotencyKey, "idempotencyKey");
+  if (command.idempotencyKey.length > 200) throw new ContractError("idempotencyKey exceeds 200 characters");
+  if (!Number.isInteger(command.expectedVersion) || command.expectedVersion < 1) throw new ContractError("ClearDriverShiftException expectedVersion must be a positive integer");
+  const parsed = new Date(`${command.payload.serviceDate}T00:00:00Z`);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(command.payload.serviceDate) || Number.isNaN(parsed.valueOf()) || parsed.toISOString().slice(0, 10) !== command.payload.serviceDate) throw new ContractError("serviceDate must be a real YYYY-MM-DD date");
 }
 
 export function validateResolveOperationsExceptionPayload(payload: ResolveOperationsExceptionPayload): void {

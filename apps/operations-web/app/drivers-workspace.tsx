@@ -6,6 +6,7 @@ import type {
   OperationsDriversProjection,
   OperationsTenant,
   SetDriverRecurringScheduleResult,
+  SetDriverShiftExceptionResult,
 } from "@rounds/contracts";
 
 const roundsApiUrl = process.env.NEXT_PUBLIC_ROUNDS_API_URL ?? "http://127.0.0.1:8080";
@@ -54,6 +55,7 @@ export function DriversWorkspace({ accessToken, tenant, onBackToDispatch, onOpen
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [editing, setEditing] = useState<OperationsDriverCapacityItem | null>(null);
+  const [editingException, setEditingException] = useState<OperationsDriverCapacityItem | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -114,13 +116,14 @@ export function DriversWorkspace({ accessToken, tenant, onBackToDispatch, onOpen
         <header><div><small>{tab === "schedule" ? "RECURRING SHIFTS" : "OWN TEAM"}</small><h2>{tab === "schedule" ? "Schedule" : "Current capacity"}</h2></div><p>{visibleDrivers.length} driver{visibleDrivers.length === 1 ? "" : "s"} · {serviceDate}</p></header>
         {loading ? <div className="v45-drivers-message">Checking own-team capacity…</div> : error ? <div className="v45-drivers-message error"><b>Couldn&apos;t load Drivers</b><span>{error}</span><button type="button" onClick={() => void load()}>Retry</button></div> : visibleDrivers.length === 0 ? <div className="v45-drivers-message"><b>No own drivers found.</b><span>Drivers appear after an active own-team relationship is configured.</span></div> : <div className="v45-driver-list">
           {visibleDrivers.map((driver) => tab === "schedule"
-            ? <ScheduleRow key={driver.driverId} driver={driver} tenant={tenant} onEdit={() => setEditing(driver)} />
+            ? <ScheduleRow key={driver.driverId} driver={driver} tenant={tenant} onEdit={() => setEditing(driver)} onException={() => setEditingException(driver)} />
             : <DriverRow key={driver.driverId} driver={driver} tenant={tenant} onSchedule={() => { setTab("schedule"); setEditing(driver); }} onOpenRound={onOpenRound} onCommunications={onCommunications} />)}
         </div>}
       </div>
     </>}
 
     {editing && projection && <ScheduleDrawer driver={editing} projection={projection} accessToken={accessToken} tenant={tenant} onClose={() => setEditing(null)} onSaved={async () => { setEditing(null); await load(); }} />}
+    {editingException && projection && <ShiftExceptionDrawer driver={editingException} projection={projection} serviceDate={serviceDate} accessToken={accessToken} tenant={tenant} onClose={() => setEditingException(null)} onSaved={async () => { setEditingException(null); await load(); }} />}
   </section>;
 }
 
@@ -135,13 +138,13 @@ function DriverRow({ driver, tenant, onSchedule, onOpenRound, onCommunications }
   </article>;
 }
 
-function ScheduleRow({ driver, tenant, onEdit }: { driver: OperationsDriverCapacityItem; tenant: OperationsTenant; onEdit: () => void }) {
+function ScheduleRow({ driver, tenant, onEdit, onException }: { driver: OperationsDriverCapacityItem; tenant: OperationsTenant; onEdit: () => void; onException: () => void }) {
   return <article className="v45-schedule-row">
     <div className="v45-driver-avatar">{driver.initials}</div>
     <div><h3>{driver.displayName}</h3><p>{scheduleLabel(driver)}</p></div>
     <div><small>{driver.effectiveShift ? "TODAY" : "SERVICE DATE"}</small><b>{driver.effectiveShift ? `${timeLabel(driver.effectiveShift.startAt, tenant.timezone)}–${timeLabel(driver.effectiveShift.endAt, tenant.timezone)}` : "Off shift"}</b></div>
     <div><small>VEHICLE PROFILE</small><b>{driver.vehicleProfile?.displayName ?? "Not assigned"}</b>{driver.vehicleProfile?.requiresReview && <span>Conservative default · review required</span>}</div>
-    <button type="button" onClick={onEdit}>{driver.schedule ? "Edit schedule" : "Set schedule"}</button>
+    <div className="v45-schedule-actions"><button type="button" onClick={onEdit}>{driver.schedule ? "Edit schedule" : "Set schedule"}</button><button type="button" onClick={onException}>{driver.dateException ? "Edit date" : "Date exception"}</button></div>
   </article>;
 }
 
@@ -194,6 +197,70 @@ function ScheduleDrawer({ driver, projection, accessToken, tenant, onClose, onSa
       {error && <div className="v45-schedule-error" role="alert">{error}</div>}
     </div>
     <footer><button type="button" onClick={onClose}>Cancel</button><button className="primary" type="button" disabled={submitting || tenant.role === "viewer" || selectedDays.length === 0 || !startLocal || !endLocal || !vehicleProfileId} onClick={() => void save()}>{submitting ? "Saving…" : tenant.role === "viewer" ? "Viewer cannot save" : "Save recurring schedule"}</button></footer>
+  </aside></div>;
+}
+
+function ShiftExceptionDrawer({ driver, projection, serviceDate, accessToken, tenant, onClose, onSaved }: { driver: OperationsDriverCapacityItem; projection: OperationsDriversProjection; serviceDate: string; accessToken: string; tenant: OperationsTenant; onClose: () => void; onSaved: () => Promise<void> }) {
+  const existing = driver.dateException?.serviceDate === serviceDate ? driver.dateException : undefined;
+  const fallbackProfile = existing?.vehicleProfileId ?? driver.vehicleProfile?.id ?? projection.vehicleProfiles[0]?.id ?? "";
+  const [kind, setKind] = useState<"shift" | "off">(existing?.kind ?? "shift");
+  const [startLocal, setStartLocal] = useState(existing?.startLocal?.slice(0, 5) ?? driver.schedule?.startLocal.slice(0, 5) ?? "08:00");
+  const [endLocal, setEndLocal] = useState(existing?.endLocal?.slice(0, 5) ?? driver.schedule?.endLocal.slice(0, 5) ?? "18:00");
+  const [vehicleProfileId, setVehicleProfileId] = useState(fallbackProfile);
+  const [note, setNote] = useState(existing?.note ?? "");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+
+  async function save() {
+    setSubmitting(true); setError("");
+    try {
+      const response = await fetch(`${roundsApiUrl}/v1/operations/drivers/${driver.driverId}/shift-exception`, {
+        method: "POST",
+        headers: {
+          authorization: `Bearer ${accessToken}`,
+          "content-type": "application/json",
+          "idempotency-key": `operations:${crypto.randomUUID()}`,
+          "if-match-version": String(existing?.version ?? 0),
+          "x-rounds-tenant-id": tenant.id,
+          "x-trace-id": crypto.randomUUID(),
+        },
+        body: JSON.stringify({ serviceDate, kind, ...(kind === "shift" ? { startLocal, endLocal, vehicleProfileId } : {}), ...(note.trim() ? { note: note.trim() } : {}) }),
+      });
+      const body = await response.json() as SetDriverShiftExceptionResult | ApiError;
+      if (!response.ok || !("status" in body) || body.status !== "committed") throw new Error((body as ApiError).error?.message ?? `Date exception HTTP ${response.status}`);
+      await onSaved();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Date exception could not be saved");
+    } finally { setSubmitting(false); }
+  }
+
+  async function clearException() {
+    if (!existing) return;
+    setSubmitting(true); setError("");
+    try {
+      const response = await fetch(`${roundsApiUrl}/v1/operations/drivers/${driver.driverId}/shift-exception`, {
+        method: "DELETE",
+        headers: { authorization: `Bearer ${accessToken}`, "content-type": "application/json", "idempotency-key": `operations:${crypto.randomUUID()}`, "if-match-version": String(existing.version), "x-rounds-tenant-id": tenant.id, "x-trace-id": crypto.randomUUID() },
+        body: JSON.stringify({ serviceDate }),
+      });
+      const body = await response.json() as { status?: string; error?: { message?: string } };
+      if (!response.ok || body.status !== "committed") throw new Error(body.error?.message ?? `Clear exception HTTP ${response.status}`);
+      await onSaved();
+    } catch (caught) { setError(caught instanceof Error ? caught.message : "Date exception could not be cleared"); }
+    finally { setSubmitting(false); }
+  }
+
+  const profile = projection.vehicleProfiles.find((item) => item.id === vehicleProfileId);
+  return <div className="v45-driver-scrim" onClick={onClose}><aside className="v45-schedule-drawer" role="dialog" aria-modal="true" aria-labelledby="exception-drawer-title" onClick={(event) => event.stopPropagation()}>
+    <header><div><small>OWN TEAM · DATE EXCEPTION</small><h2 id="exception-drawer-title">{driver.displayName}</h2><p>Override the recurring schedule for {serviceDate}. This date wins in planning.</p></div><button type="button" onClick={onClose} aria-label="Close date exception"><CloseIcon /></button></header>
+    <div className="v45-schedule-form">
+      <div className="v45-exception-date"><small>SERVICE DATE</small><b>{serviceDate}</b><span>{existing ? `Existing override · version ${existing.version}` : "No date override yet"}</span></div>
+      <fieldset><legend>Working state</legend><div className="v45-exception-kind"><button className={kind === "shift" ? "on" : ""} type="button" onClick={() => setKind("shift")}><b>Custom shift</b><span>Replace normal hours and vehicle</span></button><button className={kind === "off" ? "on" : ""} type="button" onClick={() => setKind("off")}><b>Day off</b><span>No own-team capacity that date</span></button></div></fieldset>
+      {kind === "shift" && <><div className="v45-time-grid"><label>Shift starts<input type="time" value={startLocal} onChange={(event) => setStartLocal(event.target.value)} /></label><label>Shift ends<input type="time" value={endLocal} onChange={(event) => setEndLocal(event.target.value)} /></label></div><label>Vehicle profile<select value={vehicleProfileId} onChange={(event) => setVehicleProfileId(event.target.value)}><option value="">Choose vehicle profile</option>{projection.vehicleProfiles.map((item) => <option key={item.id} value={item.id}>{item.displayName}</option>)}</select></label>{profile && <div className="v45-profile-summary"><small>DATE-SPECIFIC PLANNING RULE</small><b>{titleCase(profile.vehicleGroup)} · {profile.maxStopsPerDeparture} Stop{profile.maxStopsPerDeparture === 1 ? "" : "s"} per departure</b><span>{titleCase(profile.departurePattern)} · {profile.planningDeliveriesPerBlock} deliveries per planning block</span></div>}</>}
+      <label>Reason <span>Optional</span><textarea value={note} maxLength={500} onChange={(event) => setNote(event.target.value)} placeholder={kind === "off" ? "Why this driver is unavailable" : "Why this date differs from the recurring schedule"} /></label>
+      {error && <div className="v45-schedule-error" role="alert">{error}</div>}
+    </div>
+    <footer>{existing && <button className="v45-clear-exception" type="button" disabled={submitting || tenant.role === "viewer"} onClick={() => void clearException()}>Use recurring schedule</button>}<button type="button" onClick={onClose}>Cancel</button><button className="primary" type="button" disabled={submitting || tenant.role === "viewer" || (kind === "shift" && (!startLocal || !endLocal || !vehicleProfileId))} onClick={() => void save()}>{submitting ? "Saving…" : tenant.role === "viewer" ? "Viewer cannot save" : "Save date exception"}</button></footer>
   </aside></div>;
 }
 

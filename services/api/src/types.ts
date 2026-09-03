@@ -1,6 +1,9 @@
 import type {
   ConfirmDeliveryReturnCommand,
   ConfirmDeliveryReturnResult,
+  ClearDriverShiftExceptionCommand,
+  ClearDriverShiftExceptionPayload,
+  ClearDriverShiftExceptionResult,
   ConfirmPickupCommand,
   ConfirmPickupPayload,
   ConfirmPickupResult,
@@ -42,6 +45,9 @@ import type {
   SetDriverRecurringScheduleCommand,
   SetDriverRecurringSchedulePayload,
   SetDriverRecurringScheduleResult,
+  SetDriverShiftExceptionCommand,
+  SetDriverShiftExceptionPayload,
+  SetDriverShiftExceptionResult,
 } from "@rounds/contracts";
 
 export type { OperationsRole } from "@rounds/contracts";
@@ -160,6 +166,14 @@ export interface OperationsDriversGateway {
     command: SetDriverRecurringScheduleCommand,
     actor: ActorContext,
   ): Promise<SetDriverRecurringScheduleResult>;
+  setDriverShiftException(
+    command: SetDriverShiftExceptionCommand,
+    actor: ActorContext,
+  ): Promise<SetDriverShiftExceptionResult>;
+  clearDriverShiftException(
+    command: ClearDriverShiftExceptionCommand,
+    actor: ActorContext,
+  ): Promise<ClearDriverShiftExceptionResult>;
 }
 
 export interface OperationsRoundDetailGateway {
@@ -218,6 +232,10 @@ export type OperationsDriversDependencies = {
 
 export type SetDriverRecurringScheduleDependencies = OperationsDriversDependencies;
 export type SetDriverRecurringScheduleRequestBody = SetDriverRecurringSchedulePayload;
+export type SetDriverShiftExceptionDependencies = OperationsDriversDependencies;
+export type SetDriverShiftExceptionRequestBody = SetDriverShiftExceptionPayload;
+export type ClearDriverShiftExceptionDependencies = OperationsDriversDependencies;
+export type ClearDriverShiftExceptionRequestBody = ClearDriverShiftExceptionPayload;
 
 export type OperationsRoundDetailDependencies = {
   identity: IdentityGateway;

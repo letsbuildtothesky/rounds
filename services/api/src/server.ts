@@ -16,6 +16,7 @@ import { operationsActionHandler } from "./operations-action-handler.js";
 import { operationsDeliveriesHandler } from "./operations-deliveries-handler.js";
 import { operationsDriversHandler } from "./operations-drivers-handler.js";
 import { setDriverRecurringScheduleHandler } from "./set-driver-recurring-schedule-handler.js";
+import { clearDriverShiftExceptionHandler, setDriverShiftExceptionHandler } from "./set-driver-shift-exception-handler.js";
 import { operationsRoundDetailHandler } from "./operations-round-detail-handler.js";
 import { resolveOperationsExceptionHandler } from "./resolve-operations-exception-handler.js";
 import { confirmDeliveryReturnHandler } from "./confirm-delivery-return-handler.js";
@@ -94,7 +95,7 @@ const server = createServer(async (request, response) => {
       response.writeHead(204, {
         "access-control-allow-origin": origin,
         "access-control-allow-credentials": "true",
-        "access-control-allow-methods": "GET, POST, OPTIONS",
+        "access-control-allow-methods": "GET, POST, DELETE, OPTIONS",
         "access-control-allow-headers": "authorization, content-type, idempotency-key, if-match-version, x-rounds-tenant-id, x-trace-id",
         "access-control-max-age": "600",
         vary: "origin",
@@ -171,6 +172,26 @@ const server = createServer(async (request, response) => {
         now: () => new Date(),
       });
       sendNode(response, addOperationsCors(scheduleResponse, request.headers.origin));
+      return;
+    }
+    const shiftExceptionMatch = request.url?.match(/^\/v1\/operations\/drivers\/([0-9a-f-]+)\/shift-exception$/i);
+    if (request.method === "POST" && shiftExceptionMatch) {
+      const webRequest = await toWebRequest(request);
+      const exceptionResponse = await setDriverShiftExceptionHandler(webRequest, shiftExceptionMatch[1]!, {
+        identity: gateway,
+        drivers: gateway,
+        uuid: () => crypto.randomUUID(),
+        now: () => new Date(),
+      });
+      sendNode(response, addOperationsCors(exceptionResponse, request.headers.origin));
+      return;
+    }
+    if (request.method === "DELETE" && shiftExceptionMatch) {
+      const webRequest = await toWebRequest(request);
+      const exceptionResponse = await clearDriverShiftExceptionHandler(webRequest, shiftExceptionMatch[1]!, {
+        identity: gateway, drivers: gateway, uuid: () => crypto.randomUUID(), now: () => new Date(),
+      });
+      sendNode(response, addOperationsCors(exceptionResponse, request.headers.origin));
       return;
     }
     const operationsRoundMatch = request.url?.match(/^\/v1\/operations\/rounds\/([0-9a-f-]+)$/i);
