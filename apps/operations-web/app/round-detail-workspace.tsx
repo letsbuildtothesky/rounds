@@ -1,7 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import mapboxgl, { type Map as MapboxMap } from "mapbox-gl";
 import type { LiveDeliveryChangePreview, LiveDeliveryChangeRequest, MoveRoundStopPreview, MoveRoundStopRequest, OperationsPlanningProjection, OperationsRoundDetail, OperationsRoundStopDetail, OperationsRoundSummary, OperationsTenant } from "@rounds/contracts";
+import { liveChangePinError } from "../src/live-change-policy";
 
 const roundsApiUrl = process.env.NEXT_PUBLIC_ROUNDS_API_URL ?? "http://127.0.0.1:8080";
 type ApiError = { error?: { message?: string } };
@@ -26,6 +28,8 @@ type LiveChangeDraft = {
   longitude: string;
   windowStart: string;
   windowEnd: string;
+  keepCurrentPin: boolean;
+  pinSelectionMade: boolean;
 };
 
 function inputDateTime(value: string): string {
@@ -132,6 +136,7 @@ export function RoundDetailWorkspace({ accessToken, tenant, roundId, onClose, on
       sequence: String(selected.sequence), rawAddress: selected.rawAddress, accessNote: selected.accessNote ?? "",
       latitude: String(selected.coordinate.latitude), longitude: String(selected.coordinate.longitude),
       windowStart: inputDateTime(selected.windowStart), windowEnd: inputDateTime(selected.windowEnd),
+      keepCurrentPin: true, pinSelectionMade: false,
     });
     setLiveChangePreview(null); setLiveChangeError(""); setLiveChangeOpen(true);
   }, [selected]);
@@ -145,8 +150,11 @@ export function RoundDetailWorkspace({ accessToken, tenant, roundId, onClose, on
     if (!Number.isInteger(sequence) || sequence < 1 || sequence > detail.stops.length) throw new Error(`Stop order must be between 1 and ${detail.stops.length}`);
     if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90 || !Number.isFinite(longitude) || longitude < -180 || longitude > 180) throw new Error("Enter a valid delivery latitude and longitude");
     if (!liveChangeDraft.rawAddress.trim()) throw new Error("Delivery address is required");
+    const addressChanged = liveChangeDraft.rawAddress.trim() !== selected.rawAddress;
+    const pinError = liveChangePinError({ originalAddress: selected.rawAddress, draftAddress: liveChangeDraft.rawAddress, keepCurrentPin: liveChangeDraft.keepCurrentPin, pinSelectionMade: liveChangeDraft.pinSelectionMade });
+    if (pinError) throw new Error(pinError);
     if (sequence !== selected.sequence) changes.sequence = sequence;
-    if (liveChangeDraft.rawAddress.trim() !== selected.rawAddress) changes.rawAddress = liveChangeDraft.rawAddress.trim();
+    if (addressChanged) changes.rawAddress = liveChangeDraft.rawAddress.trim();
     if (liveChangeDraft.accessNote.trim() !== (selected.accessNote ?? "")) changes.accessNote = liveChangeDraft.accessNote.trim();
     if (latitude !== selected.coordinate?.latitude || longitude !== selected.coordinate?.longitude) { changes.latitude = latitude; changes.longitude = longitude; }
     const startDate = new Date(liveChangeDraft.windowStart);
@@ -265,23 +273,25 @@ function LiveChangeSheet({ stop, stopCount, draft, preview, busy, error, timezon
   stop: OperationsRoundStopDetail; stopCount: number; draft: LiveChangeDraft; preview: LiveDeliveryChangePreview | null; busy: boolean; error: string; timezone: string;
   onChange: (draft: LiveChangeDraft) => void; onClose: () => void; onPreview: () => void; onApply: () => void;
 }) {
-  const update = (field: keyof LiveChangeDraft, value: string) => onChange({ ...draft, [field]: value });
+  const [pinPickerOpen, setPinPickerOpen] = useState(false);
+  const update = <K extends keyof LiveChangeDraft,>(field: K, value: LiveChangeDraft[K]) => onChange({ ...draft, [field]: value });
   const impact = preview?.impact;
-  return <div className="v45-move-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}><aside className="v45-move-sheet v45-live-change-sheet" role="dialog" aria-modal="true" aria-label="Change live delivery">
+  const currentCoordinate = stop.coordinate!;
+  return <><div className="v45-move-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}><aside className="v45-move-sheet v45-live-change-sheet" role="dialog" aria-modal="true" aria-label="Change live delivery">
     <header><div><small>LIVE ROUND CHANGE</small><h2>Change {stop.recipientName}</h2><p>#{stop.deliveryReference} · custody remains locked</p></div><button type="button" onClick={onClose} aria-label="Close">×</button></header>
     <div className="v45-move-content">
       <div className="v45-live-lock"><b>Physical custody cannot change.</b><span>Only the future visit order, destination, access instruction, or promised window can be updated.</span></div>
       <section className="v45-live-fields">
         <h3>Approved editable truth <span>Version {stop.stopVersion}</span></h3>
         <label><span>Stop order</span><input type="number" min="1" max={stopCount} value={draft.sequence} onChange={(event) => update("sequence", event.target.value)} /></label>
-        <label className="wide"><span>Delivery address</span><textarea rows={2} value={draft.rawAddress} onChange={(event) => update("rawAddress", event.target.value)} /></label>
+        <label className="wide"><span>Delivery address</span><div className="v45-live-address"><textarea rows={2} value={draft.rawAddress} onChange={(event) => update("rawAddress", event.target.value)} /><button type="button" onClick={() => setPinPickerOpen(true)}>{draft.pinSelectionMade ? "Adjust new pin" : "Set new pin on map"}</button></div></label>
+        <div className="v45-live-pin-state wide"><b>{draft.pinSelectionMade ? "New pin selected · not applied" : "Existing Stop pin"}</b><span>{Number(draft.latitude).toFixed(5)}, {Number(draft.longitude).toFixed(5)}</span></div>
+        <label className="v45-live-keep-pin wide"><input type="checkbox" checked={draft.keepCurrentPin} onChange={(event) => onChange({ ...draft, keepCurrentPin: event.target.checked, pinSelectionMade: event.target.checked ? false : draft.pinSelectionMade, latitude: event.target.checked ? String(currentCoordinate.latitude) : draft.latitude, longitude: event.target.checked ? String(currentCoordinate.longitude) : draft.longitude })} /><span>Address / entrance text changes only — keep the current physical pin.</span></label>
         <label className="wide"><span>Entrance / handoff instruction</span><textarea rows={2} placeholder="No instruction" value={draft.accessNote} onChange={(event) => update("accessNote", event.target.value)} /></label>
-        <label><span>Latitude</span><input inputMode="decimal" value={draft.latitude} onChange={(event) => update("latitude", event.target.value)} /></label>
-        <label><span>Longitude</span><input inputMode="decimal" value={draft.longitude} onChange={(event) => update("longitude", event.target.value)} /></label>
         <label><span>Window starts</span><input type="datetime-local" value={draft.windowStart} onChange={(event) => update("windowStart", event.target.value)} /></label>
         <label><span>Window ends</span><input type="datetime-local" value={draft.windowEnd} onChange={(event) => update("windowEnd", event.target.value)} /></label>
       </section>
-      <p className="v45-live-pin-note">The coordinate fields are the authoritative delivery pin. Route and promise consequences are recalculated by the server before Apply is enabled.</p>
+      <p className="v45-live-pin-note">The confirmed map point is the authoritative vehicle arrival pin. Route and promise consequences are recalculated by the server before Apply is enabled.</p>
       {preview && <section className="v45-live-preview">
         <small>REAL CONSEQUENCE PREVIEW</small><h3>{preview.applicable ? "This change fits the live Round." : "This change is blocked."}</h3>
         <div className="v45-move-impact">
@@ -297,7 +307,41 @@ function LiveChangeSheet({ stop, stopCount, draft, preview, busy, error, timezon
       {error && <div className="v45-move-blocked"><p>{error}</p></div>}
     </div>
     <footer>{preview ? <><button type="button" className="primary" disabled={busy || !preview.applicable} onClick={onApply}>{busy ? "Rechecking…" : "Apply and notify Driver"}</button><button type="button" disabled={busy} onClick={onPreview}>Recalculate</button></> : <><button type="button" className="primary" disabled={busy} onClick={onPreview}>{busy ? "Calculating…" : "Preview consequences"}</button><button type="button" disabled={busy} onClick={onClose}>Cancel</button></>}</footer>
-  </aside></div>;
+  </aside></div>{pinPickerOpen && <LivePinPicker initial={{ latitude: Number(draft.latitude), longitude: Number(draft.longitude) }} onCancel={() => setPinPickerOpen(false)} onConfirm={(coordinate) => { onChange({ ...draft, latitude: String(coordinate.latitude), longitude: String(coordinate.longitude), keepCurrentPin: false, pinSelectionMade: true }); setPinPickerOpen(false); }} />}</>;
+}
+
+function LivePinPicker({ initial, onCancel, onConfirm }: {
+  initial: { latitude: number; longitude: number };
+  onCancel: () => void;
+  onConfirm: (coordinate: { latitude: number; longitude: number }) => void;
+}) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const selectedRef = useRef(initial);
+  const [selected, setSelected] = useState(initial);
+  const [state, setState] = useState<"loading" | "ready" | "error">("loading");
+  useEffect(() => {
+    const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? "";
+    if (!containerRef.current || !token) { setState("error"); return; }
+    mapboxgl.accessToken = token;
+    let map: MapboxMap;
+    try {
+      map = new mapboxgl.Map({ container: containerRef.current, accessToken: token, style: "mapbox://styles/mapbox/light-v11", center: [initial.longitude, initial.latitude], zoom: 16.5, pitch: 0, bearing: 0, minZoom: 12, maxZoom: 20, logoPosition: "bottom-left" });
+    } catch { setState("error"); return; }
+    const publishCenter = () => {
+      const center = map.getCenter();
+      selectedRef.current = { latitude: center.lat, longitude: center.lng };
+      setSelected(selectedRef.current);
+    };
+    map.on("load", () => setState("ready"));
+    map.on("moveend", publishCenter);
+    map.on("error", () => { if (!map.loaded()) setState("error"); });
+    return () => map.remove();
+  }, [initial.latitude, initial.longitude]);
+  return <div className="v45-pin-picker-backdrop" role="presentation"><section className="v45-pin-picker" role="dialog" aria-modal="true" aria-label="Set new delivery pin">
+    <header><div><small>CONFIRMED DESTINATION</small><h2>Place the new delivery pin</h2><p>Move the map until the crosshair is on the vehicle arrival or delivery point.</p></div><button type="button" onClick={onCancel} aria-label="Close pin picker">×</button></header>
+    <div className="v45-pin-picker-map"><div ref={containerRef} />{state === "loading" && <p>Loading the real map…</p>}{state === "error" && <p>Map service unavailable. The destination has not changed.</p>}<span className="v45-pin-crosshair" aria-hidden="true"><i /></span></div>
+    <footer><span>{selected.latitude.toFixed(5)}, {selected.longitude.toFixed(5)}</span><button type="button" onClick={onCancel}>Cancel</button><button type="button" className="primary" disabled={state !== "ready"} onClick={() => onConfirm(selectedRef.current)}>Use this pin</button></footer>
+  </section></div>;
 }
 
 function BackIcon() { return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>; }

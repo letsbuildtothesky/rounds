@@ -132,6 +132,24 @@ type PickupVerificationRow = { round_id: string; stop_id: string };
 type DeliveryExceptionRow = { round_id: string };
 type DriverPositionRow = { driver_id: string; position: unknown; captured_at: string };
 
+type AssignedRoundCandidate = Pick<RoundRow, "id" | "reference" | "service_date"> & {
+  state: "active" | "loading" | "approved";
+};
+
+export function selectDriverAssignedRound<T extends AssignedRoundCandidate>(candidates: T[], serviceDate: string): T | undefined {
+  const statePriority: Record<"active" | "loading" | "approved", number> = { active: 0, loading: 1, approved: 2 };
+  const dateBucket = (candidate: T): number => candidate.service_date === serviceDate ? 0 : candidate.service_date > serviceDate ? 1 : 2;
+  return [...candidates].sort((left, right) => {
+    const stateDelta = statePriority[left.state] - statePriority[right.state];
+    if (stateDelta) return stateDelta;
+    const bucketDelta = dateBucket(left) - dateBucket(right);
+    if (bucketDelta) return bucketDelta;
+    return dateBucket(left) === 2
+      ? right.service_date.localeCompare(left.service_date)
+      : left.service_date.localeCompare(right.service_date);
+  })[0];
+}
+
 export function parseDatabasePoint(value: unknown): { latitude: number; longitude: number } | undefined {
   if (value && typeof value === "object" && "coordinates" in value) {
     const coordinates = (value as { coordinates?: unknown }).coordinates;
@@ -1996,13 +2014,15 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
       });
     }
 
-    const { data: round, error: roundError } = await this.admin.from("rounds")
+    const { data: assignedRounds, error: roundError } = await this.admin.from("rounds")
       .select("id, tenant_id, reference, service_date, state, version, route_plan_snapshot")
       .eq("tenant_id", tenant.id).eq("driver_id", driver.id)
       .in("state", ["approved", "loading", "active"])
-      .is("deleted_at", null).order("service_date").order("created_at").limit(1)
-      .maybeSingle<RoundRow & { route_plan_snapshot: PlanningRouteSnapshot | null }>();
+      .is("deleted_at", null).order("service_date").order("created_at").limit(20)
+      .returns<(AssignedRoundCandidate & Pick<RoundRow, "tenant_id" | "version"> & { route_plan_snapshot: PlanningRouteSnapshot | null })[]>();
     if (roundError) throw roundError;
+    const driverServiceDate = new Intl.DateTimeFormat("en-CA", { timeZone: tenant.timezone }).format(new Date());
+    const round = selectDriverAssignedRound(assignedRounds ?? [], driverServiceDate);
     if (!round) return session;
 
     const { data: roundStops, error: roundStopsError } = await this.admin.from("round_stops")
