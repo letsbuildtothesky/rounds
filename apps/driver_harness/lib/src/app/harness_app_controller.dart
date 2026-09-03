@@ -1,10 +1,17 @@
+import 'dart:async';
+import 'dart:convert';
+
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app_strings.dart';
+import '../connectivity/driver_sync_state.dart';
 import '../driver/driver_api.dart';
 import '../driver/driver_session.dart';
 import '../driver/driver_operations_thread.dart';
+import '../telemetry/telemetry_uploader.dart';
 
 class HarnessAppController extends ChangeNotifier {
   HarnessAppController._(
@@ -12,18 +19,27 @@ class HarnessAppController extends ChangeNotifier {
     this._locale,
     this._hasSelectedLanguage,
     this._driverApi,
+    this._queueInspector,
+    this._sessionStorage,
   );
 
   static const _localeKey = 'driver_locale';
   static const _selectedKey = 'driver_locale_selected';
+  static const _sessionCacheKey = 'driver_session_cache_v1';
+  static const _lastSyncedAtKey = 'driver_session_last_synced_at_v1';
 
   final SharedPreferences _preferences;
   HarnessLocale _locale;
   bool _hasSelectedLanguage;
   final DriverApi _driverApi;
+  final DriverQueueInspector _queueInspector;
+  final FlutterSecureStorage _sessionStorage;
   DriverSessionModel? _driverSession;
   bool _driverLoading = false;
   String? _driverError;
+  DriverSyncSnapshot _syncSnapshot = const DriverSyncSnapshot.online();
+  bool _showConnectionSurface = false;
+  StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
 
   HarnessLocale get locale => _locale;
   bool get hasSelectedLanguage => _hasSelectedLanguage;
@@ -36,6 +52,8 @@ class HarnessAppController extends ChangeNotifier {
   DriverSessionModel? get driverSession => _driverSession;
   bool get driverLoading => _driverLoading;
   String? get driverError => _driverError;
+  DriverSyncSnapshot get syncSnapshot => _syncSnapshot;
+  bool get showConnectionSurface => _showConnectionSurface;
 
   static const _pilotDriverEmail = String.fromEnvironment('PILOT_DRIVER_EMAIL');
   static const _pilotDriverPassword = String.fromEnvironment(
@@ -44,7 +62,8 @@ class HarnessAppController extends ChangeNotifier {
 
   static Future<HarnessAppController> create() async {
     final preferences = await SharedPreferences.getInstance();
-    return HarnessAppController._(
+    const secureStorage = FlutterSecureStorage();
+    final controller = HarnessAppController._(
       preferences,
       HarnessLocaleValue.fromStorage(preferences.getString(_localeKey)),
       preferences.getBool(_selectedKey) ?? false,
@@ -57,8 +76,16 @@ class HarnessAppController extends ChangeNotifier {
           'ROUNDS_API_URL',
           defaultValue: 'http://10.0.2.2:8080',
         ),
+        storage: secureStorage,
       ),
+      const SqliteDriverQueueInspector(),
+      secureStorage,
     );
+    if (controller.driverConfigured) {
+      await controller._restoreCachedSession();
+      await controller._startConnectivityMonitoring();
+    }
+    return controller;
   }
 
   Future<void> restoreDriverSession() async {
@@ -67,9 +94,28 @@ class HarnessAppController extends ChangeNotifier {
     _driverError = null;
     notifyListeners();
     try {
-      _driverSession = await _driverApi.restore();
+      final restored = await _driverApi.restore().timeout(
+        const Duration(seconds: 15),
+      );
+      _driverSession = restored;
+      if (restored == null) {
+        await _clearCachedSession();
+      } else {
+        await _saveSession(restored);
+        await _flushPendingTelemetry();
+      }
+      await _refreshSyncSnapshot(
+        phase: DriverConnectionPhase.online,
+        syncedNow: restored != null,
+      );
+      if (restored != null &&
+          _syncSnapshot.phase == DriverConnectionPhase.reconnecting) {
+        _showConnectionSurface = true;
+      }
     } catch (error) {
       _driverError = error.toString();
+      await _refreshSyncSnapshot(phase: DriverConnectionPhase.offline);
+      if (_driverSession != null) _showConnectionSurface = true;
     } finally {
       _driverLoading = false;
       notifyListeners();
@@ -82,6 +128,15 @@ class HarnessAppController extends ChangeNotifier {
     notifyListeners();
     try {
       _driverSession = await _driverApi.signIn(email, password);
+      await _saveSession(_driverSession!);
+      await _flushPendingTelemetry();
+      await _refreshSyncSnapshot(
+        phase: DriverConnectionPhase.online,
+        syncedNow: true,
+      );
+      if (_syncSnapshot.phase == DriverConnectionPhase.reconnecting) {
+        _showConnectionSurface = true;
+      }
     } catch (error) {
       _driverError = error.toString();
     } finally {
@@ -105,6 +160,9 @@ class HarnessAppController extends ChangeNotifier {
     await _driverApi.signOut();
     _driverSession = null;
     _driverError = null;
+    _showConnectionSurface = false;
+    _syncSnapshot = const DriverSyncSnapshot.online();
+    await _clearCachedSession();
     notifyListeners();
   }
 
@@ -221,7 +279,21 @@ class HarnessAppController extends ChangeNotifier {
     notifyListeners();
     try {
       final outcome = await command();
-      if (outcome.session != null) _driverSession = outcome.session;
+      if (outcome.session != null) {
+        _driverSession = outcome.session;
+        await _saveSession(outcome.session!);
+      }
+      if (driverConfigured) {
+        if (outcome.pendingSync) {
+          await _refreshSyncSnapshot(phase: DriverConnectionPhase.offline);
+          _showConnectionSurface = true;
+        } else {
+          await _refreshSyncSnapshot(
+            phase: DriverConnectionPhase.online,
+            syncedNow: true,
+          );
+        }
+      }
       return outcome;
     } catch (error) {
       _driverError = error.toString();
@@ -240,5 +312,124 @@ class HarnessAppController extends ChangeNotifier {
       _preferences.setBool(_selectedKey, true),
     ]);
     notifyListeners();
+  }
+
+  void showConnectionStatus() {
+    _showConnectionSurface = true;
+    notifyListeners();
+  }
+
+  void returnToRound() {
+    _showConnectionSurface = false;
+    notifyListeners();
+  }
+
+  Future<void> retryConnection() async {
+    if (!driverConfigured || _driverLoading) return;
+    _showConnectionSurface = true;
+    await _refreshSyncSnapshot(phase: DriverConnectionPhase.reconnecting);
+    notifyListeners();
+    await restoreDriverSession();
+  }
+
+  Future<void> _restoreCachedSession() async {
+    final raw = await _sessionStorage.read(key: _sessionCacheKey);
+    if (raw != null) {
+      try {
+        _driverSession = DriverSessionModel.fromJson(
+          jsonDecode(raw) as Map<String, dynamic>,
+        );
+      } catch (_) {
+        await _sessionStorage.delete(key: _sessionCacheKey);
+      }
+    }
+    final lastSynced = DateTime.tryParse(
+      _preferences.getString(_lastSyncedAtKey) ?? '',
+    );
+    _syncSnapshot = DriverSyncSnapshot(
+      phase: DriverConnectionPhase.online,
+      currentRouteAvailable: _driverSession?.currentRound != null,
+      pendingProofCount: 0,
+      pendingMessageCount: 0,
+      pendingStatusCount: 0,
+      pendingTelemetryCount: 0,
+      lastSyncedAt: lastSynced,
+    );
+  }
+
+  Future<void> _saveSession(DriverSessionModel session) async {
+    final now = DateTime.now().toUtc();
+    await Future.wait([
+      _sessionStorage.write(
+        key: _sessionCacheKey,
+        value: jsonEncode(session.toJson()),
+      ),
+      _preferences.setString(_lastSyncedAtKey, now.toIso8601String()),
+    ]);
+  }
+
+  Future<void> _clearCachedSession() => Future.wait([
+    _sessionStorage.delete(key: _sessionCacheKey),
+    _preferences.remove(_lastSyncedAtKey),
+  ]);
+
+  Future<void> _startConnectivityMonitoring() async {
+    final connectivity = Connectivity();
+    try {
+      final initial = await connectivity.checkConnectivity();
+      if (initial.contains(ConnectivityResult.none)) {
+        await _refreshSyncSnapshot(phase: DriverConnectionPhase.offline);
+        _showConnectionSurface = _driverSession != null;
+      } else {
+        await _refreshSyncSnapshot(phase: DriverConnectionPhase.online);
+      }
+      _connectivitySubscription = connectivity.onConnectivityChanged.listen((
+        results,
+      ) {
+        if (results.contains(ConnectivityResult.none)) {
+          unawaited(_markOffline());
+        } else if (_syncSnapshot.phase == DriverConnectionPhase.offline) {
+          unawaited(retryConnection());
+        }
+      });
+    } catch (_) {
+      // API reachability remains authoritative if the platform bridge is
+      // unavailable, including in widget tests.
+    }
+  }
+
+  Future<void> _markOffline() async {
+    await _refreshSyncSnapshot(phase: DriverConnectionPhase.offline);
+    if (_driverSession != null) _showConnectionSurface = true;
+    notifyListeners();
+  }
+
+  Future<void> _refreshSyncSnapshot({
+    required DriverConnectionPhase phase,
+    bool syncedNow = false,
+  }) async {
+    final saved = DateTime.tryParse(
+      _preferences.getString(_lastSyncedAtKey) ?? '',
+    );
+    final inspected = await _queueInspector.inspect(
+      phase: phase,
+      currentRouteAvailable: _driverSession?.currentRound != null,
+      lastSyncedAt: syncedNow ? DateTime.now().toUtc() : saved,
+    );
+    _syncSnapshot =
+        phase == DriverConnectionPhase.online && !inspected.fullySynced
+        ? inspected.copyWith(phase: DriverConnectionPhase.reconnecting)
+        : inspected;
+  }
+
+  Future<void> _flushPendingTelemetry() => TelemetryUploader(
+    supabaseUrl: const String.fromEnvironment('SUPABASE_URL'),
+    publishableKey: const String.fromEnvironment('SUPABASE_PUBLISHABLE_KEY'),
+  ).flushOnce();
+
+  @override
+  void dispose() {
+    unawaited(_connectivitySubscription?.cancel());
+    super.dispose();
   }
 }

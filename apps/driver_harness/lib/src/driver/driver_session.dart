@@ -43,6 +43,21 @@ class DriverSessionModel {
           : null,
     );
   }
+
+  Map<String, Object?> toJson() => {
+    'user': {'displayName': userName},
+    'driver': {
+      'id': driverId,
+      'preferredLocale': preferredLocale,
+      if (vehicleLabel != null) 'vehicleLabel': vehicleLabel,
+      if (vehiclePlate != null) 'vehiclePlate': vehiclePlate,
+    },
+    if (teamName != null) 'team': {'displayName': teamName},
+    'completedRounds': completedRounds
+        .map((round) => round.toJson())
+        .toList(growable: false),
+    'currentRound': currentRound?.toJson(),
+  };
 }
 
 class DriverRoundModel {
@@ -93,6 +108,24 @@ class DriverRoundModel {
       plannedDurationSeconds: (routePlan?['durationSeconds'] as num?)?.round(),
     );
   }
+
+  Map<String, Object?> toJson() => {
+    'id': id,
+    'reference': reference,
+    'serviceDate': serviceDate,
+    'state': state,
+    'version': version,
+    'tenant': {'displayName': tenantName},
+    'pickup': pickup.toJson(),
+    'stops': stops.map((stop) => stop.toJson()).toList(growable: false),
+    if (plannedDistanceMeters != null || plannedDurationSeconds != null)
+      'routePlan': {
+        if (plannedDistanceMeters != null)
+          'distanceMeters': plannedDistanceMeters,
+        if (plannedDurationSeconds != null)
+          'durationSeconds': plannedDurationSeconds,
+      },
+  };
 }
 
 class DriverCompletedRoundModel {
@@ -149,6 +182,22 @@ class DriverCompletedRoundModel {
       plannedDurationSeconds: (json['plannedDurationSeconds'] as num?)?.round(),
     );
   }
+
+  Map<String, Object?> toJson() => {
+    'id': id,
+    'reference': reference,
+    'serviceDate': serviceDate,
+    'tenant': {'displayName': tenantName},
+    'completedAt': completedAt.toUtc().toIso8601String(),
+    'stopCount': stopCount,
+    'deliveredStopCount': deliveredStopCount,
+    'formallyClosedStopCount': formallyClosedStopCount,
+    'podCount': podCount,
+    if (plannedDistanceMeters != null)
+      'plannedDistanceMeters': plannedDistanceMeters,
+    if (plannedDurationSeconds != null)
+      'plannedDurationSeconds': plannedDurationSeconds,
+  };
 }
 
 class DriverPickupModel {
@@ -180,6 +229,16 @@ class DriverPickupModel {
         latitude: (json['latitude'] as num?)?.toDouble(),
         longitude: (json['longitude'] as num?)?.toDouble(),
       );
+
+  Map<String, Object?> toJson() => {
+    'id': id,
+    'displayName': displayName,
+    'rawAddress': rawAddress,
+    'contactName': contactName,
+    'contactPhone': contactPhone,
+    if (latitude != null) 'latitude': latitude,
+    if (longitude != null) 'longitude': longitude,
+  };
 }
 
 class DriverRoundStopModel {
@@ -255,6 +314,31 @@ class DriverRoundStopModel {
         )
         .toList(growable: false),
   );
+
+  Map<String, Object?> toJson() => {
+    'id': id,
+    'sequence': sequence,
+    'state': state,
+    'version': version,
+    'destinationVersion': destinationVersion,
+    'manifestId': manifestId,
+    'manifestVersion': manifestVersion,
+    'deliveryReference': deliveryReference,
+    'recipientName': recipientName,
+    'recipientPhone': recipientPhone,
+    'rawAddress': rawAddress,
+    'latitude': latitude,
+    'longitude': longitude,
+    'windowStart': windowStart,
+    'windowEnd': windowEnd,
+    if (accessNote != null) 'accessNote': accessNote,
+    'manifestItems': manifestItems
+        .map((item) => item.toJson())
+        .toList(growable: false),
+    'contactAttempts': contactAttempts
+        .map((attempt) => attempt.toJson())
+        .toList(growable: false),
+  };
 }
 
 class DriverContactAttemptModel {
@@ -282,6 +366,14 @@ class DriverContactAttemptModel {
         outcome: json['outcome'] as String,
         occurredAt: DateTime.parse(json['occurredAt'] as String),
       );
+
+  Map<String, Object?> toJson() => {
+    'id': id,
+    'target': target,
+    'channel': channel,
+    'outcome': outcome,
+    'occurredAt': occurredAt.toUtc().toIso8601String(),
+  };
 }
 
 class DriverManifestItemModel {
@@ -304,4 +396,11 @@ class DriverManifestItemModel {
         quantity: json['quantity'] as int,
         handlingNote: json['handlingNote'] as String?,
       );
+
+  Map<String, Object?> toJson() => {
+    'lineNumber': lineNumber,
+    'description': description,
+    'quantity': quantity,
+    if (handlingNote != null) 'handlingNote': handlingNote,
+  };
 }

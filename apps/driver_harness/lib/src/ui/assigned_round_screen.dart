@@ -326,6 +326,13 @@ class _RoundTopBar extends StatelessWidget {
           icon: Icons.refresh,
         ),
         RoundsDrawerAction(
+          value: 'connection',
+          label: controller.syncSnapshot.totalPending == 0
+              ? 'Connection status'
+              : 'Connection · ${controller.syncSnapshot.totalPending} saved',
+          icon: Icons.cloud_outlined,
+        ),
+        RoundsDrawerAction(
           value: 'language',
           label: controller.strings.chooseLanguage,
           icon: Icons.language,
@@ -367,6 +374,7 @@ class _RoundTopBar extends StatelessWidget {
 
   void _onAction(BuildContext context, String value) {
     if (value == 'refresh') controller.refreshDriverSession();
+    if (value == 'connection') controller.showConnectionStatus();
     if (value == 'language') {
       controller.selectLocale(
         controller.locale == HarnessLocale.thai

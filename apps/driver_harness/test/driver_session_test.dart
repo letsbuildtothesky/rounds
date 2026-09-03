@@ -65,6 +65,13 @@ void main() {
         session.currentRound?.stops.single.manifestItems.single.description,
         'Bouquet',
       );
+
+      final cached = DriverSessionModel.fromJson(session.toJson());
+      expect(cached.userName, session.userName);
+      expect(cached.driverId, session.driverId);
+      expect(cached.currentRound?.reference, 'ROUND-001');
+      expect(cached.currentRound?.stops.single.recipientName, 'Siriporn');
+      expect(cached.currentRound?.pickup.latitude, 13.7338);
     },
   );
 }

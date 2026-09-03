@@ -837,6 +837,85 @@ abstract final class DriverN01Metrics {
   static const double shortSecondaryHeight = 42.0;
 }
 
+abstract final class DriverN02Metrics {
+  static const String source = 'ux/driver/en/screens/ROUNDS-N02-OFFLINE-RECONNECTING-v1-10OF10.html';
+
+  static const double topBarHeight = 58.0;
+  static const double topBarPaddingHorizontal = 20.0;
+  static const double brandSize = 20.0;
+  static const double brandDotSize = 6.0;
+  static const double statusGap = 7.0;
+  static const double statusSize = 12.0;
+  static const double statusDotSize = 8.0;
+  static const double mainPaddingTop = 30.0;
+  static const double mainPaddingHorizontal = 20.0;
+  static const double mainPaddingBottom = 24.0;
+  static const double kickerSize = 12.0;
+  static const double kickerBottom = 18.0;
+  static const double iconSize = 72.0;
+  static const double iconRadius = 8.0;
+  static const double iconGlyphSize = 34.0;
+  static const double iconBottom = 30.0;
+  static const double titleSize = 42.0;
+  static const double titleHeight = 0.96;
+  static const double leadTop = 17.0;
+  static const double leadSize = 17.0;
+  static const double leadHeight = 1.4;
+  static const double truthTop = 31.0;
+  static const double truthRowMinHeight = 67.0;
+  static const double truthIconSize = 28.0;
+  static const double truthIconGlyphSize = 21.0;
+  static const double truthGap = 12.0;
+  static const double truthTitleSize = 14.0;
+  static const double truthSubtitleTop = 4.0;
+  static const double truthSubtitleSize = 12.5;
+  static const double truthSubtitleHeight = 1.28;
+  static const double truthStateSize = 11.5;
+  static const double syncNoteTop = 16.0;
+  static const double syncNoteSize = 12.5;
+  static const double syncNoteHeight = 1.35;
+  static const double primaryHeight = 62.0;
+  static const double primaryRadius = 7.0;
+  static const double primarySize = 17.0;
+  static const double secondaryHeight = 49.0;
+  static const double secondaryTop = 7.0;
+  static const double secondarySize = 14.0;
+  static const double compactTopBarPaddingHorizontal = 16.0;
+  static const double compactMainPaddingTop = 24.0;
+  static const double compactMainPaddingHorizontal = 16.0;
+  static const double compactMainPaddingBottom = 19.0;
+  static const double compactIconSize = 64.0;
+  static const double compactIconGlyphSize = 30.0;
+  static const double compactIconBottom = 23.0;
+  static const double compactTitleSize = 36.0;
+  static const double compactLeadTop = 14.0;
+  static const double compactLeadSize = 15.5;
+  static const double compactTruthTop = 23.0;
+  static const double compactTruthRowMinHeight = 59.0;
+  static const double compactTruthIconSize = 25.0;
+  static const double compactTruthGap = 9.0;
+  static const double compactTruthTitleSize = 13.5;
+  static const double compactTruthSubtitleSize = 11.8;
+  static const double compactTruthStateSize = 10.8;
+  static const double compactSyncNoteTop = 13.0;
+  static const double compactSyncNoteSize = 11.8;
+  static const double compactPrimaryHeight = 58.0;
+  static const double compactSecondaryHeight = 44.0;
+  static const double shortBreakpointHeight = 720.0;
+  static const double shortMainPaddingTop = 22.0;
+  static const double shortIconSize = 60.0;
+  static const double shortIconGlyphSize = 28.0;
+  static const double shortIconBottom = 20.0;
+  static const double shortTitleSize = 34.0;
+  static const double shortLeadTop = 13.0;
+  static const double shortLeadSize = 15.0;
+  static const double shortTruthTop = 18.0;
+  static const double shortTruthRowMinHeight = 54.0;
+  static const double shortSyncNoteTop = 11.0;
+  static const double shortPrimaryHeight = 56.0;
+  static const double shortSecondaryHeight = 42.0;
+}
+
 abstract final class DriverN03Metrics {
   static const String source = 'ux/driver/en/screens/ROUNDS-N03-GPS-UNAVAILABLE-v3-10OF10.html';
 

@@ -81,6 +81,14 @@ class TelemetryUploader {
     }
   }
 
+  Future<void> flushOnce() async {
+    if (!isConfigured || _database != null) return;
+    _database = await HarnessDatabase.open();
+    await flush();
+    _database = null;
+    _client.close();
+  }
+
   Future<void> stop() async {
     _timer?.cancel();
     _timer = null;

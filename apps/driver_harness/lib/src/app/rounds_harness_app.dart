@@ -6,6 +6,7 @@ import '../ui/assigned_round_screen.dart';
 import '../ui/driver_login_screen.dart';
 import '../ui/language_screen.dart';
 import '../ui/pickup_confirmation_screen.dart';
+import '../connectivity/offline_reconnecting_screen.dart';
 import 'app_strings.dart';
 import 'driver_design_system.dart';
 import 'harness_app_controller.dart';
@@ -38,6 +39,22 @@ class RoundsHarnessApp extends StatelessWidget {
           GlobalCupertinoLocalizations.delegate,
         ],
         theme: buildRoundsDriverTheme(),
+        builder: (context, child) => Stack(
+          children: [
+            ExcludeSemantics(
+              excluding: controller.showConnectionSurface,
+              child: child ?? const SizedBox.shrink(),
+            ),
+            if (controller.showConnectionSurface)
+              Positioned.fill(
+                child: OfflineReconnectingScreen(
+                  snapshot: controller.syncSnapshot,
+                  onReturnToRound: controller.returnToRound,
+                  onRetry: controller.retryConnection,
+                ),
+              ),
+          ],
+        ),
         home: _home(),
       ),
     );
@@ -53,7 +70,9 @@ class RoundsHarnessApp extends StatelessWidget {
     if (!controller.hasSelectedLanguage) {
       return LanguageScreen(controller: controller);
     }
-    if (controller.driverConfigured && controller.driverLoading) {
+    if (controller.driverConfigured &&
+        controller.driverLoading &&
+        controller.driverSession == null) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     if (controller.driverConfigured && controller.driverSession == null) {
