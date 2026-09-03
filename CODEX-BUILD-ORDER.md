@@ -4,6 +4,14 @@
 
 This file controls implementation sequence. The complete Build Spec set exists, but Codex must not build everything in parallel.
 
+## Current execution control
+
+For every Pilot / Slice 1 and Slice 2 checkpoint, also read and update:
+
+- `specs/engineering/ROUNDS-IMPLEMENTATION-COVERAGE-AND-GAP-CONTROL-v1.0.md`
+
+That control specification maps canonical UX to implemented and tested product behavior, separates current scope from future boards, records unresolved specification decisions and defines the remaining English own-fleet sequence. It does not override the product specs, architecture, Build Specs or promotion gates below.
+
 ## Phase 0 — field evidence
 Read:
 - `specs/engineering/ROUNDS-PHASE-0-FIELD-VALIDATION-SPEC-v1.2.md`
