@@ -15,9 +15,12 @@ import type {
   CompleteStopPodCommand,
   CompleteStopPodPayload,
   PreparePodMediaPayload,
+  MoveRoundStopCommand,
+  MoveRoundStopRequest,
   PlanRoundCommand,
   PlanRoundPayload,
   PlanningRoutePreviewRequest,
+  PlanningRouteSnapshot,
   ReportPickupProblemCommand,
   ReportPickupProblemPayload,
   ReportDeliveryProblemCommand,
@@ -386,6 +389,56 @@ export function validatePlanRoundCommand(command: PlanRoundCommand): void {
     throw new ContractError("PlanRound expectedVersion must be 0");
   }
   validatePlanRoundPayload(command.payload);
+}
+
+export function validateMoveRoundStopRequest(payload: MoveRoundStopRequest): void {
+  assertUuid(payload.sourceRoundId, "sourceRoundId");
+  assertUuid(payload.targetRoundId, "targetRoundId");
+  assertUuid(payload.stopId, "stopId");
+  if (payload.sourceRoundId === payload.targetRoundId) throw new ContractError("sourceRoundId and targetRoundId must differ");
+  if (!Number.isInteger(payload.sourceExpectedVersion) || payload.sourceExpectedVersion < 1) {
+    throw new ContractError("sourceExpectedVersion must be a positive integer");
+  }
+  if (!Number.isInteger(payload.targetExpectedVersion) || payload.targetExpectedVersion < 1) {
+    throw new ContractError("targetExpectedVersion must be a positive integer");
+  }
+}
+
+export function validateMoveRoundStopCommand(command: MoveRoundStopCommand): void {
+  if (command.schemaVersion !== 1 || command.commandType !== "round.move_stop") {
+    throw new ContractError("unsupported MoveRoundStop command envelope");
+  }
+  assertUuid(command.commandId, "commandId");
+  assertUuid(command.traceId, "traceId");
+  assertUuid(command.tenantId, "tenantId");
+  assertUuid(command.aggregateId, "aggregateId");
+  assertNonEmpty(command.idempotencyKey, "idempotencyKey");
+  if (command.aggregateId !== command.payload.sourceRoundId) throw new ContractError("aggregateId must be the source Round");
+  if (command.expectedVersion !== command.payload.sourceExpectedVersion) throw new ContractError("expectedVersion must match the source Round version");
+  validateMoveRoundStopRequest(command.payload);
+  if (!Array.isArray(command.payload.targetStopIds) || command.payload.targetStopIds.length === 0) {
+    throw new ContractError("targetStopIds cannot be empty");
+  }
+  for (const [name, stopIds] of [["sourceStopIds", command.payload.sourceStopIds], ["targetStopIds", command.payload.targetStopIds]] as const) {
+    if (new Set(stopIds).size !== stopIds.length) throw new ContractError(`${name} cannot contain duplicates`);
+    stopIds.forEach((stopId, index) => assertUuid(stopId, `${name}[${index}]`));
+  }
+  if (command.payload.sourceStopIds.includes(command.payload.stopId) || !command.payload.targetStopIds.includes(command.payload.stopId)) {
+    throw new ContractError("moved Stop must leave the source order and enter the target order");
+  }
+  if (command.payload.sourceStopIds.length > 0) {
+    if (!command.payload.sourceRoutePlan || JSON.stringify(command.payload.sourceRoutePlan.stopIds) !== JSON.stringify(command.payload.sourceStopIds)) {
+      throw new ContractError("sourceRoutePlan must match sourceStopIds");
+    }
+  } else if (command.payload.sourceRoutePlan) throw new ContractError("empty source Round cannot include sourceRoutePlan");
+  if (JSON.stringify(command.payload.targetRoutePlan.stopIds) !== JSON.stringify(command.payload.targetStopIds)) {
+    throw new ContractError("targetRoutePlan must match targetStopIds");
+  }
+  for (const route of [command.payload.sourceRoutePlan, command.payload.targetRoutePlan].filter(Boolean) as PlanningRouteSnapshot[]) {
+    if (route.status !== "fits" || route.capacity.status !== "fits" || route.blockingReasons.length) {
+      throw new ContractError("every resulting route must be a server-calculated fit");
+    }
+  }
 }
 
 export function validateConfirmPickupPayload(payload: ConfirmPickupPayload): void {

@@ -27,6 +27,9 @@ import type {
   OperationsCommunicationsProjection,
   OperationsCommunicationThread,
   OperationsPlanningProjection,
+  MoveRoundStopCommand,
+  MoveRoundStopRequest,
+  MoveRoundStopResult,
   PlanRoundCommand,
   PlanRoundPayload,
   PlanningRoutePreview,
@@ -88,6 +91,14 @@ export interface RoundGateway {
 export interface PlanningRouteContextGateway {
   getPlanningRouteContext(
     actor: ActorContext,
+    driverId: string,
+    serviceDate: string,
+    stopIds: string[],
+    observedAt: Date,
+  ): Promise<PlanningRouteContext>;
+  getAssignedPlanningRouteContext?(
+    actor: ActorContext,
+    allowedRoundIds: string[],
     driverId: string,
     serviceDate: string,
     stopIds: string[],
@@ -193,6 +204,10 @@ export interface OperationsRoundDetailGateway {
   getOperationsRoundDetail(roundId: string, actor: ActorContext, observedAt: Date): Promise<OperationsRoundDetail | null>;
 }
 
+export interface RoundMoveGateway {
+  moveRoundStop(command: MoveRoundStopCommand, actor: ActorContext): Promise<MoveRoundStopResult>;
+}
+
 export type CreateDeliveryDependencies = {
   identity: IdentityGateway;
   commands: DeliveryCommandGateway;
@@ -280,6 +295,16 @@ export type PlanningRouteDependencies = {
 
 export type PlanningRouteResponse = PlanningRoutePreview;
 export type PlanningRouteRequestBody = PlanningRoutePreviewRequest;
+
+export type RoundMoveDependencies = {
+  identity: IdentityGateway;
+  rounds: OperationsRoundDetailGateway & RoundMoveGateway;
+  routes: PlanningRouteService;
+  uuid: () => string;
+  now: () => Date;
+};
+
+export type MoveRoundStopRequestBody = MoveRoundStopRequest;
 
 export type DriverSessionDependencies = {
   identity: IdentityGateway;

@@ -70,8 +70,8 @@ These are evidence-based planning estimates, not release claims. Recalculate the
 |---|---:|---:|---:|
 | Driver · English Pilot business path only | 60.4% (`30.8 / 51`) | gate incomplete | not comparable to the complete board set |
 | Driver · all currently authorized own-fleet depth | 45.5% (`35.0 / 77`) | gate incomplete | approximately 30% of the complete Driver V1 board set; roadmap estimate only |
-| Operations · currently authorized own-fleet depth | 68.7% (`36.40 / 53`) | gate incomplete | approximately 35% of the complete Operations vision; roadmap estimate only |
-| Combined authorized English own-fleet work | 54.9% (`71.40 / 130`) | **not release-ready** | approximately 20–25% of Slices 1–7; roadmap estimate only |
+| Operations · currently authorized own-fleet depth | 71.5% (`37.90 / 53`) | gate incomplete | approximately 35% of the complete Operations vision; roadmap estimate only |
+| Combined authorized English own-fleet work | 56.1% (`72.90 / 130`) | **not release-ready** | approximately 20–25% of Slices 1–7; roadmap estimate only |
 
 The Driver percentage is higher for the narrow delivery loop than for the complete 47-board product because Network onboarding, offers, earnings and marketplace behavior are deliberately outside the current own-fleet slice.
 
@@ -135,7 +135,7 @@ Canonical visual source: `ux/operations/rounds-operations-current-v45.html`. The
 | Deliveries workspace | Pilot P1 | `VERIFIED` | Server-backed delivery list/details and operational states exist. | Complete filters, edit boundaries and remaining v45 record states. |
 | Manual plan construction | Slice 2 P0 | `VERIFIED` | Date, ordered Stop selection, own driver, shared multidimensional capacity check, real route/window preview and explicit approval exist. | Configure production cargo values and add service dwell after the responsible business decisions. |
 | Automatic plan generation | Slice 2 P1 | `SPECIFIED` | Intentionally not simulated in React. | Explainable heuristic, proposed plan persistence, uncovered-work truth and tests. |
-| Plan adjustment before approval | Slice 2 P0 | `PARTIAL` | Canonical Stop-order controls and ±15-minute departure adjustment now trigger fresh server route/window/shift/cargo preview; approval recalculates and the database requires the requested departure to match the routed departure. | Add versioned Stop movement between existing Rounds with source/destination consequence preview and affected-Round-only recalculation. |
+| Plan adjustment before approval | Slice 2 P0 | `VERIFIED` | Canonical Stop-order/departure controls and existing-Round Stop movement use fresh server route/window/shift/cargo previews. Moving a Stop recalculates only source/target Rounds, shows both consequences and commits through one dual-version atomic database command. | Run a signed-in browser acceptance with two eligible approved Rounds and production-approved cargo values. |
 | Round approval/assignment | Pilot/Slice 2 P0 | `VERIFIED` | Server recalculates route, validates window/shift/cargo, database independently recalculates multidimensional capacity, requires fitting snapshots, then atomically assigns. | Run live cargo-configured acceptance and add service dwell before declaring full BS-09 approval. |
 | Round execution detail | Pilot P0 | `VERIFIED` | Server-backed Stop/custody/exception state and communication links exist. | Remaining v45 Round actions and realtime projection depth. |
 | Pickup exception resolution | Pilot P0 | `VERIFIED` | Audited correction returns Stop to assigned and requires manifest recheck. | Broader pickup outcomes/evidence views. |
@@ -196,8 +196,8 @@ This sequence does not promote later slices; it orders the already authorized En
 
 - Connect server-backed Round overview/detail actions required by v45.
 - **Completed B1 2026-09-03:** pre-approval Stop reorder and departure adjustment recalculate route/window/shift/cargo truth and commit the matching departure through the versioned approval boundary.
-- Add versioned Stop movement between existing Rounds.
-- Recalculate only affected Rounds and present consequences before confirmation.
+- **Completed B2 2026-09-03:** future pre-custody Stops move between existing approved own-team Rounds through source/target version checks, affected-Round-only route/capacity/promise recalculation and one atomic audited command.
+- The canonical destination picker and consequence preview are connected in Round detail. Live browser acceptance remains pending because the current service date has no two eligible approved test Rounds.
 - Keep automatic plan generation absent until its real heuristic and persistence exist.
 
 ### Checkpoint C — remaining own-driver operational states

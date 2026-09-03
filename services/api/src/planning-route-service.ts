@@ -11,6 +11,7 @@ import { evaluateCapacity } from "./capacity-validator.js";
 
 export type PlanningRouteService = {
   preview(actor: ActorContext, request: PlanningRoutePreviewRequest, now: Date): Promise<PlanningRoutePreview>;
+  previewAssigned?(actor: ActorContext, allowedRoundIds: string[], request: PlanningRoutePreviewRequest, now: Date): Promise<PlanningRoutePreview>;
 };
 
 function localServiceDate(now: Date, timezone: string): string {
@@ -26,9 +27,7 @@ export function createPlanningRouteService(
   gateway: PlanningRouteContextGateway,
   routing: RoutingProvider,
 ): PlanningRouteService {
-  return {
-    async preview(actor, request, now) {
-      const context = await gateway.getPlanningRouteContext(actor, request.driverId, request.serviceDate, request.stopIds, now);
+  async function calculate(actor: ActorContext, request: PlanningRoutePreviewRequest, now: Date, context: PlanningRouteContext): Promise<PlanningRoutePreview> {
       const blockingReasons = [...context.blockingReasons];
       const warnings = [...context.warnings];
       const driver = context.driver;
@@ -131,6 +130,14 @@ export function createPlanningRouteService(
         capacity,
         geometry: routed.geometry,
       };
+  }
+  return {
+    async preview(actor, request, now) {
+      return calculate(actor, request, now, await gateway.getPlanningRouteContext(actor, request.driverId, request.serviceDate, request.stopIds, now));
+    },
+    async previewAssigned(actor, allowedRoundIds, request, now) {
+      if (!gateway.getAssignedPlanningRouteContext) throw new Error("Assigned Round routing is unavailable");
+      return calculate(actor, request, now, await gateway.getAssignedPlanningRouteContext(actor, allowedRoundIds, request.driverId, request.serviceDate, request.stopIds, now));
     },
   };
 }

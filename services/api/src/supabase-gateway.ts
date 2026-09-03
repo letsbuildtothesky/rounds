@@ -17,6 +17,7 @@ import type {
   OperationsRoundDetailGateway,
   OperationsCommunicationsGateway,
   PlanningRouteContextGateway,
+  RoundMoveGateway,
   PodGateway,
 } from "./types.js";
 import type {
@@ -42,6 +43,9 @@ import type {
   OperationsDeliveriesProjection,
   OperationsDriversProjection,
   OperationsRoundDetail,
+  MoveRoundStopCommand,
+  MoveRoundStopResult,
+  PlanningRouteSnapshot,
   OperationsCommunicationThread,
   OperationsCommunicationsProjection,
   OperationsSession,
@@ -173,7 +177,7 @@ function initials(displayName: string): string {
   return displayName.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]!.toUpperCase()).join("") || "DR";
 }
 
-export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway, RoundGateway, PickupGateway, DriverStopGateway, DriverCommunicationsGateway, OperationsCommunicationsGateway, PodGateway, OperationsHistoryGateway, OperationsActionGateway, OperationsDeliveriesGateway, OperationsDriversGateway, OperationsRoundDetailGateway, PlanningRouteContextGateway {
+export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway, RoundGateway, PickupGateway, DriverStopGateway, DriverCommunicationsGateway, OperationsCommunicationsGateway, PodGateway, OperationsHistoryGateway, OperationsActionGateway, OperationsDeliveriesGateway, OperationsDriversGateway, OperationsRoundDetailGateway, PlanningRouteContextGateway, RoundMoveGateway {
   private readonly admin: SupabaseClient;
 
   constructor(
@@ -459,7 +463,7 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
   }
 
   async getOperationsRoundDetail(roundId: string, actor: ActorContext, observedAt: Date): Promise<OperationsRoundDetail | null> {
-    type DetailRoundRow = RoundRow & { driver_id: string | null };
+    type DetailRoundRow = RoundRow & { driver_id: string | null; route_plan_snapshot: PlanningRouteSnapshot | null };
     type DetailRoundStopRow = { stop_id: string; sequence: number };
     type DetailStopRow = StopRow & { arrived_at: string | null; completed_at: string | null };
     type DetailDeliveryRow = {
@@ -472,7 +476,7 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     type DetailThreadRow = { id: string; stop_id: string; updated_at: string };
 
     const { data: round, error: roundError } = await this.admin.from("rounds")
-      .select("id, tenant_id, reference, service_date, state, version, driver_id")
+      .select("id, tenant_id, reference, service_date, state, version, driver_id, route_plan_snapshot")
       .eq("tenant_id", actor.tenantId).eq("id", roundId).is("deleted_at", null)
       .maybeSingle<DetailRoundRow>();
     if (roundError) throw roundError;
@@ -518,7 +522,7 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
 
     if (!stopIds.length) return {
       tenantId: actor.tenantId, observedAt: observedAt.toISOString(), id: round.id, reference: round.reference,
-      serviceDate: round.service_date, state: round.state, version: round.version, driver,
+      serviceDate: round.service_date, state: round.state, version: round.version, ...(round.route_plan_snapshot ? { routePlan: round.route_plan_snapshot } : {}), driver,
       pickup: { id: "", displayName: "Pickup not assigned" }, stops: [], custodyStopCount: 0, openExceptionCount: 0,
       ...(currentPosition ? { currentPosition } : {}),
     };
@@ -613,7 +617,7 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
 
     return {
       tenantId: actor.tenantId, observedAt: observedAt.toISOString(), id: round.id, reference: round.reference,
-      serviceDate: round.service_date, state: round.state, version: round.version, driver, pickup, stops: detailStops,
+      serviceDate: round.service_date, state: round.state, version: round.version, ...(round.route_plan_snapshot ? { routePlan: round.route_plan_snapshot } : {}), driver, pickup, stops: detailStops,
       custodyStopCount: detailStops.filter((stop) => stop.pickupConfirmed).length,
       openExceptionCount: detailStops.reduce((total, stop) => total + stop.openExceptionCount, 0),
       ...(currentPosition ? { currentPosition } : {}),
@@ -808,6 +812,15 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     return data as PlanRoundResult;
   }
 
+  async moveRoundStop(command: MoveRoundStopCommand, actor: ActorContext): Promise<MoveRoundStopResult> {
+    const { data, error } = await this.admin.rpc("move_round_stop_command", {
+      p_command: command,
+      p_actor_person_id: actor.personId,
+    });
+    if (error) throw error;
+    return data as MoveRoundStopResult;
+  }
+
   async getPlanningRouteContext(
     actor: ActorContext,
     driverId: string,
@@ -849,6 +862,73 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
         ...(driver.vehicleProfile?.requiresReview
           ? ["Vehicle profile is a conservative migrated default and requires Operations review."] : []),
       ],
+    };
+  }
+
+  async getAssignedPlanningRouteContext(
+    actor: ActorContext,
+    allowedRoundIds: string[],
+    driverId: string,
+    serviceDate: string,
+    stopIds: string[],
+    observedAt: Date,
+  ) {
+    const [details, capacity, tenantResult] = await Promise.all([
+      Promise.all(allowedRoundIds.map((roundId) => this.getOperationsRoundDetail(roundId, actor, observedAt))),
+      this.getOperationsDrivers(actor, serviceDate, observedAt),
+      this.admin.from("tenants").select("timezone").eq("id", actor.tenantId).single<{ timezone: string }>(),
+    ]);
+    if (tenantResult.error) throw tenantResult.error;
+    if (details.some((detail) => !detail)) throw new Error("One or more Rounds no longer exist.");
+    const driver = capacity.drivers.find((item) => item.driverId === driverId);
+    if (!driver) throw new Error("Driver is not an active own-team driver for this tenant.");
+    const stopById = new Map(details.flatMap((detail) => detail?.stops ?? []).map((stop) => [stop.stopId, stop]));
+    const pickupIds = [...new Set(details.filter(Boolean).map((detail) => detail!.pickup.id).filter(Boolean))];
+    if (pickupIds.length !== 1) throw new Error("Source and target Rounds must use the same pickup location.");
+    const stops = stopIds.flatMap((stopId) => {
+      const stop = stopById.get(stopId);
+      if (!stop) return [];
+      const grouped = new Map<string, number>();
+      for (const item of stop.manifest.items) {
+        const code = item.cargoClass?.trim().toLowerCase() || "unclassified";
+        grouped.set(code, (grouped.get(code) ?? 0) + item.quantity);
+      }
+      return [{
+        deliveryId: stop.deliveryId,
+        stopId: stop.stopId,
+        reference: stop.deliveryReference,
+        serviceDate,
+        pickupLocationId: pickupIds[0]!,
+        recipientName: stop.recipientName,
+        rawAddress: stop.rawAddress,
+        ...(stop.coordinate ? { coordinate: stop.coordinate } : {}),
+        windowStart: stop.windowStart,
+        windowEnd: stop.windowEnd,
+        manifestSummary: stop.manifest.items.map((item) => `${item.quantity}× ${item.description}`).join(", ") || "Manifest ready",
+        cargoRequirements: [...grouped.entries()].map(([cargoClassCode, quantity]) => ({
+          cargoClassCode,
+          displayName: cargoClassCode === "unclassified" ? "Unclassified cargo" : cargoClassCode,
+          quantity,
+          classificationStatus: cargoClassCode === "unclassified" ? "unclassified" as const : "classified" as const,
+        })),
+      }];
+    });
+    if (stops.length !== stopIds.length) throw new Error("One or more Stops are no longer assigned to the selected Rounds.");
+    if (stops.some((stop) => !stop.coordinate)) throw new Error("Every Stop needs a verified destination coordinate before routing.");
+    const pickupResult = await this.admin.from("tenant_locations")
+      .select("id, position").eq("tenant_id", actor.tenantId).eq("id", pickupIds[0]!)
+      .eq("active", true).is("deleted_at", null).maybeSingle<{ id: string; position: unknown }>();
+    if (pickupResult.error) throw pickupResult.error;
+    const pickupCoordinate = pickupResult.data ? parseDatabasePoint(pickupResult.data.position) : undefined;
+    if (!pickupResult.data || !pickupCoordinate) throw new Error("Pickup location needs a verified coordinate before routing.");
+    return {
+      timezone: tenantResult.data.timezone,
+      pickup: { id: pickupResult.data.id, coordinate: pickupCoordinate },
+      driver,
+      stops,
+      blockingReasons: [] as string[],
+      warnings: driver.vehicleProfile?.requiresReview
+        ? ["Vehicle profile is a conservative migrated default and requires Operations review."] : [],
     };
   }
 

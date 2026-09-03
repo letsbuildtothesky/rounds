@@ -7,6 +7,8 @@ import {
   validateConfirmStopArrivalCommand,
   validateCompleteStopPodCommand,
   validatePreparePodMediaPayload,
+  validateMoveRoundStopCommand,
+  validateMoveRoundStopRequest,
   validatePlanRoundCommand,
   validatePlanRoundPayload,
   validatePlanningRoutePreviewRequest,
@@ -49,7 +51,7 @@ test("rejects duplicate Stops", () => {
 });
 
 test("requires the requested departure to match the routed departure", () => {
-  const missing = payload() as ReturnType<typeof payload> & { departureAt?: string };
+  const missing = payload() as Partial<ReturnType<typeof payload>>;
   delete missing.departureAt;
   assert.throws(() => validatePlanRoundPayload(missing as ReturnType<typeof payload>), /departureAt/);
 
@@ -90,6 +92,26 @@ test("requires a new aggregate command", () => {
     expectedVersion: 1,
     payload: payload(),
   }), /expectedVersion/);
+});
+
+test("accepts a dual-version Stop move with exact resulting route orders", () => {
+  const sourceRoundId = "10000000-0000-4000-8000-000000000010";
+  const targetRoundId = "10000000-0000-4000-8000-000000000011";
+  const movedStopId = "10000000-0000-4000-8000-000000000012";
+  const sourceStopId = "10000000-0000-4000-8000-000000000013";
+  const targetStopId = "10000000-0000-4000-8000-000000000014";
+  const sourceRoute = { ...payload().routePlan, stopIds: [sourceStopId], stops: [{ ...payload().routePlan.stops[0]!, stopId: sourceStopId }] };
+  const targetRoute = { ...payload().routePlan, stopIds: [movedStopId, targetStopId], stops: [{ ...payload().routePlan.stops[0]!, stopId: movedStopId }, { ...payload().routePlan.stops[0]!, stopId: targetStopId, sequence: 2 }] };
+  assert.doesNotThrow(() => validateMoveRoundStopCommand({
+    schemaVersion: 1, commandType: "round.move_stop", commandId: "10000000-0000-4000-8000-000000000015",
+    traceId: "10000000-0000-4000-8000-000000000016", idempotencyKey: "move:one", tenantId: "10000000-0000-4000-8000-000000000001",
+    aggregateId: sourceRoundId, expectedVersion: 3, occurredFromDeviceAt: "2026-09-01T12:00:00.000Z",
+    payload: { sourceRoundId, targetRoundId, stopId: movedStopId, sourceExpectedVersion: 3, targetExpectedVersion: 7, sourceStopIds: [sourceStopId], targetStopIds: [movedStopId, targetStopId], sourceRoutePlan: sourceRoute, targetRoutePlan: targetRoute },
+  }));
+});
+
+test("rejects a Stop move to the same Round or against an invalid version", () => {
+  assert.throws(() => validateMoveRoundStopRequest({ sourceRoundId: "10000000-0000-4000-8000-000000000010", targetRoundId: "10000000-0000-4000-8000-000000000010", stopId: "10000000-0000-4000-8000-000000000012", sourceExpectedVersion: 3, targetExpectedVersion: 0 }), ContractError);
 });
 
 const pickupPayload = {

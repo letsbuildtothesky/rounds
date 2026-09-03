@@ -18,6 +18,7 @@ import { operationsDriversHandler } from "./operations-drivers-handler.js";
 import { setDriverRecurringScheduleHandler } from "./set-driver-recurring-schedule-handler.js";
 import { clearDriverShiftExceptionHandler, setDriverShiftExceptionHandler } from "./set-driver-shift-exception-handler.js";
 import { operationsRoundDetailHandler } from "./operations-round-detail-handler.js";
+import { roundMoveHandler, roundMovePreviewHandler } from "./round-move-handler.js";
 import { resolveOperationsExceptionHandler } from "./resolve-operations-exception-handler.js";
 import { confirmDeliveryReturnHandler } from "./confirm-delivery-return-handler.js";
 import { planRoundHandler } from "./plan-round-handler.js";
@@ -199,6 +200,22 @@ const server = createServer(async (request, response) => {
         identity: gateway, drivers: gateway, uuid: () => crypto.randomUUID(), now: () => new Date(),
       });
       sendNode(response, addOperationsCors(exceptionResponse, request.headers.origin));
+      return;
+    }
+    if (request.method === "POST" && request.url === "/v1/operations/rounds/move-preview") {
+      const webRequest = await toWebRequest(request);
+      const moveResponse = await roundMovePreviewHandler(webRequest, {
+        identity: gateway, rounds: gateway, routes: routeService, uuid: () => crypto.randomUUID(), now: () => new Date(),
+      });
+      sendNode(response, addOperationsCors(moveResponse, request.headers.origin));
+      return;
+    }
+    if (request.method === "POST" && request.url === "/v1/operations/rounds/move") {
+      const webRequest = await toWebRequest(request);
+      const moveResponse = await roundMoveHandler(webRequest, {
+        identity: gateway, rounds: gateway, routes: routeService, uuid: () => crypto.randomUUID(), now: () => new Date(),
+      });
+      sendNode(response, addOperationsCors(moveResponse, request.headers.origin));
       return;
     }
     const operationsRoundMatch = request.url?.match(/^\/v1\/operations\/rounds\/([0-9a-f-]+)$/i);

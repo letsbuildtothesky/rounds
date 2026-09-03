@@ -146,6 +146,7 @@ export type OperationsRoundDetail = {
   serviceDate: string;
   state: RoundState;
   version: number;
+  routePlan?: PlanningRouteSnapshot;
   driver: TeamDriverSummary;
   pickup: { id: string; displayName: string };
   stops: OperationsRoundStopDetail[];
@@ -184,6 +185,64 @@ export type PlanRoundState = {
 };
 
 export type PlanRoundResult = CommandResult<PlanRoundState, RoundApprovedEvent>;
+
+export type MoveRoundStopRequest = {
+  sourceRoundId: string;
+  targetRoundId: string;
+  stopId: string;
+  sourceExpectedVersion: number;
+  targetExpectedVersion: number;
+};
+
+export type RoundMoveImpact = {
+  roundId: string;
+  reference: string;
+  driverId: string;
+  driverName: string;
+  vehicleLabel?: string;
+  stopsBefore: number;
+  stopsAfter: number;
+  routeBefore?: PlanningRouteSnapshot;
+  routeAfter?: PlanningRoutePreview;
+  removed: boolean;
+};
+
+export type MoveRoundStopPreview = {
+  tenantId: string;
+  calculatedAt: string;
+  stopId: string;
+  movable: boolean;
+  blockingReasons: string[];
+  source: RoundMoveImpact;
+  target: RoundMoveImpact;
+};
+
+export type MoveRoundStopPayload = MoveRoundStopRequest & {
+  sourceStopIds: string[];
+  targetStopIds: string[];
+  sourceRoutePlan?: PlanningRouteSnapshot;
+  targetRoutePlan: PlanningRouteSnapshot;
+};
+
+export type MoveRoundStopCommand = CommandEnvelope<"round.move_stop", MoveRoundStopPayload>;
+
+export type RoundStopMovedPayload = {
+  stopId: string;
+  sourceRoundId: string;
+  targetRoundId: string;
+  sourceStopIds: string[];
+  targetStopIds: string[];
+};
+
+export type RoundStopMovedEvent = DomainEventEnvelope<"round.stop_moved", RoundStopMovedPayload>;
+
+export type MoveRoundStopState = RoundStopMovedPayload & {
+  sourceRoundVersion: number;
+  targetRoundVersion: number;
+  sourceRoundRemoved: boolean;
+};
+
+export type MoveRoundStopResult = CommandResult<MoveRoundStopState, RoundStopMovedEvent>;
 
 export type PickupStopVerification = {
   stopId: string;
