@@ -11,7 +11,11 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     final controller = await HarnessAppController.create();
     await tester.pumpWidget(
-      RoundsHarnessApp(controller: controller, enableNativeNavigation: false),
+      RoundsHarnessApp(
+        controller: controller,
+        enableNativeNavigation: false,
+        splashDuration: Duration.zero,
+      ),
     );
 
     expect(find.text('เลือกภาษา'), findsOneWidget);
@@ -35,7 +39,11 @@ void main() {
     });
     final controller = await HarnessAppController.create();
     await tester.pumpWidget(
-      RoundsHarnessApp(controller: controller, enableNativeNavigation: false),
+      RoundsHarnessApp(
+        controller: controller,
+        enableNativeNavigation: false,
+        splashDuration: Duration.zero,
+      ),
     );
 
     await tester.tap(find.byKey(const Key('start-navigation')));
@@ -67,7 +75,11 @@ void main() {
     });
     final controller = await HarnessAppController.create();
     await tester.pumpWidget(
-      RoundsHarnessApp(controller: controller, enableNativeNavigation: false),
+      RoundsHarnessApp(
+        controller: controller,
+        enableNativeNavigation: false,
+        splashDuration: Duration.zero,
+      ),
     );
     await tester.tap(find.byKey(const Key('start-navigation')));
     await tester.pumpAndSettle();
@@ -100,7 +112,11 @@ void main() {
     });
     final controller = await HarnessAppController.create();
     await tester.pumpWidget(
-      RoundsHarnessApp(controller: controller, enableNativeNavigation: false),
+      RoundsHarnessApp(
+        controller: controller,
+        enableNativeNavigation: false,
+        splashDuration: Duration.zero,
+      ),
     );
     await tester.tap(find.byKey(const Key('start-navigation')));
     await tester.pumpAndSettle();
@@ -133,7 +149,11 @@ void main() {
     });
     final controller = await HarnessAppController.create();
     await tester.pumpWidget(
-      RoundsHarnessApp(controller: controller, enableNativeNavigation: false),
+      RoundsHarnessApp(
+        controller: controller,
+        enableNativeNavigation: false,
+        splashDuration: Duration.zero,
+      ),
     );
     await tester.pumpAndSettle();
 

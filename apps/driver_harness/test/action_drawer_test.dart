@@ -141,7 +141,11 @@ Future<void> _pumpApp(WidgetTester tester) async {
   });
   final controller = await HarnessAppController.create();
   await tester.pumpWidget(
-    RoundsHarnessApp(controller: controller, enableNativeNavigation: false),
+    RoundsHarnessApp(
+      controller: controller,
+      enableNativeNavigation: false,
+      splashDuration: Duration.zero,
+    ),
   );
   await tester.pumpAndSettle();
 }

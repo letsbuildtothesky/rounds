@@ -34,6 +34,14 @@ void main(List<String> arguments) {
 String generateDriverUiMetrics(Map<String, dynamic> json) {
   final viewport = json['referenceViewport'] as Map<String, dynamic>;
   final screens = json['screens'] as Map<String, dynamic>;
+  final a01 = screens['A01'] as Map<String, dynamic>;
+  final a01Brand = a01['brand'] as Map<String, dynamic>;
+  final a01Animation = a01['animation'] as Map<String, dynamic>;
+  final a01b = screens['A01B'] as Map<String, dynamic>;
+  final a01bTop = a01b['topBar'] as Map<String, dynamic>;
+  final a01bContent = a01b['content'] as Map<String, dynamic>;
+  final a01bList = a01b['languageList'] as Map<String, dynamic>;
+  final a01bFooter = a01b['footer'] as Map<String, dynamic>;
   final d01 = screens['D01'] as Map<String, dynamic>;
   final d01Control = d01['roadControl'] as Map<String, dynamic>;
   final d01Instruction = d01['instruction'] as Map<String, dynamic>;
@@ -144,6 +152,122 @@ abstract final class DriverReferenceViewport {
   static const double width = ${_double(viewport['width'])};
   static const double height = ${_double(viewport['height'])};
   static const double compactBreakpoint = ${_double(viewport['compactBreakpoint'])};
+}
+
+abstract final class DriverA01Metrics {
+  static const String source = '${a01['source']}';
+
+  static const double wordSize = ${_double(a01Brand['wordSize'])};
+  static const double wordHeight = ${_double(a01Brand['wordHeight'])};
+  static const double wordWeight = ${_double(a01Brand['wordWeight'])};
+  static const double wordTracking = ${_double(a01Brand['wordTracking'])};
+  static const double wordInitialOffsetY = ${_double(a01Brand['wordInitialOffsetY'])};
+  static const double dotSize = ${_double(a01Brand['dotSize'])};
+  static const double dotMarginLeft = ${_double(a01Brand['dotMarginLeft'])};
+  static const double dotMarginBottom = ${_double(a01Brand['dotMarginBottom'])};
+
+  static const int wordDelayMs = ${a01Animation['wordDelayMs']};
+  static const int wordDurationMs = ${a01Animation['wordDurationMs']};
+  static const int dotDelayMs = ${a01Animation['dotDelayMs']};
+  static const int dotDurationMs = ${a01Animation['dotDurationMs']};
+  static const int pulseDelayMs = ${a01Animation['pulseDelayMs']};
+  static const int pulseDurationMs = ${a01Animation['pulseDurationMs']};
+  static const int proceedAfterMs = ${a01Animation['proceedAfterMs']};
+}
+
+abstract final class DriverA01BMetrics {
+  static const String sourceEnglish = '${a01b['sourceEnglish']}';
+  static const String sourceThai = '${a01b['sourceThai']}';
+
+  static const double topBarHeight = ${_double(a01bTop['height'])};
+  static const double topBarPaddingHorizontal = ${_double(a01bTop['paddingHorizontal'])};
+  static const double brandSize = ${_double(a01bTop['brandSize'])};
+  static const double brandWeight = ${_double(a01bTop['brandWeight'])};
+  static const double brandTracking = ${_double(a01bTop['brandTracking'])};
+  static const double brandDotSize = ${_double(a01bTop['dotSize'])};
+  static const double brandDotMarginLeft = ${_double(a01bTop['dotMarginLeft'])};
+  static const double brandDotMarginBottom = ${_double(a01bTop['dotMarginBottom'])};
+
+  static const double contentPaddingHorizontal = ${_double(a01bContent['paddingHorizontal'])};
+  static const double compactContentPaddingHorizontal = ${_double(a01bContent['compactPaddingHorizontal'])};
+  static const double contentPaddingBottom = ${_double(a01bContent['paddingBottom'])};
+  static const double compactContentPaddingBottom = ${_double(a01bContent['compactPaddingBottom'])};
+  static const double englishContentPaddingTop = ${_double(a01bContent['englishPaddingTop'])};
+  static const double englishCompactContentPaddingTop = ${_double(a01bContent['englishCompactPaddingTop'])};
+  static const double thaiContentPaddingTop = ${_double(a01bContent['thaiPaddingTop'])};
+  static const double thaiCompactContentPaddingTop = ${_double(a01bContent['thaiCompactPaddingTop'])};
+  static const double englishEyebrowSize = ${_double(a01bContent['englishEyebrowSize'])};
+  static const double englishEyebrowHeight = ${_double(a01bContent['englishEyebrowHeight'])};
+  static const double englishEyebrowWeight = ${_double(a01bContent['englishEyebrowWeight'])};
+  static const double englishEyebrowTracking = ${_double(a01bContent['englishEyebrowTracking'])};
+  static const double englishEyebrowGap = ${_double(a01bContent['englishEyebrowGap'])};
+  static const double thaiEyebrowSize = ${_double(a01bContent['thaiEyebrowSize'])};
+  static const double thaiEyebrowHeight = ${_double(a01bContent['thaiEyebrowHeight'])};
+  static const double thaiEyebrowWeight = ${_double(a01bContent['thaiEyebrowWeight'])};
+  static const double thaiEyebrowTracking = ${_double(a01bContent['thaiEyebrowTracking'])};
+  static const double thaiEyebrowGap = ${_double(a01bContent['thaiEyebrowGap'])};
+  static const double englishTitleSize = ${_double(a01bContent['englishTitleSize'])};
+  static const double englishCompactTitleSize = ${_double(a01bContent['englishCompactTitleSize'])};
+  static const double englishTitleHeight = ${_double(a01bContent['englishTitleHeight'])};
+  static const double englishTitleWeight = ${_double(a01bContent['englishTitleWeight'])};
+  static const double englishTitleTracking = ${_double(a01bContent['englishTitleTracking'])};
+  static const double thaiTitleSize = ${_double(a01bContent['thaiTitleSize'])};
+  static const double thaiCompactTitleSize = ${_double(a01bContent['thaiCompactTitleSize'])};
+  static const double thaiTitleHeight = ${_double(a01bContent['thaiTitleHeight'])};
+  static const double thaiTitleWeight = ${_double(a01bContent['thaiTitleWeight'])};
+  static const double thaiTitleTracking = ${_double(a01bContent['thaiTitleTracking'])};
+  static const double englishLeadGap = ${_double(a01bContent['englishLeadGap'])};
+  static const double thaiLeadGap = ${_double(a01bContent['thaiLeadGap'])};
+  static const double leadSize = ${_double(a01bContent['leadSize'])};
+  static const double englishLeadHeight = ${_double(a01bContent['englishLeadHeight'])};
+  static const double englishLeadWeight = ${_double(a01bContent['englishLeadWeight'])};
+  static const double englishLeadMaxWidth = ${_double(a01bContent['englishLeadMaxWidth'])};
+  static const double thaiLeadHeight = ${_double(a01bContent['thaiLeadHeight'])};
+  static const double thaiLeadWeight = ${_double(a01bContent['thaiLeadWeight'])};
+  static const double thaiLeadMaxWidth = ${_double(a01bContent['thaiLeadMaxWidth'])};
+
+  static const double englishListMarginTop = ${_double(a01bList['englishMarginTop'])};
+  static const double englishCompactListMarginTop = ${_double(a01bList['englishCompactMarginTop'])};
+  static const double thaiListMarginTop = ${_double(a01bList['thaiMarginTop'])};
+  static const double thaiCompactListMarginTop = ${_double(a01bList['thaiCompactMarginTop'])};
+  static const double listBorderWidth = ${_double(a01bList['borderWidth'])};
+  static const double rowHeight = ${_double(a01bList['rowHeight'])};
+  static const double englishCompactRowHeight = ${_double(a01bList['englishCompactRowHeight'])};
+  static const double thaiCompactRowHeight = ${_double(a01bList['thaiCompactRowHeight'])};
+  static const double edgeWidth = ${_double(a01bList['edgeWidth'])};
+  static const double edgeHeight = ${_double(a01bList['edgeHeight'])};
+  static const double rowColumnGap = ${_double(a01bList['columnGap'])};
+  static const double rowRightPadding = ${_double(a01bList['rightPadding'])};
+  static const double markColumnWidth = ${_double(a01bList['markColumnWidth'])};
+  static const double markSize = ${_double(a01bList['markSize'])};
+  static const double markBorderWidth = ${_double(a01bList['markBorderWidth'])};
+  static const double markInnerSize = ${_double(a01bList['markInnerSize'])};
+  static const double languageTitleSize = ${_double(a01bList['titleSize'])};
+  static const double englishLanguageTitleHeight = ${_double(a01bList['englishTitleHeight'])};
+  static const double englishLanguageTitleWeight = ${_double(a01bList['englishTitleWeight'])};
+  static const double englishLanguageTitleTracking = ${_double(a01bList['englishTitleTracking'])};
+  static const double thaiLanguageTitleHeight = ${_double(a01bList['thaiTitleHeight'])};
+  static const double thaiLanguageTitleWeight = ${_double(a01bList['thaiTitleWeight'])};
+  static const double thaiLanguageTitleTracking = ${_double(a01bList['thaiTitleTracking'])};
+  static const double englishSubtitleGap = ${_double(a01bList['englishSubtitleGap'])};
+  static const double thaiSubtitleGap = ${_double(a01bList['thaiSubtitleGap'])};
+  static const double subtitleSize = ${_double(a01bList['subtitleSize'])};
+  static const double englishSubtitleHeight = ${_double(a01bList['englishSubtitleHeight'])};
+  static const double englishSubtitleWeight = ${_double(a01bList['englishSubtitleWeight'])};
+  static const double thaiSubtitleHeight = ${_double(a01bList['thaiSubtitleHeight'])};
+  static const double thaiSubtitleWeight = ${_double(a01bList['thaiSubtitleWeight'])};
+
+  static const double footerPaddingTop = ${_double(a01bFooter['paddingTop'])};
+  static const double footerPaddingHorizontal = ${_double(a01bFooter['paddingHorizontal'])};
+  static const double compactFooterPaddingHorizontal = ${_double(a01bFooter['compactPaddingHorizontal'])};
+  static const double footerPaddingBottom = ${_double(a01bFooter['paddingBottom'])};
+  static const double buttonHeight = ${_double(a01bFooter['buttonHeight'])};
+  static const double buttonRadius = ${_double(a01bFooter['buttonRadius'])};
+  static const double buttonSize = ${_double(a01bFooter['buttonSize'])};
+  static const double englishButtonWeight = ${_double(a01bFooter['englishButtonWeight'])};
+  static const double englishButtonTracking = ${_double(a01bFooter['englishButtonTracking'])};
+  static const double thaiButtonWeight = ${_double(a01bFooter['thaiButtonWeight'])};
+  static const double thaiButtonTracking = ${_double(a01bFooter['thaiButtonTracking'])};
 }
 
 abstract final class DriverD01Metrics {

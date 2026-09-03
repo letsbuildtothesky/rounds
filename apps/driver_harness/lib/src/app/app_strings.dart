@@ -26,9 +26,17 @@ class AppStrings {
 
   bool get isThai => locale == HarnessLocale.thai;
   String get appName => 'Rounds';
-  String get chooseLanguage => isThai ? 'เลือกภาษา' : 'Choose language';
+  String get languageEyebrow => isThai ? 'ภาษา' : 'First time';
+  String get languageTitle => isThai ? 'เลือกภาษา' : 'Choose your language';
+  String get languageLead => isThai
+      ? 'เปลี่ยนได้ภายหลังในโปรไฟล์'
+      : 'You can change this later in Profile.';
   String get thai => 'ไทย';
   String get english => 'English';
+  String get thaiLanguageDescription => 'ภาษาไทย';
+  String get englishLanguageDescription => isThai ? 'ภาษาอังกฤษ' : 'English';
+  String get languageContinueAction => isThai ? 'ต่อไป' : 'Continue in English';
+  String get chooseLanguage => isThai ? 'เลือกภาษา' : 'Choose language';
   String get continueAction => isThai ? 'ดำเนินการต่อ' : 'Continue';
   String get assignedRound => isThai ? 'รอบที่ได้รับมอบหมาย' : 'Assigned Round';
   String get currentStop => isThai ? 'จุดส่งปัจจุบัน' : 'Current Stop';

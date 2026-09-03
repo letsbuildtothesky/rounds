@@ -7,6 +7,122 @@ abstract final class DriverReferenceViewport {
   static const double compactBreakpoint = 350.0;
 }
 
+abstract final class DriverA01Metrics {
+  static const String source = 'ux/driver/en/screens/ROUNDS-A01-SPLASH-LIGHT-v5.html';
+
+  static const double wordSize = 54.0;
+  static const double wordHeight = 0.96;
+  static const double wordWeight = 920.0;
+  static const double wordTracking = -3.78;
+  static const double wordInitialOffsetY = 6.0;
+  static const double dotSize = 14.0;
+  static const double dotMarginLeft = 5.0;
+  static const double dotMarginBottom = 8.0;
+
+  static const int wordDelayMs = 50;
+  static const int wordDurationMs = 380;
+  static const int dotDelayMs = 340;
+  static const int dotDurationMs = 240;
+  static const int pulseDelayMs = 620;
+  static const int pulseDurationMs = 280;
+  static const int proceedAfterMs = 1250;
+}
+
+abstract final class DriverA01BMetrics {
+  static const String sourceEnglish = 'ux/driver/en/screens/ROUNDS-A01B-CHOOSE-LANGUAGE-v1-10OF10.html';
+  static const String sourceThai = 'ux/driver/th/ROUNDS-A01B-CHOOSE-LANGUAGE-TH-v2-10OF10.html';
+
+  static const double topBarHeight = 68.0;
+  static const double topBarPaddingHorizontal = 20.0;
+  static const double brandSize = 24.0;
+  static const double brandWeight = 920.0;
+  static const double brandTracking = -1.32;
+  static const double brandDotSize = 7.0;
+  static const double brandDotMarginLeft = 3.0;
+  static const double brandDotMarginBottom = 2.0;
+
+  static const double contentPaddingHorizontal = 20.0;
+  static const double compactContentPaddingHorizontal = 18.0;
+  static const double contentPaddingBottom = 126.0;
+  static const double compactContentPaddingBottom = 116.0;
+  static const double englishContentPaddingTop = 58.0;
+  static const double englishCompactContentPaddingTop = 44.0;
+  static const double thaiContentPaddingTop = 55.0;
+  static const double thaiCompactContentPaddingTop = 39.0;
+  static const double englishEyebrowSize = 11.5;
+  static const double englishEyebrowHeight = 1.0;
+  static const double englishEyebrowWeight = 900.0;
+  static const double englishEyebrowTracking = 1.265;
+  static const double englishEyebrowGap = 17.0;
+  static const double thaiEyebrowSize = 12.5;
+  static const double thaiEyebrowHeight = 1.35;
+  static const double thaiEyebrowWeight = 800.0;
+  static const double thaiEyebrowTracking = 0.0;
+  static const double thaiEyebrowGap = 15.0;
+  static const double englishTitleSize = 46.0;
+  static const double englishCompactTitleSize = 42.0;
+  static const double englishTitleHeight = 0.94;
+  static const double englishTitleWeight = 885.0;
+  static const double englishTitleTracking = -2.99;
+  static const double thaiTitleSize = 42.0;
+  static const double thaiCompactTitleSize = 36.0;
+  static const double thaiTitleHeight = 1.14;
+  static const double thaiTitleWeight = 800.0;
+  static const double thaiTitleTracking = 0.0;
+  static const double englishLeadGap = 18.0;
+  static const double thaiLeadGap = 12.0;
+  static const double leadSize = 15.0;
+  static const double englishLeadHeight = 1.45;
+  static const double englishLeadWeight = 650.0;
+  static const double englishLeadMaxWidth = 310.0;
+  static const double thaiLeadHeight = 1.55;
+  static const double thaiLeadWeight = 500.0;
+  static const double thaiLeadMaxWidth = 315.0;
+
+  static const double englishListMarginTop = 54.0;
+  static const double englishCompactListMarginTop = 42.0;
+  static const double thaiListMarginTop = 42.0;
+  static const double thaiCompactListMarginTop = 34.0;
+  static const double listBorderWidth = 1.0;
+  static const double rowHeight = 112.0;
+  static const double englishCompactRowHeight = 102.0;
+  static const double thaiCompactRowHeight = 100.0;
+  static const double edgeWidth = 4.0;
+  static const double edgeHeight = 54.0;
+  static const double rowColumnGap = 16.0;
+  static const double rowRightPadding = 4.0;
+  static const double markColumnWidth = 34.0;
+  static const double markSize = 28.0;
+  static const double markBorderWidth = 1.0;
+  static const double markInnerSize = 10.0;
+  static const double languageTitleSize = 27.0;
+  static const double englishLanguageTitleHeight = 1.02;
+  static const double englishLanguageTitleWeight = 875.0;
+  static const double englishLanguageTitleTracking = -1.08;
+  static const double thaiLanguageTitleHeight = 1.16;
+  static const double thaiLanguageTitleWeight = 800.0;
+  static const double thaiLanguageTitleTracking = 0.0;
+  static const double englishSubtitleGap = 8.0;
+  static const double thaiSubtitleGap = 5.0;
+  static const double subtitleSize = 13.5;
+  static const double englishSubtitleHeight = 1.3;
+  static const double englishSubtitleWeight = 690.0;
+  static const double thaiSubtitleHeight = 1.45;
+  static const double thaiSubtitleWeight = 500.0;
+
+  static const double footerPaddingTop = 14.0;
+  static const double footerPaddingHorizontal = 20.0;
+  static const double compactFooterPaddingHorizontal = 18.0;
+  static const double footerPaddingBottom = 18.0;
+  static const double buttonHeight = 62.0;
+  static const double buttonRadius = 7.0;
+  static const double buttonSize = 17.0;
+  static const double englishButtonWeight = 860.0;
+  static const double englishButtonTracking = -0.34;
+  static const double thaiButtonWeight = 700.0;
+  static const double thaiButtonTracking = 0.0;
+}
+
 abstract final class DriverD01Metrics {
   static const String source = 'ux/driver/en/screens/ROUNDS-D01-NAVIGATE-TO-PICKUP-v5-10OF10.html';
 
