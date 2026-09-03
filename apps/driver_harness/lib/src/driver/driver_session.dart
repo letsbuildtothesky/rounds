@@ -71,6 +71,7 @@ class DriverRoundModel {
 
 class DriverPickupModel {
   const DriverPickupModel({
+    this.id = '',
     required this.displayName,
     required this.rawAddress,
     required this.contactName,
@@ -79,6 +80,7 @@ class DriverPickupModel {
     this.longitude,
   });
 
+  final String id;
   final String displayName;
   final String rawAddress;
   final String contactName;
@@ -88,6 +90,7 @@ class DriverPickupModel {
 
   factory DriverPickupModel.fromJson(Map<String, dynamic> json) =>
       DriverPickupModel(
+        id: json['id'] as String? ?? '',
         displayName: json['displayName'] as String,
         rawAddress: json['rawAddress'] as String,
         contactName: json['contactName'] as String,

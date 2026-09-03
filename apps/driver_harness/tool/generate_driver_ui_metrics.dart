@@ -34,6 +34,11 @@ void main(List<String> arguments) {
 String generateDriverUiMetrics(Map<String, dynamic> json) {
   final viewport = json['referenceViewport'] as Map<String, dynamic>;
   final screens = json['screens'] as Map<String, dynamic>;
+  final d01 = screens['D01'] as Map<String, dynamic>;
+  final d01Control = d01['roadControl'] as Map<String, dynamic>;
+  final d01Instruction = d01['instruction'] as Map<String, dynamic>;
+  final d01Dock = d01['pickupDock'] as Map<String, dynamic>;
+  final d01Type = d01['typography'] as Map<String, dynamic>;
   final d03d04 = screens['D03D04'] as Map<String, dynamic>;
   final pickupTop = d03d04['topBar'] as Map<String, dynamic>;
   final pickupContent = d03d04['content'] as Map<String, dynamic>;
@@ -64,6 +69,78 @@ abstract final class DriverReferenceViewport {
   static const double width = ${_double(viewport['width'])};
   static const double height = ${_double(viewport['height'])};
   static const double compactBreakpoint = ${_double(viewport['compactBreakpoint'])};
+}
+
+abstract final class DriverD01Metrics {
+  static const String source = '${d01['source']}';
+
+  static const double roadControlSize = ${_double(d01Control['size'])};
+  static const double compactRoadControlSize = ${_double(d01Control['compactSize'])};
+  static const double roadControlRadius = ${_double(d01Control['radius'])};
+  static const double roadControlIconSize = ${_double(d01Control['iconSize'])};
+  static const double outerMargin = ${_double(d01Control['outerMargin'])};
+  static const double compactOuterMargin = ${_double(d01Control['compactOuterMargin'])};
+  static const double roadControlGap = ${_double(d01Control['gap'])};
+  static const double compactRoadControlGap = ${_double(d01Control['compactGap'])};
+
+  static const double instructionHeight = ${_double(d01Instruction['height'])};
+  static const double compactInstructionHeight = ${_double(d01Instruction['compactHeight'])};
+  static const double instructionRadius = ${_double(d01Instruction['radius'])};
+  static const double instructionPaddingLeft = ${_double(d01Instruction['paddingLeft'])};
+  static const double instructionPaddingRight = ${_double(d01Instruction['paddingRight'])};
+  static const double compactInstructionPaddingLeft = ${_double(d01Instruction['compactPaddingLeft'])};
+  static const double compactInstructionPaddingRight = ${_double(d01Instruction['compactPaddingRight'])};
+  static const double instructionIconSize = ${_double(d01Instruction['iconSize'])};
+  static const double compactInstructionIconSize = ${_double(d01Instruction['compactIconSize'])};
+  static const double instructionIconRadius = ${_double(d01Instruction['iconRadius'])};
+  static const double instructionColumnGap = ${_double(d01Instruction['columnGap'])};
+  static const double compactInstructionColumnGap = ${_double(d01Instruction['compactColumnGap'])};
+  static const double instructionDistanceSize = ${_double(d01Instruction['distanceSize'])};
+  static const double compactInstructionDistanceSize = ${_double(d01Instruction['compactDistanceSize'])};
+  static const double instructionDistanceWeight = ${_double(d01Instruction['distanceWeight'])};
+  static const double instructionDistanceTracking = ${_double(d01Instruction['distanceTracking'])};
+  static const double instructionUnitSize = ${_double(d01Instruction['unitSize'])};
+  static const double instructionTextGap = ${_double(d01Instruction['textGap'])};
+  static const double instructionTextSize = ${_double(d01Instruction['textSize'])};
+  static const double compactInstructionTextSize = ${_double(d01Instruction['compactTextSize'])};
+  static const double instructionTextHeight = ${_double(d01Instruction['textHeight'])};
+  static const double instructionTextWeight = ${_double(d01Instruction['textWeight'])};
+
+  static const double dockRowHeight = ${_double(d01Dock['rowHeight'])};
+  static const double compactDockRowHeight = ${_double(d01Dock['compactRowHeight'])};
+  static const double dockPaddingHorizontal = ${_double(d01Dock['paddingHorizontal'])};
+  static const double dockPaddingVertical = ${_double(d01Dock['paddingVertical'])};
+  static const double compactDockPadding = ${_double(d01Dock['compactPadding'])};
+  static const double dockColumnGap = ${_double(d01Dock['columnGap'])};
+  static const double dockRadius = ${_double(d01Dock['radius'])};
+  static const double dockBorderWidth = ${_double(d01Dock['borderWidth'])};
+  static const double dockTextGap = ${_double(d01Dock['textGap'])};
+  static const double arrivalHeight = ${_double(d01Dock['arrivalHeight'])};
+  static const double arrivalMarginHorizontal = ${_double(d01Dock['arrivalMarginHorizontal'])};
+  static const double arrivalMarginBottom = ${_double(d01Dock['arrivalMarginBottom'])};
+
+  static const double kickerSize = ${_double(d01Type['kickerSize'])};
+  static const double kickerHeight = ${_double(d01Type['kickerHeight'])};
+  static const double kickerWeight = ${_double(d01Type['kickerWeight'])};
+  static const double kickerTracking = ${_double(d01Type['kickerTracking'])};
+  static const double titleSize = ${_double(d01Type['titleSize'])};
+  static const double compactTitleSize = ${_double(d01Type['compactTitleSize'])};
+  static const double titleHeight = ${_double(d01Type['titleHeight'])};
+  static const double titleWeight = ${_double(d01Type['titleWeight'])};
+  static const double titleTracking = ${_double(d01Type['titleTracking'])};
+  static const double placeSize = ${_double(d01Type['placeSize'])};
+  static const double placeHeight = ${_double(d01Type['placeHeight'])};
+  static const double placeWeight = ${_double(d01Type['placeWeight'])};
+  static const double etaSize = ${_double(d01Type['etaSize'])};
+  static const double compactEtaSize = ${_double(d01Type['compactEtaSize'])};
+  static const double etaHeight = ${_double(d01Type['etaHeight'])};
+  static const double etaWeight = ${_double(d01Type['etaWeight'])};
+  static const double etaTracking = ${_double(d01Type['etaTracking'])};
+  static const double distanceSize = ${_double(d01Type['distanceSize'])};
+  static const double distanceHeight = ${_double(d01Type['distanceHeight'])};
+  static const double distanceWeight = ${_double(d01Type['distanceWeight'])};
+  static const double arrivalSize = ${_double(d01Type['arrivalSize'])};
+  static const double arrivalWeight = ${_double(d01Type['arrivalWeight'])};
 }
 
 abstract final class DriverD03D04Metrics {

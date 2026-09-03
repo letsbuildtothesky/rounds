@@ -7,6 +7,78 @@ abstract final class DriverReferenceViewport {
   static const double compactBreakpoint = 350.0;
 }
 
+abstract final class DriverD01Metrics {
+  static const String source = 'ux/driver/en/screens/ROUNDS-D01-NAVIGATE-TO-PICKUP-v5-10OF10.html';
+
+  static const double roadControlSize = 44.0;
+  static const double compactRoadControlSize = 42.0;
+  static const double roadControlRadius = 6.0;
+  static const double roadControlIconSize = 20.0;
+  static const double outerMargin = 12.0;
+  static const double compactOuterMargin = 9.0;
+  static const double roadControlGap = 8.0;
+  static const double compactRoadControlGap = 6.0;
+
+  static const double instructionHeight = 82.0;
+  static const double compactInstructionHeight = 78.0;
+  static const double instructionRadius = 7.0;
+  static const double instructionPaddingLeft = 10.0;
+  static const double instructionPaddingRight = 13.0;
+  static const double compactInstructionPaddingLeft = 8.0;
+  static const double compactInstructionPaddingRight = 10.0;
+  static const double instructionIconSize = 48.0;
+  static const double compactInstructionIconSize = 43.0;
+  static const double instructionIconRadius = 6.0;
+  static const double instructionColumnGap = 12.0;
+  static const double compactInstructionColumnGap = 9.0;
+  static const double instructionDistanceSize = 30.0;
+  static const double compactInstructionDistanceSize = 27.0;
+  static const double instructionDistanceWeight = 870.0;
+  static const double instructionDistanceTracking = -1.65;
+  static const double instructionUnitSize = 13.0;
+  static const double instructionTextGap = 6.0;
+  static const double instructionTextSize = 13.5;
+  static const double compactInstructionTextSize = 12.5;
+  static const double instructionTextHeight = 1.28;
+  static const double instructionTextWeight = 690.0;
+
+  static const double dockRowHeight = 92.0;
+  static const double compactDockRowHeight = 84.0;
+  static const double dockPaddingHorizontal = 16.0;
+  static const double dockPaddingVertical = 15.0;
+  static const double compactDockPadding = 13.0;
+  static const double dockColumnGap = 14.0;
+  static const double dockRadius = 8.0;
+  static const double dockBorderWidth = 1.0;
+  static const double dockTextGap = 6.0;
+  static const double arrivalHeight = 60.0;
+  static const double arrivalMarginHorizontal = 10.0;
+  static const double arrivalMarginBottom = 10.0;
+
+  static const double kickerSize = 11.0;
+  static const double kickerHeight = 1.0;
+  static const double kickerWeight = 820.0;
+  static const double kickerTracking = 0.935;
+  static const double titleSize = 22.0;
+  static const double compactTitleSize = 20.0;
+  static const double titleHeight = 1.02;
+  static const double titleWeight = 830.0;
+  static const double titleTracking = -0.77;
+  static const double placeSize = 12.5;
+  static const double placeHeight = 1.2;
+  static const double placeWeight = 690.0;
+  static const double etaSize = 24.0;
+  static const double compactEtaSize = 21.0;
+  static const double etaHeight = 1.0;
+  static const double etaWeight = 850.0;
+  static const double etaTracking = -1.08;
+  static const double distanceSize = 12.0;
+  static const double distanceHeight = 1.2;
+  static const double distanceWeight = 700.0;
+  static const double arrivalSize = 17.0;
+  static const double arrivalWeight = 820.0;
+}
+
 abstract final class DriverD03D04Metrics {
   static const String source = 'ux/driver/en/screens/ROUNDS-D03-D04-PICKUP-CONFIRM-v6-10OF10.html';
 

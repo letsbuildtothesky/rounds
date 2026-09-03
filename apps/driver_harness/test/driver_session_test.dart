@@ -25,6 +25,8 @@ void main() {
             'rawAddress': 'Bangkok',
             'contactName': 'Dispatch',
             'contactPhone': '+66000000000',
+            'latitude': 13.7338,
+            'longitude': 100.5766,
           },
           'stops': [
             {
@@ -54,6 +56,9 @@ void main() {
       });
 
       expect(session.currentRound?.reference, 'ROUND-001');
+      expect(session.currentRound?.pickup.id, 'pickup-1');
+      expect(session.currentRound?.pickup.latitude, 13.7338);
+      expect(session.currentRound?.pickup.longitude, 100.5766);
       expect(session.currentRound?.stops.single.sequence, 1);
       expect(session.currentRound?.stops.single.latitude, 13.7439);
       expect(

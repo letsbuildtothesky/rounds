@@ -13,6 +13,18 @@ import '../telemetry/telemetry_uploader.dart';
 import 'navigation_intent.dart';
 import 'route_attempt_gate.dart';
 
+class NavigationRoadInstruction {
+  const NavigationRoadInstruction({
+    required this.maneuver,
+    required this.text,
+    this.distanceMeters,
+  });
+
+  final Maneuver maneuver;
+  final String text;
+  final int? distanceMeters;
+}
+
 class GoogleNavigationSurface extends StatefulWidget {
   const GoogleNavigationSurface({
     required this.strings,
@@ -26,6 +38,8 @@ class GoogleNavigationSurface extends StatefulWidget {
     required this.latitude,
     required this.longitude,
     required this.bottomOverlayInset,
+    this.onInstruction,
+    this.showNativeNavigationUi = true,
     super.key,
   });
 
@@ -41,6 +55,8 @@ class GoogleNavigationSurface extends StatefulWidget {
   final double latitude;
   final double longitude;
   final double bottomOverlayInset;
+  final ValueChanged<NavigationRoadInstruction>? onInstruction;
+  final bool showNativeNavigationUi;
 
   @override
   State<GoogleNavigationSurface> createState() =>
@@ -58,6 +74,7 @@ class _GoogleNavigationSurfaceState extends State<GoogleNavigationSurface>
   StreamSubscription<void>? _rerouting;
   StreamSubscription<OnArrivalEvent>? _arrival;
   StreamSubscription<RemainingTimeOrDistanceChangedEvent>? _remaining;
+  StreamSubscription<NavInfoEvent>? _navInfo;
   GoogleNavigationViewController? _viewController;
   HarnessDatabase? _database;
   HarnessEventLog? _events;
@@ -149,6 +166,27 @@ class _GoogleNavigationSurfaceState extends State<GoogleNavigationSurface>
             remainingTimeThresholdSeconds: 10,
             remainingDistanceThresholdMeters: 25,
           );
+      if (widget.onInstruction != null) {
+        _navInfo = GoogleMapsNavigator.setNavInfoListener((event) {
+          final step = event.navInfo.currentStep;
+          if (step == null) return;
+          final fullInstruction = step.fullInstructions?.trim();
+          final roadName = step.fullRoadName?.trim();
+          final instructionText =
+              fullInstruction != null && fullInstruction.isNotEmpty
+              ? fullInstruction
+              : roadName != null && roadName.isNotEmpty
+              ? roadName
+              : 'Continue on the guided route';
+          widget.onInstruction!(
+            NavigationRoadInstruction(
+              maneuver: step.maneuver,
+              text: instructionText,
+              distanceMeters: event.navInfo.distanceToCurrentStepMeters,
+            ),
+          );
+        }, numNextStepsToPreview: 1);
+      }
 
       final guidanceRunning = await GoogleMapsNavigator.isGuidanceRunning();
       if (guidanceRunning) {
@@ -355,6 +393,7 @@ class _GoogleNavigationSurfaceState extends State<GoogleNavigationSurface>
     await _rerouting?.cancel();
     await _arrival?.cancel();
     await _remaining?.cancel();
+    await _navInfo?.cancel();
     await _uploader.stop();
     await _recorder.stop();
     if (_sessionReady) {
@@ -378,8 +417,9 @@ class _GoogleNavigationSurfaceState extends State<GoogleNavigationSurface>
       children: [
         GoogleMapsNavigationView(
           onViewCreated: _onViewCreated,
-          initialNavigationUIEnabledPreference:
-              NavigationUIEnabledPreference.automatic,
+          initialNavigationUIEnabledPreference: widget.showNativeNavigationUi
+              ? NavigationUIEnabledPreference.automatic
+              : NavigationUIEnabledPreference.disabled,
           initialPadding: EdgeInsets.only(bottom: widget.bottomOverlayInset),
           initialNavigationHeaderStylingOptions:
               const NavigationHeaderStylingOptions(

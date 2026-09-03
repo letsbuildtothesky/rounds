@@ -68,10 +68,10 @@ These are evidence-based planning estimates, not release claims. Recalculate the
 
 | Surface | Weighted functional coverage | Production readiness | Full roadmap context |
 |---|---:|---:|---:|
-| Driver · English Pilot business path only | 60.4% (`30.8 / 51`) | gate incomplete | not comparable to the complete board set |
-| Driver · all currently authorized own-fleet depth | 45.5% (`35.0 / 77`) | gate incomplete | approximately 30% of the complete Driver V1 board set; roadmap estimate only |
+| Driver · English Pilot business path only | 63.3% (`32.3 / 51`) | gate incomplete | not comparable to the complete board set |
+| Driver · all currently authorized own-fleet depth | 47.4% (`36.5 / 77`) | gate incomplete | approximately 30% of the complete Driver V1 board set; roadmap estimate only |
 | Operations · currently authorized own-fleet depth | 71.5% (`37.90 / 53`) | gate incomplete | approximately 35% of the complete Operations vision; roadmap estimate only |
-| Combined authorized English own-fleet work | 56.1% (`72.90 / 130`) | **not release-ready** | approximately 20–25% of Slices 1–7; roadmap estimate only |
+| Combined authorized English own-fleet work | 57.2% (`74.40 / 130`) | **not release-ready** | approximately 20–25% of Slices 1–7; roadmap estimate only |
 
 The Driver percentage is higher for the narrow delivery loop than for the complete 47-board product because Network onboarding, offers, earnings and marketplace behavior are deliberately outside the current own-fleet slice.
 
@@ -94,7 +94,7 @@ Canonical inventory: `specs/product/ROUNDS-DRIVER-CANONICAL-MANIFEST-v6.md` and 
 | B01D–B01F Shift ending/overtime/end | Slice 2 P1 | `SPECIFIED` | Operations shift boundaries exist. | Add warnings, overtime policy and versioned end-shift command. |
 | B02 / B03 Verification + Network home | Network | `DEFERRED` | Intentionally absent. | Slice 5+ only. |
 | C01 / C03 Delivery offers | Network | `DEFERRED` | Team work is assigned, not offered. | Slice 5+ only. |
-| D01 Navigate to pickup | Pilot P0 | `PARTIAL` | Native Google navigation surface exists, but the assigned Round currently enters manifest confirmation instead of the full canonical pickup-navigation state. | Wire authoritative pickup destination, arrival and D01 dock states. |
+| D01 Navigate to pickup | Pilot P0 | `VERIFIED` | An approved assigned Round now routes through the canonical D01 state using the authoritative pickup coordinate, live Google maneuver/ETA/distance events, measured D01 geometry, the canonical bottom action drawer and the D01→D03/D04 arrival transition. Automated/golden checks and a live Samsung provider check pass. | Physically approach the pickup to accept the 100 m/native-arrival reveal, then finish degraded-network/background road gates. |
 | D03 / D04 Pickup confirmation | Pilot P0 | `VERIFIED` | Exact manifest checklist, offline command outbox, version/idempotency checks and server custody commit exist. | Complete final physical multi-item acceptance and visual comparison. |
 | E01 Active Round overview | Pilot P0 | `VERIFIED` | Real Round data, map, measured UI metrics and golden geometry tests exist. | Final physical-device visual acceptance for supported widths. |
 | E02 Navigate to current Stop | Pilot P0 | `ACCEPTED` | Embedded Google navigation, TWO_WHEELER route, arrival command and physical Samsung bench operation have been exercised. | Motorcycle road, degraded-network, background and battery field gates remain open. |
@@ -202,7 +202,7 @@ This sequence does not promote later slices; it orders the already authorized En
 
 ### Checkpoint C — remaining own-driver operational states
 
-- Complete D01 pickup navigation.
+- **Completed C1 2026-09-03:** D01 pickup navigation uses the server pickup pin and live embedded Google guidance, renders the canonical measured instruction/dock states and enters D03/D04 only after the explicit pickup-arrival action.
 - Implement durable G01/G02/G04/G05 exception paths and Operations outcomes.
 - Implement E04–E06 post-pickup change acknowledgement after GAP-007 closes.
 - Complete H02/H03 contact event/history behavior.

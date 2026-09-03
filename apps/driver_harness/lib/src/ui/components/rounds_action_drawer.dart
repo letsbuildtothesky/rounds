@@ -18,22 +18,48 @@ class RoundsDrawerAction {
 
 Future<String?> showRoundsActionDrawer(
   BuildContext context, {
-  required String title,
+  String? title,
   required List<RoundsDrawerAction> actions,
+  bool showCancel = true,
+  bool showChevrons = true,
+  bool inset = false,
 }) => showModalBottomSheet<String>(
   context: context,
   useSafeArea: true,
   isScrollControlled: true,
   backgroundColor: Colors.transparent,
   barrierColor: RoundsColors.ink.withValues(alpha: .38),
-  builder: (context) => _RoundsActionDrawer(title: title, actions: actions),
+  builder: (context) {
+    final drawer = _RoundsActionDrawer(
+      title: title,
+      actions: actions,
+      showCancel: showCancel,
+      showChevrons: showChevrons,
+      inset: inset,
+    );
+    return inset
+        ? Padding(
+            padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+            child: drawer,
+          )
+        : drawer;
+  },
 );
 
 class _RoundsActionDrawer extends StatelessWidget {
-  const _RoundsActionDrawer({required this.title, required this.actions});
+  const _RoundsActionDrawer({
+    required this.title,
+    required this.actions,
+    required this.showCancel,
+    required this.showChevrons,
+    required this.inset,
+  });
 
-  final String title;
+  final String? title;
   final List<RoundsDrawerAction> actions;
+  final bool showCancel;
+  final bool showChevrons;
+  final bool inset;
 
   @override
   Widget build(BuildContext context) {
@@ -41,10 +67,17 @@ class _RoundsActionDrawer extends StatelessWidget {
     return Material(
       key: const Key('rounds-action-drawer'),
       color: RoundsColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(RoundsRadii.large),
-        ),
+      shape: RoundedRectangleBorder(
+        borderRadius: inset
+            ? const BorderRadius.only(
+                topLeft: Radius.circular(12),
+                topRight: Radius.circular(12),
+                bottomLeft: Radius.circular(8),
+                bottomRight: Radius.circular(8),
+              )
+            : const BorderRadius.vertical(
+                top: Radius.circular(RoundsRadii.large),
+              ),
       ),
       clipBehavior: Clip.antiAlias,
       child: Padding(
@@ -65,46 +98,53 @@ class _RoundsActionDrawer extends StatelessWidget {
                 ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 18, 20, 12),
-              child: Text(
-                title,
-                style: const TextStyle(
-                  color: RoundsColors.ink,
-                  fontSize: 21,
-                  height: 1.1,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -.45,
+            if (title != null) ...[
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 18, 20, 12),
+                child: Text(
+                  title!,
+                  style: const TextStyle(
+                    color: RoundsColors.ink,
+                    fontSize: 21,
+                    height: 1.1,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -.45,
+                  ),
                 ),
               ),
-            ),
-            const Divider(height: 1, color: RoundsColors.line),
+              const Divider(height: 1, color: RoundsColors.line),
+            ],
             for (var index = 0; index < actions.length; index++) ...[
-              _DrawerActionRow(action: actions[index]),
+              _DrawerActionRow(
+                action: actions[index],
+                showChevron: showChevrons,
+              ),
               if (index != actions.length - 1)
                 const Divider(height: 1, indent: 64, color: RoundsColors.line),
             ],
-            const Divider(height: 1, color: RoundsColors.line),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
-              child: TextButton(
-                key: const Key('rounds-action-drawer-cancel'),
-                onPressed: () => Navigator.of(context).pop(),
-                style: TextButton.styleFrom(
-                  minimumSize: const Size.fromHeight(52),
-                  foregroundColor: RoundsColors.inkSecondary,
-                  textStyle: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
+            if (showCancel) ...[
+              const Divider(height: 1, color: RoundsColors.line),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
+                child: TextButton(
+                  key: const Key('rounds-action-drawer-cancel'),
+                  onPressed: () => Navigator.of(context).pop(),
+                  style: TextButton.styleFrom(
+                    minimumSize: const Size.fromHeight(52),
+                    foregroundColor: RoundsColors.inkSecondary,
+                    textStyle: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      side: const BorderSide(color: RoundsColors.lineStrong),
+                      borderRadius: BorderRadius.circular(RoundsRadii.surface),
+                    ),
                   ),
-                  shape: RoundedRectangleBorder(
-                    side: const BorderSide(color: RoundsColors.lineStrong),
-                    borderRadius: BorderRadius.circular(RoundsRadii.surface),
-                  ),
+                  child: const Text('Cancel'),
                 ),
-                child: const Text('Cancel'),
               ),
-            ),
+            ],
           ],
         ),
       ),
@@ -113,9 +153,10 @@ class _RoundsActionDrawer extends StatelessWidget {
 }
 
 class _DrawerActionRow extends StatelessWidget {
-  const _DrawerActionRow({required this.action});
+  const _DrawerActionRow({required this.action, required this.showChevron});
 
   final RoundsDrawerAction action;
+  final bool showChevron;
 
   @override
   Widget build(BuildContext context) {
@@ -144,11 +185,12 @@ class _DrawerActionRow extends StatelessWidget {
                     ),
                   ),
                 ),
-                Icon(
-                  Icons.chevron_right,
-                  size: 22,
-                  color: action.destructive ? color : RoundsColors.muted,
-                ),
+                if (showChevron)
+                  Icon(
+                    Icons.chevron_right,
+                    size: 22,
+                    color: action.destructive ? color : RoundsColors.muted,
+                  ),
               ],
             ),
           ),

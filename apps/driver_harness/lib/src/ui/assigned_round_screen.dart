@@ -10,7 +10,7 @@ import 'components/round_overview_map.dart';
 import 'components/rounds_action_drawer.dart';
 import 'debug_pod_acceptance_screen.dart';
 import 'navigation_harness_screen.dart';
-import 'pickup_confirmation_screen.dart';
+import 'pickup_navigation_screen.dart';
 import 'post_delivery_screen.dart';
 
 class AssignedRoundScreen extends StatelessWidget {
@@ -33,10 +33,13 @@ class AssignedRoundScreen extends StatelessWidget {
     version: 1,
     tenantName: 'UrbanFlowers',
     pickup: DriverPickupModel(
+      id: 'PICKUP-DEMO',
       displayName: 'UrbanFlowers · Sukhumvit 39',
       rawAddress: 'Sukhumvit 39, Bangkok',
       contactName: 'UrbanFlowers Dispatch',
       contactPhone: '+66000000000',
+      latitude: 13.7338,
+      longitude: 100.5766,
     ),
     stops: [
       DriverRoundStopModel(
@@ -162,6 +165,17 @@ class _ActiveRoundOverview extends StatelessWidget {
 
   void _openPrimary(BuildContext context, DriverRoundStopModel firstStop) {
     if (firstStop.state == 'exception') return;
+    if (round.state != 'active' &&
+        (round.pickup.latitude == null || round.pickup.longitude == null)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Pickup navigation is unavailable until Operations verifies the pickup pin.',
+          ),
+        ),
+      );
+      return;
+    }
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => round.state == 'active'
@@ -172,7 +186,11 @@ class _ActiveRoundOverview extends StatelessWidget {
                 stop: firstStop,
                 stopCount: round.stops.length,
               )
-            : PickupConfirmationScreen(controller: controller, round: round),
+            : PickupNavigationScreen(
+                controller: controller,
+                enableNativeNavigation: enableNativeNavigation,
+                round: round,
+              ),
       ),
     );
   }
@@ -620,7 +638,7 @@ class _NextStopDock extends StatelessWidget {
                       ? 'waiting-operations'
                       : round.state == 'active'
                       ? 'start-navigation'
-                      : 'verify-pickup',
+                      : 'navigate-pickup',
                 ),
                 onPressed: waitingForOperations ? null : onPrimary,
                 style: FilledButton.styleFrom(
@@ -639,7 +657,7 @@ class _NextStopDock extends StatelessWidget {
                       ? 'Waiting for Operations'
                       : round.state == 'active'
                       ? 'Navigate to Stop ${stop.sequence}'
-                      : 'Verify pickup manifest',
+                      : 'Navigate to pickup',
                   style: _e01Style(
                     color: Colors.white,
                     size: DriverE01Metrics.primarySize,
