@@ -12,6 +12,7 @@ import '../storage/harness_event_log.dart';
 import '../storage/sqlite_navigation_intent_store.dart';
 import '../telemetry/operational_location_recorder.dart';
 import '../telemetry/telemetry_uploader.dart';
+import 'gps_signal_monitor.dart';
 import 'navigation_intent.dart';
 import 'route_attempt_gate.dart';
 
@@ -25,6 +26,18 @@ class NavigationRoadInstruction {
   final Maneuver maneuver;
   final String text;
   final int? distanceMeters;
+}
+
+class GoogleNavigationSurfaceController {
+  _GoogleNavigationSurfaceState? _state;
+
+  Future<void> retryGps() async => _state?._retryGps();
+
+  void _attach(_GoogleNavigationSurfaceState state) => _state = state;
+
+  void _detach(_GoogleNavigationSurfaceState state) {
+    if (identical(_state, state)) _state = null;
+  }
 }
 
 class GoogleNavigationSurface extends StatefulWidget {
@@ -41,6 +54,9 @@ class GoogleNavigationSurface extends StatefulWidget {
     required this.longitude,
     required this.bottomOverlayInset,
     this.onInstruction,
+    this.onGpsInterruptionChanged,
+    this.controller,
+    this.gpsSignalTimeout = const Duration(seconds: 30),
     this.showNativeNavigationUi = true,
     super.key,
   });
@@ -58,6 +74,9 @@ class GoogleNavigationSurface extends StatefulWidget {
   final double longitude;
   final double bottomOverlayInset;
   final ValueChanged<NavigationRoadInstruction>? onInstruction;
+  final ValueChanged<GpsNavigationInterruption?>? onGpsInterruptionChanged;
+  final GoogleNavigationSurfaceController? controller;
+  final Duration gpsSignalTimeout;
   final bool showNativeNavigationUi;
 
   @override
@@ -71,6 +90,7 @@ class _GoogleNavigationSurfaceState extends State<GoogleNavigationSurface>
       LatLng(latitude: widget.latitude, longitude: widget.longitude);
 
   late final OperationalLocationRecorder _recorder;
+  late final GpsSignalMonitor _gpsSignalMonitor;
   late final TelemetryUploader _uploader;
   StreamSubscription<RoadSnappedLocationUpdatedEvent>? _roadLocation;
   StreamSubscription<void>? _rerouting;
@@ -88,14 +108,23 @@ class _GoogleNavigationSurfaceState extends State<GoogleNavigationSurface>
   String? _diagnosticResult;
   DriverLocationAccessException? _locationFailure;
   bool _surfaceOpenedRecorded = false;
+  bool _gpsUnavailable = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    widget.controller?._attach(this);
+    _gpsSignalMonitor = GpsSignalMonitor(
+      timeout: widget.gpsSignalTimeout,
+      onUnavailableChanged: _handleGpsAvailabilityChanged,
+    );
     _recorder = OperationalLocationRecorder(
+      onPositionReceived: _handlePositionReceived,
       onSample: widget.onOperationalSample,
-      onError: (error) => _setStatus('Telemetry error: $error'),
+      onPersistenceError: (error) => _setStatus('Telemetry error: $error'),
+      onLocationStreamError: (error) =>
+          unawaited(_handleLocationStreamError(error)),
     );
     _uploader = TelemetryUploader(
       supabaseUrl: const String.fromEnvironment('SUPABASE_URL'),
@@ -221,6 +250,7 @@ class _GoogleNavigationSurfaceState extends State<GoogleNavigationSurface>
 
       if (!mounted) return;
       setState(() => _sessionReady = true);
+      _gpsSignalMonitor.start();
       widget.onStatus(
         guidanceRunning
             ? 'TWO_WHEELER guidance resumed'
@@ -232,12 +262,125 @@ class _GoogleNavigationSurfaceState extends State<GoogleNavigationSurface>
         payload: {'error': error.toString()},
       );
       if (error is DriverLocationAccessException && mounted) {
-        setState(() => _locationFailure = error);
-        widget.onStatus('Navigation needs location access');
+        _reportLocationAccessFailure(error);
       } else {
         _setStatus('Navigation unavailable: $error', isError: true);
       }
     }
+  }
+
+  void _handlePositionReceived(DateTime _) {
+    _gpsSignalMonitor.markSample();
+    if (_locationFailure != null && mounted) {
+      setState(() => _locationFailure = null);
+    }
+  }
+
+  Future<void> _handleLocationStreamError(Object error) async {
+    final access = await const GeolocatorLocationAccessGateway().inspect();
+    if (!mounted) return;
+    if (!access.ready) {
+      _reportLocationAccessFailure(DriverLocationAccessException(access.state));
+      return;
+    }
+    _gpsSignalMonitor.start();
+    _gpsSignalMonitor.markStreamError();
+    await _events?.record(
+      'gps_position_stream_error',
+      payload: {
+        'error': error.toString(),
+        'nav_session_id': _intent?.navSessionId,
+      },
+    );
+  }
+
+  Future<void> _retryGps() async {
+    final cachedRouteAvailable = _guidanceActive;
+    final result = await probeGpsRecovery(
+      cachedRouteAvailable: cachedRouteAvailable,
+    );
+    if (!mounted) return;
+    if (result != null) {
+      if (result.kind == GpsInterruptionKind.locationAccessOff) {
+        final access = await const GeolocatorLocationAccessGateway().inspect();
+        if (!mounted) return;
+        _reportLocationAccessFailure(
+          DriverLocationAccessException(access.state),
+        );
+      } else {
+        widget.onGpsInterruptionChanged?.call(result);
+      }
+      return;
+    }
+    try {
+      await _recorder.restartLocationStream();
+      final wasUnavailable = _gpsUnavailable;
+      _gpsSignalMonitor.start();
+      _gpsSignalMonitor.markSample();
+      if (!wasUnavailable) widget.onGpsInterruptionChanged?.call(null);
+    } on DriverLocationAccessException catch (failure) {
+      if (mounted) _reportLocationAccessFailure(failure);
+    }
+  }
+
+  void _handleGpsAvailabilityChanged(bool unavailable) {
+    if (unavailable) {
+      unawaited(_classifyAndReportGpsInterruption());
+      return;
+    }
+    if (!mounted || !_gpsUnavailable) return;
+    _gpsUnavailable = false;
+    widget.onStatus(
+      _guidanceActive
+          ? 'GPS restored · TWO_WHEELER guidance active'
+          : 'GPS restored · calculating route',
+    );
+    unawaited(
+      _events?.record(
+        'gps_signal_restored',
+        payload: {'nav_session_id': _intent?.navSessionId},
+      ),
+    );
+    widget.onGpsInterruptionChanged?.call(null);
+  }
+
+  Future<void> _classifyAndReportGpsInterruption() async {
+    final access = await const GeolocatorLocationAccessGateway().inspect();
+    if (!mounted || !_gpsSignalMonitor.unavailable) return;
+    if (!access.ready) {
+      _reportLocationAccessFailure(DriverLocationAccessException(access.state));
+      return;
+    }
+    if (_gpsUnavailable) return;
+    _gpsUnavailable = true;
+    widget.onStatus('GPS signal lost · live position paused');
+    await _events?.record(
+      'gps_signal_lost',
+      payload: {
+        'nav_session_id': _intent?.navSessionId,
+        'cached_route_available': _guidanceActive,
+      },
+    );
+    if (!mounted) return;
+    widget.onGpsInterruptionChanged?.call(
+      GpsNavigationInterruption(
+        kind: GpsInterruptionKind.signalLost,
+        cachedRouteAvailable: _guidanceActive,
+      ),
+    );
+  }
+
+  void _reportLocationAccessFailure(DriverLocationAccessException failure) {
+    _gpsSignalMonitor.stop();
+    _gpsUnavailable = false;
+    setState(() => _locationFailure = failure);
+    widget.onStatus('Navigation needs location access');
+    widget.onGpsInterruptionChanged?.call(
+      GpsNavigationInterruption(
+        kind: GpsInterruptionKind.locationAccessOff,
+        cachedRouteAvailable: _guidanceActive,
+      ),
+    );
   }
 
   Future<void> _reviewLocationAccess() async {
@@ -401,6 +544,8 @@ class _GoogleNavigationSurfaceState extends State<GoogleNavigationSurface>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    widget.controller?._detach(this);
+    _gpsSignalMonitor.stop();
     unawaited(_shutdown());
     super.dispose();
   }

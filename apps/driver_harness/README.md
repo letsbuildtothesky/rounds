@@ -24,6 +24,13 @@ Camera permission remains contextual: a denied POD, damage or acceptance-photo
 request opens a settings drawer without claiming that evidence was captured.
 Notification permission is not requested until a real push channel is promoted.
 
+Navigation also uses the measured canonical N03 recovery surface. A 30-second
+absence of real position samples is treated as GPS signal loss, while disabled
+device location or app access remains a separate permission state. The app only
+offers a cached route when Google guidance was already running, and Retry GPS
+probes a real fix and restarts the operational position stream before dismissing
+the interruption.
+
 The pickup screen never claims custody from local button state. Until the API
 commit succeeds it remains unconfirmed; durable offline outbox support is the
 next Driver reliability checkpoint.

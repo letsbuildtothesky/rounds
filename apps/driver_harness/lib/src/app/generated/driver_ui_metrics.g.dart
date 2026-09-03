@@ -836,3 +836,64 @@ abstract final class DriverN01Metrics {
   static const double shortPrimaryHeight = 56.0;
   static const double shortSecondaryHeight = 42.0;
 }
+
+abstract final class DriverN03Metrics {
+  static const String source = 'ux/driver/en/screens/ROUNDS-N03-GPS-UNAVAILABLE-v3-10OF10.html';
+
+  static const double topBarHeight = 58.0;
+  static const double topBarPaddingHorizontal = 16.0;
+  static const double topBarGap = 12.0;
+  static const double backSize = 38.0;
+  static const double backRadius = 7.0;
+  static const double backIconSize = 21.0;
+  static const double topTitleSize = 15.0;
+  static const double topTitleHeight = 1.15;
+  static const double topSubtitleGap = 4.0;
+  static const double topSubtitleSize = 12.5;
+  static const double topSubtitleHeight = 1.1;
+  static const double mapHeightFactor = 0.412;
+  static const double mapMaxHeight = 350.0;
+  static const double compactMapHeightFactor = 0.38;
+  static const double shortMapHeightFactor = 0.34;
+  static const double panelPaddingTop = 27.0;
+  static const double panelPaddingHorizontal = 20.0;
+  static const double panelPaddingBottom = 23.0;
+  static const double kickerSize = 11.5;
+  static const double kickerBottom = 12.0;
+  static const double titleSize = 37.0;
+  static const double titleHeight = 0.98;
+  static const double leadTop = 13.0;
+  static const double leadSize = 15.5;
+  static const double leadHeight = 1.38;
+  static const double truthTop = 22.0;
+  static const double truthRowMinHeight = 57.0;
+  static const double truthGap = 14.0;
+  static const double truthSize = 13.5;
+  static const double primaryHeight = 60.0;
+  static const double primaryRadius = 7.0;
+  static const double primarySize = 17.0;
+  static const double secondaryHeight = 48.0;
+  static const double secondaryTop = 6.0;
+  static const double secondarySize = 14.0;
+  static const double compactPanelPaddingTop = 22.0;
+  static const double compactPanelPaddingHorizontal = 16.0;
+  static const double compactPanelPaddingBottom = 18.0;
+  static const double compactTitleSize = 33.0;
+  static const double compactLeadTop = 10.0;
+  static const double compactLeadSize = 14.0;
+  static const double compactTruthTop = 17.0;
+  static const double compactTruthRowMinHeight = 50.0;
+  static const double compactTruthSize = 12.5;
+  static const double compactPrimaryHeight = 56.0;
+  static const double compactPrimarySize = 16.0;
+  static const double compactSecondaryHeight = 42.0;
+  static const double shortBreakpointHeight = 720.0;
+  static const double shortPanelPaddingTop = 19.0;
+  static const double shortTitleSize = 31.0;
+  static const double shortLeadTop = 8.0;
+  static const double shortLeadSize = 13.5;
+  static const double shortTruthTop = 14.0;
+  static const double shortTruthRowMinHeight = 46.0;
+  static const double shortPrimaryHeight = 54.0;
+  static const double shortSecondaryHeight = 40.0;
+}

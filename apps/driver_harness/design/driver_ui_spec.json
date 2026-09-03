@@ -903,6 +903,77 @@
         "primaryHeight": 56,
         "secondaryHeight": 42
       }
+    },
+    "N03": {
+      "source": "ux/driver/en/screens/ROUNDS-N03-GPS-UNAVAILABLE-v3-10OF10.html",
+      "topBar": {
+        "height": 58,
+        "paddingHorizontal": 16,
+        "gap": 12,
+        "backSize": 38,
+        "backRadius": 7,
+        "backIconSize": 21,
+        "titleSize": 15,
+        "titleHeight": 1.15,
+        "subtitleGap": 4,
+        "subtitleSize": 12.5,
+        "subtitleHeight": 1.1
+      },
+      "map": {
+        "heightFactor": 0.412,
+        "maxHeight": 350,
+        "compactHeightFactor": 0.38,
+        "shortHeightFactor": 0.34
+      },
+      "panel": {
+        "paddingTop": 27,
+        "paddingHorizontal": 20,
+        "paddingBottom": 23,
+        "kickerSize": 11.5,
+        "kickerBottom": 12,
+        "titleSize": 37,
+        "titleHeight": 0.98,
+        "leadTop": 13,
+        "leadSize": 15.5,
+        "leadHeight": 1.38,
+        "truthTop": 22,
+        "truthRowMinHeight": 57,
+        "truthGap": 14,
+        "truthSize": 13.5
+      },
+      "actions": {
+        "primaryHeight": 60,
+        "primaryRadius": 7,
+        "primarySize": 17,
+        "secondaryHeight": 48,
+        "secondaryTop": 6,
+        "secondarySize": 14
+      },
+      "compact": {
+        "panelPaddingTop": 22,
+        "panelPaddingHorizontal": 16,
+        "panelPaddingBottom": 18,
+        "titleSize": 33,
+        "leadTop": 10,
+        "leadSize": 14,
+        "truthTop": 17,
+        "truthRowMinHeight": 50,
+        "truthSize": 12.5,
+        "primaryHeight": 56,
+        "primarySize": 16,
+        "secondaryHeight": 42
+      },
+      "short": {
+        "breakpointHeight": 720,
+        "panelPaddingTop": 19,
+        "titleSize": 31,
+        "leadTop": 8,
+        "leadSize": 13.5,
+        "truthTop": 14,
+        "truthRowMinHeight": 46,
+        "primaryHeight": 54,
+        "secondaryHeight": 40
+      }
     }
   }
 }

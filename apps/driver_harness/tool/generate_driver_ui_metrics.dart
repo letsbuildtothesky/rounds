@@ -103,6 +103,13 @@ String generateDriverUiMetrics(Map<String, dynamic> json) {
   final n01Actions = n01['actions'] as Map<String, dynamic>;
   final n01Compact = n01['compact'] as Map<String, dynamic>;
   final n01Short = n01['short'] as Map<String, dynamic>;
+  final n03 = screens['N03'] as Map<String, dynamic>;
+  final n03Top = n03['topBar'] as Map<String, dynamic>;
+  final n03Map = n03['map'] as Map<String, dynamic>;
+  final n03Panel = n03['panel'] as Map<String, dynamic>;
+  final n03Actions = n03['actions'] as Map<String, dynamic>;
+  final n03Compact = n03['compact'] as Map<String, dynamic>;
+  final n03Short = n03['short'] as Map<String, dynamic>;
 
   return '''// GENERATED CODE - DO NOT MODIFY BY HAND.
 // Source: $_sourcePath
@@ -941,6 +948,67 @@ abstract final class DriverN01Metrics {
   static const double shortTruthRowMinHeight = ${_double(n01Short['truthRowMinHeight'])};
   static const double shortPrimaryHeight = ${_double(n01Short['primaryHeight'])};
   static const double shortSecondaryHeight = ${_double(n01Short['secondaryHeight'])};
+}
+
+abstract final class DriverN03Metrics {
+  static const String source = '${n03['source']}';
+
+  static const double topBarHeight = ${_double(n03Top['height'])};
+  static const double topBarPaddingHorizontal = ${_double(n03Top['paddingHorizontal'])};
+  static const double topBarGap = ${_double(n03Top['gap'])};
+  static const double backSize = ${_double(n03Top['backSize'])};
+  static const double backRadius = ${_double(n03Top['backRadius'])};
+  static const double backIconSize = ${_double(n03Top['backIconSize'])};
+  static const double topTitleSize = ${_double(n03Top['titleSize'])};
+  static const double topTitleHeight = ${_double(n03Top['titleHeight'])};
+  static const double topSubtitleGap = ${_double(n03Top['subtitleGap'])};
+  static const double topSubtitleSize = ${_double(n03Top['subtitleSize'])};
+  static const double topSubtitleHeight = ${_double(n03Top['subtitleHeight'])};
+  static const double mapHeightFactor = ${_double(n03Map['heightFactor'])};
+  static const double mapMaxHeight = ${_double(n03Map['maxHeight'])};
+  static const double compactMapHeightFactor = ${_double(n03Map['compactHeightFactor'])};
+  static const double shortMapHeightFactor = ${_double(n03Map['shortHeightFactor'])};
+  static const double panelPaddingTop = ${_double(n03Panel['paddingTop'])};
+  static const double panelPaddingHorizontal = ${_double(n03Panel['paddingHorizontal'])};
+  static const double panelPaddingBottom = ${_double(n03Panel['paddingBottom'])};
+  static const double kickerSize = ${_double(n03Panel['kickerSize'])};
+  static const double kickerBottom = ${_double(n03Panel['kickerBottom'])};
+  static const double titleSize = ${_double(n03Panel['titleSize'])};
+  static const double titleHeight = ${_double(n03Panel['titleHeight'])};
+  static const double leadTop = ${_double(n03Panel['leadTop'])};
+  static const double leadSize = ${_double(n03Panel['leadSize'])};
+  static const double leadHeight = ${_double(n03Panel['leadHeight'])};
+  static const double truthTop = ${_double(n03Panel['truthTop'])};
+  static const double truthRowMinHeight = ${_double(n03Panel['truthRowMinHeight'])};
+  static const double truthGap = ${_double(n03Panel['truthGap'])};
+  static const double truthSize = ${_double(n03Panel['truthSize'])};
+  static const double primaryHeight = ${_double(n03Actions['primaryHeight'])};
+  static const double primaryRadius = ${_double(n03Actions['primaryRadius'])};
+  static const double primarySize = ${_double(n03Actions['primarySize'])};
+  static const double secondaryHeight = ${_double(n03Actions['secondaryHeight'])};
+  static const double secondaryTop = ${_double(n03Actions['secondaryTop'])};
+  static const double secondarySize = ${_double(n03Actions['secondarySize'])};
+  static const double compactPanelPaddingTop = ${_double(n03Compact['panelPaddingTop'])};
+  static const double compactPanelPaddingHorizontal = ${_double(n03Compact['panelPaddingHorizontal'])};
+  static const double compactPanelPaddingBottom = ${_double(n03Compact['panelPaddingBottom'])};
+  static const double compactTitleSize = ${_double(n03Compact['titleSize'])};
+  static const double compactLeadTop = ${_double(n03Compact['leadTop'])};
+  static const double compactLeadSize = ${_double(n03Compact['leadSize'])};
+  static const double compactTruthTop = ${_double(n03Compact['truthTop'])};
+  static const double compactTruthRowMinHeight = ${_double(n03Compact['truthRowMinHeight'])};
+  static const double compactTruthSize = ${_double(n03Compact['truthSize'])};
+  static const double compactPrimaryHeight = ${_double(n03Compact['primaryHeight'])};
+  static const double compactPrimarySize = ${_double(n03Compact['primarySize'])};
+  static const double compactSecondaryHeight = ${_double(n03Compact['secondaryHeight'])};
+  static const double shortBreakpointHeight = ${_double(n03Short['breakpointHeight'])};
+  static const double shortPanelPaddingTop = ${_double(n03Short['panelPaddingTop'])};
+  static const double shortTitleSize = ${_double(n03Short['titleSize'])};
+  static const double shortLeadTop = ${_double(n03Short['leadTop'])};
+  static const double shortLeadSize = ${_double(n03Short['leadSize'])};
+  static const double shortTruthTop = ${_double(n03Short['truthTop'])};
+  static const double shortTruthRowMinHeight = ${_double(n03Short['truthRowMinHeight'])};
+  static const double shortPrimaryHeight = ${_double(n03Short['primaryHeight'])};
+  static const double shortSecondaryHeight = ${_double(n03Short['secondaryHeight'])};
 }
 ''';
 }

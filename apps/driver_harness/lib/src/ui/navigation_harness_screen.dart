@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -5,7 +7,10 @@ import '../app/driver_design_system.dart';
 import '../app/generated/driver_ui_metrics.g.dart';
 import '../app/harness_app_controller.dart';
 import '../driver/driver_session.dart';
+import '../navigation/gps_signal_monitor.dart';
+import '../navigation/gps_unavailable_screen.dart';
 import '../navigation/google_navigation_surface.dart';
+import '../permissions/driver_permissions_screen.dart';
 import 'components/navigation_road_controls.dart';
 import 'components/navigation_stop_dock.dart';
 import 'components/delivery_issue_flow.dart';
@@ -38,12 +43,15 @@ class NavigationHarnessScreen extends StatefulWidget {
 
 class _NavigationHarnessScreenState extends State<NavigationHarnessScreen> {
   late bool _arrived;
+  final GoogleNavigationSurfaceController _navigationController =
+      GoogleNavigationSurfaceController();
   bool _nearArrival = false;
   bool _arrivalPendingSync = false;
   bool _submittingArrival = false;
   String? _navigationStatus;
   int? _remainingSeconds;
   int? _remainingMeters;
+  GpsNavigationInterruption? _gpsInterruption;
 
   @override
   void initState() {
@@ -91,6 +99,7 @@ class _NavigationHarnessScreenState extends State<NavigationHarnessScreen> {
             Positioned.fill(
               child: widget.enableNativeNavigation
                   ? GoogleNavigationSurface(
+                      controller: _navigationController,
                       strings: strings,
                       onOperationalSample: (_) {},
                       onStatus: (status) {
@@ -108,6 +117,10 @@ class _NavigationHarnessScreenState extends State<NavigationHarnessScreen> {
                         if (!mounted) return;
                         setState(() => _nearArrival = true);
                       },
+                      onGpsInterruptionChanged: (interruption) {
+                        if (!mounted) return;
+                        setState(() => _gpsInterruption = interruption);
+                      },
                       stopId: widget.stop.id,
                       destinationVersion: widget.stop.destinationVersion,
                       destinationTitle:
@@ -118,53 +131,78 @@ class _NavigationHarnessScreenState extends State<NavigationHarnessScreen> {
                     )
                   : _NavigationPreview(label: strings.navigationReady),
             ),
-            Positioned(
-              left: outerMargin,
-              right: outerMargin,
-              bottom: controlsBottom,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  NavigationRoadControlButton(
-                    key: const Key('navigation-back'),
-                    tooltip: 'Back',
-                    icon: Icons.arrow_back,
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                  NavigationRoadMenuButton(onPressed: _openNavigationActions),
-                ],
+            if (_gpsInterruption == null)
+              Positioned(
+                left: outerMargin,
+                right: outerMargin,
+                bottom: controlsBottom,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    NavigationRoadControlButton(
+                      key: const Key('navigation-back'),
+                      tooltip: 'Back',
+                      icon: Icons.arrow_back,
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                    NavigationRoadMenuButton(onPressed: _openNavigationActions),
+                  ],
+                ),
               ),
-            ),
-            Positioned(
-              left: outerMargin,
-              right: outerMargin,
-              bottom: outerMargin,
-              child: NavigationStopDock(
-                sequence: widget.stop.sequence,
-                stopCount: widget.stopCount,
-                recipientName: widget.stop.recipientName,
-                address: widget.stop.rawAddress,
-                etaLabel: _etaLabel,
-                distanceLabel: _distanceLabel,
-                showArrivalAction: showArrivalAction,
-                arrivalLabel: _arrivalLabel,
-                onArrival: _arrivalPendingSync || _submittingArrival
-                    ? null
-                    : _arrived
-                    ? _openPod
-                    : _confirmArrival,
-                pendingSyncLabel: _arrivalPendingSync
-                    ? widget.controller.strings.pendingSync
-                    : null,
-                pendingSyncDetail: _arrivalPendingSync
-                    ? 'Arrival is not committed yet'
-                    : null,
+            if (_gpsInterruption == null)
+              Positioned(
+                left: outerMargin,
+                right: outerMargin,
+                bottom: outerMargin,
+                child: NavigationStopDock(
+                  sequence: widget.stop.sequence,
+                  stopCount: widget.stopCount,
+                  recipientName: widget.stop.recipientName,
+                  address: widget.stop.rawAddress,
+                  etaLabel: _etaLabel,
+                  distanceLabel: _distanceLabel,
+                  showArrivalAction: showArrivalAction,
+                  arrivalLabel: _arrivalLabel,
+                  onArrival: _arrivalPendingSync || _submittingArrival
+                      ? null
+                      : _arrived
+                      ? _openPod
+                      : _confirmArrival,
+                  pendingSyncLabel: _arrivalPendingSync
+                      ? widget.controller.strings.pendingSync
+                      : null,
+                  pendingSyncDetail: _arrivalPendingSync
+                      ? 'Arrival is not committed yet'
+                      : null,
+                ),
               ),
-            ),
+            if (_gpsInterruption case final interruption?)
+              Positioned.fill(
+                child: GpsUnavailableScreen(
+                  interruption: interruption,
+                  contextLabel:
+                      '${widget.round.tenantName} · Stop ${widget.stop.sequence}',
+                  onBack: () => Navigator.of(context).pop(),
+                  onContinue: () => setState(() => _gpsInterruption = null),
+                  onRetry: () => unawaited(_retryGps()),
+                  onReviewLocationAccess: _reviewLocationAccess,
+                ),
+              ),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _reviewLocationAccess() async {
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute(builder: (_) => const DriverPermissionsScreen()),
+    );
+    if (mounted) await _retryGps();
+  }
+
+  Future<void> _retryGps() async {
+    await _navigationController.retryGps();
   }
 
   String get _etaLabel {

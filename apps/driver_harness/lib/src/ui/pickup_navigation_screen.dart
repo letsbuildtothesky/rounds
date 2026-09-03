@@ -7,7 +7,10 @@ import '../app/driver_design_system.dart';
 import '../app/generated/driver_ui_metrics.g.dart';
 import '../app/harness_app_controller.dart';
 import '../driver/driver_session.dart';
+import '../navigation/gps_signal_monitor.dart';
+import '../navigation/gps_unavailable_screen.dart';
 import '../navigation/google_navigation_surface.dart';
+import '../permissions/driver_permissions_screen.dart';
 import 'components/navigation_instruction_card.dart';
 import 'components/navigation_pickup_dock.dart';
 import 'components/navigation_road_controls.dart';
@@ -39,10 +42,13 @@ class PickupNavigationScreen extends StatefulWidget {
 
 class _PickupNavigationScreenState extends State<PickupNavigationScreen> {
   NavigationRoadInstruction? _instruction;
+  final GoogleNavigationSurfaceController _navigationController =
+      GoogleNavigationSurfaceController();
   String? _navigationStatus;
   int? _remainingSeconds;
   int? _remainingMeters;
   bool _nearPickup = false;
+  GpsNavigationInterruption? _gpsInterruption;
 
   @override
   void initState() {
@@ -78,6 +84,7 @@ class _PickupNavigationScreenState extends State<PickupNavigationScreen> {
             Positioned.fill(
               child: widget.enableNativeNavigation
                   ? GoogleNavigationSurface(
+                      controller: _navigationController,
                       strings: widget.controller.strings,
                       onOperationalSample: (_) {},
                       onStatus: (status) {
@@ -96,6 +103,10 @@ class _PickupNavigationScreenState extends State<PickupNavigationScreen> {
                         if (!mounted) return;
                         setState(() => _instruction = instruction);
                       },
+                      onGpsInterruptionChanged: (interruption) {
+                        if (!mounted) return;
+                        setState(() => _gpsInterruption = interruption);
+                      },
                       onArrival: () {
                         if (!mounted) return;
                         setState(() => _nearPickup = true);
@@ -111,49 +122,64 @@ class _PickupNavigationScreenState extends State<PickupNavigationScreen> {
                     )
                   : const _PickupNavigationPreview(),
             ),
-            Positioned(
-              top: outerMargin,
-              left: outerMargin,
-              right: outerMargin,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  NavigationRoadControlButton(
-                    key: const Key('pickup-navigation-back'),
-                    tooltip: 'Back',
-                    icon: Icons.arrow_back,
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                  SizedBox(
-                    width: compact
-                        ? DriverD01Metrics.compactRoadControlGap
-                        : DriverD01Metrics.roadControlGap,
-                  ),
-                  Expanded(
-                    child: NavigationInstructionCard(instruction: _instruction),
-                  ),
-                  SizedBox(
-                    width: compact
-                        ? DriverD01Metrics.compactRoadControlGap
-                        : DriverD01Metrics.roadControlGap,
-                  ),
-                  NavigationRoadMenuButton(onPressed: _openPickupActions),
-                ],
+            if (_gpsInterruption == null)
+              Positioned(
+                top: outerMargin,
+                left: outerMargin,
+                right: outerMargin,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    NavigationRoadControlButton(
+                      key: const Key('pickup-navigation-back'),
+                      tooltip: 'Back',
+                      icon: Icons.arrow_back,
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                    SizedBox(
+                      width: compact
+                          ? DriverD01Metrics.compactRoadControlGap
+                          : DriverD01Metrics.roadControlGap,
+                    ),
+                    Expanded(
+                      child: NavigationInstructionCard(
+                        instruction: _instruction,
+                      ),
+                    ),
+                    SizedBox(
+                      width: compact
+                          ? DriverD01Metrics.compactRoadControlGap
+                          : DriverD01Metrics.roadControlGap,
+                    ),
+                    NavigationRoadMenuButton(onPressed: _openPickupActions),
+                  ],
+                ),
               ),
-            ),
-            Positioned(
-              left: outerMargin,
-              right: outerMargin,
-              bottom: outerMargin,
-              child: NavigationPickupDock(
-                pickupName: pickup.displayName,
-                address: pickup.rawAddress,
-                etaLabel: _etaLabel,
-                distanceLabel: _distanceLabel,
-                showArrivalAction: _showArrivalAction,
-                onArrival: _openPickupConfirmation,
+            if (_gpsInterruption == null)
+              Positioned(
+                left: outerMargin,
+                right: outerMargin,
+                bottom: outerMargin,
+                child: NavigationPickupDock(
+                  pickupName: pickup.displayName,
+                  address: pickup.rawAddress,
+                  etaLabel: _etaLabel,
+                  distanceLabel: _distanceLabel,
+                  showArrivalAction: _showArrivalAction,
+                  onArrival: _openPickupConfirmation,
+                ),
               ),
-            ),
+            if (_gpsInterruption case final interruption?)
+              Positioned.fill(
+                child: GpsUnavailableScreen(
+                  interruption: interruption,
+                  contextLabel: '${widget.round.tenantName} · Pickup',
+                  onBack: () => Navigator.of(context).pop(),
+                  onContinue: () => setState(() => _gpsInterruption = null),
+                  onRetry: () => unawaited(_retryGps()),
+                  onReviewLocationAccess: _reviewLocationAccess,
+                ),
+              ),
           ],
         ),
       ),
@@ -161,6 +187,17 @@ class _PickupNavigationScreenState extends State<PickupNavigationScreen> {
   }
 
   bool get _showArrivalAction => _nearPickup;
+
+  Future<void> _reviewLocationAccess() async {
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute(builder: (_) => const DriverPermissionsScreen()),
+    );
+    if (mounted) await _retryGps();
+  }
+
+  Future<void> _retryGps() async {
+    await _navigationController.retryGps();
+  }
 
   String get _etaLabel {
     final seconds = _remainingSeconds;

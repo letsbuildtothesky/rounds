@@ -10,10 +10,17 @@ import 'operational_location_settings.dart';
 import 'position_sample.dart';
 
 class OperationalLocationRecorder {
-  OperationalLocationRecorder({this.onSample, this.onError});
+  OperationalLocationRecorder({
+    this.onPositionReceived,
+    this.onSample,
+    this.onPersistenceError,
+    this.onLocationStreamError,
+  });
 
+  final void Function(DateTime capturedAt)? onPositionReceived;
   final void Function(DateTime capturedAt)? onSample;
-  final void Function(Object error)? onError;
+  final void Function(Object error)? onPersistenceError;
+  final void Function(Object error)? onLocationStreamError;
 
   HarnessDatabase? _database;
   StreamSubscription<Position>? _subscription;
@@ -31,18 +38,29 @@ class OperationalLocationRecorder {
     final highest = rows.single['highest_sequence'] as int?;
     _nextSequence = (highest ?? 0) + 1;
 
+    _subscribeToPositionStream();
+  }
+
+  Future<void> restartLocationStream() async {
+    await requireOperationalLocationAccess();
+    await _subscription?.cancel();
+    _subscribeToPositionStream();
+  }
+
+  void _subscribeToPositionStream() {
     _subscription = Geolocator.getPositionStream(
       locationSettings: operationalLocationSettings(defaultTargetPlatform),
-    ).listen(_queue, onError: onError);
+    ).listen(_queue, onError: onLocationStreamError);
   }
 
   void _queue(Position position) {
     final sequence = _nextSequence++;
+    final capturedAt = position.timestamp.toUtc();
+    onPositionReceived?.call(capturedAt);
     _writeTail = _writeTail
         .then((_) async {
           final database = _database;
           if (database == null) return;
-          final capturedAt = position.timestamp.toUtc();
           await TelemetryBuffer(database).append(
             PositionSample(
               sequence: sequence,
@@ -58,7 +76,7 @@ class OperationalLocationRecorder {
           onSample?.call(capturedAt);
         })
         .catchError((Object error) {
-          onError?.call(error);
+          onPersistenceError?.call(error);
         });
   }
 
