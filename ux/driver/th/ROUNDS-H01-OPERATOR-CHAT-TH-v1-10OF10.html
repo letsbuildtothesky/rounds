@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Rounds — H01 แชตฝ่ายจัดงาน · Thai-first v1</title>
+<style>
+@import url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@7/fonts/LINESeedSansTH/LINESeedSansTH.css');
+:root{
+  --canvas:#eef1f4;--paper:#fff;--ink:#172238;--ink2:#3d4a5d;--muted:#748094;
+  --line:#e1e6ea;--line2:#cbd4dc;--orange:#ff6420;--orange-soft:#fff2eb;
+  --green:#168b50;--green-soft:#eaf7ef;--red:#bf4a4a;--red-soft:#fff0f0;
+  --blue-soft:#eef4fb;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--canvas);color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+button,input,textarea{font:inherit} button{cursor:pointer}
+body{padding:28px}
+.phone{width:393px;height:852px;margin:0 auto;background:#fff;position:relative;overflow:hidden;border:1px solid rgba(23,34,56,.09);border-radius:28px;box-shadow:0 18px 42px rgba(23,34,56,.14)}
+.statusbar{height:28px;padding:0 20px 4px;display:flex;align-items:flex-end;justify-content:space-between;font-size:12px;font-weight:760;background:#fff;position:relative;z-index:50}
+.sb-right{display:flex;align-items:center;gap:6px}.signal{display:flex;align-items:flex-end;gap:1.5px;height:9px}.signal i{display:block;width:2px;background:currentColor;border-radius:1px}.signal i:nth-child(1){height:3px}.signal i:nth-child(2){height:5px}.signal i:nth-child(3){height:7px}.signal i:nth-child(4){height:9px}.battery{width:20px;height:9px;border:1.5px solid currentColor;border-radius:2px;padding:1px;position:relative}.battery:after{content:"";position:absolute;right:-3px;top:1.5px;width:2px;height:4px;background:currentColor}.battery b{display:block;width:78%;height:100%;background:currentColor;border-radius:1px}
+.app{position:absolute;inset:28px 0 0;background:#fff;display:flex;flex-direction:column;min-height:0}
+.topbar{height:64px;flex:0 0 64px;padding:0 18px;display:grid;grid-template-columns:44px minmax(0,1fr) 44px;gap:10px;align-items:center;border-bottom:1px solid var(--line);background:#fff;position:relative;z-index:12}
+.iconbtn{width:44px;height:44px;border:0;background:#fff;color:var(--ink);display:grid;place-items:center;border-radius:6px}.iconbtn:active{background:#f3f5f7}.iconbtn svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.topcopy{min-width:0}.topcopy b{display:block;font-size:17px;line-height:1.05;font-weight:850;letter-spacing:-.025em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.topcopy span{display:flex;align-items:center;gap:7px;margin-top:5px;font-size:11.5px;color:var(--green);font-weight:780}.topcopy span i{width:7px;height:7px;border-radius:50%;background:currentColor}
+.context{flex:0 0 58px;min-height:58px;border-bottom:1px solid var(--line);padding:0 20px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;background:#fff}
+.context small{display:block;color:var(--orange);font-size:10.5px;line-height:1;font-weight:880;letter-spacing:.095em;text-transform:uppercase}.context b{display:block;margin-top:5px;font-size:15px;line-height:1.1;font-weight:840;letter-spacing:-.015em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.context button{height:38px;border:0;background:#fff;color:var(--ink2);font-size:13px;font-weight:820;padding:0 2px}.context button:active{color:var(--orange)}
+.connection{display:none;flex:0 0 auto;min-height:34px;padding:8px 20px;background:var(--orange-soft);border-bottom:1px solid #ffd9c8;color:#8f461e;font-size:12px;line-height:1.3;font-weight:760}.connection.show{display:block}
+.messages{flex:1;min-height:0;overflow:auto;padding:16px 18px 18px;overscroll-behavior:contain;background:#fff}
+.day{font-size:11px;font-weight:820;letter-spacing:.07em;text-transform:uppercase;color:#8d97a5;text-align:center;margin:2px 0 14px}
+.system-event{display:grid;grid-template-columns:48px 8px minmax(0,1fr);gap:9px;align-items:start;padding:10px 0;border-top:1px solid var(--line);font-size:12px}.system-event:last-of-type{border-bottom:1px solid var(--line)}.system-event time{color:var(--muted);font-weight:760;padding-top:1px}.system-dot{width:8px;height:8px;border-radius:50%;background:var(--green);margin-top:3px}.system-dot.orange{background:var(--orange)}.system-copy b{display:block;font-size:12.5px;line-height:1.25;font-weight:830;color:var(--ink2)}.system-copy span{display:block;margin-top:3px;color:var(--muted);font-size:11.8px;line-height:1.3;font-weight:680}
+.row{display:flex;margin-top:13px}.row.ops{justify-content:flex-start}.row.driver{justify-content:flex-end}.message-wrap{max-width:79%;min-width:0}.sender{font-size:10.5px;font-weight:820;color:var(--muted);margin:0 0 5px 2px}.driver .sender{text-align:right;margin-right:2px}.bubble{border-radius:8px;padding:10px 12px;font-size:14px;line-height:1.42;word-break:break-word;position:relative}.ops .bubble{background:#f3f5f7;color:var(--ink);border:1px solid #edf0f2}.driver .bubble{background:var(--ink);color:#fff}.bubble a{color:inherit;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:2px}.meta{display:flex;justify-content:flex-end;gap:7px;margin-top:6px;font-size:10.8px;font-weight:700;opacity:.6}.ops .meta{justify-content:flex-start}.meta .local{color:#f2b88f;opacity:1}.meta .synced{color:#b9d9c7;opacity:1}
+.unread{display:flex;align-items:center;gap:9px;margin:17px 0 6px;color:var(--orange);font-size:11px;font-weight:850;letter-spacing:.07em;text-transform:uppercase}.unread:before,.unread:after{content:"";height:1px;background:#ffd5c1;flex:1}.unread i{width:7px;height:7px;background:var(--orange);border-radius:50%}
+.msg-attachment{margin-top:9px;border:1px solid rgba(255,255,255,.18);border-radius:7px;overflow:hidden}.ops .msg-attachment{border-color:#dce3e8;background:#fff}.attachment-row{min-height:54px;display:grid;grid-template-columns:38px minmax(0,1fr) 16px;gap:10px;align-items:center;padding:7px 9px;color:inherit}.attachment-row+.attachment-row{border-top:1px solid rgba(255,255,255,.15)}.ops .attachment-row+.attachment-row{border-color:#e6eaed}.att-icon{width:38px;height:38px;border-radius:6px;background:rgba(255,255,255,.12);display:grid;place-items:center}.ops .att-icon{background:#f3f5f7;color:var(--orange)}.att-icon svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.att-copy{min-width:0}.att-copy b{display:block;font-size:12.8px;font-weight:820;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.att-copy span{display:block;margin-top:3px;font-size:11.3px;opacity:.65;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.att-open{width:8px;height:8px;border-top:2px solid currentColor;border-right:2px solid currentColor;transform:rotate(45deg);opacity:.5;justify-self:end}
+.photo-preview{height:118px;background:#e9edf1;display:grid;place-items:center;position:relative;overflow:hidden}.photo-preview img{width:100%;height:100%;object-fit:cover;display:block}.photo-preview .photo-empty{display:flex;flex-direction:column;align-items:center;gap:7px;color:#6e7b8e;font-size:11px;font-weight:780}.photo-preview svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.8}
+.voice-card{display:flex;align-items:center;gap:9px;min-width:184px}.voice-play{width:34px;height:34px;border:0;border-radius:6px;background:rgba(255,255,255,.13);color:inherit;display:grid;place-items:center}.ops .voice-play{background:#fff}.voice-play svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2}.wave{height:25px;display:flex;align-items:center;gap:2px;flex:1}.wave i{width:2px;border-radius:2px;background:currentColor;opacity:.55}.wave i:nth-child(1){height:7px}.wave i:nth-child(2){height:13px}.wave i:nth-child(3){height:19px}.wave i:nth-child(4){height:10px}.wave i:nth-child(5){height:16px}.wave i:nth-child(6){height:8px}.wave i:nth-child(7){height:21px}.wave i:nth-child(8){height:12px}.wave i:nth-child(9){height:17px}.voice-duration{font-size:11.5px;font-weight:780;opacity:.7}
+.composer{flex:0 0 auto;border-top:1px solid var(--line);background:rgba(255,255,255,.99);padding:8px 12px calc(12px + env(safe-area-inset-bottom));position:relative;z-index:20}.staging{display:none;gap:7px;overflow-x:auto;padding:0 0 8px;scrollbar-width:none}.staging::-webkit-scrollbar{display:none}.staging.show{display:flex}.stage{flex:0 0 138px;height:56px;border:1px solid var(--line);border-radius:7px;background:#fff;display:grid;grid-template-columns:34px minmax(0,1fr) 24px;gap:7px;align-items:center;padding:6px}.stage-icon{width:34px;height:34px;border-radius:6px;background:var(--orange-soft);color:var(--orange);display:grid;place-items:center}.stage-icon svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2}.stage-copy{min-width:0}.stage-copy b{display:block;font-size:11.5px;font-weight:820;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.stage-copy span{display:block;margin-top:2px;font-size:10.5px;color:var(--muted);font-weight:670;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.stage-remove{width:24px;height:24px;border:0;background:#fff;color:#7c8796;font-size:19px;line-height:1;display:grid;place-items:center;border-radius:4px}.stage-remove:active{background:#f2f4f6}
+.composer-row{display:grid;grid-template-columns:48px minmax(0,1fr) 48px;gap:8px;align-items:end}.composer.has-send .composer-row{grid-template-columns:48px minmax(0,1fr) 48px}.composer-btn{width:48px;height:48px;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:7px;display:grid;place-items:center}.composer-btn:active{background:#f3f5f7}.composer-btn svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.composer-btn.mic{background:var(--orange);border-color:var(--orange);color:#fff}.composer-btn.send{background:var(--ink);border-color:var(--ink);color:#fff;display:none}.composer.has-send .mic{display:none}.composer.has-send .send{display:grid}.inputbox{min-height:48px;border:1px solid var(--line2);border-radius:7px;background:#fff;display:flex;align-items:center;padding:10px 12px}.inputbox:focus-within{border-color:#9caab8}.inputbox textarea{width:100%;max-height:88px;min-height:22px;resize:none;border:0;outline:0;background:transparent;color:var(--ink);font-size:14px;line-height:1.35;padding:0;overflow:auto}.inputbox textarea::placeholder{color:#9aa4b0}
+.scrim{position:absolute;inset:0;background:rgba(23,34,56,.28);z-index:40;opacity:0;pointer-events:none;transition:.16s}.scrim.show{opacity:1;pointer-events:auto}.sheet{position:absolute;left:10px;right:10px;bottom:10px;z-index:45;background:#fff;border:1px solid var(--line2);border-radius:12px 12px 8px 8px;box-shadow:none;transform:translateY(calc(100% + 18px));transition:.2s cubic-bezier(.2,.8,.2,1);padding:8px 18px 14px}.sheet.show{transform:none}.sheet-handle{width:42px;height:4px;background:#d9dfe4;border-radius:4px;margin:2px auto 14px}.sheet-head{padding:2px 2px 10px}.sheet-head h2{margin:0;font-size:22px;font-weight:880;letter-spacing:-.035em}.sheet-head p{margin:6px 0 0;color:var(--muted);font-size:12.5px;line-height:1.35;font-weight:680}.sheet-row{width:100%;min-height:60px;border:0;border-top:1px solid var(--line);background:#fff;color:var(--ink);display:grid;grid-template-columns:32px minmax(0,1fr) 18px;gap:10px;align-items:center;text-align:left;padding:0 2px;font-size:15px;font-weight:820}.sheet-row:active{background:#f7f9fa}.sheet-row:last-child{border-bottom:1px solid var(--line)}.sheet-row svg{width:22px;height:22px;fill:none;stroke:var(--orange);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.sheet-row .arrow{width:8px;height:8px;border-top:2px solid #8f99a6;border-right:2px solid #8f99a6;transform:rotate(45deg);justify-self:end}
+.voice-sheet{padding-bottom:18px}.voice-state{padding:4px 2px 4px}.voice-kicker{display:flex;align-items:center;gap:8px;color:var(--orange);font-size:10.5px;line-height:1;font-weight:880;letter-spacing:.095em;text-transform:uppercase}.voice-kicker i{width:8px;height:8px;border-radius:50%;background:currentColor}.voice-title{margin-top:10px;font-size:30px;line-height:1;font-weight:880;letter-spacing:-.05em}.voice-time{margin-top:10px;font-size:48px;line-height:.95;font-weight:890;letter-spacing:-.06em}.voice-wave{height:74px;margin-top:19px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:center;gap:4px}.voice-wave i{width:4px;background:var(--ink);border-radius:3px}.voice-wave i:nth-child(1){height:15px}.voice-wave i:nth-child(2){height:29px}.voice-wave i:nth-child(3){height:20px}.voice-wave i:nth-child(4){height:43px}.voice-wave i:nth-child(5){height:25px}.voice-wave i:nth-child(6){height:50px}.voice-wave i:nth-child(7){height:21px}.voice-wave i:nth-child(8){height:37px}.voice-wave i:nth-child(9){height:18px}.voice-wave i:nth-child(10){height:46px}.voice-wave i:nth-child(11){height:27px}.voice-wave i:nth-child(12){height:17px}.voice-actions{margin-top:14px}.voice-primary{width:100%;height:60px;border:0;border-radius:7px;background:var(--ink);color:#fff;font-size:16px;font-weight:850}.voice-secondary{width:100%;height:48px;margin-top:6px;border:0;background:#fff;color:var(--ink2);font-size:14px;font-weight:810}.voice-danger{color:var(--red)}.voice-preview-row{display:none;align-items:center;gap:11px;margin-top:18px;padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.voice-preview-row.show{display:flex}.preview-play{width:44px;height:44px;border:0;border-radius:7px;background:var(--ink);color:#fff;display:grid;place-items:center}.preview-play svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2}.preview-copy b{display:block;font-size:14px;font-weight:830}.preview-copy span{display:block;margin-top:3px;color:var(--muted);font-size:12px;font-weight:700}
+.toast{position:absolute;left:18px;right:18px;bottom:92px;z-index:70;background:var(--ink);color:#fff;border-radius:8px;padding:12px 14px;font-size:12.5px;font-weight:760;box-shadow:0 12px 26px rgba(23,34,56,.18);opacity:0;transform:translateY(7px);pointer-events:none;transition:.16s}.toast.show{opacity:1;transform:none}
+@media(max-width:520px){body{padding:0}.phone{width:100vw;height:100dvh;border:0;border-radius:0;box-shadow:none}}
+@media(max-width:340px){.topbar{padding:0 12px}.context{padding:0 14px}.messages{padding-left:14px;padding-right:14px}.message-wrap{max-width:84%}.composer{padding-left:8px;padding-right:8px}.composer-row{grid-template-columns:46px minmax(0,1fr) 46px;gap:6px}.composer-btn{width:46px;height:46px}.inputbox{min-height:46px;padding-left:10px;padding-right:10px}.sheet{left:6px;right:6px;bottom:6px;padding-left:14px;padding-right:14px}}
+
+/* Thai-first composition — locked */
+html,body{font-family:'LINE Seed Sans TH',Tahoma,'Noto Sans Thai',sans-serif}
+.statusbar{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;font-weight:700}
+.phone{box-shadow:none}
+.topcopy b{font-size:17px;line-height:1.3;font-weight:760;letter-spacing:0}.topcopy span{margin-top:2px;font-size:12px;line-height:1.35;font-weight:630}
+.context small{font-size:12px;line-height:1.35;font-weight:680;letter-spacing:0;text-transform:none}.context b{margin-top:2px;font-size:14.5px;line-height:1.35;font-weight:720;letter-spacing:0}.context button{font-size:13px;font-weight:700}
+.connection{font-size:12.5px;line-height:1.4;font-weight:600}
+.messages{padding:15px 18px 18px}.day{font-size:12px;line-height:1.35;font-weight:650;letter-spacing:0;text-transform:none;margin-bottom:12px}
+.system-event{grid-template-columns:46px 8px minmax(0,1fr);gap:8px;font-size:12px}.system-copy b{font-size:13px;line-height:1.4;font-weight:700}.system-copy span{font-size:12px;line-height:1.45;font-weight:560}
+.row{margin-top:12px}.message-wrap{max-width:82%}.sender{font-size:11.5px;line-height:1.35;font-weight:620}.bubble{padding:10px 12px;font-size:14.5px;line-height:1.55;font-weight:520}.meta{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;font-size:10.8px}.unread{font-size:11.5px;line-height:1.35;font-weight:680;letter-spacing:0;text-transform:none}
+.attachment-row{min-height:58px}.att-copy b{font-size:13px;line-height:1.35;font-weight:700}.att-copy span{font-size:11.5px;line-height:1.35;font-weight:560}
+.composer{box-shadow:none}.composer-btn{border-radius:7px}.inputbox textarea{font-family:'LINE Seed Sans TH',Tahoma,'Noto Sans Thai',sans-serif;font-size:14.5px;line-height:1.45;font-weight:520}
+.stage-copy b{font-size:12px;line-height:1.3;font-weight:700}.stage-copy span{font-size:10.8px;line-height:1.3;font-weight:560}
+.scrim{background:rgba(23,34,56,.24)}.sheet{box-shadow:none;opacity:0;pointer-events:none;transform:translateY(110%)}.sheet.show{opacity:1;pointer-events:auto}
+.sheet-head h2{font-size:24px;line-height:1.3;font-weight:780;letter-spacing:0}.sheet-head p{font-size:13px;line-height:1.45;font-weight:560}.sheet-row{min-height:62px;font-size:15px;line-height:1.4;font-weight:690}
+.voice-kicker{font-size:12.5px;line-height:1.4;font-weight:680;letter-spacing:0;text-transform:none}.voice-title{font-size:30px;line-height:1.25;font-weight:780;letter-spacing:0}.voice-time{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}.voice-primary{font-family:'LINE Seed Sans TH',Tahoma,'Noto Sans Thai',sans-serif;font-size:16px;font-weight:740}.voice-secondary{font-family:'LINE Seed Sans TH',Tahoma,'Noto Sans Thai',sans-serif;font-size:14px;font-weight:650}.preview-copy b{font-size:14px;line-height:1.4;font-weight:700}.preview-copy span{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+.toast{font-family:'LINE Seed Sans TH',Tahoma,'Noto Sans Thai',sans-serif;font-size:13px;line-height:1.45;font-weight:600;box-shadow:none}
+@media(max-width:520px){body{padding:0}.phone{width:100vw;height:100dvh;border:0;border-radius:0;box-shadow:none}}
+@media(max-width:340px){.topbar{padding:0 12px}.context{padding:0 14px}.messages{padding-left:14px;padding-right:14px}.message-wrap{max-width:86%}.bubble{font-size:13.8px;line-height:1.52}.composer{padding-left:8px;padding-right:8px}.composer-row{grid-template-columns:46px minmax(0,1fr) 46px;gap:6px}.composer-btn{width:46px;height:46px}.inputbox{min-height:46px;padding-left:10px;padding-right:10px}.sheet{left:6px;right:6px;bottom:6px;padding-left:14px;padding-right:14px}}
+
+</style>
+</head>
+<body>
+<div class="phone" id="phone">
+  <div class="statusbar"><div>15:33</div><div class="sb-right"><div class="signal"><i></i><i></i><i></i><i></i></div><div>5G</div><div class="battery"><b></b></div></div></div>
+  <main class="app">
+    <header class="topbar">
+      <button class="iconbtn" aria-label="กลับ" onclick="goBack()"><svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+      <div class="topcopy"><b>ฝ่ายจัดงาน</b><span><i></i>UrbanFlowers · ออนไลน์</span></div>
+      <button class="iconbtn" aria-label="โทรหาฝ่ายจัดงาน" onclick="openCall()"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.8 12.8 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.8 12.8 0 0 0 2.81.7A2 2 0 0 1 22 16.92Z"/></svg></button>
+    </header>
+
+    <section class="context">
+      <div><small>จุด 1 จาก 4</small><b>K. Nattaporn · The Emporio Place</b></div>
+      <button onclick="openDelivery()">ดูจุดส่ง</button>
+    </section>
+
+    <div class="connection" id="connection">ออฟไลน์ · ข้อความจะส่งเมื่อเชื่อมต่อ</div>
+
+    <section class="messages" id="messages" aria-live="polite">
+      <div class="day">วันนี้</div>
+
+      <div class="system-event"><time>12:04</time><i class="system-dot"></i><div class="system-copy"><b>ยืนยันรับของแล้ว</b><span>ยืนยันพัสดุ 6 ชิ้นอยู่กับคนขับ</span></div></div>
+      <div class="system-event"><time>13:58</time><i class="system-dot orange"></i><div class="system-copy"><b>อัปเดตทางเข้า</b><span>Gate A → Gate B · รับทราบแล้ว</span></div></div>
+
+      <div class="row driver copyable" data-copy="ถึง Gate B แล้ว รปภ.กำลังตรวจสอบ">
+        <div class="message-wrap"><div class="sender">คุณ</div><div class="bubble">ถึง Gate B แล้ว รปภ.กำลังตรวจสอบ<div class="meta"><span>14:19</span><span>ส่งแล้ว</span></div></div></div>
+      </div>
+
+      <div class="row ops copyable" data-copy="ยืนยันแล้วว่าวางไว้ที่รีเซปชันได้">
+        <div class="message-wrap"><div class="sender">ฝ่ายจัดงาน</div><div class="bubble">ยืนยันแล้วว่าวางไว้ที่รีเซปชันได้<div class="meta"><span>14:20</span></div></div></div>
+      </div>
+
+      <div class="row driver copyable" data-copy="Gate B · ตำแหน่งปัจจุบัน">
+        <div class="message-wrap"><div class="sender">คุณ</div><div class="bubble">อยู่ตรงนี้แล้ว
+          <div class="msg-attachment" data-copy-ref="Gate B · ตำแหน่งปัจจุบัน">
+            <button class="attachment-row" style="width:100%;border:0;background:transparent;color:inherit;text-align:left" onclick="openLocation(13.7306,100.5697)">
+              <span class="att-icon"><svg viewBox="0 0 24 24"><path d="M12 21s6-4.4 6-10a6 6 0 1 0-12 0c0 5.6 6 10 6 10Z"/><circle cx="12" cy="11" r="2"/></svg></span>
+              <span class="att-copy"><b>Gate B</b><span>ตำแหน่งปัจจุบัน</span></span><i class="att-open"></i>
+            </button>
+          </div>
+          <div class="meta"><span>14:21</span><span>ส่งแล้ว</span></div>
+        </div></div>
+      </div>
+
+      <div class="unread" id="unread"><i></i>1 ข้อความใหม่</div>
+
+      <div class="row ops copyable" data-copy="ถ่ายรูปหลักฐานก่อนจบจุดส่งด้วย">
+        <div class="message-wrap"><div class="sender">ฝ่ายจัดงาน</div><div class="bubble">ถ่ายรูปหลักฐานก่อนจบจุดส่งด้วย<div class="meta"><span>14:22</span></div></div></div>
+      </div>
+    </section>
+
+    <section class="composer" id="composer">
+      <div class="staging" id="staging"></div>
+      <div class="composer-row">
+        <button class="composer-btn" aria-label="เพิ่มไฟล์แนบ" onclick="openSheet('attachSheet')"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+        <div class="inputbox"><textarea id="messageInput" rows="1" placeholder="ข้อความถึงฝ่ายจัดงาน" oninput="composerChanged()"></textarea></div>
+        <button class="composer-btn mic" id="micBtn" aria-label="บันทึกเสียง" onclick="startVoice()"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+        <button class="composer-btn send" id="sendBtn" aria-label="ส่งข้อความ" onclick="sendMessage()"><svg viewBox="0 0 24 24"><path d="m4 4 16 8-16 8 3-8Z"/></svg></button>
+      </div>
+      <input id="cameraInput" type="file" accept="image/*" capture="environment" hidden onchange="stageFile(this,'Camera')" />
+      <input id="photoInput" type="file" accept="image/*" hidden onchange="stageFile(this,'Photo')" />
+      <input id="fileInput" type="file" hidden onchange="stageFile(this,'File')" />
+    </section>
+
+    <div class="scrim" id="scrim" onclick="closeSheets()"></div>
+
+    <section class="sheet" id="attachSheet" role="dialog" aria-modal="true" aria-label="เพิ่มในข้อความ">
+      <div class="sheet-handle"></div><div class="sheet-head"><h2>เพิ่มในข้อความ</h2></div>
+      <button class="sheet-row" onclick="pickCamera()"><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2Z"/><circle cx="12" cy="13" r="4"/></svg><span>กล้อง</span><i class="arrow"></i></button>
+      <button class="sheet-row" onclick="pickPhoto()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8" cy="8" r="1.5"/><path d="m21 15-5-5L5 21"/></svg><span>รูปภาพ</span><i class="arrow"></i></button>
+      <button class="sheet-row" onclick="pickFile()"><svg viewBox="0 0 24 24"><path d="M6 2h9l5 5v15H6Z"/><path d="M14 2v6h6"/></svg><span>ไฟล์</span><i class="arrow"></i></button>
+      <button class="sheet-row" onclick="stageLocation()"><svg viewBox="0 0 24 24"><path d="M12 21s6-4.4 6-10a6 6 0 1 0-12 0c0 5.6 6 10 6 10Z"/><circle cx="12" cy="11" r="2"/></svg><span>ตำแหน่ง</span><i class="arrow"></i></button>
+    </section>
+
+    <section class="sheet voice-sheet" id="voiceSheet" role="dialog" aria-modal="true" aria-label="ข้อความเสียง">
+      <div class="sheet-handle"></div>
+      <div class="voice-state" id="voiceRecordState">
+        <div class="voice-kicker"><i></i>ข้อความเสียง</div>
+        <div class="voice-title">กำลังบันทึก</div>
+        <div class="voice-time" id="voiceTime">0:00</div>
+        <div class="voice-wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="voice-actions"><button class="voice-primary" onclick="stopVoice()">หยุดบันทึก</button><button class="voice-secondary voice-danger" onclick="cancelVoice()">ยกเลิก</button></div>
+      </div>
+      <div class="voice-state" id="voicePreviewState" style="display:none">
+        <div class="voice-kicker" style="color:var(--green)"><i></i>พร้อมส่ง</div>
+        <div class="voice-title">ฟังก่อนส่ง</div>
+        <div class="voice-preview-row show"><button class="preview-play" onclick="previewVoice()"><svg viewBox="0 0 24 24"><path d="m9 7 8 5-8 5Z"/></svg></button><div class="preview-copy"><b>ข้อความเสียง</b><span id="voicePreviewDuration">0:00</span></div></div>
+        <div class="voice-actions"><button class="voice-primary" onclick="sendVoice()">ส่งข้อความเสียง</button><button class="voice-secondary" onclick="restartVoice()">บันทึกใหม่</button><button class="voice-secondary voice-danger" onclick="cancelVoice()">ยกเลิก</button></div>
+      </div>
+    </section>
+
+    <div class="toast" id="toast"></div>
+  </main>
+</div>
+<script>
+const phone=document.getElementById('phone');
+const messages=document.getElementById('messages');
+const input=document.getElementById('messageInput');
+const composer=document.getElementById('composer');
+const staging=document.getElementById('staging');
+const scrim=document.getElementById('scrim');
+const toast=document.getElementById('toast');
+const connection=document.getElementById('connection');
+const unread=document.getElementById('unread');
+const params=new URLSearchParams(location.search);
+let forcedOffline=params.get('offline')==='1';
+let staged=[];
+let voiceSeconds=0,voiceTimer=null,voicePreviewing=false;
+let longPressTimer=null;
+const isOffline=()=>forcedOffline || navigator.onLine===false;
+
+function showToast(msg){toast.textContent=msg;toast.classList.add('show');clearTimeout(showToast.t);showToast.t=setTimeout(()=>toast.classList.remove('show'),1500)}
+function goBack(){if(history.length>1)history.back();else location.href='ROUNDS-E01-ACTIVE-ROUND-OVERVIEW-TH-v1-10OF10.html'}
+function openDelivery(){location.href='ROUNDS-E01-ACTIVE-ROUND-OVERVIEW-TH-v1-10OF10.html'}
+function openCall(){location.href='ROUNDS-H02-CALL-CONTACT-TH-v1-10OF10.html'}
+function openLocation(lat,lng){window.open(`https://www.google.com/maps?q=${lat},${lng}`,'_blank')}
+function openSheet(id){closeSheets();scrim.classList.add('show');document.getElementById(id)?.classList.add('show')}
+function closeSheets(){scrim.classList.remove('show');document.querySelectorAll('.sheet').forEach(s=>s.classList.remove('show'))}
+function scrollBottom(smooth=false){requestAnimationFrame(()=>messages.scrollTo({top:messages.scrollHeight,behavior:smooth?'smooth':'auto'}))}
+function markRead(){if(unread&&unread.isConnected)unread.remove()}
+
+function composerChanged(){
+  input.style.height='auto';input.style.height=Math.min(88,input.scrollHeight)+'px';
+  const active=input.value.trim().length>0||staged.length>0;composer.classList.toggle('has-send',active);
+}
+function escapeHTML(str){return String(str??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+function linkify(str){
+  const safe=escapeHTML(str);
+  return safe.replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>');
+}
+function iconFor(type){
+  const icons={Camera:'<svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2Z"/><circle cx="12" cy="13" r="4"/></svg>',Photo:'<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8" cy="8" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>',File:'<svg viewBox="0 0 24 24"><path d="M6 2h9l5 5v15H6Z"/><path d="M14 2v6h6"/></svg>',Location:'<svg viewBox="0 0 24 24"><path d="M12 21s6-4.4 6-10a6 6 0 1 0-12 0c0 5.6 6 10 6 10Z"/><circle cx="12" cy="11" r="2"/></svg>'};
+  return icons[type]||icons.File;
+}
+function thaiType(type){return ({Camera:'กล้อง',Photo:'รูปภาพ',File:'ไฟล์',Location:'ตำแหน่ง'})[type]||type}
+function renderStaging(){
+  staging.classList.toggle('show',staged.length>0);
+  staging.innerHTML=staged.map((a,i)=>`<div class="stage"><span class="stage-icon">${iconFor(a.type)}</span><span class="stage-copy"><b>${escapeHTML(thaiType(a.type))}</b><span>${escapeHTML(a.name)}</span></span><button class="stage-remove" aria-label="ลบไฟล์แนบ" onclick="removeStage(${i})">×</button></div>`).join('');
+  composerChanged();
+}
+function removeStage(i){staged.splice(i,1);renderStaging()}
+function pickCamera(){closeSheets();document.getElementById('cameraInput').click()}
+function pickPhoto(){closeSheets();document.getElementById('photoInput').click()}
+function pickFile(){closeSheets();document.getElementById('fileInput').click()}
+function stageFile(el,type){
+  const f=el.files&&el.files[0];if(!f)return;const item={type,name:f.name,size:f.size||0};
+  if(type!=='File'&&f.type?.startsWith('image/')){const reader=new FileReader();reader.onload=()=>{item.dataUrl=reader.result;staged.push(item);renderStaging()};reader.readAsDataURL(f)}else{staged.push(item);renderStaging()}
+  el.value='';
+}
+function stageLocation(){
+  closeSheets();
+  if(!navigator.geolocation){showToast('อุปกรณ์นี้ไม่รองรับตำแหน่ง');return}
+  showToast('กำลังหาตำแหน่งปัจจุบัน…');
+  navigator.geolocation.getCurrentPosition(p=>{staged.push({type:'Location',name:'ตำแหน่งปัจจุบัน',lat:p.coords.latitude,lng:p.coords.longitude});renderStaging();showToast('เพิ่มตำแหน่งแล้ว')},()=>showToast('ต้องอนุญาตการเข้าถึงตำแหน่ง'),{enableHighAccuracy:true,timeout:5000});
+}
+function attachmentHTML(a){
+  if((a.type==='Camera'||a.type==='Photo')&&a.dataUrl){return `<div class="msg-attachment" data-copy-ref="${escapeHTML(a.name)}"><div class="photo-preview"><img src="${a.dataUrl}" alt="รูปที่แนบ"></div><div class="attachment-row"><span class="att-icon">${iconFor('Photo')}</span><span class="att-copy"><b>${escapeHTML(a.name)}</b><span>รูปภาพ</span></span></div></div>`}
+  if(a.type==='Location'){return `<div class="msg-attachment" data-copy-ref="ตำแหน่งปัจจุบัน"><button class="attachment-row" style="width:100%;border:0;background:transparent;color:inherit;text-align:left" onclick="openLocation(${Number(a.lat)},${Number(a.lng)})"><span class="att-icon">${iconFor('Location')}</span><span class="att-copy"><b>ตำแหน่งปัจจุบัน</b><span>${Number(a.lat).toFixed(4)}, ${Number(a.lng).toFixed(4)}</span></span><i class="att-open"></i></button></div>`}
+  return `<div class="msg-attachment" data-copy-ref="${escapeHTML(a.name)}"><div class="attachment-row"><span class="att-icon">${iconFor(a.type)}</span><span class="att-copy"><b>${escapeHTML(a.name)}</b><span>${a.type==='File'?'ไฟล์':'รูปภาพ'}</span></span></div></div>`;
+}
+function nowTime(){return new Intl.DateTimeFormat('en-GB',{hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date())}
+function sendMessage(){
+  const text=input.value.trim();if(!text&&!staged.length)return;markRead();
+  const attachments=staged.map(a=>({...a}));const copyText=[text,...attachments.map(a=>a.name)].filter(Boolean).join(' · ');
+  const row=document.createElement('div');row.className='row driver copyable';row.dataset.copy=copyText;
+  const state=isOffline()?'บันทึกในเครื่อง':'ส่งแล้ว';
+  row.innerHTML=`<div class="message-wrap"><div class="sender">คุณ</div><div class="bubble">${text?linkify(text):''}${attachments.map(attachmentHTML).join('')}<div class="meta"><span>${nowTime()}</span><span class="${isOffline()?'local':''}" data-sync-status>${state}</span></div></div></div>`;
+  messages.appendChild(row);bindCopy(row);input.value='';input.style.height='auto';staged=[];renderStaging();composer.classList.remove('has-send');scrollBottom(true);
+}
+function setConnection(){connection.classList.toggle('show',isOffline());if(!isOffline()){document.querySelectorAll('[data-sync-status].local').forEach(el=>{el.textContent='ซิงก์แล้ว';el.classList.remove('local');el.classList.add('synced')})}}
+window.addEventListener('online',()=>{forcedOffline=false;setConnection();showToast('ออนไลน์แล้ว · ซิงก์ข้อความแล้ว')});window.addEventListener('offline',setConnection);
+
+function startVoice(){voiceSeconds=0;document.getElementById('voiceTime').textContent='0:00';document.getElementById('voiceRecordState').style.display='block';document.getElementById('voicePreviewState').style.display='none';openSheet('voiceSheet');clearInterval(voiceTimer);voiceTimer=setInterval(()=>{voiceSeconds++;document.getElementById('voiceTime').textContent=formatVoice(voiceSeconds)},1000);markRead()}
+function stopVoice(){clearInterval(voiceTimer);voiceTimer=null;if(voiceSeconds<1)voiceSeconds=1;document.getElementById('voiceRecordState').style.display='none';document.getElementById('voicePreviewState').style.display='block';document.getElementById('voicePreviewDuration').textContent=formatVoice(voiceSeconds)}
+function formatVoice(s){return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`}
+function previewVoice(){if(voicePreviewing)return;voicePreviewing=true;showToast(`กำลังเล่นข้อความเสียง ${formatVoice(voiceSeconds)}`);setTimeout(()=>voicePreviewing=false,Math.min(2200,Math.max(700,voiceSeconds*120)))}
+function restartVoice(){startVoice()}
+function cancelVoice(){clearInterval(voiceTimer);voiceTimer=null;closeSheets();showToast('ยกเลิกข้อความเสียงแล้ว')}
+function sendVoice(){
+  clearInterval(voiceTimer);voiceTimer=null;const duration=formatVoice(voiceSeconds||1);const row=document.createElement('div');row.className='row driver copyable';row.dataset.copy=`ข้อความเสียง ${duration}`;
+  row.innerHTML=`<div class="message-wrap"><div class="sender">คุณ</div><div class="bubble"><div class="voice-card"><button class="voice-play" onclick="showToast('กำลังเล่นข้อความเสียง')"><svg viewBox="0 0 24 24"><path d="m9 7 8 5-8 5Z"/></svg></button><div class="wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><span class="voice-duration">${duration}</span></div><div class="meta"><span>${nowTime()}</span><span class="${isOffline()?'local':''}" data-sync-status>${isOffline()?'บันทึกในเครื่อง':'ส่งแล้ว'}</span></div></div></div>`;
+  messages.appendChild(row);bindCopy(row);closeSheets();scrollBottom(true);showToast(isOffline()?'บันทึกเสียงในเครื่องแล้ว':'ส่งข้อความเสียงแล้ว');
+}
+
+async function copyText(text){try{await navigator.clipboard.writeText(text);showToast('คัดลอกแล้ว')}catch(e){showToast('คัดลอกไม่ได้ในตัวอย่างนี้')}}
+function bindCopy(el){
+  if(!el||el.dataset.copyBound==='1')return;el.dataset.copyBound='1';
+  el.addEventListener('contextmenu',e=>{e.preventDefault();copyText(el.dataset.copy||el.textContent.trim())});
+  el.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse')return;clearTimeout(longPressTimer);longPressTimer=setTimeout(()=>{copyText(el.dataset.copy||el.textContent.trim());navigator.vibrate?.(12)},520)});
+  ['pointerup','pointercancel','pointermove'].forEach(type=>el.addEventListener(type,()=>clearTimeout(longPressTimer)));
+}
+document.querySelectorAll('.copyable').forEach(bindCopy);
+document.addEventListener('contextmenu',e=>{const ref=e.target.closest('[data-copy-ref]');if(ref){e.preventDefault();copyText(ref.dataset.copyRef)}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheets()});
+input.addEventListener('focus',markRead);
+setConnection();composerChanged();setTimeout(scrollBottom,60);
+</script>
+</body>
+</html>

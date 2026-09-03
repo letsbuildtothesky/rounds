@@ -13,7 +13,7 @@ const driver: OperationsDriverCapacityItem = {
   driverId, displayName: "Johannes", initials: "JO", presence: { state: "unknown" },
   availability: { state: "off_shift", label: "Later", projectionBasis: "test" },
   effectiveShift: { source: "recurring", startAt: "2026-09-04T01:00:00.000Z", endAt: "2026-09-04T10:00:00.000Z", crossesMidnight: false },
-  vehicleProfile: { id: "10000000-0000-4000-8000-000000000005", code: "CAR", displayName: "Car", vehicleGroup: "car", departurePattern: "multi_stop", maxStopsPerDeparture: 8, planningDeliveriesPerBlock: 4, pickupTurnaroundMinutes: 10, requiresReview: false, version: 1 },
+  vehicleProfile: { id: "10000000-0000-4000-8000-000000000005", code: "CAR", displayName: "Car", vehicleGroup: "car", departurePattern: "multi_stop", maxStopsPerDeparture: 8, planningDeliveriesPerBlock: 4, pickupTurnaroundMinutes: 10, requiresReview: false, version: 1, cargoLimits: [{ cargoClassCode: "bouquet", displayName: "Bouquets", allowed: true, maxQuantity: 8 }] },
   completedDeliveriesToday: 0,
 };
 
@@ -22,7 +22,7 @@ function gateway(windowStart = "2026-09-04T02:00:00.000Z", windowEnd = "2026-09-
     timezone: "Asia/Bangkok",
     pickup: { id: "pickup", coordinate: { latitude: 13.73, longitude: 100.53 } },
     driver,
-    stops: [{ deliveryId: "delivery", stopId, reference: "UF-1", serviceDate: "2026-09-04", pickupLocationId: "pickup", recipientName: "Siriporn", rawAddress: "Bangkok", coordinate: { latitude: 13.75, longitude: 100.56 }, windowStart, windowEnd, manifestSummary: "1× bouquet" }],
+    stops: [{ deliveryId: "delivery", stopId, reference: "UF-1", serviceDate: "2026-09-04", pickupLocationId: "pickup", recipientName: "Siriporn", rawAddress: "Bangkok", coordinate: { latitude: 13.75, longitude: 100.56 }, windowStart, windowEnd, manifestSummary: "1× bouquet", cargoRequirements: [{ cargoClassCode: "bouquet", displayName: "Bouquets", quantity: 1, classificationStatus: "classified" }] }],
     blockingReasons: [], warnings: [],
   }; } };
 }
@@ -51,6 +51,20 @@ test("blocks approval when routed arrival misses the promise", async () => {
   const preview = await service.preview(actor, { serviceDate: "2026-09-04", driverId, stopIds: [stopId] }, new Date("2026-09-03T12:00:00.000Z"));
   assert.equal(preview.status, "blocked");
   assert.match(preview.blockingReasons[0] ?? "", /after its promised window/);
+});
+
+test("blocks planning when cargo has not been classified", async () => {
+  const unclassified = gateway();
+  const original = unclassified.getPlanningRouteContext;
+  unclassified.getPlanningRouteContext = async (...args) => {
+    const context = await original(...args);
+    return { ...context, stops: context.stops.map((stop) => ({ ...stop, cargoRequirements: [{ cargoClassCode: "unclassified", displayName: "Unclassified cargo", quantity: 1, classificationStatus: "unclassified" }] })) };
+  };
+  const service = createPlanningRouteService(unclassified, { calculate: async () => route });
+  const preview = await service.preview(actor, { serviceDate: "2026-09-04", driverId, stopIds: [stopId] }, new Date("2026-09-03T12:00:00.000Z"));
+  assert.equal(preview.status, "blocked");
+  assert.equal(preview.capacity.status, "review_required");
+  assert.match(preview.blockingReasons.join(" "), /unclassified/);
 });
 
 test("normalizes a successful Mapbox Directions response without exposing its token", async () => {

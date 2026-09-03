@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Rounds — I01 จบรอบ · Thai-first v1</title>
+<style>
+@import url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@7/fonts/LINESeedSansTH/LINESeedSansTH.css');
+:root{--canvas:#eef1f4;--paper:#fff;--ink:#172238;--ink2:#3d4a5d;--muted:#748094;--line:#e1e6ea;--orange:#ff6420;--green:#168b50;--green-soft:#eef8f2}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--canvas);color:var(--ink);font-family:'LINE Seed Sans TH',Tahoma,'Noto Sans Thai',sans-serif;-webkit-font-smoothing:antialiased}
+button,a{font:inherit}button{cursor:pointer}body{padding:28px}
+.frame{width:393px;height:852px;margin:0 auto;background:var(--paper);position:relative;overflow:hidden;border:1px solid rgba(23,34,56,.08);border-radius:28px}
+.statusbar{height:28px;padding:0 20px 4px;display:flex;align-items:flex-end;justify-content:space-between;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;font-size:12px;font-weight:700;background:#fff;position:relative;z-index:30}
+.sb-right{display:flex;align-items:center;gap:6px}.signal{display:flex;align-items:flex-end;gap:1.5px;height:9px}.signal i{display:block;width:2px;background:currentColor;border-radius:1px}.signal i:nth-child(1){height:3px}.signal i:nth-child(2){height:5px}.signal i:nth-child(3){height:7px}.signal i:nth-child(4){height:9px}.battery{width:20px;height:9px;border:1.5px solid currentColor;border-radius:2px;padding:1px;position:relative}.battery:after{content:"";position:absolute;right:-3px;top:1.5px;width:2px;height:4px;background:currentColor}.battery b{display:block;width:78%;height:100%;background:currentColor;border-radius:1px}
+.topbar{height:56px;padding:0 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;background:#fff}.brand{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;display:flex;align-items:flex-end;font-size:20px;line-height:1;font-weight:900;letter-spacing:-.05em}.brand-dot{width:6px;height:6px;border-radius:50%;background:var(--orange);margin-left:3px;margin-bottom:2px}
+.screen{position:absolute;inset:84px 0 0;background:#fff;display:flex;flex-direction:column}
+.hero{padding:31px 20px 28px;border-bottom:1px solid var(--line)}
+.state{display:flex;align-items:center;gap:9px;color:var(--green);font-size:13px;line-height:1.4;font-weight:700;margin-bottom:14px}.check{width:22px;height:22px;display:grid;place-items:center;flex:0 0 auto}.check svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.hero h1{margin:0;font-size:41px;line-height:1.12;letter-spacing:0;font-weight:800;white-space:nowrap}.hero-sub{margin-top:10px;font-size:17px;line-height:1.45;font-weight:700;color:var(--ink2)}.hero-meta{margin-top:5px;font-size:13.5px;line-height:1.4;font-weight:560;color:var(--muted)}
+.shift{padding:25px 20px 24px}.section-title{font-size:12.5px;line-height:1.4;font-weight:680;color:var(--muted);margin-bottom:8px}.shift-state{font-size:15px;line-height:1.4;font-weight:700;color:var(--green);margin-bottom:5px}.shift-time{font-size:31px;line-height:1.18;font-weight:780;margin-bottom:20px;white-space:nowrap}.latin{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+.track{height:5px;border-radius:999px;background:#e8edf0;position:relative;margin-bottom:12px}.progress{height:100%;width:79%;background:var(--orange);border-radius:999px;position:relative}.progress:after{content:"";position:absolute;right:-5px;top:50%;width:10px;height:10px;border-radius:50%;background:var(--orange);transform:translateY(-50%);box-shadow:0 0 0 3px #fff,0 0 0 4px rgba(255,100,32,.18)}
+.shift-times{display:flex;justify-content:space-between;gap:14px;font-size:13px;line-height:1.4;font-weight:580;color:var(--muted)}.shift-times strong{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;font-weight:800;color:var(--ink2)}
+.network-earnings{display:none;padding:26px 20px 0}.network-earnings.show{display:block}.fare-label{font-size:12.5px;line-height:1.4;font-weight:680;color:var(--muted);margin-bottom:8px}.fare{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;font-size:48px;line-height:1;font-weight:880;letter-spacing:-.055em}.fare-note{margin-top:8px;color:var(--green);font-size:14px;line-height:1.45;font-weight:700}
+.space{flex:1 1 auto;min-height:24px}.footer{padding:11px 20px calc(18px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:#fff;flex:0 0 auto}.primary{width:100%;height:62px;border:0;border-radius:7px;background:var(--ink);color:#fff;font-size:17px;line-height:1.35;font-weight:760;letter-spacing:0}.primary:active{transform:translateY(1px)}
+.toast{position:absolute;left:18px;right:18px;bottom:94px;background:var(--ink);color:#fff;padding:12px 14px;border-radius:8px;font-size:13px;line-height:1.45;font-weight:600;opacity:0;transform:translateY(8px);transition:.18s;pointer-events:none;z-index:60}.toast.show{opacity:1;transform:none}
+@media(max-width:520px){body{padding:0;background:#fff}.frame{width:100vw;height:100dvh;border:0;border-radius:0}}
+@media(max-width:340px){.hero{padding:25px 16px 23px}.hero h1{font-size:35px}.hero-sub{font-size:15.5px}.hero-meta{font-size:12.5px}.shift{padding:21px 16px}.shift-time{font-size:27px;margin-bottom:17px}.network-earnings{padding:22px 16px 0}.fare{font-size:42px}.footer{padding-left:16px;padding-right:16px}.primary{height:58px;font-size:16px}}
+@media(max-height:720px){.hero{padding-top:22px;padding-bottom:20px}.hero h1{font-size:34px}.hero-sub{margin-top:7px;font-size:15px}.hero-meta{margin-top:3px}.shift{padding-top:18px;padding-bottom:16px}.shift-time{font-size:26px;margin-bottom:15px}.network-earnings{padding-top:19px}.fare{font-size:40px}.footer{padding-top:9px;padding-bottom:12px}.primary{height:56px}}
+</style>
+</head>
+<body>
+<div class="frame" id="frame">
+  <div class="statusbar"><div>15:08</div><div class="sb-right"><div class="signal"><i></i><i></i><i></i><i></i></div><div>5G</div><div class="battery"><b></b></div></div></div>
+  <div class="topbar"><div class="brand">Rounds<span class="brand-dot"></span></div></div>
+  <main class="screen">
+    <section class="hero">
+      <div class="state"><span class="check"><svg viewBox="0 0 24 24"><path d="M4.5 12.5 9.5 17 19.5 6.5"/></svg></span><span>จบรอบแล้ว</span></div>
+      <h1>ส่งครบ 4/4 จุด</h1>
+      <div class="hero-sub" id="heroSub">ตรงเวลาทั้งหมด</div>
+      <div class="hero-meta">UrbanFlowers · รอบ 18</div>
+    </section>
+    <section class="shift" id="teamShift" aria-label="กะยังดำเนินต่อ">
+      <div class="section-title">กะ</div>
+      <div class="shift-state">กะยังดำเนินต่อ</div>
+      <div class="shift-time">เหลือ <span class="latin">1</span> ชม. <span class="latin">52</span> นาที</div>
+      <div class="track" aria-label="กะเสร็จแล้ว 79 เปอร์เซ็นต์"><div class="progress"></div></div>
+      <div class="shift-times"><span>เริ่ม <strong>08:00</strong></span><span>สิ้นสุด <strong>17:00</strong></span></div>
+    </section>
+    <section class="network-earnings" id="networkSummary" aria-label="รายได้จากรอบ Network">
+      <div class="fare-label">ค่ารอบที่รับประกัน</div>
+      <div class="fare">฿420</div>
+      <div class="fare-note">รอบเสร็จแล้ว</div>
+    </section>
+    <div class="space" aria-hidden="true"></div>
+    <div class="footer"><button class="primary" id="homeBtn">ทำงานต่อ</button></div>
+  </main>
+  <div class="toast" id="toast"></div>
+</div>
+<script>
+const params=new URLSearchParams(location.search);
+const context=params.get('context')==='network'?'network':'team';
+const teamShift=document.getElementById('teamShift'),networkSummary=document.getElementById('networkSummary'),homeBtn=document.getElementById('homeBtn'),heroSub=document.getElementById('heroSub'),toast=document.getElementById('toast');
+if(context==='network'){
+  teamShift.style.display='none';networkSummary.classList.add('show');heroSub.style.display='none';homeBtn.textContent='เปิดรับงาน';
+}else{networkSummary.classList.remove('show')}
+homeBtn.addEventListener('click',()=>{
+  const target=context==='network'?'ROUNDS-B03-HOME-NETWORK-AVAILABLE-TH-v1-10OF10.html':'ROUNDS-B01-TEAM-DRIVER-HOME-TH-v2-10OF10.html';
+  toast.textContent=context==='network'?'กำลังเปิดหน้ารับงาน':'กลับหน้าแรก';toast.classList.add('show');
+  setTimeout(()=>{location.href=target},320);
+});
+</script>
+</body>
+</html>

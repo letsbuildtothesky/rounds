@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Rounds — K01 รายได้ Network TH v1</title>
+<style>
+@import url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@7/fonts/LINESeedSansTH/LINESeedSansTH.css');
+:root{
+  --canvas:#eef1f4;--paper:#fff;--ink:#172238;--ink2:#3d4a5d;--muted:#748094;
+  --line:#e1e6ea;--line2:#cbd4dc;--orange:#ff6420;--orange-soft:#fff7f2;
+  --green:#168b50;--green-soft:#eef8f2;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--canvas);color:var(--ink);font-family:'LINE Seed Sans TH','Noto Sans Thai',Tahoma,sans-serif;-webkit-font-smoothing:antialiased}
+button,a{font:inherit}button{cursor:pointer}body{padding:28px}
+.frame{width:393px;height:852px;margin:0 auto;background:var(--paper);position:relative;overflow:hidden;border:1px solid rgba(23,34,56,.09);border-radius:28px;box-shadow:0 18px 42px rgba(23,34,56,.14)}
+.statusbar{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;height:28px;padding:0 20px 4px;display:flex;align-items:flex-end;justify-content:space-between;font-size:12px;font-weight:760;background:#fff;position:relative;z-index:40}.sb-right{display:flex;align-items:center;gap:6px}.signal{display:flex;align-items:flex-end;gap:1.5px;height:9px}.signal i{display:block;width:2px;background:currentColor;border-radius:1px}.signal i:nth-child(1){height:3px}.signal i:nth-child(2){height:5px}.signal i:nth-child(3){height:7px}.signal i:nth-child(4){height:9px}.battery{width:20px;height:9px;border:1.5px solid currentColor;border-radius:2px;padding:1px;position:relative}.battery:after{content:"";position:absolute;right:-3px;top:1.5px;width:2px;height:4px;background:currentColor;border-radius:0 1px 1px 0}.battery b{display:block;width:78%;height:100%;background:currentColor;border-radius:1px}
+.topbar{height:58px;padding:0 20px;border-bottom:1px solid var(--line);background:#fff;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:35}.brand{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;display:flex;align-items:flex-end;font-size:20px;line-height:1;font-weight:900;letter-spacing:-.05em}.brand-dot{width:6px;height:6px;border-radius:50%;background:var(--orange);margin-left:3px;margin-bottom:2px}.icon-btn{width:38px;height:38px;border:0;border-radius:7px;background:#fff;color:var(--ink2);display:grid;place-items:center}.icon-btn:active{background:#f6f8f9}.icon-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.body{position:absolute;inset:86px 0 76px;background:#fff;overflow-y:auto;scrollbar-width:none}.body::-webkit-scrollbar{display:none}
+.header{padding:24px 20px 20px;border-bottom:1px solid var(--line)}.eyebrow{font-size:11.5px;line-height:1;font-weight:880;letter-spacing:.09em;text-transform:uppercase;color:var(--orange);margin-bottom:11px}.header h1{margin:0;font-size:34px;line-height:1;letter-spacing:-.055em;font-weight:860}.header p{margin:9px 0 0;font-size:13.5px;line-height:1.3;font-weight:720;color:var(--muted)}
+.summary{padding:25px 20px 24px;border-bottom:1px solid var(--line);border-left:4px solid var(--orange)}.summary-label{font-size:12px;line-height:1;font-weight:870;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}.summary-value{margin-top:11px;font-size:54px;line-height:.9;font-weight:900;letter-spacing:-.07em}.summary-meta{margin-top:21px;display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.summary-meta div{padding:13px 0}.summary-meta div+div{border-left:1px solid var(--line);padding-left:16px}.summary-meta span{display:block;font-size:12px;font-weight:720;color:var(--muted)}.summary-meta b{display:block;margin-top:5px;font-size:16px;font-weight:860}
+.chart-section{padding:22px 20px 24px;border-bottom:1px solid var(--line)}.section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}.section-head h2{margin:0;font-size:15px;font-weight:880;letter-spacing:-.02em}.section-head span{font-size:12px;font-weight:720;color:var(--muted)}
+.chart{height:148px;margin-top:18px;display:grid;grid-template-columns:repeat(7,1fr);gap:7px;align-items:end;border-bottom:1px solid var(--line2);padding-bottom:0}.day{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;min-width:0}.amount{font-size:11.5px;line-height:1;font-weight:800;color:var(--ink2);margin-bottom:7px;white-space:nowrap}.bar-wrap{height:91px;width:100%;display:flex;align-items:flex-end;justify-content:center}.bar{width:19px;max-width:70%;background:var(--ink);border-radius:4px 4px 0 0;min-height:8px}.day.today .bar{background:var(--orange)}.day-label{height:31px;padding-top:8px;font-size:11px;line-height:1;font-weight:780;color:var(--muted)}.day.today .day-label{color:var(--orange)}
+.payments{padding:21px 20px 7px;border-bottom:1px solid var(--line)}.payment-row{width:100%;min-height:68px;padding:0;border:0;border-top:1px solid var(--line);background:#fff;display:flex;align-items:center;justify-content:space-between;gap:16px;color:inherit;text-align:left}.payment-row:last-child{border-bottom:1px solid var(--line)}.payment-row:active{background:#fafbfb}.payment-copy b{display:block;font-size:15px;font-weight:850;letter-spacing:-.015em}.payment-copy span{display:block;margin-top:6px;font-size:12.5px;font-weight:720;color:var(--muted)}.payment-side{text-align:right;flex:0 0 auto}.payment-side b{display:block;font-size:15px;font-weight:850}.payment-side span{display:block;margin-top:6px;font-size:11.5px;font-weight:760;color:var(--green)}.chev{width:17px;height:17px;stroke:var(--muted);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ledger{padding:22px 20px 28px}.earning-row{min-height:83px;padding:13px 0;border-bottom:1px solid var(--line);display:grid;grid-template-columns:50px 1fr auto;gap:11px;align-items:center}.time{font-size:12.5px;font-weight:760;color:var(--muted)}.job{min-width:0}.job b{display:block;font-size:15.5px;line-height:1.15;font-weight:850;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.job span{display:block;margin-top:7px;font-size:12px;line-height:1.25;font-weight:710;color:var(--muted)}.fare{text-align:right;min-width:60px}.fare b{display:block;font-size:17px;line-height:1;font-weight:880}.fare span{display:block;margin-top:7px;font-size:11.5px;line-height:1;font-weight:760;color:var(--green)}.fare .pending{color:var(--orange)}
+.bottomnav{position:absolute;left:0;right:0;bottom:0;height:76px;background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding:7px 4px 9px;z-index:40}.nav-item{color:var(--muted);text-decoration:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-size:11.5px;font-weight:720;border:0;background:#fff}.nav-item svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}.nav-item.active{color:var(--orange)}
+.scrim{position:absolute;inset:0;background:rgba(10,18,31,.28);opacity:0;pointer-events:none;transition:.18s;z-index:70}.scrim.show{opacity:1;pointer-events:auto}.sheet{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:20px 20px 0 0;transform:translateY(105%);transition:.22s ease;z-index:80;padding:10px 20px calc(20px + env(safe-area-inset-bottom));box-shadow:none;}.sheet.show{transform:none}.grab{width:38px;height:4px;border-radius:999px;background:#d7dde2;margin:0 auto 18px}.sheet-kicker{font-size:11.5px;line-height:1;font-weight:890;letter-spacing:.09em;text-transform:uppercase;color:var(--orange);margin-bottom:10px}.sheet h3{margin:0;font-size:28px;line-height:1;letter-spacing:-.045em;font-weight:860}.sheet-sub{margin-top:8px;font-size:13.5px;line-height:1.35;font-weight:720;color:var(--muted)}.sheet-list{margin-top:20px;border-top:1px solid var(--line)}.sheet-row{min-height:56px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:14px}.sheet-row span{font-size:13px;font-weight:720;color:var(--muted)}.sheet-row b{font-size:14px;font-weight:830;text-align:right}.sheet-note{margin-top:17px;font-size:12.5px;line-height:1.45;font-weight:700;color:var(--muted)}.sheet-close{width:100%;height:56px;margin-top:18px;border:0;border-radius:7px;background:var(--ink);color:#fff;font-size:16px;font-weight:850}
+
+/* Thai-first composition */
+.eyebrow,.summary-label,.sheet-kicker{letter-spacing:0;text-transform:none;font-weight:700}
+.header h1{font-size:36px;line-height:1.14;letter-spacing:0;font-weight:800}.header p{font-size:13.5px;line-height:1.45;font-weight:600}
+.summary-value{font-size:52px;line-height:.95;letter-spacing:0;font-weight:800}.summary-meta span{font-size:12.5px;font-weight:600}.summary-meta b{font-size:16px;font-weight:750}
+.section-head h2{font-size:15.5px;line-height:1.35;font-weight:750;letter-spacing:0}.section-head span{font-size:12.5px;font-weight:600}
+.amount{font-size:11px;line-height:1.2;font-weight:700}.day-label{font-size:11.5px;font-weight:700}
+.payment-copy b{font-size:15px;line-height:1.3;font-weight:750}.payment-copy span{font-size:12.5px;line-height:1.35;font-weight:600}.payment-side b{font-size:15px;font-weight:750}.payment-side span{font-size:12px;font-weight:700}
+.time{font-size:12.5px;font-weight:650}.job b{font-size:15px;line-height:1.3;font-weight:750}.job span{font-size:12px;line-height:1.4;font-weight:600}.fare b{font-size:17px;font-weight:800}.fare span{font-size:12px;font-weight:700}
+.nav-item{font-size:12px;font-weight:650}
+.sheet{opacity:0;pointer-events:none;box-shadow:none}.sheet.show{opacity:1;pointer-events:auto}
+.sheet-kicker{font-size:12px;line-height:1.4}.sheet h3{font-size:29px;line-height:1.15;letter-spacing:0;font-weight:800}.sheet-sub{font-size:13.5px;line-height:1.45;font-weight:600}
+.sheet-row span{font-size:13px;font-weight:600}.sheet-row b{font-size:14px;font-weight:750}.sheet-note{font-size:12.5px;line-height:1.55;font-weight:550}.sheet-close{font-size:16px;font-weight:750}
+
+@media(max-width:520px){body{padding:0;background:#fff}.frame{width:100vw;height:100dvh;border:0;border-radius:0;box-shadow:none}}
+@media(max-width:340px){.header{padding:20px 16px 18px}.header h1{font-size:31px}.summary{padding:21px 16px 20px;border-left-width:3px}.summary-value{font-size:49px}.summary-meta{margin-top:18px}.chart-section{padding:19px 16px 21px}.chart{gap:4px;height:139px}.amount{font-size:10.5px}.bar{width:17px}.payments{padding:18px 16px 5px}.ledger{padding:19px 16px 24px}.earning-row{grid-template-columns:44px 1fr auto;gap:9px}.job b{font-size:14.5px}.job span{font-size:11.5px}.fare b{font-size:16px}.sheet{padding-left:16px;padding-right:16px}.sheet h3{font-size:25px}}
+@media(max-height:720px){.header{padding-top:18px;padding-bottom:16px}.summary{padding-top:18px;padding-bottom:17px}.summary-value{font-size:45px}.summary-meta{margin-top:15px}.chart-section{padding-top:17px;padding-bottom:18px}.chart{height:125px;margin-top:13px}.bar-wrap{height:76px}.payments{padding-top:16px}.payment-row{min-height:60px}.ledger{padding-top:17px}.earning-row{min-height:74px;padding:10px 0}}
+</style>
+</head>
+<body>
+<div class="frame">
+  <div class="statusbar">
+    <div>15:44</div>
+    <div class="sb-right"><div class="signal"><i></i><i></i><i></i><i></i></div><div>5G</div><div class="battery"><b></b></div></div>
+  </div>
+  <div class="topbar">
+    <div class="brand">Rounds<span class="brand-dot"></span></div>
+    <button class="icon-btn" id="historyBtn" aria-label="ประวัติการรับเงิน">
+      <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v6h6"/><path d="M12 7v5l3 2"/></svg>
+    </button>
+  </div>
+  <main class="body">
+    <section class="header">
+      <div class="eyebrow">Network</div>
+      <h1>รายได้</h1>
+      <p>เฉพาะงาน Network</p>
+    </section>
+
+    <section class="summary">
+      <div class="summary-label">7 วันล่าสุด</div>
+      <div class="summary-value">฿3,620</div>
+      <div class="summary-meta">
+        <div><span>งาน</span><b>18</b></div>
+        <div><span>วันนี้</span><b>฿740</b></div>
+      </div>
+    </section>
+
+    <section class="chart-section">
+      <div class="section-head"><h2>รายได้รายวัน</h2></div>
+      <div class="chart" aria-label="รายได้รายวัน 7 วันล่าสุด">
+        <div class="day"><div class="amount">฿420</div><div class="bar-wrap"><div class="bar" style="height:57%"></div></div><div class="day-label">อ</div></div>
+        <div class="day"><div class="amount">฿515</div><div class="bar-wrap"><div class="bar" style="height:70%"></div></div><div class="day-label">พ</div></div>
+        <div class="day"><div class="amount">฿390</div><div class="bar-wrap"><div class="bar" style="height:53%"></div></div><div class="day-label">พฤ</div></div>
+        <div class="day"><div class="amount">฿610</div><div class="bar-wrap"><div class="bar" style="height:82%"></div></div><div class="day-label">ศ</div></div>
+        <div class="day"><div class="amount">฿560</div><div class="bar-wrap"><div class="bar" style="height:76%"></div></div><div class="day-label">ส</div></div>
+        <div class="day"><div class="amount">฿385</div><div class="bar-wrap"><div class="bar" style="height:52%"></div></div><div class="day-label">อา</div></div>
+        <div class="day today"><div class="amount">฿740</div><div class="bar-wrap"><div class="bar" style="height:100%"></div></div><div class="day-label">จ</div></div>
+      </div>
+    </section>
+
+    <section class="payments">
+      <div class="section-head"><h2>การรับเงิน</h2></div>
+      <button class="payment-row" id="methodBtn">
+        <div class="payment-copy"><b>PromptPay · •••• 4821</b><span>วิธีรับเงิน</span></div>
+        <svg class="chev" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+      </button>
+      <button class="payment-row" id="lastPayoutBtn">
+        <div class="payment-copy"><b>รับเงินล่าสุด</b><span>28 ส.ค.</span></div>
+        <div class="payment-side"><b>฿2,480</b><span>โอนแล้ว</span></div>
+      </button>
+    </section>
+
+    <section class="ledger">
+      <div class="section-head"><h2>วันนี้</h2><span>4 งาน</span></div>
+      <div class="earning-row"><div class="time">15:18</div><div class="job"><b>Baan Ice</b><span>1 จุด · 5.2 กม. · 22 นาที</span></div><div class="fare"><b>฿210</b><span>เสร็จแล้ว</span></div></div>
+      <div class="earning-row"><div class="time">13:06</div><div class="job"><b>Maison Bleue</b><span>2 จุด · 7.6 กม. · 31 นาที</span></div><div class="fare"><b>฿240</b><span>เสร็จแล้ว</span></div></div>
+      <div class="earning-row"><div class="time">11:32</div><div class="job"><b>Khao Soi House</b><span>1 จุด · 4.8 กม. · 17 นาที</span></div><div class="fare"><b>฿185</b><span>เสร็จแล้ว</span></div></div>
+      <div class="earning-row"><div class="time">09:48</div><div class="job"><b>Roots Coffee</b><span>1 จุด · 3.1 กม. · 14 นาที</span></div><div class="fare"><b>฿105</b><span class="pending">กำลังดำเนินการ</span></div></div>
+    </section>
+  </main>
+
+  <nav class="bottomnav" aria-label="เมนูหลัก">
+    <a class="nav-item" href="ROUNDS-B03-HOME-NETWORK-AVAILABLE-TH-v1-10OF10.html"><svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg><span>หน้าแรก</span></a>
+    <a class="nav-item" href="ROUNDS-J01-MY-ROUNDS-TH-v1-10OF10.html?context=network"><svg viewBox="0 0 24 24"><path d="M12 20s7-3.6 7-9a7 7 0 1 0-14 0c0 5.4 7 9 7 9Z"/><circle cx="12" cy="11" r="2.5"/></svg><span>งาน</span></a>
+    <a class="nav-item active" href="#" aria-current="page"><svg viewBox="0 0 24 24"><path d="M12 2v20"/><path d="M17 6H9.5a3.5 3.5 0 0 0 0 7H14.5a3.5 3.5 0 0 1 0 7H6"/></svg><span>รายได้</span></a>
+    <a class="nav-item" href="ROUNDS-L01-DRIVER-PROFILE-TH-v1-10OF10.html"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>โปรไฟล์</span></a>
+  </nav>
+
+  <div class="scrim" id="scrim"></div>
+  <section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <div class="grab"></div><div class="sheet-kicker" id="sheetKicker">การรับเงิน</div><h3 id="sheetTitle">PromptPay</h3><div class="sheet-sub" id="sheetSub">•••• 4821</div><div class="sheet-list" id="sheetList"></div><div class="sheet-note" id="sheetNote"></div><button class="sheet-close" id="closeSheet">เสร็จ</button>
+  </section>
+</div>
+<script>
+const scrim=document.getElementById('scrim'),sheet=document.getElementById('sheet'),sheetKicker=document.getElementById('sheetKicker'),sheetTitle=document.getElementById('sheetTitle'),sheetSub=document.getElementById('sheetSub'),sheetList=document.getElementById('sheetList'),sheetNote=document.getElementById('sheetNote');
+function openSheet({kicker='การรับเงิน',title,sub='',rows=[],note=''}){sheetKicker.textContent=kicker;sheetTitle.textContent=title;sheetSub.textContent=sub;sheetList.innerHTML=rows.map(([k,v])=>`<div class="sheet-row"><span>${k}</span><b>${v}</b></div>`).join('');sheetNote.textContent=note;scrim.classList.add('show');sheet.classList.add('show')}
+function closeSheet(){scrim.classList.remove('show');sheet.classList.remove('show')}
+document.getElementById('methodBtn').onclick=()=>openSheet({title:'PromptPay',sub:'•••• 4821',rows:[['สถานะ','ใช้งานอยู่'],['สำหรับ','รายได้ Network']],note:'Rounds บันทึกรายได้จากงาน Network เงินจะโอนผ่านธุรกิจหรือผู้ให้บริการชำระเงิน Rounds ไม่ใช่กระเป๋าเงิน'});
+document.getElementById('lastPayoutBtn').onclick=()=>openSheet({title:'฿2,480 โอนแล้ว',sub:'28 ส.ค. · PromptPay',rows:[['งาน','12'],['สถานะ','โอนแล้ว']],note:'ประวัติการรับเงินเป็นบันทึกของงาน Network ที่เสร็จแล้ว'});
+document.getElementById('historyBtn').onclick=()=>openSheet({title:'ประวัติการรับเงิน',sub:'รายการล่าสุด',rows:[['28 ส.ค.','฿2,480 · โอนแล้ว'],['21 ส.ค.','฿2,195 · โอนแล้ว'],['14 ส.ค.','฿2,740 · โอนแล้ว']]});
+document.getElementById('closeSheet').onclick=closeSheet;scrim.onclick=closeSheet;document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet()});
+</script>
+</body>
+</html>

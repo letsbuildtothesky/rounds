@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Rounds — G04 ส่งจุดนี้ไม่ได้ · Thai-first v2</title>
+<style>
+@import url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@7/fonts/LINESeedSansTH/LINESeedSansTH.css');
+:root{
+  --canvas:#eef1f4;--paper:#fff;--ink:#172238;--ink2:#3d4a5d;--muted:#748094;
+  --line:#e1e6ea;--line2:#cbd4dc;--orange:#ff6420;--orange-soft:#fff2eb;
+  --green:#168b50;--green-soft:#eaf7ef;--red:#bf4a4a;--red-soft:#fff0f0;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--canvas);color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+button,input,textarea{font:inherit}
+body{padding:28px}
+.phone{width:393px;height:852px;margin:0 auto;background:#fff;position:relative;overflow:hidden;border:1px solid rgba(23,34,56,.09);border-radius:28px;box-shadow:none}
+.statusbar{height:28px;padding:0 20px 4px;display:flex;align-items:flex-end;justify-content:space-between;font-size:12px;font-weight:760;background:#fff;position:relative;z-index:50}
+.sb-right{display:flex;align-items:center;gap:6px}.signal{display:flex;align-items:flex-end;gap:1.5px;height:9px}.signal i{display:block;width:2px;background:currentColor;border-radius:1px}.signal i:nth-child(1){height:3px}.signal i:nth-child(2){height:5px}.signal i:nth-child(3){height:7px}.signal i:nth-child(4){height:9px}
+.battery{width:20px;height:9px;border:1.5px solid currentColor;border-radius:2px;padding:1px;position:relative}.battery:after{content:"";position:absolute;right:-3px;top:1.5px;width:2px;height:4px;background:currentColor}.battery b{display:block;width:78%;height:100%;background:currentColor;border-radius:1px}
+.app{position:absolute;inset:28px 0 0;background:#fff;overflow:hidden}
+.topbar{height:64px;padding:0 18px;display:grid;grid-template-columns:44px minmax(0,1fr) 44px;gap:10px;align-items:center;border-bottom:1px solid var(--line);background:#fff;position:relative;z-index:12}
+.iconbtn{width:44px;height:44px;border:0;background:#fff;color:var(--ink);display:grid;place-items:center;cursor:pointer;border-radius:6px}.iconbtn:active{background:#f3f5f7}.iconbtn svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.more{font-size:24px;font-weight:900;letter-spacing:2px;line-height:1;padding-bottom:7px}
+.topcopy{min-width:0}.topcopy small{display:block;color:var(--orange);font-size:10.5px;line-height:1;font-weight:850;letter-spacing:.09em;text-transform:uppercase}.topcopy b{display:block;margin-top:5px;font-size:17px;line-height:1.05;font-weight:840;letter-spacing:-.025em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.content{position:absolute;left:0;right:0;top:64px;bottom:80px;padding:27px 22px 26px;overflow:auto;overscroll-behavior:contain;background:#fff}
+.issue-kicker,.state-kicker{display:flex;align-items:center;gap:8px;font-size:11px;line-height:1;font-weight:880;letter-spacing:.095em;text-transform:uppercase;color:var(--red)}
+.issue-kicker i,.state-kicker i{width:8px;height:8px;border-radius:50%;background:currentColor;flex:0 0 auto}.state-kicker.wait{color:var(--orange)}.state-kicker.good{color:var(--green)}
+h1{margin:10px 0 0;font-size:39px;line-height:.98;font-weight:880;letter-spacing:-.055em;max-width:335px}.location{margin-top:12px;font-size:15px;line-height:1.35;color:var(--muted);font-weight:700}
+.package{margin-top:25px;padding-top:19px;border-top:1px solid var(--line);display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:start}
+.package small{display:block;font-size:10.5px;font-weight:850;letter-spacing:.085em;text-transform:uppercase;color:var(--muted)}.package b{display:block;margin-top:6px;font-size:20px;line-height:1.08;font-weight:850;letter-spacing:-.03em}.package span{display:block;margin-top:6px;font-size:13.5px;line-height:1.3;color:var(--muted);font-weight:690}.qty{font-size:18px;font-weight:880;color:var(--ink);padding-top:17px;white-space:nowrap}
+.custody{margin-top:13px;display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:790;color:var(--green)}.custody svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.section{margin-top:29px}.section-title{font-size:12px;font-weight:860;letter-spacing:.085em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+.choice-list{border-top:1px solid var(--line)}.choice{width:100%;min-height:68px;border:0;border-bottom:1px solid var(--line);background:#fff;color:var(--ink);display:grid;grid-template-columns:34px minmax(0,1fr) 18px;gap:12px;align-items:center;text-align:left;padding:0 2px;cursor:pointer}.choice:active{background:#f7f9fa}.choice svg{width:23px;height:23px;fill:none;stroke:var(--ink2);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}.choice b{display:block;font-size:16px;line-height:1.15;font-weight:820;letter-spacing:-.015em}.choice span{display:block;margin-top:4px;font-size:12.5px;color:var(--muted);font-weight:690}.choice .arrow{width:9px;height:9px;border-top:2px solid #8b96a5;border-right:2px solid #8b96a5;transform:rotate(45deg);justify-self:end;margin-right:4px}
+.initial-state,.action-state,.waiting-state,.resolved-state{display:none}.initial .initial-state{display:block}.action .action-state{display:block}.waiting .waiting-state{display:block}.resolved .resolved-state{display:block}
+.reason-summary{margin-top:27px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.reason-row{min-height:63px;display:flex;justify-content:space-between;gap:14px;align-items:center}.reason-row+.reason-row{border-top:1px solid var(--line)}.reason-row span{font-size:13px;color:var(--muted);font-weight:720}.reason-row b{font-size:14.5px;text-align:right;font-weight:850}
+.contact-ledger{margin-top:25px}.contact-ledger small{display:block;color:var(--muted);font-size:10.5px;font-weight:860;letter-spacing:.085em;text-transform:uppercase;margin-bottom:7px}.contact-line{min-height:58px;border-top:1px solid var(--line);display:grid;grid-template-columns:58px 1fr auto;align-items:center;gap:8px}.contact-line:last-child{border-bottom:1px solid var(--line)}.contact-line time{font-size:12.5px;color:var(--muted);font-weight:760}.contact-line b{font-size:14px;font-weight:820}.contact-line span{font-size:12.5px;font-weight:820;color:var(--red)}
+.wait-copy{margin-top:29px}.wait-copy small{display:block;color:var(--orange);font-size:10.5px;font-weight:880;letter-spacing:.085em;text-transform:uppercase}.wait-copy b{display:block;margin-top:7px;font-size:24px;line-height:1.05;font-weight:880;letter-spacing:-.035em}.wait-copy span{display:block;margin-top:8px;color:var(--muted);font-size:13.5px;font-weight:690;line-height:1.4}
+.decision{margin-top:28px;border-top:1px solid var(--line);padding-top:21px}.decision small{display:block;color:var(--green);font-size:10.5px;font-weight:880;letter-spacing:.085em;text-transform:uppercase}.decision b{display:block;margin-top:7px;font-size:25px;line-height:1.04;font-weight:890;letter-spacing:-.04em}.decision span{display:block;margin-top:9px;color:var(--muted);font-size:14px;line-height:1.4;font-weight:690}.return-note{margin-top:21px;padding-top:18px;border-top:1px solid var(--line);display:flex;align-items:flex-start;gap:10px}.return-note svg{width:21px;height:21px;stroke:var(--orange);fill:none;stroke-width:2;flex:0 0 auto}.return-note b{font-size:14.5px;line-height:1.3;font-weight:820}.return-note span{display:block;margin-top:4px;color:var(--muted);font-size:13px;line-height:1.35;font-weight:680}
+.footer{position:absolute;left:0;right:0;bottom:0;padding:11px 22px calc(17px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid var(--line);z-index:15}.primary{width:100%;height:62px;border:0;border-radius:7px;background:var(--ink);color:#fff;font-size:17px;font-weight:860;cursor:pointer}.primary:active{transform:translateY(1px)}.primary[disabled]{background:#e0e5e9;color:#8e99a7;cursor:default;transform:none}.secondary{width:100%;height:48px;margin-top:7px;border:0;background:#fff;color:var(--ink2);font-size:15px;font-weight:820;cursor:pointer}.secondary.problem{color:var(--red)}
+#footerInitial,#footerAction,#footerWaiting,#footerResolved{display:none}.initial #footerInitial,.action #footerAction,.waiting #footerWaiting,.resolved #footerResolved{display:block}
+.scrim{position:absolute;inset:0;background:rgba(23,34,56,.25);z-index:40;opacity:0;pointer-events:none;transition:.16s}.scrim.show{opacity:1;pointer-events:auto}.sheet{position:absolute;left:10px;right:10px;bottom:10px;z-index:45;background:#fff;border:1px solid var(--line2);border-radius:12px 12px 8px 8px;box-shadow:none;transform:translateY(calc(100% + 18px));transition:.2s cubic-bezier(.2,.8,.2,1);padding:8px 18px 14px}.sheet.show{transform:none}.sheet-handle{width:42px;height:4px;background:#d9dfe4;border-radius:4px;margin:2px auto 14px}.sheet-head{padding:2px 2px 11px}.sheet-head h2{margin:0;font-size:22px;font-weight:880;letter-spacing:-.035em}.sheet-head p{margin:7px 0 0;color:var(--muted);font-size:13px;line-height:1.35;font-weight:680}.sheet-row{width:100%;min-height:62px;border:0;border-top:1px solid var(--line);background:#fff;color:var(--ink);display:flex;align-items:center;gap:14px;text-align:left;padding:0 2px;font-size:15px;font-weight:820;cursor:pointer}.sheet-row:active{background:#f7f9fa}.sheet-row:last-child{border-bottom:1px solid var(--line)}.sheet-row svg{width:22px;height:22px;fill:none;stroke:var(--ink2);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}.sheet-row.problem{color:var(--red)}.sheet-row.problem svg{stroke:var(--red)}
+.note{width:100%;height:92px;resize:none;border:1px solid var(--line2);border-radius:7px;padding:12px 13px;color:var(--ink);font-size:15px;line-height:1.4;outline:none}.note:focus{border-color:#9aa9b9}.note-actions{display:flex;gap:8px;margin-top:10px}.note-actions button{height:50px;border:0;border-radius:7px;font-weight:820;cursor:pointer}.note-actions .cancel{width:42%;background:#f3f5f7;color:var(--ink2)}.note-actions .save{flex:1;background:var(--ink);color:#fff}
+.toast{position:absolute;left:22px;right:22px;bottom:104px;background:var(--ink);color:#fff;border-radius:8px;padding:13px 14px;font-size:13.5px;font-weight:780;z-index:70;opacity:0;transform:translateY(8px);pointer-events:none;transition:.18s}.toast.show{opacity:1;transform:none}
+@media(max-width:520px){body{padding:0}.phone{width:100vw;height:100dvh;border:0;border-radius:0;box-shadow:none}}
+@media(max-width:340px){.topbar{padding:0 14px}.content{padding:22px 17px 23px;bottom:78px}h1{font-size:34px}.location{font-size:14px}.package{margin-top:20px;padding-top:16px}.package b{font-size:18px}.section{margin-top:23px}.choice{min-height:61px;grid-template-columns:30px minmax(0,1fr) 16px;gap:9px}.choice svg{width:21px;height:21px}.choice b{font-size:14.5px}.choice span{font-size:11.5px}.footer{padding-left:17px;padding-right:17px}.primary{height:58px}.secondary{height:44px}.sheet{left:7px;right:7px;bottom:7px;padding-left:15px;padding-right:15px}.sheet-row{min-height:58px;font-size:14.5px}}
+
+
+/* Thai-first composition — locked Rounds TH design language */
+html,body{font-family:'LINE Seed Sans TH',Tahoma,'Noto Sans Thai',sans-serif}
+.statusbar,.topcopy b,.qty,.reason-row b,.contact-line time{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+.topbar{height:64px;padding:0 18px}.topcopy small{font-size:11.5px;line-height:1.35;font-weight:700;letter-spacing:0;text-transform:none}.topcopy b{margin-top:2px;font-size:17px;line-height:1.08;font-weight:850;letter-spacing:-.02em}
+.content{padding:25px 22px 25px;bottom:80px}.issue-kicker,.state-kicker{font-size:11.5px;line-height:1.4;font-weight:700;letter-spacing:0;text-transform:none;gap:8px}
+h1{margin-top:8px;font-size:36px;line-height:1.18;font-weight:790;letter-spacing:0;max-width:none;white-space:nowrap}.location{margin-top:7px;font-size:14px;line-height:1.45;font-weight:600}
+.package{margin-top:22px;padding-top:16px;gap:12px}.package small{font-size:11.5px;line-height:1.4;font-weight:680;letter-spacing:0;text-transform:none}.package b{margin-top:3px;font-size:18px;line-height:1.35;font-weight:760;letter-spacing:0}.package span{margin-top:3px;font-size:12.5px;line-height:1.4;font-weight:600}.qty{font-size:17px;padding-top:20px;font-weight:850}.custody{margin-top:10px;font-size:12.5px;line-height:1.4;font-weight:680}
+.section{margin-top:24px}.section-title{font-size:11.8px;line-height:1.4;font-weight:700;letter-spacing:0;text-transform:none;margin-bottom:5px}.choice{min-height:66px;grid-template-columns:32px minmax(0,1fr) 18px;gap:10px}.choice b{font-size:15.5px;line-height:1.35;font-weight:730;letter-spacing:0}.choice span{margin-top:2px;font-size:11.8px;line-height:1.42;font-weight:600}.choice svg{width:22px;height:22px}
+.reason-summary{margin-top:22px}.reason-row{min-height:58px}.reason-row span{font-size:12.8px;line-height:1.4;font-weight:620}.reason-row b{font-size:13.2px;line-height:1.3;font-weight:800;max-width:68%;overflow-wrap:anywhere}.contact-ledger{margin-top:20px}.contact-ledger small{font-size:11.2px;line-height:1.4;font-weight:700;letter-spacing:0;text-transform:none}.contact-line{min-height:54px;grid-template-columns:54px 1fr auto}.contact-line b{font-family:'LINE Seed Sans TH',Tahoma,'Noto Sans Thai',sans-serif;font-size:13.5px;line-height:1.35;font-weight:700}.contact-line span{font-size:12px;line-height:1.35;font-weight:700}
+.wait-copy{margin-top:24px}.wait-copy small{font-size:11.2px;line-height:1.4;font-weight:700;letter-spacing:0;text-transform:none}.wait-copy b{margin-top:4px;font-size:22px;line-height:1.32;font-weight:760;letter-spacing:0}.wait-copy span{margin-top:5px;font-size:13px;line-height:1.45;font-weight:600}
+.decision{margin-top:23px;padding-top:17px}.decision small{font-size:11.2px;line-height:1.4;font-weight:700;letter-spacing:0;text-transform:none}.decision b{margin-top:4px;font-size:23px;line-height:1.32;font-weight:770;letter-spacing:0}.decision span{margin-top:5px;font-size:13px;line-height:1.45;font-weight:600}.return-note{margin-top:17px;padding-top:15px;gap:9px}.return-note b{font-size:14px;line-height:1.4;font-weight:720}.return-note span{margin-top:2px;font-size:12.4px;line-height:1.45;font-weight:600}
+.primary{font-size:16px;line-height:1.4;font-weight:760}.secondary{font-size:14px;line-height:1.4;font-weight:700}.sheet-head h2{font-size:22px;line-height:1.35;font-weight:760;letter-spacing:0}.sheet-head p{font-size:12.5px;line-height:1.45;font-weight:600}.sheet-row{min-height:61px;font-size:14px;line-height:1.4;font-weight:700}.note{font-size:14.5px;line-height:1.5;font-weight:600}.note-actions button{font-size:14px;line-height:1.4;font-weight:700}.toast{font-size:13px;line-height:1.45;font-weight:620}
+@media(max-width:340px){
+ .topbar{padding:0 14px}.content{padding:18px 16px 20px;bottom:76px}h1{font-size:29px}.location{font-size:12.8px}.package{margin-top:15px;padding-top:12px}.package small{font-size:10.8px}.package b{font-size:16px}.package span{font-size:11.5px}.qty{font-size:15px;padding-top:18px}.custody{font-size:11.5px;margin-top:8px}.section{margin-top:17px}.choice{min-height:55px;grid-template-columns:28px minmax(0,1fr) 15px;gap:8px}.choice b{font-size:13.5px}.choice span{font-size:10.8px}.choice svg{width:20px;height:20px}.reason-summary{margin-top:16px}.reason-row{min-height:50px}.reason-row span{font-size:11.5px}.reason-row b{font-size:11.8px}.contact-ledger{margin-top:14px}.contact-line{min-height:48px;grid-template-columns:49px 1fr auto}.contact-line b{font-size:12px}.contact-line span{font-size:10.8px}.wait-copy{margin-top:17px}.wait-copy b{font-size:19px}.wait-copy span{font-size:11.8px}.decision{margin-top:17px;padding-top:13px}.decision b{font-size:20px}.decision span{font-size:11.8px}.return-note{margin-top:13px;padding-top:12px}.return-note b{font-size:12.8px}.return-note span{font-size:11.3px}.primary{height:58px;font-size:15px}.secondary{height:44px;font-size:13px}.sheet-row{min-height:57px;font-size:13px}.note{height:82px;font-size:13.5px}
+}
+
+/* v2 crispness lock: flat operational surface, no device/footer shadow */
+.phone{box-shadow:none}
+.footer{box-shadow:none;background:#fff}
+.sheet{box-shadow:none;opacity:0;pointer-events:none}
+.sheet.show{opacity:1;pointer-events:auto}
+
+
+/* v3 Thai composition lock: use the lower half intentionally without inventing a false primary action */
+.initial .section{margin-top:31px}
+.initial .choice{min-height:77px}
+#footerInitial{padding:10px 22px calc(14px + env(safe-area-inset-bottom))}
+#footerInitial .secondary{height:54px;margin-top:0;border:1px solid var(--line-2);border-radius:7px;background:#fff;color:var(--ink-2);font-size:14px;line-height:1.4;font-weight:720}
+#footerInitial .secondary:active{background:#f7f9fa}
+@media(max-width:340px){
+  .initial .section{margin-top:20px}
+  .initial .choice{min-height:62px}
+  #footerInitial{padding-left:16px;padding-right:16px;padding-top:8px;padding-bottom:12px}
+  #footerInitial .secondary{height:50px;font-size:13px}
+}
+</style>
+</head>
+<body>
+<div class="phone initial" id="phone">
+  <div class="statusbar"><div>14:49</div><div class="sb-right"><div class="signal"><i></i><i></i><i></i><i></i></div><div>5G</div><div class="battery"><b></b></div></div></div>
+  <main class="app">
+    <header class="topbar">
+      <button class="iconbtn" aria-label="ย้อนกลับ" onclick="goBack()"><svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+      <div class="topcopy"><small>จุด 1 จาก 4</small><b>K. Nattaporn</b></div>
+      <button class="iconbtn more" aria-label="ตัวเลือกเพิ่มเติม" onclick="openSheet('moreSheet')">•••</button>
+    </header>
+
+    <section class="content">
+      <section class="initial-state">
+        <div class="issue-kicker"><i></i>ปัญหาการส่ง</div>
+        <h1>ส่งจุดนี้ไม่ได้</h1>
+        <div class="location">The Emporio Place · สุขุมวิท 24</div>
+        <div class="package"><div><small>ของอยู่กับคุณ</small><b>Midnight Orchid + แจกันแก้ว</b><span>ระวังแตก</span></div><div class="qty">×1</div></div>
+        <div class="custody"><svg viewBox="0 0 24 24"><path d="M4 12l5 5 11-11"/></svg>ยังถือของอยู่</div>
+
+        <section class="section">
+          <div class="section-title">เกิดอะไรขึ้น?</div>
+          <div class="choice-list">
+            <button class="choice" onclick="chooseReason('access')"><svg viewBox="0 0 24 24"><path d="M4 21h16M7 21V5h10v16M10 9h4"/></svg><div><b>เข้าไม่ได้</b><span>รปภ. ประตู หรืออาคารไม่ให้เข้า</span></div><i class="arrow"></i></button>
+            <button class="choice" onclick="chooseReason('refused')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 8 8 8"/></svg><div><b>ผู้รับไม่รับ</b><span>ผู้รับหรือสถานที่ปฏิเสธการรับ</span></div><i class="arrow"></i></button>
+            <button class="choice" onclick="chooseReason('closed')"><svg viewBox="0 0 24 24"><path d="M3 10h18M5 10V5h14v5M6 10v9h12v-9"/></svg><div><b>สถานที่ปิด</b><span>สำนักงาน ร้าน หรือสถานที่ปิดแล้ว</span></div><i class="arrow"></i></button>
+            <button class="choice" onclick="chooseReason('other')"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg><div><b>อื่นๆ</b><span>มีเหตุผลอื่นที่ทำให้ส่งไม่ได้</span></div><i class="arrow"></i></button>
+          </div>
+        </section>
+      </section>
+
+      <section class="action-state">
+        <div class="issue-kicker"><i></i>ปัญหาการส่ง</div>
+        <h1 id="reasonTitle">เข้าไม่ได้</h1>
+        <div class="location">K. Nattaporn · จุด 1 จาก 4</div>
+        <div class="package"><div><small>ของอยู่กับคุณ</small><b>Midnight Orchid + แจกันแก้ว</b><span id="reasonLabel">แจ้งว่าเข้าไม่ได้</span></div><div class="qty">×1</div></div>
+        <div class="custody"><svg viewBox="0 0 24 24"><path d="M4 12l5 5 11-11"/></svg>เก็บของไว้กับคุณ</div>
+
+        <div class="reason-summary">
+          <div class="reason-row"><span>เหตุผล</span><b id="reasonValue">เข้าไม่ได้</b></div>
+          <div class="reason-row" id="noteRow" style="display:none"><span>หมายเหตุ</span><b id="noteValue">—</b></div>
+        </div>
+
+        <div class="contact-ledger" id="contactLedger" style="display:none">
+          <small>การติดต่อ</small>
+          <div id="contactLines"></div>
+        </div>
+      </section>
+
+      <section class="waiting-state">
+        <div class="state-kicker wait"><i></i>ส่งให้ฝ่ายจัดงานแล้ว</div>
+        <h1>รอคำตอบ</h1>
+        <div class="location">K. Nattaporn · จุด 1 จาก 4</div>
+        <div class="package"><div><small>ของอยู่กับคุณ</small><b>Midnight Orchid + แจกันแก้ว</b><span id="waitingReason">แจ้งว่าเข้าไม่ได้</span></div><div class="qty">×1</div></div>
+        <div class="wait-copy"><small>ฝ่ายจัดงานตรวจสอบ</small><b>เก็บของไว้กับคุณก่อน</b><span id="syncCopy">ฝ่ายจัดงานได้รับเหตุผลและประวัติการติดต่อแล้ว</span></div>
+      </section>
+
+      <section class="resolved-state">
+        <div class="state-kicker good"><i></i>ฝ่ายจัดงานแจ้งแล้ว</div>
+        <h1>นำของกลับ</h1>
+        <div class="location">K. Nattaporn · จุด 1 จาก 4</div>
+        <div class="decision"><small>ขั้นตอนต่อไป</small><b>ทำรอบต่อ</b><span>ส่งจุดที่เหลือ แล้วนำของนี้กลับ UrbanFlowers</span></div>
+        <div class="return-note"><svg viewBox="0 0 24 24"><path d="M19 7H8a5 5 0 0 0 0 10h9"/><path d="m15 13 4 4-4 4"/></svg><div><b>ของยังอยู่กับคุณ</b><span>จุดนี้ยังไม่สำเร็จ และยังบันทึกว่าส่งแล้วไม่ได้</span></div></div>
+      </section>
+    </section>
+
+    <footer class="footer" id="footerInitial"><button class="secondary" onclick="openSheet('moreSheet')">แชตฝ่ายจัดงาน</button></footer>
+    <footer class="footer" id="footerAction"><button class="primary" id="actionPrimary" onclick="primaryAction()">โทรหาผู้รับ</button><button class="secondary" id="actionSecondary" onclick="contactOperations()">ติดต่อฝ่ายจัดงาน</button></footer>
+    <footer class="footer" id="footerWaiting"><button class="primary" id="waitingButton" disabled>รอฝ่ายจัดงาน</button></footer>
+    <footer class="footer" id="footerResolved"><button class="primary" onclick="continueRound()">ทำรอบต่อ</button></footer>
+
+    <div class="scrim" id="scrim" onclick="closeAllSheets()"></div>
+    <div class="sheet" id="callSheet" role="dialog" aria-modal="true" aria-label="ผลการโทร">
+      <div class="sheet-handle"></div><div class="sheet-head"><h2>ผลการโทร</h2></div>
+      <button class="sheet-row" onclick="recordCall('resolved')"><svg viewBox="0 0 24 24"><path d="M4 12l5 5 11-11"/></svg>แก้ปัญหาได้</button>
+      <button class="sheet-row" onclick="recordCall('blocked')"><svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/></svg>คุยแล้ว · ยังส่งไม่ได้</button>
+      <button class="sheet-row" onclick="recordCall('noanswer')"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3"/></svg>ไม่รับสาย</button>
+    </div>
+    <div class="sheet" id="otherSheet" role="dialog" aria-modal="true" aria-label="เหตุผลอื่น">
+      <div class="sheet-handle"></div><div class="sheet-head"><h2>เหตุผลอื่น</h2><p>ใส่เฉพาะข้อมูลที่ฝ่ายจัดงานต้องใช้ตัดสินใจ</p></div>
+      <textarea class="note" id="otherNote" maxlength="120" placeholder="หมายเหตุสั้นๆ"></textarea>
+      <div class="note-actions"><button class="cancel" onclick="closeAllSheets()">ยกเลิก</button><button class="save" onclick="saveOther()">ใช้เหตุผลนี้</button></div>
+    </div>
+    <div class="sheet" id="moreSheet" role="dialog" aria-modal="true" aria-label="ตัวเลือกปัญหาการส่ง">
+      <div class="sheet-handle"></div><div class="sheet-head"><h2>ปัญหาการส่ง</h2></div>
+      <button class="sheet-row" onclick="showToast('เปิดแชตฝ่ายจัดงานแล้ว');closeAllSheets()"><svg viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg>แชตฝ่ายจัดงาน</button>
+      <button class="sheet-row" onclick="location.href='ROUNDS-G02-ADDRESS-PROBLEM-TH-v1-10OF10.html'"><svg viewBox="0 0 24 24"><path d="M12 21s7-5.3 7-12A7 7 0 1 0 5 9c0 6.7 7 12 7 12Z"/><circle cx="12" cy="9" r="2"/></svg>ปัญหาที่อยู่ / ทางเข้า</button>
+      <button class="sheet-row problem" onclick="location.href='ROUNDS-G05-DRIVER-EMERGENCY-TH-v1-10OF10.html'"><svg viewBox="0 0 24 24"><path d="M12 3 3 20h18z"/><path d="M12 9v4M12 17h.01"/></svg>ฉุกเฉิน</button>
+    </div>
+    <div class="toast" id="toast"></div>
+  </main>
+</div>
+<script>
+const phone=document.getElementById('phone');
+const scrim=document.getElementById('scrim');
+const toast=document.getElementById('toast');
+const actionPrimary=document.getElementById('actionPrimary');
+const actionSecondary=document.getElementById('actionSecondary');
+const contactLedger=document.getElementById('contactLedger');
+const contactLines=document.getElementById('contactLines');
+const params=new URLSearchParams(location.search);
+const offline=params.get('offline')==='1';
+let reason=null,note='',calls=[],sent=false,resolutionTimer=null;
+const configs={
+  access:{title:'เข้าไม่ได้',label:'แจ้งว่าเข้าไม่ได้',callFirst:true},
+  refused:{title:'ผู้รับไม่รับ',label:'ผู้รับปฏิเสธการรับ',callFirst:false},
+  closed:{title:'สถานที่ปิด',label:'แจ้งว่าสถานที่ปิด',callFirst:true},
+  other:{title:'เหตุผลอื่น',label:'มีปัญหาอื่นที่ทำให้ส่งไม่ได้',callFirst:false}
+};
+function setState(state){phone.classList.remove('initial','action','waiting','resolved');phone.classList.add(state);document.querySelector('.content').scrollTop=0}
+function chooseReason(type){
+  if(type==='other'){openSheet('otherSheet');return}
+  applyReason(type,'');
+}
+function applyReason(type,reasonNote){
+  reason=type;note=reasonNote||'';const c=configs[type];
+  document.getElementById('reasonTitle').textContent=c.title;
+  document.getElementById('reasonValue').textContent=c.title;
+  document.getElementById('reasonLabel').textContent=c.label;
+  document.getElementById('waitingReason').textContent=c.label;
+  document.getElementById('noteRow').style.display=note?'flex':'none';
+  document.getElementById('noteValue').textContent=note||'—';
+  calls=[];renderAction();setState('action');
+}
+function saveOther(){const value=document.getElementById('otherNote').value.trim();closeAllSheets();applyReason('other',value)}
+function renderAction(){
+  const c=configs[reason]||configs.refused;
+  if(calls.length){contactLedger.style.display='block';contactLines.innerHTML=calls.map(x=>`<div class="contact-line"><time>${x.time}</time><b>โทรหาผู้รับ</b><span>${x.outcome}</span></div>`).join('')}else{contactLedger.style.display='none';contactLines.innerHTML=''}
+  if(c.callFirst&&calls.length===0){actionPrimary.textContent='โทรหาผู้รับ';actionPrimary.disabled=false;actionSecondary.style.display='block'}
+  else{actionPrimary.textContent='ติดต่อฝ่ายจัดงาน';actionPrimary.disabled=false;actionSecondary.style.display='none'}
+}
+function primaryAction(){
+  const c=configs[reason];if(!c)return;
+  if(c.callFirst&&calls.length===0){openSheet('callSheet');return}
+  contactOperations();
+}
+function recordCall(type){
+  closeAllSheets();
+  if(type==='resolved'){showToast('แก้ปัญหาแล้ว');setTimeout(()=>location.href='ROUNDS-F01-F02-DROPOFF-HANDOFF-TH-v1-10OF10.html',500);return}
+  const outcome=type==='noanswer'?'ไม่รับสาย':'ยังส่งไม่ได้';
+  calls.push({time:calls.length?'14:53':'14:51',outcome});renderAction();showToast('บันทึกการโทรแล้ว');
+}
+function contactOperations(){
+  if(sent)return;sent=true;clearTimeout(resolutionTimer);
+  document.getElementById('syncCopy').textContent=offline?'บันทึกไว้ในเครื่อง · จะส่งเมื่อเชื่อมต่อ':'ฝ่ายจัดงานได้รับเหตุผล'+(calls.length?'และประวัติการติดต่อแล้ว':'แล้ว');
+  document.getElementById('waitingButton').textContent=offline?'รอซิงก์':'รอฝ่ายจัดงาน';
+  setState('waiting');showToast(offline?'บันทึกไว้ในเครื่อง':'ส่งให้ฝ่ายจัดงานแล้ว');
+  if(!offline)resolutionTimer=setTimeout(resolveIssue,1500);
+}
+function resolveIssue(){setState('resolved');showToast('ฝ่ายจัดงานส่งขั้นตอนต่อไปแล้ว')}
+function continueRound(){location.href='ROUNDS-E01-ACTIVE-ROUND-OVERVIEW-TH-v1-10OF10.html'}
+function goBack(){location.href='ROUNDS-F01-F02-DROPOFF-HANDOFF-TH-v1-10OF10.html'}
+function openSheet(id){closeAllSheets(false);document.getElementById(id).classList.add('show');scrim.classList.add('show')}
+function closeAllSheets(hide=true){document.querySelectorAll('.sheet').forEach(s=>s.classList.remove('show'));if(hide)scrim.classList.remove('show')}
+function showToast(msg){toast.textContent=msg;toast.classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>toast.classList.remove('show'),1300)}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAllSheets()});
+// Non-visible QA hooks.
+if(params.get('reason')&&configs[params.get('reason')]){applyReason(params.get('reason'),params.get('note')||'');if(params.get('call')==='1'){calls.push({time:'14:51',outcome:'ไม่รับสาย'});renderAction()}if(params.get('state')==='waiting')contactOperations();if(params.get('state')==='resolved'){contactOperations();clearTimeout(resolutionTimer);resolveIssue()}}
+</script>
+</body>
+</html>

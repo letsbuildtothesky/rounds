@@ -105,7 +105,7 @@ type DeliveryRow = {
 type StopRow = { id: string; delivery_id: string; state: string; version: number; destination_version: number };
 type PromiseRow = { delivery_id: string; window_start: string; window_end: string };
 type ManifestRow = { id: string; delivery_id: string; version: number };
-type ManifestItemRow = { manifest_id: string; line_number: number; description: string; quantity: number; handling_note: string | null };
+type ManifestItemRow = { manifest_id: string; line_number: number; description: string; quantity: number; cargo_class: string | null; handling_note: string | null };
 type RoundRow = { id: string; tenant_id: string; reference: string; service_date: string; state: RoundState; version: number };
 type RoundStopRow = { stop_id: string; sequence: number };
 type PlanningRoundStopRow = { round_id: string; stop_id: string };
@@ -373,7 +373,7 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     const manifestIds = [...currentManifestByDelivery.values()].map((manifest) => manifest.id);
     const stopIds = stops.map((stop) => stop.id);
     const [itemResult, roundStopResult] = await Promise.all([
-      manifestIds.length ? this.admin.from("manifest_items").select("manifest_id, line_number, description, quantity, handling_note").eq("tenant_id", actor.tenantId).in("manifest_id", manifestIds).order("line_number").returns<ManifestItemRow[]>() : Promise.resolve({ data: [] as ManifestItemRow[], error: null }),
+      manifestIds.length ? this.admin.from("manifest_items").select("manifest_id, line_number, description, quantity, cargo_class, handling_note").eq("tenant_id", actor.tenantId).in("manifest_id", manifestIds).order("line_number").returns<ManifestItemRow[]>() : Promise.resolve({ data: [] as ManifestItemRow[], error: null }),
       stopIds.length ? this.admin.from("round_stops").select("round_id, stop_id, sequence").eq("tenant_id", actor.tenantId).in("stop_id", stopIds).returns<RoundStopListRow[]>() : Promise.resolve({ data: [] as RoundStopListRow[], error: null }),
     ]);
     if (itemResult.error) throw itemResult.error;
@@ -556,7 +556,7 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     for (const manifest of manifestResult.data ?? []) if (!currentManifestByDelivery.has(manifest.delivery_id)) currentManifestByDelivery.set(manifest.delivery_id, manifest);
     const manifestIds = [...currentManifestByDelivery.values()].map((manifest) => manifest.id);
     const itemsResult = manifestIds.length
-      ? await this.admin.from("manifest_items").select("manifest_id, line_number, description, quantity, handling_note")
+      ? await this.admin.from("manifest_items").select("manifest_id, line_number, description, quantity, cargo_class, handling_note")
         .eq("tenant_id", actor.tenantId).in("manifest_id", manifestIds).order("line_number").returns<ManifestItemRow[]>()
       : { data: [] as ManifestItemRow[], error: null };
     if (itemsResult.error) throw itemsResult.error;
@@ -599,6 +599,7 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
           id: manifest.id, state: manifest.state, version: manifest.version,
           items: (itemsResult.data ?? []).filter((item) => item.manifest_id === manifest.id).map((item) => ({
             lineNumber: item.line_number, description: item.description, quantity: item.quantity,
+            ...(item.cargo_class ? { cargoClass: item.cargo_class } : {}),
             ...(item.handling_note ? { handlingNote: item.handling_note } : {}),
           })),
         },
@@ -684,7 +685,7 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
       manifests = manifestResult.data ?? [];
       if (manifests.length) {
         const itemResult = await this.admin.from("manifest_items")
-          .select("manifest_id, line_number, description, quantity, handling_note")
+          .select("manifest_id, line_number, description, quantity, cargo_class, handling_note")
           .in("manifest_id", manifests.map((manifest) => manifest.id))
           .order("line_number")
           .returns<ManifestItemRow[]>();
@@ -764,6 +765,19 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
           windowStart: promise.window_start,
           windowEnd: promise.window_end,
           manifestSummary: summary || "Manifest ready",
+          cargoRequirements: (() => {
+            const grouped = new Map<string, number>();
+            for (const item of items.filter((entry) => entry.manifest_id === manifest.id)) {
+              const code = item.cargo_class?.trim().toLowerCase() || "unclassified";
+              grouped.set(code, (grouped.get(code) ?? 0) + item.quantity);
+            }
+            return [...grouped.entries()].map(([cargoClassCode, quantity]) => ({
+              cargoClassCode,
+              displayName: cargoClassCode === "unclassified" ? "Unclassified cargo" : cargoClassCode,
+              quantity,
+              classificationStatus: cargoClassCode === "unclassified" ? "unclassified" as const : "classified" as const,
+            }));
+          })(),
         }];
       }),
       activeRounds: (activeRounds ?? []).map((round) => {
@@ -832,7 +846,6 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
       stops,
       blockingReasons: [] as string[],
       warnings: [
-        "Cargo fit is not verified for deliveries without a configured cargo class.",
         ...(driver.vehicleProfile?.requiresReview
           ? ["Vehicle profile is a conservative migrated default and requires Operations review."] : []),
       ],
@@ -1217,6 +1230,8 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
       max_stops_per_departure: number; planning_deliveries_per_block: number;
       pickup_turnaround_minutes: number; requires_review: boolean; version: number;
     };
+    type CargoClassRow = { id: string; code: string; display_name: string };
+    type CargoLimitRow = { vehicle_profile_id: string; cargo_class_id: string; allowed: boolean; max_quantity: number | null };
     type AssignmentRow = { driver_id: string; vehicle_profile_id: string };
     type ScheduleRow = {
       id: string; driver_id: string; weekdays: number[]; start_local: string; end_local: string;
@@ -1248,7 +1263,7 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     const timezone = tenantResult.data.timezone;
     const dayStart = zonedLocalIso(serviceDate, "00:00", timezone);
     const dayEnd = zonedLocalIso(addCalendarDay(serviceDate), "00:00", timezone);
-    const [driverResult, assignmentResult, vehicleResult, scheduleResult, exceptionResult, roundResult, positionResult, podResult] = await Promise.all([
+    const [driverResult, assignmentResult, vehicleResult, cargoClassResult, cargoLimitResult, scheduleResult, exceptionResult, roundResult, positionResult, podResult] = await Promise.all([
       this.admin.from("driver_profiles").select("id, person_id, vehicle_plate").in("id", driverIds)
         .eq("active", true).is("deleted_at", null).returns<CapacityDriverRow[]>(),
       this.admin.from("driver_vehicle_assignments").select("driver_id, vehicle_profile_id")
@@ -1257,6 +1272,10 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
       this.admin.from("vehicle_profiles")
         .select("id, code, display_name, vehicle_group, departure_pattern, max_stops_per_departure, planning_deliveries_per_block, pickup_turnaround_minutes, requires_review, version")
         .eq("tenant_id", actor.tenantId).eq("active", true).is("deleted_at", null).returns<VehicleProfileRow[]>(),
+      this.admin.from("cargo_classes").select("id, code, display_name")
+        .eq("tenant_id", actor.tenantId).eq("active", true).is("deleted_at", null).returns<CargoClassRow[]>(),
+      this.admin.from("vehicle_profile_cargo_limits").select("vehicle_profile_id, cargo_class_id, allowed, max_quantity")
+        .eq("tenant_id", actor.tenantId).returns<CargoLimitRow[]>(),
       this.admin.from("driver_recurring_schedules")
         .select("id, driver_id, weekdays, start_local, end_local, vehicle_profile_id, note, version")
         .eq("tenant_id", actor.tenantId).in("driver_id", driverIds).eq("active", true)
@@ -1273,7 +1292,7 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
       this.admin.from("pod_records").select("driver_id").eq("tenant_id", actor.tenantId)
         .gte("delivered_at", dayStart).lt("delivered_at", dayEnd).returns<TodayPodRow[]>(),
     ]);
-    for (const result of [driverResult, assignmentResult, vehicleResult, scheduleResult, exceptionResult, roundResult, positionResult, podResult]) {
+    for (const result of [driverResult, assignmentResult, vehicleResult, cargoClassResult, cargoLimitResult, scheduleResult, exceptionResult, roundResult, positionResult, podResult]) {
       if (result.error) throw result.error;
     }
     const drivers = driverResult.data ?? [];
@@ -1289,6 +1308,7 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     if (peopleResult.error) throw peopleResult.error;
     if (roundStopsResult.error) throw roundStopsResult.error;
 
+    const cargoClassById = new Map((cargoClassResult.data ?? []).map((cargoClass) => [cargoClass.id, cargoClass]));
     const profileSummary = (vehicleResult.data ?? []).map((profile) => ({
       id: profile.id, code: profile.code, displayName: profile.display_name,
       vehicleGroup: profile.vehicle_group, departurePattern: profile.departure_pattern,
@@ -1296,6 +1316,16 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
       planningDeliveriesPerBlock: profile.planning_deliveries_per_block,
       pickupTurnaroundMinutes: profile.pickup_turnaround_minutes,
       requiresReview: profile.requires_review, version: profile.version,
+      cargoLimits: (cargoLimitResult.data ?? []).flatMap((limit) => {
+        const cargoClass = cargoClassById.get(limit.cargo_class_id);
+        if (limit.vehicle_profile_id !== profile.id || !cargoClass) return [];
+        return [{
+          cargoClassCode: cargoClass.code,
+          displayName: cargoClass.display_name,
+          allowed: limit.allowed,
+          ...(limit.max_quantity == null ? {} : { maxQuantity: limit.max_quantity }),
+        }];
+      }),
     }));
     const profileById = new Map(profileSummary.map((profile) => [profile.id, profile]));
     const personById = new Map((peopleResult.data ?? []).map((person) => [person.id, person]));
@@ -1757,7 +1787,7 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     const deliveries = deliveryResult.data ?? [];
     const manifests = manifestResult.data ?? [];
     const itemResult = await this.admin.from("manifest_items")
-      .select("manifest_id, line_number, description, quantity, handling_note")
+      .select("manifest_id, line_number, description, quantity, cargo_class, handling_note")
       .in("manifest_id", manifests.map((manifest) => manifest.id)).order("line_number").returns<ManifestItemRow[]>();
     if (itemResult.error) throw itemResult.error;
     const pickupId = deliveries[0]?.pickup_location_id;

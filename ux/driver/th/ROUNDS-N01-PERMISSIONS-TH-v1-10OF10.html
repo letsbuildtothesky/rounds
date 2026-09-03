@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Rounds — N01 Permissions TH v1</title>
+<style>
+@import url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@7/fonts/LINESeedSansTH/LINESeedSansTH.css');
+:root{
+  --canvas:#eef1f4;--paper:#fff;--ink:#172238;--ink2:#3d4a5d;--muted:#748094;
+  --line:#e1e6ea;--line2:#cbd4dc;--orange:#ff6420;--orange-soft:#fff7f2;--green:#168b50;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--canvas);color:var(--ink);font-family:'LINE Seed Sans TH',Tahoma,'Noto Sans Thai',sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit;cursor:pointer}
+body{padding:28px}
+.frame{width:393px;height:852px;margin:0 auto;background:var(--paper);position:relative;overflow:hidden;border:1px solid rgba(23,34,56,.09);border-radius:28px;box-shadow:0 18px 42px rgba(23,34,56,.14)}
+.statusbar{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;height:28px;padding:0 20px 4px;display:flex;align-items:flex-end;justify-content:space-between;font-size:12px;font-weight:760;background:#fff;position:relative;z-index:40}
+.sb-right{display:flex;align-items:center;gap:6px}.signal{display:flex;align-items:flex-end;gap:1.5px;height:9px}.signal i{display:block;width:2px;background:currentColor;border-radius:1px}.signal i:nth-child(1){height:3px}.signal i:nth-child(2){height:5px}.signal i:nth-child(3){height:7px}.signal i:nth-child(4){height:9px}.battery{width:20px;height:9px;border:1.5px solid currentColor;border-radius:2px;padding:1px;position:relative}.battery:after{content:"";position:absolute;right:-3px;top:1.5px;width:2px;height:4px;background:currentColor;border-radius:0 1px 1px 0}.battery b{display:block;width:78%;height:100%;background:currentColor;border-radius:1px}
+.topbar{height:58px;padding:0 20px;border-bottom:1px solid var(--line);background:#fff;display:flex;align-items:center;justify-content:space-between}.brand{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;display:flex;align-items:flex-end;font-size:20px;line-height:1;font-weight:900;letter-spacing:-.05em}.brand-dot{width:6px;height:6px;border-radius:50%;background:var(--orange);margin-left:3px;margin-bottom:2px}.step{font-size:12.5px;line-height:1.4;font-weight:700;letter-spacing:0;color:var(--muted)}
+.main{position:absolute;inset:86px 0 0;display:flex;flex-direction:column;padding:30px 20px 24px;background:#fff}
+.kicker{font-size:12.5px;line-height:1.45;font-weight:700;letter-spacing:0;color:var(--orange);margin-bottom:14px}
+.icon{width:72px;height:72px;border:1px solid var(--line);border-radius:8px;display:grid;place-items:center;color:var(--orange);margin-bottom:28px}.icon svg{width:32px;height:32px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+h1{margin:0;font-size:39px;line-height:1.14;font-weight:800;letter-spacing:0;max-width:350px;text-wrap:balance}
+.lead{margin:15px 0 0;font-size:16.5px;line-height:1.55;font-weight:560;color:var(--ink2);max-width:345px}
+.truth{margin-top:27px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.truth-row{min-height:64px;display:flex;align-items:center;gap:13px}.truth-row+.truth-row{border-top:1px solid var(--line)}.truth-icon{width:26px;height:26px;display:grid;place-items:center;color:var(--green);flex:0 0 auto}.truth-icon svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}.truth-copy{font-size:14px;line-height:1.48;font-weight:620;color:var(--ink2)}
+.actions{margin-top:auto}.primary{width:100%;height:62px;border:0;border-radius:7px;background:var(--ink);color:#fff;font-size:17px;line-height:1.35;font-weight:730;letter-spacing:0}.primary:active{transform:translateY(1px)}.secondary{width:100%;height:48px;border:0;background:#fff;color:var(--muted);font-size:14px;line-height:1.35;font-weight:650;margin-top:5px}.secondary:active{color:var(--ink)}
+.notice{position:absolute;left:20px;right:20px;bottom:110px;background:var(--ink);color:#fff;padding:13px 14px;border-radius:8px;font-size:13px;line-height:1.45;font-weight:620;opacity:0;transform:translateY(8px);transition:.18s;pointer-events:none;z-index:90}.notice.show{opacity:1;transform:none}
+@media(max-width:520px){body{padding:0;background:#fff}.frame{width:100vw;height:100dvh;border:0;border-radius:0;box-shadow:none}}
+@media(max-width:340px){.topbar{padding-left:16px;padding-right:16px}.main{padding:24px 16px 19px}.icon{width:64px;height:64px;margin-bottom:21px}.icon svg{width:29px;height:29px}h1{font-size:33px;line-height:1.16}.lead{margin-top:12px;font-size:15px;line-height:1.52}.truth{margin-top:20px}.truth-row{min-height:56px}.truth-copy{font-size:12.8px;line-height:1.45}.primary{height:58px;font-size:16px}.secondary{height:43px}}
+@media(max-height:720px){.main{padding-top:22px}.icon{width:60px;height:60px;margin-bottom:18px}.icon svg{width:27px;height:27px}h1{font-size:31px}.lead{margin-top:10px;font-size:14.5px}.truth{margin-top:16px}.truth-row{min-height:50px}.primary{height:56px}.secondary{height:40px}}
+</style>
+</head>
+<body>
+<div class="frame" id="frame">
+  <div class="statusbar"><div>16:41</div><div class="sb-right"><div class="signal"><i></i><i></i><i></i><i></i></div><div>5G</div><div class="battery"><b></b></div></div></div>
+  <header class="topbar"><div class="brand">Rounds<span class="brand-dot"></span></div><div class="step" id="stepLabel">1 จาก 3</div></header>
+  <main class="main">
+    <div class="kicker">สิทธิ์การใช้งาน</div>
+    <div class="icon" id="icon"></div>
+    <h1 id="title"></h1>
+    <p class="lead" id="lead"></p>
+    <section class="truth" id="truth"></section>
+    <div class="actions">
+      <button class="primary" id="primary"></button>
+      <button class="secondary" id="secondary">ไว้ทีหลัง</button>
+    </div>
+  </main>
+  <div class="notice" id="notice"></div>
+</div>
+<script>
+const steps=[
+  {
+    title:'ใช้ตำแหน่งกับ Rounds',
+    lead:'เพื่อการนำทาง การยืนยันว่าถึงจุด และเวลาถึงที่แม่นยำ',
+    button:'อนุญาตตำแหน่ง',
+    icon:'<svg viewBox="0 0 24 24"><path d="M12 21s7-4.2 7-10a7 7 0 1 0-14 0c0 5.8 7 10 7 10Z"/><circle cx="12" cy="11" r="2.5"/></svg>',
+    truths:[['<svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg>','เส้นทางและสถานะเมื่อถึงจุดแม่นยำ'],['<svg viewBox="0 0 24 24"><path d="M4 12h16"/><path d="m14 6 6 6-6 6"/></svg>','ใช้เฉพาะตอนทำงานหรือเปิดรับงาน']]
+  },
+  {
+    title:'เปิดตำแหน่งไว้',
+    lead:'ให้รอบที่กำลังส่งอัปเดตต่อ แม้ล็อกหน้าจอหรือเปิดแอปอื่น',
+    button:'อนุญาตตำแหน่งเบื้องหลัง',
+    icon:'<svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 12h8M8 17h5"/></svg>',
+    truths:[['<svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg>','รอบที่กำลังส่งอัปเดตต่อ'],['<svg viewBox="0 0 24 24"><path d="M5 19 19 5"/><path d="M6.5 7.5A7 7 0 0 0 12 19a7 7 0 0 0 4.5-1.6"/></svg>','หยุดเมื่อจบกะและปิดรับงาน Network']]
+  },
+  {
+    title:'รับแจ้งเตือนงาน',
+    lead:'งานที่ได้รับ ข้อเสนอ การเปลี่ยนเส้นทาง และข้อความจากฝ่ายจัดงานจะถึงคุณแม้ปิด Rounds',
+    button:'อนุญาตการแจ้งเตือน',
+    icon:'<svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 7h18s-3 0-3-7"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>',
+    truths:[['<svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg>','งานและการเปลี่ยนเส้นทางไม่ตกหล่น'],['<svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/></svg>','กล้องและไมค์ขอสิทธิ์เมื่อใช้ครั้งแรก']]
+  }
+];
+const params=new URLSearchParams(location.search);let step=Math.max(0,Math.min(2,(parseInt(params.get('step')||'1',10)||1)-1));
+const label=document.getElementById('stepLabel'),icon=document.getElementById('icon'),title=document.getElementById('title'),lead=document.getElementById('lead'),truth=document.getElementById('truth'),primary=document.getElementById('primary'),secondary=document.getElementById('secondary'),notice=document.getElementById('notice');
+function render(){const s=steps[step];label.textContent=`${step+1} จาก 3`;icon.innerHTML=s.icon;title.textContent=s.title;lead.textContent=s.lead;primary.textContent=s.button;secondary.textContent=step===2?'ข้ามการแจ้งเตือน':'ไว้ทีหลัง';truth.innerHTML=s.truths.map(([i,t])=>`<div class="truth-row"><span class="truth-icon">${i}</span><span class="truth-copy">${t}</span></div>`).join('')}
+function flash(text){notice.textContent=text;notice.classList.add('show');setTimeout(()=>notice.classList.remove('show'),900)}
+function advance(){if(step<2){step++;render()}else{flash('ตั้งค่าเรียบร้อย');setTimeout(()=>{location.href='ROUNDS-B02-HOME-VERIFICATION-PENDING-TH-v1-10OF10.html'},600)}}
+primary.addEventListener('click',async()=>{
+  if(step===0){try{navigator.geolocation?.getCurrentPosition(()=>{},()=>{}, {enableHighAccuracy:true,timeout:1500});}catch(e){} flash('ขอสิทธิ์ตำแหน่งแล้ว');setTimeout(advance,360);return}
+  if(step===1){flash('ขอสิทธิ์ตำแหน่งเบื้องหลังแล้ว');setTimeout(advance,360);return}
+  if(step===2){try{if('Notification' in window && Notification.permission==='default') await Notification.requestPermission();}catch(e){} flash('ขอสิทธิ์การแจ้งเตือนแล้ว');setTimeout(advance,360)}
+});
+secondary.addEventListener('click',advance);render();
+</script>
+</body>
+</html>

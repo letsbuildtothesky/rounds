@@ -1,4 +1,5 @@
 import type { CommandEnvelope, CommandResult, DomainEventEnvelope } from "./command.js";
+import type { CapacityEvaluation, CargoRequirement } from "./capacity.js";
 
 export const roundStates = [
   "proposed",
@@ -33,6 +34,7 @@ export type UnplannedDeliverySummary = {
   windowStart: string;
   windowEnd: string;
   manifestSummary: string;
+  cargoRequirements: CargoRequirement[];
 };
 
 export type OperationsPlanningProjection = {
@@ -74,6 +76,7 @@ export type PlanningRouteSnapshot = {
   stops: PlanningRouteStop[];
   blockingReasons: string[];
   warnings: string[];
+  capacity: CapacityEvaluation;
 };
 
 export type PlanningRoutePreviewRequest = {
@@ -125,7 +128,7 @@ export type OperationsRoundStopDetail = {
     id: string;
     state: string;
     version: number;
-    items: Array<{ lineNumber: number; description: string; quantity: number; handlingNote?: string }>;
+    items: Array<{ lineNumber: number; description: string; quantity: number; cargoClass?: string; handlingNote?: string }>;
   };
   pickupConfirmed: boolean;
   arrivedAt?: string;

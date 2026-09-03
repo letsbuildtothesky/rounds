@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Rounds — E04/E05/E06 การเปลี่ยนแปลงระหว่างรอบ · Thai-first v1</title>
+<style>
+@import url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@7/fonts/LINESeedSansTH/LINESeedSansTH.css');
+:root{
+  --canvas:#eef1f4;--paper:#fff;--ink:#172238;--ink2:#3d4a5d;--muted:#748094;
+  --line:#e1e6ea;--line2:#cbd4dc;--orange:#ff6420;--green:#168b50;--red:#bf4a4a;
+  --amber:#a86d20;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--canvas);color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+button,a{font:inherit}
+body{padding:28px}
+.frame{width:393px;height:852px;margin:0 auto;background:#eef2f4;position:relative;overflow:hidden;border:1px solid rgba(23,34,56,.09);border-radius:28px;box-shadow:0 18px 42px rgba(23,34,56,.14)}
+.statusbar{height:28px;padding:0 20px 4px;display:flex;align-items:flex-end;justify-content:space-between;font-size:12px;font-weight:760;background:#fff;position:relative;z-index:50}
+.sb-right{display:flex;align-items:center;gap:6px}.signal{display:flex;align-items:flex-end;gap:1.5px;height:9px}.signal i{display:block;width:2px;background:currentColor;border-radius:1px}.signal i:nth-child(1){height:3px}.signal i:nth-child(2){height:5px}.signal i:nth-child(3){height:7px}.signal i:nth-child(4){height:9px}.battery{width:20px;height:9px;border:1.5px solid currentColor;border-radius:2px;padding:1px;position:relative}.battery:after{content:"";position:absolute;right:-3px;top:1.5px;width:2px;height:4px;background:currentColor}.battery b{display:block;width:78%;height:100%;background:currentColor;border-radius:1px}
+.screen{position:absolute;inset:28px 0 0;overflow:hidden;background:#fff}
+
+.topbar{height:64px;padding:0 18px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.99);display:flex;align-items:center;gap:12px;position:relative;z-index:30}
+.top-copy{min-width:0;flex:1}.top-state{display:flex;align-items:center;gap:7px;font-size:11px;line-height:1;font-weight:830;letter-spacing:.075em;text-transform:uppercase;color:var(--orange)}.top-state i{width:7px;height:7px;border-radius:50%;background:currentColor}.top-title{margin-top:5px;font-size:16px;line-height:1.08;font-weight:820;letter-spacing:-.024em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.map-wrap{position:absolute;left:0;right:0;top:64px;height:370px;background:#eef2f4;overflow:hidden;border-bottom:1px solid var(--line)}
+#map,.fallback-map{position:absolute;inset:0}.map-live #map{display:block}.map-live .fallback-map{display:none}#map{display:none;background:#eef2f4;z-index:2}
+.fallback-map{z-index:1;background:linear-gradient(180deg,#f8fafb,#edf2f4)}
+.fallback-map .block{position:absolute;background:#e5eaed;border-radius:4px}.fallback-map .park{position:absolute;background:#e1ede4;border-radius:4px}.fallback-map .road{position:absolute;height:8px;background:#fff;box-shadow:0 0 0 1px #dbe2e7;border-radius:999px;transform-origin:left center}.fallback-map .road.major{height:13px}.fallback-place{position:absolute;font-size:10px;font-weight:760;color:#8d98a5;letter-spacing:.025em}
+.fallback-route{position:absolute;inset:0;width:100%;height:100%}.fallback-route .shadow{fill:none;stroke:#fff;stroke-width:11;stroke-linecap:round;stroke-linejoin:round}.fallback-route .new{fill:none;stroke:var(--ink);stroke-width:5.5;stroke-linecap:round;stroke-linejoin:round}.fallback-route .old{fill:none;stroke:#a7b2bd;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:8 8}
+.driver-marker{position:absolute;left:74px;top:274px;width:29px;height:35px;filter:drop-shadow(0 5px 10px rgba(23,34,56,.18));z-index:5}
+.pin{position:absolute;display:grid;place-items:center;transform:translate(-50%,-50%);z-index:6}.pin.old{left:279px;top:89px;width:29px;height:29px;border-radius:50%;border:3px solid #aab4be;background:#fff;color:#7f8a96;font-size:11px;font-weight:850}.pin.new{left:318px;top:127px;width:38px;height:38px;border-radius:50%;border:4px solid #fff;background:var(--orange);color:#fff;font-size:12px;font-weight:870;box-shadow:0 0 0 1px rgba(23,34,56,.08),0 7px 18px rgba(23,34,56,.16)}
+.pin-label{position:absolute;top:43px;left:50%;transform:translateX(-50%);white-space:nowrap;background:rgba(255,255,255,.97);border:1px solid var(--line);border-radius:5px;padding:5px 8px;color:var(--ink);font-size:11.5px;font-weight:790;box-shadow:0 5px 14px rgba(23,34,56,.06)}.pin.old .pin-label{top:35px;color:var(--muted);font-weight:720}
+.loading-note{position:absolute;left:50%;top:12px;z-index:9;transform:translateX(-50%);padding:6px 8px;border:1px solid var(--line);border-radius:5px;background:rgba(255,255,255,.94);font-size:11px;font-weight:720;color:var(--muted);box-shadow:0 5px 14px rgba(23,34,56,.05)}.loading-note.hidden{display:none}
+.mapboxgl-ctrl-logo,.mapboxgl-ctrl-attrib{opacity:.5}.mapboxgl-ctrl-bottom-right{right:7px;bottom:7px}.mapboxgl-canvas{outline:none}
+.mb-driver{width:29px;height:35px;filter:drop-shadow(0 5px 10px rgba(23,34,56,.18))}.mb-driver svg{display:block;width:29px;height:35px}.mb-pin{position:relative;display:grid;place-items:center}.mb-pin.old{width:29px;height:29px;border-radius:50%;border:3px solid #aab4be;background:#fff;color:#7f8a96;font-size:11px;font-weight:850}.mb-pin.new{width:38px;height:38px;border-radius:50%;border:4px solid #fff;background:var(--orange);color:#fff;font-size:12px;font-weight:870;box-shadow:0 0 0 1px rgba(23,34,56,.08),0 7px 18px rgba(23,34,56,.16)}.mb-pin-label{position:absolute;left:50%;top:42px;transform:translateX(-50%);white-space:nowrap;background:rgba(255,255,255,.97);border:1px solid var(--line);border-radius:5px;padding:5px 8px;color:var(--ink);font-size:11.5px;font-weight:790;box-shadow:0 5px 14px rgba(23,34,56,.06)}.mb-pin.old .mb-pin-label{top:34px;color:var(--muted);font-weight:720}
+
+.update-panel{position:absolute;left:0;right:0;top:434px;bottom:0;background:#fff;padding:20px 18px 16px;overflow:auto}
+.kicker{font-size:11px;font-weight:830;letter-spacing:.075em;text-transform:uppercase;color:var(--orange)}
+.update-panel h1{margin:8px 0 0;font-size:31px;line-height:1.02;font-weight:830;letter-spacing:-.048em}
+.update-panel .sub{margin:7px 0 0;font-size:13.5px;line-height:1.45;color:var(--muted);font-weight:680}
+.diff{margin-top:18px;border-top:1px solid var(--line)}
+.diff-row{min-height:62px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:88px minmax(0,1fr);gap:14px;align-items:center}.diff-label{font-size:12px;font-weight:760;color:var(--muted)}.diff-values{min-width:0;display:grid;grid-template-columns:minmax(0,1fr) 18px minmax(0,1fr);gap:7px;align-items:center}.diff-values span,.diff-values b{font-size:13px;line-height:1.35;overflow-wrap:anywhere}.diff-values span{color:#8a95a2;text-decoration:line-through;text-decoration-thickness:1px}.diff-values b{color:var(--ink);font-weight:810}.diff-arrow{color:#9aa5b0;font-size:16px;text-align:center}
+.impact{display:grid;grid-template-columns:1fr 1fr;margin-top:15px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.impact>div{padding:12px 0}.impact>div+div{border-left:1px solid var(--line);padding-left:14px}.impact span{display:block;font-size:11.5px;color:var(--muted);font-weight:690}.impact b{display:block;margin-top:5px;font-size:16px;font-weight:820;letter-spacing:-.018em}.impact b.warn{color:var(--amber)}.impact b.good{color:var(--green)}
+.actions{margin-top:18px;display:grid;gap:8px}.primary{width:100%;min-height:60px;border:0;border-radius:7px;background:var(--ink);color:#fff;font-size:16px;font-weight:820;cursor:pointer}.primary.network{background:var(--green)}.secondary{width:100%;min-height:48px;border:1px solid var(--line2);border-radius:7px;background:#fff;color:var(--ink2);font-size:13.5px;font-weight:780;cursor:pointer}.tertiary{width:100%;min-height:42px;border:0;border-radius:7px;background:#fff;color:var(--muted);font-size:13px;font-weight:760;cursor:pointer}.primary:active,.secondary:active,.tertiary:active{transform:translateY(1px)}
+
+.scope-only{display:none}.frame.scope .routine-only{display:none}.frame.scope .scope-only{display:block}.frame.scope .scope-diff{display:grid}.scope-diff{display:none}
+.toast{position:absolute;left:16px;right:16px;bottom:18px;z-index:80;min-height:48px;border-radius:7px;background:var(--ink);color:#fff;padding:12px 14px;display:flex;align-items:center;font-size:13px;font-weight:760;opacity:0;transform:translateY(8px);pointer-events:none;transition:.18s}.toast.show{opacity:1;transform:none}
+
+@media(max-width:520px){body{padding:0}.frame{width:100vw;height:100dvh;border:0;border-radius:0;box-shadow:none}}
+@media(max-width:350px){.map-wrap{height:346px}.update-panel{top:410px;padding:17px 15px 14px}.update-panel h1{font-size:28px}.diff-row{grid-template-columns:74px minmax(0,1fr);gap:10px}.diff-values span,.diff-values b{font-size:12.3px}.primary{min-height:56px}.impact b{font-size:15px}}
+@media(max-height:740px){.map-wrap{height:286px}.update-panel{top:350px;padding-top:15px}.update-panel h1{font-size:27px}.update-panel .sub{margin-top:5px}.diff{margin-top:12px}.diff-row{min-height:52px}.impact{margin-top:10px}.impact>div{padding:9px 0}.actions{margin-top:11px}.primary{min-height:52px}.secondary{min-height:44px}}
+
+
+/* Thai-first composition — locked Rounds TH design language */
+html,body{font-family:'LINE Seed Sans TH',Tahoma,'Noto Sans Thai',sans-serif}
+.statusbar,.pin.old,.pin.new,.mb-pin.old,.mb-pin.new{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+.topbar{height:66px;padding:0 18px}
+.top-state{font-size:11.8px;line-height:1.4;font-weight:700;letter-spacing:0;text-transform:none}
+.top-title{margin-top:2px;font-size:15.5px;line-height:1.35;font-weight:720;letter-spacing:0}
+.map-wrap{top:66px;height:368px}
+.fallback-place{font-size:11px;line-height:1.35;font-weight:600;letter-spacing:0}
+.pin-label,.mb-pin-label{font-family:'LINE Seed Sans TH',Tahoma,'Noto Sans Thai',sans-serif;font-size:11.5px;line-height:1.4;font-weight:650;letter-spacing:0}
+.loading-note{font-size:11.5px;line-height:1.4;font-weight:600;white-space:nowrap}
+.update-panel{top:434px;padding:20px 18px 16px}
+.kicker{font-size:11.8px;line-height:1.4;font-weight:700;letter-spacing:0;text-transform:none}
+.update-panel h1{margin-top:5px;font-size:34px;line-height:1.18;font-weight:790;letter-spacing:0;white-space:nowrap}
+.update-panel .sub{margin-top:4px;font-size:13.5px;line-height:1.45;font-weight:600}
+.diff{margin-top:16px}
+.diff-row{min-height:62px;grid-template-columns:82px minmax(0,1fr);gap:12px}
+.diff-label{font-size:12.5px;line-height:1.4;font-weight:650}
+.diff-values{grid-template-columns:minmax(0,1fr) 18px minmax(0,1fr);gap:6px}
+.diff-values span,.diff-values b{font-size:13px;line-height:1.35;letter-spacing:0}.diff-values b{font-weight:810}
+.impact{margin-top:14px}.impact>div{padding:11px 0}.impact>div+div{padding-left:14px}.impact span{font-size:11.8px;line-height:1.4;font-weight:600}.impact b{margin-top:3px;font-size:16px;line-height:1.35;font-weight:760;letter-spacing:0}
+.actions{margin-top:15px;gap:7px}.primary{min-height:58px;font-size:16px;line-height:1.4;font-weight:730;letter-spacing:0}.secondary{min-height:46px;font-size:13.5px;line-height:1.4;font-weight:680}.tertiary{min-height:40px;font-size:13px;line-height:1.4;font-weight:650}
+.toast{font-size:13px;line-height:1.45;font-weight:620}
+@media(max-width:350px){
+  .topbar{height:64px;padding-left:15px;padding-right:15px}.top-state{font-size:11.2px}.top-title{font-size:14px}
+  .map-wrap{top:64px;height:342px}.update-panel{top:406px;padding:16px 15px 13px}
+  .update-panel h1{font-size:29px;line-height:1.2}.update-panel .sub{font-size:12.5px;margin-top:3px}.kicker{font-size:11.2px}
+  .diff{margin-top:12px}.diff-row{min-height:55px;grid-template-columns:72px minmax(0,1fr);gap:8px}.diff-label{font-size:11.5px}.diff-values span,.diff-values b{font-size:11.9px}
+  .impact{margin-top:10px}.impact>div{padding:8px 0}.impact span{font-size:10.8px}.impact b{font-size:14.5px}
+  .actions{margin-top:10px;gap:5px}.primary{min-height:54px;font-size:15px}.secondary{min-height:42px;font-size:12.7px}.tertiary{min-height:36px;font-size:12.3px}
+}
+@media(max-height:740px){
+  .map-wrap{height:284px}.update-panel{top:350px;padding-top:14px}.update-panel h1{font-size:28px}.update-panel .sub{margin-top:3px}.diff{margin-top:10px}.diff-row{min-height:50px}.impact{margin-top:8px}.impact>div{padding:8px 0}.actions{margin-top:9px}.primary{min-height:50px}.secondary{min-height:42px}.tertiary{min-height:35px}
+}
+
+
+.frame .pin.old{left:71%}.frame .pin.new{left:81%}
+.frame.scope .map-wrap{height:290px}.frame.scope .update-panel{top:356px}
+@media(max-width:350px){.frame.scope .map-wrap{height:270px}.frame.scope .update-panel{top:334px}}
+
+</style>
+</head>
+<body>
+<div class="frame" id="frame">
+  <div class="statusbar"><div>15:22</div><div class="sb-right"><div class="signal"><i></i><i></i><i></i><i></i></div><div>5G</div><div class="battery"><b></b></div></div></div>
+  <main class="screen">
+    <header class="topbar">
+      <div class="top-copy"><div class="top-state"><i></i><span id="topState">อัปเดตจุดส่ง</span></div><div class="top-title" id="topTitle">จุด 1 · K. Nattaporn</div></div>
+    </header>
+
+    <section class="map-wrap" aria-label="เส้นทางที่อัปเดต">
+      <div class="fallback-map">
+        <div class="block" style="left:18px;top:28px;width:96px;height:74px"></div><div class="block" style="right:22px;top:38px;width:104px;height:62px"></div><div class="block" style="left:148px;top:165px;width:84px;height:67px"></div><div class="park" style="right:38px;bottom:36px;width:96px;height:72px"></div>
+        <div class="road major" style="left:-30px;top:237px;width:480px;transform:rotate(-8deg)"></div><div class="road major" style="left:174px;top:-34px;width:430px;transform:rotate(82deg)"></div><div class="road" style="left:28px;top:128px;width:330px;transform:rotate(3deg)"></div><div class="road" style="left:70px;top:313px;width:300px;transform:rotate(-2deg)"></div>
+        <span class="fallback-place" style="left:18px;top:190px">สุขุมวิท 24</span><span class="fallback-place" style="right:16px;top:287px">พร้อมพงษ์</span>
+        <svg class="fallback-route" viewBox="0 0 393 370" preserveAspectRatio="none"><path class="shadow" d="M74 282 C121 260 145 226 182 206 C229 181 258 160 318 127"/><path class="old" d="M74 282 C121 260 145 226 182 206 C222 178 246 130 279 89"/><path class="new" d="M74 282 C121 260 145 226 182 206 C229 181 258 160 318 127"/></svg>
+        <div class="driver-marker"><svg viewBox="0 0 36 44"><path d="M18 2 33 40 18 34 3 40Z" fill="#172238" stroke="#fff" stroke-width="3" stroke-linejoin="round"/></svg></div>
+        <div class="pin old">A<span class="pin-label">ทางเข้าเดิม</span></div>
+        <div class="pin new">B<span class="pin-label">Gate B</span></div>
+      </div>
+      <div id="map"></div><div class="loading-note" id="loadingNote">กำลังโหลดแผนที่…</div>
+    </section>
+
+    <section class="update-panel">
+      <div class="routine-only">
+        <div class="kicker">มีอะไรเปลี่ยน</div>
+        <h1 id="headline">เปลี่ยนทางเข้า</h1>
+        <p class="sub" id="subline">ไปที่ Gate B</p>
+        <div class="diff">
+          <div class="diff-row"><div class="diff-label" id="diffLabel">ทางเข้า</div><div class="diff-values"><span id="oldValue">ล็อบบี้ Tower A</span><div class="diff-arrow">→</div><b id="newValue">Gate B</b></div></div>
+        </div>
+        <div class="impact"><div><span>ถึงใน</span><b id="etaImpact">14 นาที</b></div><div><span>เพิ่มเวลา</span><b class="warn" id="timeImpact">+2 นาที</b></div></div>
+        <div class="actions"><button class="primary" id="ackBtn">รับทราบ</button><button class="secondary" id="contactBtn">ติดต่อฝ่ายจัดงาน</button></div>
+      </div>
+
+      <div class="scope-only">
+        <div class="kicker">รอบเปลี่ยน</div>
+        <h1>มีจุดส่งเพิ่ม</h1>
+        <p class="sub">รอบที่รับไว้มีงานเพิ่ม</p>
+        <div class="diff scope-diff">
+          <div class="diff-row"><div class="diff-label">จุดส่ง</div><div class="diff-values"><span>4 จุด</span><div class="diff-arrow">→</div><b>5 จุด</b></div></div>
+          <div class="diff-row"><div class="diff-label">เวลารอบ</div><div class="diff-values"><span>58 นาที</span><div class="diff-arrow">→</div><b>76 นาที</b></div></div>
+        </div>
+        <div class="impact"><div><span>ระยะเพิ่ม</span><b>4.6 กม.</b></div><div><span>ค่าเที่ยวเพิ่ม</span><b class="good">+฿120</b></div></div>
+        <div class="actions"><button class="primary network" id="acceptBtn">รับงานเพิ่ม · +฿120</button><button class="secondary" id="declineBtn">ไม่รับจุดที่เพิ่ม</button><button class="tertiary" id="contactBtn2">ติดต่อฝ่ายจัดงาน</button></div>
+      </div>
+    </section>
+  </main>
+  <div class="toast" id="toast">รับทราบแล้ว</div>
+</div>
+<script>
+const TOKEN='MAPBOX_TOKEN_REQUIRED';
+const params=new URLSearchParams(location.search);const frame=document.getElementById('frame');
+const change=params.get('change')||'entrance';const role=params.get('role')||'team';
+if(change==='scope'&&role==='network'){frame.classList.add('scope');document.getElementById('topState').textContent='อัปเดตรอบแล้ว';document.getElementById('topTitle').textContent='UrbanFlowers · 4 → 5 จุด';}
+const variants={
+  entrance:{state:'อัปเดตจุดส่ง',title:'จุด 1 · K. Nattaporn',headline:'เปลี่ยนทางเข้า',sub:'ไปที่ Gate B',label:'ทางเข้า',old:'ล็อบบี้ Tower A',next:'Gate B',eta:'14 นาที',delta:'+2 นาที'},
+  address:{state:'อัปเดตจุดส่ง',title:'จุด 1 · K. Nattaporn',headline:'เปลี่ยนจุดส่ง',sub:'นำทางไปจุดส่งใหม่',label:'ที่อยู่',old:'The Emporio Place',next:'สุขุมวิท 24 · Gate B',eta:'16 นาที',delta:'+4 นาที'},
+  sequence:{state:'อัปเดตรอบแล้ว',title:'UrbanFlowers · 4 จุด',headline:'เปลี่ยนลำดับจุด',sub:'จุดถัดไปคือ James T.',label:'จุดถัดไป',old:'K. Nattaporn',next:'James T.',eta:'15 นาที',delta:'+3 นาที'},
+  window:{state:'อัปเดตจุดส่ง',title:'จุด 1 · K. Nattaporn',headline:'เปลี่ยนเวลาส่ง',sub:'ช่วงเวลาส่งเลื่อนออกไป',label:'ช่วงเวลา',old:'15:30–16:00',next:'16:00–16:30',eta:'14 นาที',delta:'เส้นทางเดิม'}
+};
+const v=variants[change]||variants.entrance;
+if(!frame.classList.contains('scope')){document.getElementById('topState').textContent=v.state;document.getElementById('topTitle').textContent=v.title;document.getElementById('headline').textContent=v.headline;document.getElementById('subline').textContent=v.sub;document.getElementById('diffLabel').textContent=v.label;document.getElementById('oldValue').textContent=v.old;document.getElementById('newValue').textContent=v.next;document.getElementById('etaImpact').textContent=v.eta;document.getElementById('timeImpact').textContent=v.delta}
+function toastAndGo(message){const t=document.getElementById('toast');t.textContent=navigator.onLine?message:(message+' · บันทึกไว้ในเครื่อง');t.classList.add('show');setTimeout(()=>location.href='ROUNDS-E02-NAVIGATE-TO-CURRENT-STOP-TH-v1-10OF10.html',700)}
+document.getElementById('ackBtn').addEventListener('click',()=>toastAndGo('รับทราบแล้ว'));
+document.getElementById('acceptBtn').addEventListener('click',()=>{localStorage.setItem('roundsNetworkScopeDecision',JSON.stringify({decision:'accepted',at:new Date().toISOString()}));toastAndGo('รับงานเพิ่มแล้ว')});
+document.getElementById('declineBtn').addEventListener('click',()=>{localStorage.setItem('roundsNetworkScopeDecision',JSON.stringify({decision:'declined',at:new Date().toISOString(),preserveAcceptedRound:true}));toastAndGo('ไม่รับงานเพิ่ม · รอบเดิมยังอยู่')});
+[document.getElementById('contactBtn'),document.getElementById('contactBtn2')].forEach(b=>b.addEventListener('click',()=>location.href='ROUNDS-H01-OPERATOR-CHAT-TH-v1-10OF10.html'));
+
+const START=[100.5587,13.7358], OLD=[100.5669,13.7246], NEW=[100.5686,13.7254];
+function driverEl(){const el=document.createElement('div');el.className='mb-driver';el.innerHTML='<svg viewBox="0 0 36 44"><path d="M18 2 33 40 18 34 3 40Z" fill="#172238" stroke="#fff" stroke-width="3" stroke-linejoin="round"/></svg>';return el}
+function pinEl(kind,label,letter){const el=document.createElement('div');el.className='mb-pin '+kind;el.textContent=letter;const s=document.createElement('span');s.className='mb-pin-label';s.textContent=label;el.appendChild(s);return el}
+function fallbackNew(){return {type:'Feature',geometry:{type:'LineString',coordinates:[START,[100.5620,13.7319],[100.5653,13.7284],NEW]}}}
+function fallbackOld(){return {type:'Feature',geometry:{type:'LineString',coordinates:[START,[100.5620,13.7319],[100.5650,13.7287],OLD]}}}
+async function initMap(){
+  if(!window.mapboxgl){document.getElementById('loadingNote').textContent='แผนที่ออฟไลน์';return}
+  try{
+    mapboxgl.accessToken=TOKEN;
+    const map=new mapboxgl.Map({container:'map',style:'mapbox://styles/mapbox/light-v11',center:[100.5638,13.7300],zoom:14.6,bearing:0,pitch:0,attributionControl:true,interactive:true});
+    map.dragRotate.disable();map.touchZoomRotate.disableRotation();
+    new mapboxgl.Marker({element:driverEl(),anchor:'center'}).setLngLat(START).addTo(map);
+    new mapboxgl.Marker({element:pinEl('old','ทางเข้าเดิม','A'),anchor:'center'}).setLngLat(OLD).addTo(map);
+    new mapboxgl.Marker({element:pinEl('new','Gate B','B'),anchor:'center'}).setLngLat(NEW).addTo(map);
+    map.on('load',async()=>{
+      document.getElementById('loadingNote').classList.add('hidden');let n=fallbackNew(),o=fallbackOld();
+      try{const npath=`${START[0]},${START[1]};${NEW[0]},${NEW[1]}`;const opath=`${START[0]},${START[1]};${OLD[0]},${OLD[1]}`;const [nr,or]=await Promise.all([fetch(`https://api.mapbox.com/directions/v5/mapbox/driving-traffic/${npath}?geometries=geojson&overview=full&access_token=${encodeURIComponent(TOKEN)}`),fetch(`https://api.mapbox.com/directions/v5/mapbox/driving-traffic/${opath}?geometries=geojson&overview=full&access_token=${encodeURIComponent(TOKEN)}`)]);const nd=await nr.json(),od=await or.json();if(nd.routes&&nd.routes[0])n={type:'Feature',geometry:nd.routes[0].geometry};if(od.routes&&od.routes[0])o={type:'Feature',geometry:od.routes[0].geometry}}catch(e){}
+      map.addSource('old-route',{type:'geojson',data:o});map.addLayer({id:'old-route',type:'line',source:'old-route',layout:{'line-join':'round','line-cap':'round'},paint:{'line-color':'#a7b2bd','line-width':4,'line-dasharray':[1.2,1.4],'line-opacity':.9}});
+      map.addSource('new-route',{type:'geojson',data:n});map.addLayer({id:'new-shadow',type:'line',source:'new-route',layout:{'line-join':'round','line-cap':'round'},paint:{'line-color':'#fff','line-width':10,'line-opacity':.96}});map.addLayer({id:'new-route',type:'line',source:'new-route',layout:{'line-join':'round','line-cap':'round'},paint:{'line-color':'#172238','line-width':5.4}});
+      const b=new mapboxgl.LngLatBounds();[START,OLD,NEW].forEach(c=>b.extend(c));n.geometry.coordinates.forEach(c=>b.extend(c));map.fitBounds(b,{padding:{top:48,bottom:48,left:40,right:40},duration:0,maxZoom:15.8});
+    });
+  }catch(e){useOffline()}
+}
+function useOffline(){frame.classList.remove('map-live');document.getElementById('loadingNote').textContent='แผนที่ออฟไลน์';document.getElementById('loadingNote').classList.remove('hidden')}
+function loadMap(){if(params.get('offline')==='1'){useOffline();return}const css=document.createElement('link');css.rel='stylesheet';css.href='https://api.mapbox.com/mapbox-gl-js/v3.28.0/mapbox-gl.css';document.head.appendChild(css);const s=document.createElement('script');s.src='https://api.mapbox.com/mapbox-gl-js/v3.28.0/mapbox-gl.js';s.async=true;let done=false;const timer=setTimeout(()=>{if(!done)useOffline()},4500);s.onload=()=>{done=true;clearTimeout(timer);frame.classList.add('map-live');initMap()};s.onerror=()=>{done=true;clearTimeout(timer);useOffline()};document.head.appendChild(s)}
+loadMap();
+</script>
+</body>
+</html>

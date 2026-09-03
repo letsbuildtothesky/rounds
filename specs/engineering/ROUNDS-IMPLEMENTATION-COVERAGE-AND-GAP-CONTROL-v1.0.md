@@ -28,7 +28,7 @@ Authority remains:
 - A future-slice board may remain `DEFERRED`; it is not a Pilot defect unless the scope ladder requires it now.
 - No fake button, fake map marker, fake route, fake provider response or invented committed state may be used to make a surface appear complete.
 - Test fixtures must be visibly and technically isolated from production behavior.
-- Thai and English remain one localized application. English-reference-first construction does not change the Thai-first production requirement.
+- Thai and English remain one localized application. The complete English and Thai UX board sets are binding visual/interaction references. English-reference-first construction does not change the Thai-first production requirement.
 
 ## 3. Status vocabulary and completion formula
 
@@ -70,8 +70,8 @@ These are evidence-based planning estimates, not release claims. Recalculate the
 |---|---:|---:|---:|
 | Driver · English Pilot business path only | 60.4% (`30.8 / 51`) | gate incomplete | not comparable to the complete board set |
 | Driver · all currently authorized own-fleet depth | 45.5% (`35.0 / 77`) | gate incomplete | approximately 30% of the complete Driver V1 board set; roadmap estimate only |
-| Operations · currently authorized own-fleet depth | 66.7% (`35.35 / 53`) | gate incomplete | approximately 35% of the complete Operations vision; roadmap estimate only |
-| Combined authorized English own-fleet work | 54.1% (`70.35 / 130`) | **not release-ready** | approximately 20–25% of Slices 1–7; roadmap estimate only |
+| Operations · currently authorized own-fleet depth | 68.7% (`36.40 / 53`) | gate incomplete | approximately 35% of the complete Operations vision; roadmap estimate only |
+| Combined authorized English own-fleet work | 54.9% (`71.40 / 130`) | **not release-ready** | approximately 20–25% of Slices 1–7; roadmap estimate only |
 
 The Driver percentage is higher for the narrow delivery loop than for the complete 47-board product because Network onboarding, offers, earnings and marketplace behavior are deliberately outside the current own-fleet slice.
 
@@ -133,17 +133,17 @@ Canonical visual source: `ux/operations/rounds-operations-current-v45.html`. The
 | Single delivery intake | Pilot P0 | `VERIFIED` | Canonical internal delivery command, idempotency and drawer UI exist. | Address validation depth and final v45 visual acceptance. |
 | Batch/manual import | Slice 2 P1 | `SPECIFIED` | No batch ingestion UI. | Define file template, row validation, partial failure and reconciliation UX. |
 | Deliveries workspace | Pilot P1 | `VERIFIED` | Server-backed delivery list/details and operational states exist. | Complete filters, edit boundaries and remaining v45 record states. |
-| Manual plan construction | Slice 2 P0 | `VERIFIED` | Date, ordered Stop selection, own driver, shift/max-Stop checks, real route/window preview and explicit approval exist. | Cargo/dimension compatibility and common load validator. |
+| Manual plan construction | Slice 2 P0 | `VERIFIED` | Date, ordered Stop selection, own driver, shared multidimensional capacity check, real route/window preview and explicit approval exist. | Configure production cargo values and add service dwell after the responsible business decisions. |
 | Automatic plan generation | Slice 2 P1 | `SPECIFIED` | Intentionally not simulated in React. | Explainable heuristic, proposed plan persistence, uncovered-work truth and tests. |
 | Plan adjustment before approval | Slice 2 P0 | `PARTIAL` | Selection can be cleared/rebuilt; canonical HTML demonstrates richer movement. | Server preview/commit for Stop move, reorder, departure change and affected-lane recalculation. |
-| Round approval/assignment | Pilot/Slice 2 P0 | `ACCEPTED` | Server recalculates route, validates window/shift, database requires fitting snapshot, then atomically assigns. | Add cargo validator and service dwell before declaring full BS-09 approval. |
+| Round approval/assignment | Pilot/Slice 2 P0 | `VERIFIED` | Server recalculates route, validates window/shift/cargo, database independently recalculates multidimensional capacity, requires fitting snapshots, then atomically assigns. | Run live cargo-configured acceptance and add service dwell before declaring full BS-09 approval. |
 | Round execution detail | Pilot P0 | `VERIFIED` | Server-backed Stop/custody/exception state and communication links exist. | Remaining v45 Round actions and realtime projection depth. |
 | Pickup exception resolution | Pilot P0 | `VERIFIED` | Audited correction returns Stop to assigned and requires manifest recheck. | Broader pickup outcomes/evidence views. |
 | Delivery exception resolution | Pilot/Slice 2 P0 | `PARTIAL` | Damaged-item hold, return confirmation and reconciliation exist. | Recipient/address/cannot-complete/emergency outcomes and performance treatment. |
 | Communications | Pilot/Slice 2 P1 | `PARTIAL` | Persistent two-way server-backed text thread is verified, but the canonical capability is wider. | Attachments, offline drafts, call events, rich system ledger and live context behavior. |
 | Own Drivers capacity view | Slice 2 P0 | `VERIFIED` | Own-team availability, live/stale/unknown presence, current Round and effective shift projection exist. | Route-completion availability estimate and complete vehicle/cargo truth. |
 | Recurring schedules/date exceptions | Slice 2 P0 | `VERIFIED` | Versioned/idempotent drawers and server commands exist. | Driver-side shift lifecycle and overnight/date-policy acceptance. |
-| Vehicle profiles and cargo limits | Slice 2 P0 | `PARTIAL` | Vehicle profiles, max Stops and departure pattern are projected. | Cargo taxonomy, quantities/dimensions, compatibility and enforceable limits. |
+| Vehicle profiles and cargo limits | Slice 2 P0 | `VERIFIED` | Versioned cargo classes/limits are projected and enforced with max Stops/departure pattern by the common planner validator and database approval guard; unknown cargo is `review_required`. | UrbanFlowers must approve production taxonomy/limits; connect the canonical Settings controls for managed edits. |
 | History and POD evidence | Pilot P0 | `VERIFIED` | Completed/returned deliveries, committed evidence metadata and audit-backed history exist. | Rich incident/contact filters, retention behavior and authorized evidence retrieval. |
 | Settings control center | Slice 2 P2 / BS-16 | `SPECIFIED` | Settings is not connected. | Promote only settings required by the active pilot; keep unsaved/version/audit rules. |
 | Customer tracking | Optional Slice 2 | `DEFERRED` | Not promoted. | Requires explicit promotion and BS-11 acceptance criteria. |
@@ -157,7 +157,7 @@ Not every unfinished feature is a missing specification. This table contains onl
 
 | ID | Gap | Type | Temporary engineering rule | Closure owner / gate |
 |---|---|---|---|---|
-| GAP-001 | Thai board set and full Thai copy/layout QA are incomplete. | Product content + QA | Keep one localization architecture; do not create a second app or independent state machine. English-reference implementation may continue. | Product supplies/approves Thai copy; required before Pilot release. |
+| GAP-001 · **CLOSED 2026-09-03** | The Thai source inventory was mistakenly incomplete in Git, although the user-provided build pack contained the finished boards. | Source synchronization | The repository now contains 46 Thai-specific boards plus the shared language-neutral A01 Splash, matching the 47-board English screen inventory. | Closed by synchronizing the build-pack boards. Flutter implementation and Thai layout QA remain delivery work, not a specification gap. |
 | GAP-002 | Cargo taxonomy, dimensions, quantities and vehicle compatibility limits are not production-approved. | Business operations | Use explicit `unclassified`/`review_required`; test fixtures may use clearly labelled non-production values. Never silently treat unknown cargo as fitting. | UrbanFlowers operations decision before full BS-09 approval. |
 | GAP-003 | Destination handoff/service dwell and some pickup/reload turnaround defaults are not locked. | Business operations | Route preview must disclose excluded dwell. No hidden zero-time assumption may be described as full feasibility. | UrbanFlowers operations decision before promise-safe planning claim. |
 | GAP-004 | Final production routing provider, call metering, cache duration and fallback policy are not locked. | Technical/commercial | Keep provider-neutral server interface and preserve provider provenance; Mapbox remains the current development provider. | Engineering + commercial decision before production load test. |
@@ -185,12 +185,12 @@ For every newly discovered gap:
 
 This sequence does not promote later slices; it orders the already authorized English own-fleet work.
 
-### Checkpoint A — common cargo/capacity truth
+### Checkpoint A — common cargo/capacity truth · **COMPLETED 2026-09-03**
 
-- Define the versioned cargo-class and vehicle-limit contract without inventing production values.
-- Add `unclassified` and `review_required` behavior.
-- Reuse one server validator for planning preview and approval.
-- Prove cargo bottlenecks independently from max-Stop limits.
+- Versioned cargo-class and vehicle-limit contracts exist without invented production values.
+- `unclassified` and `review_required` are explicit blocking truth.
+- Planning preview uses one common application validator; approval independently recalculates the same dimensions in the database guard.
+- Automated tests prove cargo and max-Stop bottlenecks independently, including aggregation and disallowed cargo.
 
 ### Checkpoint B — canonical Round management
 
@@ -213,9 +213,9 @@ This sequence does not promote later slices; it orders the already authorized En
 - Run golden/reference-viewport comparisons for every in-scope board.
 - Run physical multi-stop, degraded-network, background, battery and motorcycle road acceptance.
 
-### Checkpoint E — Thai and production gates
+### Checkpoint E — Thai implementation and production gates
 
-- Complete Thai copy and one-to-one layout QA in the same Flutter application.
+- Implement the approved Thai boards and complete one-to-one layout QA in the same Flutter application.
 - Close BS-17 security/privacy/recovery requirements.
 - Remove or compile out all development shortcuts and fixtures.
 - Run Android/iOS release, monitoring, backup/restore and incident gates.

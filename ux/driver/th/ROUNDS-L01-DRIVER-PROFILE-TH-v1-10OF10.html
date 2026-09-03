@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Rounds — L01 โปรไฟล์คนขับ TH v1</title>
+<style>
+@import url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@7/fonts/LINESeedSansTH/LINESeedSansTH.css');
+:root{
+  --canvas:#eef1f4;--paper:#fff;--ink:#172238;--ink2:#3d4a5d;--muted:#748094;
+  --line:#e1e6ea;--line2:#cbd4dc;--orange:#ff6420;--orange-soft:#fff7f2;
+  --green:#168b50;--green-soft:#eef8f2;--red:#c84646;--red-soft:#fff3f3;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--canvas);color:var(--ink);font-family:'LINE Seed Sans TH','Noto Sans Thai',Tahoma,sans-serif;-webkit-font-smoothing:antialiased}
+button,a,input{font:inherit}button{cursor:pointer}body{padding:28px}
+.frame{width:393px;height:852px;margin:0 auto;background:var(--paper);position:relative;overflow:hidden;border:1px solid rgba(23,34,56,.09);border-radius:28px;box-shadow:0 18px 42px rgba(23,34,56,.14)}
+.statusbar{height:28px;padding:0 20px 4px;display:flex;align-items:flex-end;justify-content:space-between;font-size:12px;font-weight:760;background:#fff;position:relative;z-index:40}.sb-right{display:flex;align-items:center;gap:6px}.signal{display:flex;align-items:flex-end;gap:1.5px;height:9px}.signal i{display:block;width:2px;background:currentColor;border-radius:1px}.signal i:nth-child(1){height:3px}.signal i:nth-child(2){height:5px}.signal i:nth-child(3){height:7px}.signal i:nth-child(4){height:9px}.battery{width:20px;height:9px;border:1.5px solid currentColor;border-radius:2px;padding:1px;position:relative}.battery:after{content:"";position:absolute;right:-3px;top:1.5px;width:2px;height:4px;background:currentColor;border-radius:0 1px 1px 0}.battery b{display:block;width:78%;height:100%;background:currentColor;border-radius:1px}
+.topbar{height:58px;padding:0 20px;border-bottom:1px solid var(--line);background:#fff;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:35}.brand{display:flex;align-items:flex-end;font-size:20px;line-height:1;font-weight:900;letter-spacing:-.05em}.brand-dot{width:6px;height:6px;border-radius:50%;background:var(--orange);margin-left:3px;margin-bottom:2px}.icon-btn{width:38px;height:38px;border:0;border-radius:7px;background:#fff;color:var(--ink2);display:grid;place-items:center;text-decoration:none}.icon-btn:active{background:#f6f8f9}.icon-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.body{position:absolute;inset:86px 0 76px;background:#fff;overflow-y:auto;scrollbar-width:none}.body::-webkit-scrollbar{display:none}
+.header{padding:24px 20px 20px;border-bottom:1px solid var(--line)}.eyebrow{font-size:11.5px;line-height:1;font-weight:880;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:11px}.header h1{margin:0;font-size:34px;line-height:1;letter-spacing:-.055em;font-weight:860}
+.identity{padding:24px 20px 23px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:72px 1fr auto;gap:15px;align-items:center}.avatar{width:72px;height:72px;border-radius:8px;background:#eef2f5;border:1px solid var(--line);display:grid;place-items:center;font-size:24px;font-weight:900;letter-spacing:-.04em;color:var(--ink2)}.identity-copy{min-width:0}.identity-copy h2{margin:0;font-size:25px;line-height:1.03;font-weight:870;letter-spacing:-.045em}.identity-copy p{margin:7px 0 0;font-size:13px;line-height:1.25;font-weight:720;color:var(--muted)}.verified{margin-top:9px;display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:820;color:var(--green)}.verified i{width:8px;height:8px;border-radius:50%;background:var(--green)}.edit-btn{height:38px;padding:0 12px;border:1px solid var(--line2);border-radius:7px;background:#fff;color:var(--ink2);font-size:13px;font-weight:820}.edit-btn:active{background:#f7f9fa}
+.section{padding:21px 20px 4px}.section-title{font-size:14px;font-weight:880;letter-spacing:-.02em;margin-bottom:8px}.ledger{border-top:1px solid var(--line)}.row{width:100%;min-height:65px;padding:0;border:0;border-bottom:1px solid var(--line);background:#fff;color:inherit;display:grid;grid-template-columns:1fr auto;align-items:center;gap:16px;text-align:left}.row:active{background:#fafbfb}.row-main{min-width:0}.row-main b{display:block;font-size:15px;line-height:1.2;font-weight:850;letter-spacing:-.018em}.row-main span{display:block;margin-top:6px;font-size:12.5px;line-height:1.3;font-weight:710;color:var(--muted)}.row-side{display:flex;align-items:center;gap:9px;flex:0 0 auto}.row-value{font-size:12.5px;line-height:1.2;font-weight:780;color:var(--muted);text-align:right}.row-value.good{color:var(--green)}.row-value.orange{color:var(--orange)}.chev{width:17px;height:17px;stroke:var(--muted);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.danger .row-main b{color:var(--red)}
+.work-line{padding:17px 20px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center}.work-line b{display:block;font-size:16px;font-weight:860;letter-spacing:-.02em}.work-line span{display:block;margin-top:6px;font-size:12.5px;font-weight:710;color:var(--muted)}.work-state{font-size:12.5px;font-weight:830;color:var(--green)}
+.bottomnav{position:absolute;left:0;right:0;bottom:0;height:76px;background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding:7px 4px 9px;z-index:40}.nav-item{color:var(--muted);text-decoration:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-size:11.5px;font-weight:720;border:0;background:#fff}.nav-item svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}.nav-item.active{color:var(--orange)}
+.scrim{position:absolute;inset:0;background:rgba(10,18,31,.28);opacity:0;pointer-events:none;transition:.18s;z-index:70}.scrim.show{opacity:1;pointer-events:auto}.sheet{position:absolute;left:0;right:0;bottom:0;max-height:82%;overflow:auto;background:#fff;border-radius:20px 20px 0 0;transform:translateY(105%);transition:.22s ease;z-index:80;padding:10px 20px calc(20px + env(safe-area-inset-bottom));box-shadow:none;}.sheet.show{transform:none}.grab{width:38px;height:4px;border-radius:999px;background:#d7dde2;margin:0 auto 18px}.sheet-kicker{font-size:11.5px;line-height:1;font-weight:890;letter-spacing:.09em;text-transform:uppercase;color:var(--orange);margin-bottom:10px}.sheet h3{margin:0;font-size:28px;line-height:1;letter-spacing:-.045em;font-weight:860}.sheet-sub{margin-top:8px;font-size:13.5px;line-height:1.35;font-weight:720;color:var(--muted)}.sheet-list{margin-top:20px;border-top:1px solid var(--line)}.sheet-row{min-height:57px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:14px}.sheet-row span{font-size:13px;font-weight:720;color:var(--muted)}.sheet-row b{font-size:14px;font-weight:830;text-align:right}.sheet-choice{width:100%;min-height:58px;padding:0;border:0;border-bottom:1px solid var(--line);background:#fff;display:flex;align-items:center;justify-content:space-between;gap:14px;text-align:left;color:inherit}.sheet-choice:active{background:#fafbfb}.sheet-choice b{font-size:15px;font-weight:840}.sheet-choice span{font-size:12.5px;font-weight:760;color:var(--muted)}.sheet-choice.selected span{color:var(--orange)}.field{margin-top:17px}.field label{display:block;margin-bottom:7px;font-size:12.5px;font-weight:780;color:var(--muted)}.field input{width:100%;height:54px;border:1px solid var(--line2);border-radius:7px;background:#fff;color:var(--ink);padding:0 14px;font-size:15px;font-weight:720;outline:none}.field input:focus{border-color:#a8b5c1}.toggle-row{min-height:64px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:16px}.toggle-copy b{display:block;font-size:14.5px;font-weight:840}.toggle-copy span{display:block;margin-top:5px;font-size:12px;line-height:1.3;font-weight:700;color:var(--muted)}.switch{width:48px;height:28px;padding:3px;border:0;border-radius:16px;background:#d8dee4;flex:0 0 auto}.switch i{display:block;width:22px;height:22px;border-radius:50%;background:#fff;transition:.16s;box-shadow:0 1px 3px rgba(23,34,56,.2)}.switch.on{background:var(--green)}.switch.on i{transform:translateX(20px)}.sheet-primary{width:100%;height:56px;margin-top:18px;border:0;border-radius:7px;background:var(--ink);color:#fff;font-size:16px;font-weight:850}.sheet-secondary{width:100%;height:52px;margin-top:9px;border:1px solid var(--line2);border-radius:7px;background:#fff;color:var(--ink2);font-size:15px;font-weight:830}.sheet-danger{width:100%;height:56px;margin-top:18px;border:0;border-radius:7px;background:var(--red);color:#fff;font-size:16px;font-weight:850}.toast{position:absolute;left:18px;right:18px;bottom:92px;background:var(--ink);color:#fff;padding:13px 14px;border-radius:8px;font-size:13.5px;font-weight:760;opacity:0;transform:translateY(8px);transition:.18s;pointer-events:none;z-index:90}.toast.show{opacity:1;transform:none}
+@media(max-width:520px){body{padding:0;background:#fff}.frame{width:100vw;height:100dvh;border:0;border-radius:0;box-shadow:none}}
+@media(max-width:340px){.header{padding:20px 16px 18px}.header h1{font-size:31px}.identity{padding:19px 16px 18px;grid-template-columns:62px 1fr auto;gap:12px}.avatar{width:62px;height:62px;font-size:21px}.identity-copy h2{font-size:22px}.identity-copy p{font-size:12px}.verified{font-size:12px}.edit-btn{height:36px;padding:0 10px}.section{padding:18px 16px 3px}.work-line{padding:15px 16px}.row{min-height:61px}.row-main b{font-size:14.5px}.row-main span{font-size:12px}.sheet{padding-left:16px;padding-right:16px}.sheet h3{font-size:25px}}
+@media(max-height:720px){.header{padding-top:18px;padding-bottom:16px}.identity{padding-top:17px;padding-bottom:16px}.section{padding-top:16px}.row{min-height:58px}.work-line{padding-top:13px;padding-bottom:13px}}
+
+/* Thai-first composition lock */
+.statusbar,.brand{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+.eyebrow{font-size:12.5px;line-height:1.4;font-weight:650;letter-spacing:0;text-transform:none;margin-bottom:7px}
+.header{padding:22px 20px 19px}.header h1{font-size:36px;line-height:1.14;letter-spacing:0;font-weight:800}
+.identity{padding:21px 20px 20px;grid-template-columns:68px minmax(0,1fr) auto;gap:14px}.avatar{width:68px;height:68px;font-size:22px;font-weight:800;letter-spacing:0}
+.identity-copy h2{font-size:23px;line-height:1.2;font-weight:800;letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.identity-copy p{margin-top:5px;font-size:12.5px;line-height:1.4;font-weight:600}.verified{margin-top:7px;font-size:12.5px;line-height:1.35;font-weight:700}.edit-btn{height:38px;padding:0 11px;font-size:13px;font-weight:700}
+.work-line{padding:15px 20px;min-height:66px}.work-line b{font-size:15.5px;line-height:1.35;font-weight:750;letter-spacing:0}.work-line span{margin-top:3px;font-size:12.5px;line-height:1.4;font-weight:600}.work-state{font-size:12.5px;font-weight:700}
+.section{padding:18px 20px 3px}.section-title{font-size:14.5px;line-height:1.35;font-weight:750;letter-spacing:0;margin-bottom:7px}.row{min-height:62px;gap:12px}.row-main b{font-size:14.5px;line-height:1.35;font-weight:750;letter-spacing:0}.row-main span{margin-top:3px;font-size:12px;line-height:1.4;font-weight:600}.row-value{font-size:12.5px;line-height:1.35;font-weight:650}.nav-item{font-size:12px;line-height:1.3;font-weight:650}
+.sheet{opacity:0;pointer-events:none;box-shadow:none;padding-bottom:calc(20px + env(safe-area-inset-bottom))}.sheet.show{opacity:1;pointer-events:auto}.sheet-kicker{font-size:12px;line-height:1.4;font-weight:700;letter-spacing:0;text-transform:none;margin-bottom:7px}.sheet h3{font-size:29px;line-height:1.18;letter-spacing:0;font-weight:800}.sheet-sub{font-size:13.5px;line-height:1.5;font-weight:600}.sheet-row{min-height:58px}.sheet-row span{font-size:13px;line-height:1.4;font-weight:600}.sheet-row b{font-size:14px;line-height:1.4;font-weight:750}.sheet-choice{min-height:60px}.sheet-choice b{font-size:14.5px;line-height:1.4;font-weight:750}.sheet-choice span{font-size:12.5px;line-height:1.4;font-weight:650}.field label{font-size:12.5px;line-height:1.4;font-weight:650}.field input{font-size:15px;line-height:1.4;font-weight:600}.toggle-row{min-height:70px}.toggle-copy b{font-size:14px;line-height:1.4;font-weight:750}.toggle-copy span{font-size:12px;line-height:1.45;font-weight:600;max-width:235px}.sheet-primary,.sheet-secondary,.sheet-danger{font-size:15.5px;line-height:1.35;font-weight:750}.toast{font-size:13px;line-height:1.45;font-weight:650}
+@media(max-width:340px){.header{padding:18px 16px 16px}.header h1{font-size:32px}.identity{padding:17px 16px 16px;grid-template-columns:58px minmax(0,1fr) auto;gap:10px}.avatar{width:58px;height:58px;font-size:20px}.identity-copy h2{font-size:20px}.identity-copy p{font-size:11.7px}.verified{font-size:11.7px}.edit-btn{height:34px;padding:0 9px;font-size:12.5px}.work-line{padding:13px 16px;min-height:60px}.section{padding:15px 16px 3px}.row{min-height:58px}.row-main b{font-size:14px}.row-main span{font-size:11.5px}.sheet{padding-left:16px;padding-right:16px}.sheet h3{font-size:26px}.toggle-copy span{max-width:190px}}
+
+</style>
+</head>
+<body>
+<div class="frame" id="frame">
+  <div class="statusbar">
+    <div>15:58</div>
+    <div class="sb-right"><div class="signal"><i></i><i></i><i></i><i></i></div><div>5G</div><div class="battery"><b></b></div></div>
+  </div>
+  <div class="topbar">
+    <div class="brand">Rounds<span class="brand-dot"></span></div>
+    <a class="icon-btn" id="notificationsTop" href="ROUNDS-M01-NOTIFICATIONS-TH-v1-10OF10.html" aria-label="การแจ้งเตือน"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 7h18s-3 0-3-7"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></a>
+  </div>
+
+  <main class="body">
+    <section class="header"><div class="eyebrow">บัญชี</div><h1>โปรไฟล์</h1></section>
+
+    <section class="identity">
+      <div class="avatar" id="avatar">สป</div>
+      <div class="identity-copy"><h2 id="profileName">สมชาย ประเสริฐ</h2><p id="profilePhone">+66 81 234 4821</p><div class="verified"><i></i><span>ยืนยันตัวตนแล้ว</span></div></div>
+      <button class="edit-btn" id="editIdentity">แก้ไข</button>
+    </section>
+
+    <div id="workContext"></div>
+
+    <section class="section">
+      <div class="section-title">คนขับ</div>
+      <div class="ledger">
+        <button class="row" id="vehicleRow"><div class="row-main"><b>ยานพาหนะ</b><span id="vehicleSub">มอเตอร์ไซค์พร้อมกล่อง · 1กข 4821</span></div><div class="row-side"><svg class="chev" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></div></button>
+        <button class="row" id="documentsRow"><div class="row-main"><b>การยืนยัน</b><span>ตัวตนและเอกสาร</span></div><div class="row-side"><span class="row-value good">ยืนยันแล้ว</span><svg class="chev" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></div></button>
+        <button class="row network-only" id="payoutRow"><div class="row-main"><b>วิธีรับเงิน</b><span id="payoutSub">PromptPay · •••• 4821</span></div><div class="row-side"><svg class="chev" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></div></button>
+        <button class="row network-only" id="networkPrefsRow"><div class="row-main"><b>การติดต่อจาก Network</b><span>ร้านค้าที่เคยรับงาน · เช็กเวลาว่าง</span></div><div class="row-side"><span class="row-value good" id="networkPrefValue">เปิด</span><svg class="chev" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></div></button>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-title">แอป</div>
+      <div class="ledger">
+        <button class="row" id="languageRow"><div class="row-main"><b>ภาษา</b></div><div class="row-side"><span class="row-value" id="languageValue">English</span><svg class="chev" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></div></button>
+        <a class="row" id="notificationsRow" href="ROUNDS-M01-NOTIFICATIONS-TH-v1-10OF10.html" style="text-decoration:none"><div class="row-main"><b>การแจ้งเตือน</b></div><div class="row-side"><svg class="chev" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></div></a>
+        <button class="row" id="supportRow"><div class="row-main"><b>ความช่วยเหลือ</b></div><div class="row-side"><svg class="chev" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></div></button>
+      </div>
+    </section>
+
+    <section class="section" style="padding-bottom:28px">
+      <div class="ledger"><button class="row danger" id="signOutRow"><div class="row-main"><b>ออกจากระบบ</b></div><div class="row-side"><svg class="chev" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></div></button></div>
+    </section>
+  </main>
+
+  <nav class="bottomnav" aria-label="เมนูหลัก">
+    <a class="nav-item" id="homeNav" href="ROUNDS-B01-TEAM-DRIVER-HOME-TH-v2-10OF10.html"><svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg><span>หน้าแรก</span></a>
+    <a class="nav-item" id="jobsNav" href="ROUNDS-J01-MY-ROUNDS-TH-v1-10OF10.html"><svg viewBox="0 0 24 24"><path d="M12 20s7-3.6 7-9a7 7 0 1 0-14 0c0 5.4 7 9 7 9Z"/><circle cx="12" cy="11" r="2.5"/></svg><span>งาน</span></a>
+    <a class="nav-item" id="roleNav" href="ROUNDS-K00-TEAM-HOURS-TH-v1-10OF10.html"><svg id="roleIcon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span id="roleLabel">ชั่วโมง</span></a>
+    <a class="nav-item active" href="#" aria-current="page"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>โปรไฟล์</span></a>
+  </nav>
+
+  <div class="scrim" id="scrim"></div>
+  <section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <div class="grab"></div><div class="sheet-kicker" id="sheetKicker">โปรไฟล์</div><h3 id="sheetTitle">แก้ไขโปรไฟล์</h3><div class="sheet-sub" id="sheetSub"></div><div id="sheetBody"></div>
+  </section>
+  <div class="toast" id="toast"></div>
+</div>
+<script>
+const params=new URLSearchParams(location.search);
+function getSavedLanguage(){try{return localStorage.getItem('rounds.language')}catch(e){return null}}
+function saveLanguagePreference(v){try{localStorage.setItem('rounds.language',v)}catch(e){}}
+const context=['team','network','hybrid'].includes(params.get('context'))?params.get('context'):'hybrid';
+let driverName='สมชาย ประเสริฐ',driverPhone='+66 81 234 4821',vehicle='มอเตอร์ไซค์พร้อมกล่อง',plate='1กข 4821',payout='PromptPay · •••• 4821',language=getSavedLanguage()==='en'?'English':'ไทย',merchantContact=true,askAvailability=true;
+const scrim=document.getElementById('scrim'),sheet=document.getElementById('sheet'),sheetKicker=document.getElementById('sheetKicker'),sheetTitle=document.getElementById('sheetTitle'),sheetSub=document.getElementById('sheetSub'),sheetBody=document.getElementById('sheetBody'),toast=document.getElementById('toast');
+function showToast(t){toast.textContent=t;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1300)}
+function initials(name){return name.trim().split(/\s+/).map(x=>x[0]).join('').slice(0,2)||'ข'}
+function openSheet({kicker='โปรไฟล์',title,sub='',html=''}){sheetKicker.textContent=kicker;sheetTitle.textContent=title;sheetSub.textContent=sub;sheetBody.innerHTML=html;scrim.classList.add('show');sheet.classList.add('show')}
+function closeSheet(){scrim.classList.remove('show');sheet.classList.remove('show')}
+scrim.onclick=closeSheet;document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet()});
+function updateIdentity(){document.getElementById('profileName').textContent=driverName;document.getElementById('profilePhone').textContent=driverPhone;document.getElementById('avatar').textContent=initials(driverName)}
+function updateDriverRows(){document.getElementById('vehicleSub').textContent=`${vehicle} · ${plate}`;document.getElementById('payoutSub').textContent=payout;document.getElementById('languageValue').textContent=language;document.getElementById('networkPrefValue').textContent=(merchantContact||askAvailability)?'เปิด':'ปิด'}
+function renderContext(){
+  const holder=document.getElementById('workContext');
+  const team=`<div class="work-line"><div><b>UrbanFlowers</b><span>คนขับทีม · สุขุมวิท 39</span></div><div class="work-state">ใช้งานอยู่</div></div>`;
+  const network=`<div class="work-line"><div><b>Rounds Network</b><span>คนขับอิสระ</span></div><div class="work-state">อนุมัติแล้ว</div></div>`;
+  holder.innerHTML=context==='team'?team:context==='network'?network:team+network;
+  document.querySelectorAll('.network-only').forEach(el=>el.style.display=context==='team'?'none':'grid');
+  const home=document.getElementById('homeNav'),jobs=document.getElementById('jobsNav'),role=document.getElementById('roleNav'),label=document.getElementById('roleLabel'),icon=document.getElementById('roleIcon');
+  if(context==='network'){
+    home.href='ROUNDS-B03-HOME-NETWORK-AVAILABLE-TH-v1-10OF10.html';jobs.href='ROUNDS-J01-MY-ROUNDS-TH-v1-10OF10.html?context=network';role.href='ROUNDS-K01-EARNINGS-TH-v1-10OF10.html';label.textContent='รายได้';icon.innerHTML='<path d="M12 2v20"/><path d="M17 6H9.5a3.5 3.5 0 0 0 0 7H14.5a3.5 3.5 0 0 1 0 7H6"/>';document.getElementById('notificationsTop').href='ROUNDS-M01-NOTIFICATIONS-TH-v1-10OF10.html?context=network';document.getElementById('notificationsRow').href='ROUNDS-M01-NOTIFICATIONS-TH-v1-10OF10.html?context=network';
+  }else{jobs.href='ROUNDS-J01-MY-ROUNDS-TH-v1-10OF10.html?context=team';document.getElementById('notificationsTop').href='ROUNDS-M01-NOTIFICATIONS-TH-v1-10OF10.html?context=team';document.getElementById('notificationsRow').href='ROUNDS-M01-NOTIFICATIONS-TH-v1-10OF10.html?context=team'}
+}
+renderContext();updateIdentity();updateDriverRows();
+
+document.getElementById('editIdentity').onclick=()=>openSheet({title:'แก้ไขโปรไฟล์',html:`<div class="field"><label>ชื่อ</label><input id="nameInput" value="${driverName.replace(/"/g,'&quot;')}"></div><div class="field"><label>เบอร์โทร</label><input id="phoneInput" value="${driverPhone.replace(/"/g,'&quot;')}"></div><button class="sheet-primary" id="saveIdentity">บันทึก</button>`});
+document.addEventListener('click',e=>{if(e.target.id==='saveIdentity'){driverName=document.getElementById('nameInput').value.trim()||driverName;driverPhone=document.getElementById('phoneInput').value.trim()||driverPhone;updateIdentity();closeSheet();showToast('อัปเดตโปรไฟล์แล้ว')}});
+
+const vehicles=['มอเตอร์ไซค์พร้อมกล่อง','ตุ๊กตุ๊ก','รถยนต์','รถกระบะ','รถตู้'];
+document.getElementById('vehicleRow').onclick=()=>openSheet({kicker:'ยานพาหนะ',title:vehicle,sub:plate,html:`<div class="sheet-list">${vehicles.map(v=>`<button class="sheet-choice ${v===vehicle?'selected':''}" data-vehicle="${v}"><b>${v}</b><span>${v===vehicle?'ใช้อยู่':'เลือก'}</span></button>`).join('')}</div>`});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-vehicle]');if(!b)return;vehicle=b.dataset.vehicle;updateDriverRows();closeSheet();showToast('อัปเดตยานพาหนะแล้ว')});
+
+document.getElementById('documentsRow').onclick=()=>openSheet({kicker:'การยืนยัน',title:'ยืนยันแล้ว',sub:'ยืนยันบัญชีคนขับเรียบร้อย',html:`<div class="sheet-list"><div class="sheet-row"><span>สถานะ</span><b style="color:var(--green)">ยืนยันแล้ว</b></div><div class="sheet-row"><span>คนขับ</span><b>${driverName}</b></div></div><button class="sheet-primary" id="doneSheet">เสร็จ</button>`});
+
+document.getElementById('payoutRow').onclick=()=>openSheet({kicker:'การรับเงิน Network',title:'วิธีรับเงิน',sub:payout,html:`<div class="sheet-list"><button class="sheet-choice ${payout.startsWith('PromptPay')?'selected':''}" data-payout="PromptPay · •••• 4821"><b>PromptPay</b><span>${payout.startsWith('PromptPay')?'ใช้อยู่':'เลือก'}</span></button><button class="sheet-choice ${payout.startsWith('บัญชี')?'selected':''}" data-payout="บัญชีธนาคาร · •••• 2048"><b>บัญชีธนาคาร</b><span>${payout.startsWith('บัญชี')?'ใช้อยู่':'เลือก'}</span></button></div>`});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-payout]');if(!b)return;payout=b.dataset.payout;updateDriverRows();closeSheet();showToast('อัปเดตวิธีรับเงินแล้ว')});
+
+document.getElementById('networkPrefsRow').onclick=()=>openSheet({kicker:'Network',title:'การติดต่อจากร้านค้า',sub:'การตั้งค่า Network',html:`<div class="sheet-list"><div class="toggle-row"><div class="toggle-copy"><b>ร้านค้าที่เคยรับงานส่งข้อความได้</b><span>เฉพาะร้านค้าที่รู้จักหรือเคยรับงาน</span></div><button class="switch ${merchantContact?'on':''}" id="merchantContactSwitch" aria-label="เปิดหรือปิดข้อความจากร้านค้า"><i></i></button></div><div class="toggle-row"><div class="toggle-copy"><b>ขอเช็กเวลาว่าง</b><span>อนุญาตคำขอเช็กเวลาว่างจากร้านค้า</span></div><button class="switch ${askAvailability?'on':''}" id="availabilitySwitch" aria-label="เปิดหรือปิดคำขอเวลาว่าง"><i></i></button></div></div><button class="sheet-primary" id="saveNetworkPrefs">เสร็จ</button>`});
+document.addEventListener('click',e=>{if(e.target.closest('#merchantContactSwitch')){merchantContact=!merchantContact;e.target.closest('#merchantContactSwitch').classList.toggle('on',merchantContact)}if(e.target.closest('#availabilitySwitch')){askAvailability=!askAvailability;e.target.closest('#availabilitySwitch').classList.toggle('on',askAvailability)}if(e.target.id==='saveNetworkPrefs'){updateDriverRows();closeSheet();showToast('บันทึกการตั้งค่า Network แล้ว')}});
+
+document.getElementById('languageRow').onclick=()=>openSheet({kicker:'ภาษา',title:'ภาษาในแอป',html:`<div class="sheet-list"><button class="sheet-choice ${language==='English'?'selected':''}" data-language="English"><b>English</b><span>${language==='English'?'เลือกแล้ว':'เลือก'}</span></button><button class="sheet-choice ${language==='ไทย'?'selected':''}" data-language="ไทย"><b>ไทย</b><span>${language==='ไทย'?'เลือกแล้ว':'เลือก'}</span></button></div>`});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-language]');if(!b)return;language=b.dataset.language;saveLanguagePreference(language==='ไทย'?'th':'en');updateDriverRows();closeSheet();showToast('บันทึกภาษาแล้ว')});
+
+document.getElementById('supportRow').onclick=()=>openSheet({kicker:'ความช่วยเหลือ',title:'ติดต่อฝ่ายจัดงาน',html:`<div class="sheet-list"><a class="sheet-choice" href="ROUNDS-H01-OPERATOR-CHAT-TH-v1-10OF10.html" style="text-decoration:none;color:inherit"><b>แชตฝ่ายจัดงาน</b><span>เปิดแชต</span></a><a class="sheet-choice" href="ROUNDS-H02-CALL-CONTACT-TH-v1-10OF10.html" style="text-decoration:none;color:inherit"><b>โทรฝ่ายจัดงาน</b><span>โทรผ่าน Rounds</span></a></div>`});
+document.getElementById('signOutRow').onclick=()=>openSheet({kicker:'บัญชี',title:'ออกจากระบบ?',sub:'จะกลับไปหน้าลงชื่อเข้าใช้คนขับ',html:`<button class="sheet-danger" id="confirmSignOut">ออกจากระบบ</button><button class="sheet-secondary" id="cancelSignOut">ยกเลิก</button>`});
+document.addEventListener('click',e=>{if(e.target.id==='confirmSignOut')location.href='ROUNDS-A02-A05-DRIVER-ENTRY-FLOW-TH-v2-10OF10.html';if(e.target.id==='cancelSignOut'||e.target.id==='doneSheet')closeSheet()});
+</script>
+</body>
+</html>

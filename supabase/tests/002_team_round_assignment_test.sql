@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(18);
+select plan(20);
 
 select has_function(
   'public',
@@ -48,6 +48,21 @@ insert into public.vehicle_profiles (
   '30000000-0000-4000-8000-000000000003',
   '30000000-0000-4000-8000-000000000001',
   'round-test-bike', 'Round Test Bike', 'motorbike', 'multi_stop', 4, 4, 15
+);
+
+insert into public.cargo_classes (id, tenant_id, code, display_name)
+values (
+  '30000000-0000-4000-8000-000000000004',
+  '30000000-0000-4000-8000-000000000001',
+  'test-bouquet', 'Test bouquet'
+);
+
+insert into public.vehicle_profile_cargo_limits (
+  tenant_id, vehicle_profile_id, cargo_class_id, allowed, max_quantity
+) values (
+  '30000000-0000-4000-8000-000000000001',
+  '30000000-0000-4000-8000-000000000003',
+  '30000000-0000-4000-8000-000000000004', true, 4
 );
 
 insert into public.driver_recurring_schedules (
@@ -96,7 +111,9 @@ insert into round_test_commands values (
       ),
       'buyer', jsonb_build_object('sameAsRecipient', true),
       'promise', jsonb_build_object('windowStart', '2026-09-02T02:00:00Z', 'windowEnd', '2026-09-02T04:00:00Z'),
-      'manifest', jsonb_build_object('items', jsonb_build_array(jsonb_build_object('description', 'Bouquet', 'quantity', 1)))
+      'manifest', jsonb_build_object('items', jsonb_build_array(jsonb_build_object(
+        'description', 'Bouquet', 'quantity', 1, 'cargoClass', 'test-bouquet'
+      )))
     )
   )
 );
@@ -106,6 +123,32 @@ select is(
   'committed',
   'test delivery is created through the canonical command'
 );
+
+select is(
+  (public.get_own_team_round_capacity(
+    '30000000-0000-4000-8000-000000000001',
+    '30000000-0000-4000-8000-000000000002',
+    '2026-09-02',
+    jsonb_build_array((select id from public.delivery_stops where delivery_id = '30000000-0000-4000-8000-000000000100'))
+  ) ->> 'status'),
+  'fits',
+  'classified cargo fits the configured vehicle quantity limit'
+);
+
+update public.manifest_items set cargo_class = null
+ where manifest_id = (select id from public.manifests where delivery_id = '30000000-0000-4000-8000-000000000100');
+select is(
+  (public.get_own_team_round_capacity(
+    '30000000-0000-4000-8000-000000000001',
+    '30000000-0000-4000-8000-000000000002',
+    '2026-09-02',
+    jsonb_build_array((select id from public.delivery_stops where delivery_id = '30000000-0000-4000-8000-000000000100'))
+  ) ->> 'status'),
+  'review_required',
+  'unclassified cargo can never silently fit'
+);
+update public.manifest_items set cargo_class = 'test-bouquet'
+ where manifest_id = (select id from public.manifests where delivery_id = '30000000-0000-4000-8000-000000000100');
 
 insert into round_test_commands
 select 'round', jsonb_build_object(
@@ -145,7 +188,8 @@ select 'round', jsonb_build_object(
         'legDurationSeconds', 900, 'legDistanceMeters', 2500
       )),
       'blockingReasons', jsonb_build_array(),
-      'warnings', jsonb_build_array()
+      'warnings', jsonb_build_array(),
+      'capacity', jsonb_build_object('status', 'fits')
     )
   )
 )

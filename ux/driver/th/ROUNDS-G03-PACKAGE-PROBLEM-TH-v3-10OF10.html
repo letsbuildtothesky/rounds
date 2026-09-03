@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Rounds — G03 ของมีปัญหา · Thai-first v2</title>
+<style>
+@import url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@7/fonts/LINESeedSansTH/LINESeedSansTH.css');
+:root{
+  --canvas:#eef1f4;--paper:#fff;--ink:#172238;--ink2:#3d4a5d;--muted:#748094;
+  --line:#e1e6ea;--line2:#cbd4dc;--orange:#ff6420;--orange-soft:#fff2eb;
+  --green:#168b50;--green-soft:#eaf7ef;--red:#bf4a4a;--red-soft:#fff0f0;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--canvas);color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+button,input{font:inherit}
+body{padding:28px}
+.phone{width:393px;height:852px;margin:0 auto;background:#fff;position:relative;overflow:hidden;border:1px solid rgba(23,34,56,.09);border-radius:28px;box-shadow:none}
+.statusbar{height:28px;padding:0 20px 4px;display:flex;align-items:flex-end;justify-content:space-between;font-size:12px;font-weight:760;background:#fff;position:relative;z-index:50}
+.sb-right{display:flex;align-items:center;gap:6px}.signal{display:flex;align-items:flex-end;gap:1.5px;height:9px}.signal i{display:block;width:2px;background:currentColor;border-radius:1px}.signal i:nth-child(1){height:3px}.signal i:nth-child(2){height:5px}.signal i:nth-child(3){height:7px}.signal i:nth-child(4){height:9px}
+.battery{width:20px;height:9px;border:1.5px solid currentColor;border-radius:2px;padding:1px;position:relative}.battery:after{content:"";position:absolute;right:-3px;top:1.5px;width:2px;height:4px;background:currentColor}.battery b{display:block;width:78%;height:100%;background:currentColor;border-radius:1px}
+.app{position:absolute;inset:28px 0 0;background:#fff;overflow:hidden}
+.topbar{height:64px;padding:0 18px;display:grid;grid-template-columns:44px minmax(0,1fr) 44px;gap:10px;align-items:center;border-bottom:1px solid var(--line);background:#fff;position:relative;z-index:12}
+.iconbtn{width:44px;height:44px;border:0;background:#fff;color:var(--ink);display:grid;place-items:center;cursor:pointer;border-radius:6px}.iconbtn:active{background:#f3f5f7}.iconbtn svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.more{font-size:24px;font-weight:900;letter-spacing:2px;line-height:1;padding-bottom:7px}
+.topcopy{min-width:0}.topcopy small{display:block;color:var(--orange);font-size:10.5px;line-height:1;font-weight:850;letter-spacing:.09em;text-transform:uppercase}.topcopy b{display:block;margin-top:5px;font-size:17px;line-height:1.05;font-weight:840;letter-spacing:-.025em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.content{position:absolute;left:0;right:0;top:64px;bottom:80px;padding:27px 22px 26px;overflow:auto;overscroll-behavior:contain;background:#fff}
+.issue-kicker,.state-kicker{display:flex;align-items:center;gap:8px;font-size:11px;line-height:1;font-weight:880;letter-spacing:.095em;text-transform:uppercase;color:var(--red)}
+.issue-kicker i,.state-kicker i{width:8px;height:8px;border-radius:50%;background:currentColor;flex:0 0 auto}.state-kicker.wait{color:var(--orange)}.state-kicker.good{color:var(--green)}
+h1{margin:10px 0 0;font-size:39px;line-height:.98;font-weight:880;letter-spacing:-.055em;max-width:330px}
+.location{margin-top:12px;font-size:15px;line-height:1.35;color:var(--muted);font-weight:700}
+.package{margin-top:25px;padding-top:19px;border-top:1px solid var(--line);display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:start}
+.package small{display:block;font-size:10.5px;font-weight:850;letter-spacing:.085em;text-transform:uppercase;color:var(--muted)}.package b{display:block;margin-top:6px;font-size:20px;line-height:1.08;font-weight:850;letter-spacing:-.03em}.package span{display:block;margin-top:6px;font-size:13.5px;line-height:1.3;color:var(--muted);font-weight:690}.qty{font-size:18px;font-weight:880;color:var(--ink);padding-top:17px;white-space:nowrap}
+.custody{margin-top:13px;display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:790;color:var(--green)}.custody svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.section{margin-top:29px}.section-title{font-size:12px;font-weight:860;letter-spacing:.085em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+.choice-list{border-top:1px solid var(--line)}.choice{width:100%;min-height:70px;border:0;border-bottom:1px solid var(--line);background:#fff;color:var(--ink);display:grid;grid-template-columns:34px minmax(0,1fr) 18px;gap:12px;align-items:center;text-align:left;padding:0 2px;cursor:pointer}.choice:active{background:#f7f9fa}.choice svg{width:23px;height:23px;fill:none;stroke:var(--ink2);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}.choice b{display:block;font-size:16px;line-height:1.15;font-weight:820;letter-spacing:-.015em}.choice span{display:block;margin-top:4px;font-size:12.5px;color:var(--muted);font-weight:690}.choice .arrow{width:9px;height:9px;border-top:2px solid #8b96a5;border-right:2px solid #8b96a5;transform:rotate(45deg);justify-self:end;margin-right:4px}
+.initial-state,.evidence-state,.waiting-state,.resolved-state{display:none}.initial .initial-state{display:block}.evidence .evidence-state{display:block}.waiting .waiting-state{display:block}.resolved .resolved-state{display:block}
+.evidence-head{margin-top:27px}.evidence-head small{display:block;color:var(--red);font-size:10.5px;font-weight:880;letter-spacing:.085em;text-transform:uppercase}.evidence-head b{display:block;margin-top:7px;font-size:24px;line-height:1.05;font-weight:880;letter-spacing:-.035em}
+.photo-label{display:flex;align-items:center;justify-content:space-between;margin:24px 0 9px}.photo-label b{font-size:13px;font-weight:860;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}.photo-label span{font-size:12px;font-weight:820;color:var(--red)}.photo-label span.done{color:var(--green)}
+.photo{height:226px;border:1px solid var(--line2);border-radius:7px;background:#f6f8f9;display:grid;place-items:center;position:relative;overflow:hidden;cursor:pointer}.photo:active{background:#f1f4f6}.photo-inner{text-align:center;display:flex;flex-direction:column;align-items:center;gap:9px}.camera{width:58px;height:58px;border:1px solid var(--line);border-radius:7px;background:#fff;display:grid;place-items:center;color:var(--red)}.camera svg{width:27px;height:27px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.photo-inner b{font-size:16px;font-weight:840}.photo-inner span{font-size:13px;color:var(--muted);font-weight:680}.photo-preview{position:absolute;inset:0;display:none;background:#e8ecef center/cover no-repeat}.photo.done .photo-preview{display:block}.photo.done .photo-inner{display:none}.photo-badge{display:none;position:absolute;left:12px;bottom:12px;min-height:34px;padding:0 10px;background:#fff;border:1px solid #c7ded0;border-radius:5px;color:var(--green);align-items:center;gap:7px;font-size:12.5px;font-weight:850;z-index:2}.photo.done .photo-badge{display:flex}.photo-badge svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.5}
+.report-summary{margin-top:23px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.report-row{min-height:61px;display:flex;align-items:center;justify-content:space-between;gap:14px}.report-row+.report-row{border-top:1px solid var(--line)}.report-row span{font-size:13px;color:var(--muted);font-weight:720}.report-row b{font-size:14px;text-align:right;font-weight:850}
+.wait-copy{margin-top:29px}.wait-copy small{display:block;color:var(--orange);font-size:10.5px;font-weight:880;letter-spacing:.085em;text-transform:uppercase}.wait-copy b{display:block;margin-top:7px;font-size:24px;line-height:1.05;font-weight:880;letter-spacing:-.035em}.wait-copy span{display:block;margin-top:8px;color:var(--muted);font-size:13.5px;font-weight:690;line-height:1.4}
+.decision{margin-top:28px;border-top:1px solid var(--line);padding-top:21px}.decision small{display:block;color:var(--green);font-size:10.5px;font-weight:880;letter-spacing:.085em;text-transform:uppercase}.decision b{display:block;margin-top:7px;font-size:25px;line-height:1.04;font-weight:890;letter-spacing:-.04em}.decision span{display:block;margin-top:9px;color:var(--muted);font-size:14px;line-height:1.4;font-weight:690}.return-note{margin-top:21px;padding-top:18px;border-top:1px solid var(--line);display:flex;align-items:flex-start;gap:10px}.return-note svg{width:21px;height:21px;stroke:var(--orange);fill:none;stroke-width:2;flex:0 0 auto}.return-note b{font-size:14.5px;line-height:1.3;font-weight:820}.return-note span{display:block;margin-top:4px;color:var(--muted);font-size:13px;line-height:1.35;font-weight:680}
+.footer{position:absolute;left:0;right:0;bottom:0;padding:11px 22px calc(17px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid var(--line);z-index:15}.primary{width:100%;height:62px;border:0;border-radius:7px;background:var(--ink);color:#fff;font-size:17px;font-weight:860;cursor:pointer}.primary:active{transform:translateY(1px)}.primary[disabled]{background:#e0e5e9;color:#8e99a7;cursor:default;transform:none}.secondary{width:100%;height:48px;margin-top:7px;border:0;background:#fff;color:var(--ink2);font-size:15px;font-weight:820;cursor:pointer}
+#footerInitial,#footerEvidence,#footerWaiting,#footerResolved{display:none}.initial #footerInitial,.evidence #footerEvidence,.waiting #footerWaiting,.resolved #footerResolved{display:block}
+.scrim{position:absolute;inset:0;background:rgba(23,34,56,.25);z-index:40;opacity:0;pointer-events:none;transition:.16s}.scrim.show{opacity:1;pointer-events:auto}.sheet{position:absolute;left:10px;right:10px;bottom:10px;z-index:45;background:#fff;border:1px solid var(--line2);border-radius:12px 12px 8px 8px;box-shadow:0 20px 48px rgba(23,34,56,.20);overflow:hidden;transform:translateY(calc(100% + 18px));opacity:0;pointer-events:none;transition:transform .22s cubic-bezier(.22,.72,.24,1),opacity .16s}.sheet.show{transform:none;opacity:1;pointer-events:auto}.sheet-handle{height:22px;display:grid;place-items:center}.sheet-handle:after{content:"";width:38px;height:4px;border-radius:99px;background:#ccd4dc}.sheet-head{padding:0 18px 13px}.sheet-head h2{margin:0;font-size:23px;line-height:1.02;font-weight:880;letter-spacing:-.04em}.sheet-row{width:100%;min-height:64px;padding:0 18px;border:0;border-top:1px solid var(--line);background:#fff;color:var(--ink);display:grid;grid-template-columns:30px minmax(0,1fr);gap:12px;align-items:center;text-align:left;font-size:16px;font-weight:810;cursor:pointer}.sheet-row:active{background:#f3f5f7}.sheet-row svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}.sheet-row.problem{color:var(--red)}
+.toast{position:absolute;left:22px;right:22px;bottom:102px;z-index:70;background:var(--ink);color:#fff;border-radius:8px;padding:13px 14px;font-size:13.5px;font-weight:760;opacity:0;transform:translateY(8px);pointer-events:none;transition:.18s}.toast.show{opacity:1;transform:none}
+.hidden-input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+@media(max-width:520px){body{padding:0}.phone{width:100vw;height:100dvh;border:0;border-radius:0;box-shadow:none}.statusbar{padding-top:max(0px,env(safe-area-inset-top));height:calc(28px + env(safe-area-inset-top))}.app{top:calc(28px + env(safe-area-inset-top))}}
+@media(max-width:340px){.topbar{padding:0 14px}.content{padding:21px 17px 86px}h1{font-size:34px}.location{font-size:14px}.package{margin-top:21px;padding-top:16px}.package b{font-size:18px}.package span{font-size:12.5px}.section{margin-top:23px}.choice{min-height:64px}.choice b{font-size:15px}.choice span{font-size:11.5px}.footer{padding-left:17px;padding-right:17px}.primary{height:58px}.secondary{height:44px}.photo{height:190px}.evidence-head{margin-top:21px}.evidence-head b{font-size:21px}.photo-label{margin-top:20px}.sheet{left:7px;right:7px;bottom:7px}.sheet-row{min-height:60px;font-size:15px}}
+
+
+/* Thai-first composition — locked Rounds TH design language */
+html,body{font-family:'LINE Seed Sans TH',Tahoma,'Noto Sans Thai',sans-serif}
+.statusbar,.topcopy b,.qty,.report-row b{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+.topbar{height:64px;padding:0 18px}.topcopy small{font-size:11.5px;line-height:1.35;font-weight:700;letter-spacing:0;text-transform:none}.topcopy b{margin-top:2px;font-size:17px;line-height:1.08;font-weight:850;letter-spacing:-.02em}
+.content{padding:25px 22px 25px;bottom:80px}.issue-kicker,.state-kicker{font-size:11.5px;line-height:1.4;font-weight:700;letter-spacing:0;text-transform:none;gap:8px}
+h1{margin-top:8px;font-size:36px;line-height:1.18;font-weight:790;letter-spacing:0;max-width:none;white-space:nowrap}.location{margin-top:7px;font-size:14px;line-height:1.45;font-weight:600}
+.package{margin-top:22px;padding-top:16px;gap:12px}.package small{font-size:11.5px;line-height:1.4;font-weight:680;letter-spacing:0;text-transform:none}.package b{margin-top:3px;font-size:18px;line-height:1.35;font-weight:760;letter-spacing:0}.package span{margin-top:3px;font-size:12.5px;line-height:1.4;font-weight:600}.qty{font-size:17px;padding-top:20px;font-weight:850}.custody{margin-top:10px;font-size:12.5px;line-height:1.4;font-weight:680}
+.section{margin-top:24px}.section-title{font-size:11.8px;line-height:1.4;font-weight:700;letter-spacing:0;text-transform:none;margin-bottom:5px}.choice{min-height:68px;grid-template-columns:32px minmax(0,1fr) 18px;gap:10px}.choice b{font-size:15.5px;line-height:1.35;font-weight:730;letter-spacing:0}.choice span{margin-top:2px;font-size:12px;line-height:1.42;font-weight:600}.choice svg{width:22px;height:22px}
+.evidence-head{margin-top:23px}.evidence-head small{font-size:11.2px;line-height:1.4;font-weight:700;letter-spacing:0;text-transform:none}.evidence-head b{margin-top:4px;font-size:22px;line-height:1.32;font-weight:760;letter-spacing:0}.photo-label{margin:20px 0 7px}.photo-label b{font-size:11.8px;line-height:1.4;font-weight:700;letter-spacing:0;text-transform:none}.photo-label span{font-size:11.8px;line-height:1.4;font-weight:700}.photo{width:100%;height:196px}.photo-inner{gap:7px}.photo-inner b{font-size:15px;line-height:1.4;font-weight:720}.photo-inner span{font-size:12.5px;line-height:1.4;font-weight:600}.photo-badge{font-size:12px;line-height:1.4;font-weight:700}
+.report-summary{margin-top:19px}.report-row{min-height:57px}.report-row span{font-size:12.8px;line-height:1.4;font-weight:620}.report-row b{font-size:13px;line-height:1.3;font-weight:800;max-width:68%;overflow-wrap:anywhere}
+.wait-copy{margin-top:24px}.wait-copy small{font-size:11.2px;line-height:1.4;font-weight:700;letter-spacing:0;text-transform:none}.wait-copy b{margin-top:4px;font-size:22px;line-height:1.32;font-weight:760;letter-spacing:0}.wait-copy span{margin-top:5px;font-size:13px;line-height:1.45;font-weight:600}
+.decision{margin-top:23px;padding-top:17px}.decision small{font-size:11.2px;line-height:1.4;font-weight:700;letter-spacing:0;text-transform:none}.decision b{margin-top:4px;font-size:23px;line-height:1.32;font-weight:770;letter-spacing:0}.decision span{margin-top:5px;font-size:13px;line-height:1.45;font-weight:600}.return-note{margin-top:17px;padding-top:15px;gap:9px}.return-note b{font-size:14px;line-height:1.4;font-weight:720}.return-note span{margin-top:2px;font-size:12.4px;line-height:1.45;font-weight:600}
+.primary{font-size:16px;line-height:1.4;font-weight:760}.secondary{font-size:14px;line-height:1.4;font-weight:700}.sheet-head h2{font-size:22px;line-height:1.35;font-weight:760;letter-spacing:0}.sheet-row{min-height:61px;font-size:14px;line-height:1.4;font-weight:700}.toast{font-size:13px;line-height:1.45;font-weight:620}
+@media(max-width:340px){
+ .topbar{padding:0 14px}.content{padding:18px 16px 20px;bottom:76px}h1{font-size:29px}.location{font-size:12.8px}.package{margin-top:15px;padding-top:12px}.package small{font-size:10.8px}.package b{font-size:16px}.package span{font-size:11.5px}.qty{font-size:15px;padding-top:18px}.custody{font-size:11.5px;margin-top:8px}.section{margin-top:17px}.choice{min-height:57px;grid-template-columns:28px minmax(0,1fr) 15px;gap:8px}.choice b{font-size:13.5px}.choice span{font-size:10.9px}.choice svg{width:20px;height:20px}.photo-label{margin-top:15px}.photo{height:164px}.photo-inner b{font-size:13.5px}.photo-inner span{font-size:11.5px}.camera{width:50px;height:50px}.camera svg{width:24px;height:24px}.report-summary{margin-top:14px}.report-row{min-height:49px}.report-row span{font-size:11.5px}.report-row b{font-size:11.8px}.wait-copy{margin-top:17px}.wait-copy b{font-size:19px}.wait-copy span{font-size:11.8px}.decision{margin-top:17px;padding-top:13px}.decision b{font-size:20px}.decision span{font-size:11.8px}.return-note{margin-top:13px;padding-top:12px}.return-note b{font-size:12.8px}.return-note span{font-size:11.3px}.primary{height:58px;font-size:15px}.secondary{height:44px;font-size:13px}.sheet-row{min-height:57px;font-size:13px}
+}
+
+/* v2 crispness lock: flat operational surface, no device/footer shadow */
+.phone{box-shadow:none}
+.footer{box-shadow:none;background:#fff}
+.sheet{box-shadow:none}
+
+
+/* v3 Thai composition lock: use the lower half intentionally without inventing a false primary action */
+.initial .section{margin-top:31px}
+.initial .choice{min-height:77px}
+#footerInitial{padding:10px 22px calc(14px + env(safe-area-inset-bottom))}
+#footerInitial .secondary{height:54px;margin-top:0;border:1px solid var(--line-2);border-radius:7px;background:#fff;color:var(--ink-2);font-size:14px;line-height:1.4;font-weight:720}
+#footerInitial .secondary:active{background:#f7f9fa}
+@media(max-width:340px){
+  .initial .section{margin-top:20px}
+  .initial .choice{min-height:62px}
+  #footerInitial{padding-left:16px;padding-right:16px;padding-top:8px;padding-bottom:12px}
+  #footerInitial .secondary{height:50px;font-size:13px}
+}
+</style>
+</head>
+<body>
+<div class="phone initial" id="phone">
+  <div class="statusbar"><div>14:42</div><div class="sb-right"><div class="signal"><i></i><i></i><i></i><i></i></div><div>5G</div><div class="battery"><b></b></div></div></div>
+  <main class="app">
+    <header class="topbar">
+      <button class="iconbtn" aria-label="ย้อนกลับ" onclick="goBack()"><svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+      <div class="topcopy"><small>จุด 1 จาก 4</small><b>K. Nattaporn</b></div>
+      <button class="iconbtn more" aria-label="ตัวเลือกเพิ่มเติม" onclick="openSheet('moreSheet')">•••</button>
+    </header>
+
+    <section class="content">
+      <section class="initial-state">
+        <div class="issue-kicker"><i></i>ปัญหาการส่ง</div>
+        <h1>ของมีปัญหา</h1>
+        <div class="location">The Emporio Place · สุขุมวิท 24</div>
+
+        <div class="package">
+          <div><small>ของที่รับมา</small><b>Midnight Orchid + แจกันแก้ว</b><span>ระวังแตก</span></div><div class="qty">×1</div>
+        </div>
+        <div class="custody"><svg viewBox="0 0 24 24"><path d="M4 12l5 5 11-11"/></svg>ยืนยันการรับของแล้ว</div>
+
+        <section class="section">
+          <div class="section-title">ปัญหาอะไร?</div>
+          <div class="choice-list">
+            <button class="choice" onclick="chooseIssue('damaged')"><svg viewBox="0 0 24 24"><path d="M12 3 3 20h18z"/><path d="M12 9v4M12 17h.01"/></svg><div><b>เสียหาย</b><span>ของหรือบรรจุภัณฑ์เสียหาย</span></div><i class="arrow"></i></button>
+            <button class="choice" onclick="chooseIssue('missing')"><svg viewBox="0 0 24 24"><path d="M4 7h16v13H4zM7 7l2-3h6l2 3"/><path d="M9 13h6"/></svg><div><b>ของไม่ครบ</b><span>ของที่ต้องส่งไม่ครบ</span></div><i class="arrow"></i></button>
+            <button class="choice" onclick="chooseIssue('wrong')"><svg viewBox="0 0 24 24"><path d="M4 7h16v13H4zM7 7l2-3h6l2 3"/><path d="m9 12 6 6M15 12l-6 6"/></svg><div><b>ของไม่ตรง</b><span>ของไม่ตรงกับจุดส่งนี้</span></div><i class="arrow"></i></button>
+          </div>
+        </section>
+      </section>
+
+      <section class="evidence-state">
+        <div class="issue-kicker"><i></i>ปัญหาของ</div>
+        <h1 id="evidenceTitle">ของเสียหาย</h1>
+        <div class="location">The Emporio Place · สุขุมวิท 24</div>
+        <div class="package"><div><small>ข้อมูลตอนรับของ</small><b>Midnight Orchid + แจกันแก้ว</b><span>ระวังแตก</span></div><div class="qty">×1</div></div>
+        <div class="custody"><svg viewBox="0 0 24 24"><path d="M4 12l5 5 11-11"/></svg>ข้อมูลรับของยังไม่เปลี่ยน</div>
+
+        <div id="photoBlock">
+          <div class="photo-label"><b id="photoLabel">รูปความเสียหาย</b><span id="photoState">ต้องมี</span></div>
+          <button class="photo" id="photo" onclick="capturePhoto()" aria-label="ถ่ายรูปหลักฐาน">
+            <div class="photo-preview" id="photoPreview"></div>
+            <div class="photo-inner"><div class="camera"><svg viewBox="0 0 24 24"><path d="M3 7h4l2-3h6l2 3h4v13H3z"/><circle cx="12" cy="13" r="4"/></svg></div><b id="photoAction">ถ่ายรูปความเสียหาย</b><span>แตะเพื่อถ่าย</span></div>
+            <div class="photo-badge"><svg viewBox="0 0 24 24"><path d="M4 12l5 5 11-11"/></svg>เพิ่มรูปแล้ว</div>
+          </button>
+        </div>
+
+        <div class="report-summary" id="reportSummary">
+          <div class="report-row"><span>ปัญหา</span><b id="problemSummary">เสียหาย</b></div>
+          <div class="report-row"><span>ของ</span><b>Midnight Orchid + แจกันแก้ว ×1</b></div>
+        </div>
+      </section>
+
+      <section class="waiting-state">
+        <div class="state-kicker wait"><i></i>ส่งให้ฝ่ายจัดงานแล้ว</div>
+        <h1>รอคำตอบ</h1>
+        <div class="location">K. Nattaporn · จุด 1 จาก 4</div>
+        <div class="package"><div><small>ของอยู่กับคุณ</small><b>Midnight Orchid + แจกันแก้ว</b><span id="waitingProblem">แจ้งของเสียหาย · แนบรูปแล้ว</span></div><div class="qty">×1</div></div>
+        <div class="wait-copy"><small>ฝ่ายจัดงานตรวจสอบ</small><b>เก็บของไว้กับคุณก่อน</b><span id="syncCopy">ฝ่ายจัดงานได้รับรายละเอียดและรูปแล้ว</span></div>
+      </section>
+
+      <section class="resolved-state">
+        <div class="state-kicker good"><i></i>ฝ่ายจัดงานแจ้งแล้ว</div>
+        <h1 id="decisionTitle">อย่าส่งของชิ้นนี้</h1>
+        <div class="location">K. Nattaporn · จุด 1 จาก 4</div>
+        <div class="decision"><small>ขั้นตอนต่อไป</small><b id="decisionAction">ทำรอบต่อ</b><span id="decisionCopy">ส่งจุดที่เหลือ แล้วนำของนี้กลับ UrbanFlowers</span></div>
+        <div class="return-note"><svg viewBox="0 0 24 24"><path d="M19 7H8a5 5 0 0 0 0 10h9"/><path d="m15 13 4 4-4 4"/></svg><div><b>ของยังอยู่กับคุณ</b><span>ข้อมูลรับของจะคงไว้จนกว่าจะคืนหรือส่งต่อ</span></div></div>
+      </section>
+    </section>
+
+    <footer class="footer" id="footerInitial"><button class="secondary" onclick="openSheet('moreSheet')">แชตฝ่ายจัดงาน</button></footer>
+    <footer class="footer" id="footerEvidence"><button class="primary" id="sendButton" onclick="sendIssue()" disabled>เพิ่มรูปความเสียหาย</button><button class="secondary" onclick="resetIssue()">เปลี่ยนปัญหา</button></footer>
+    <footer class="footer" id="footerWaiting"><button class="primary" disabled id="waitButton">รอฝ่ายจัดงาน</button></footer>
+    <footer class="footer" id="footerResolved"><button class="primary" onclick="continueRound()">ทำรอบต่อ</button></footer>
+
+    <input class="hidden-input" id="cameraInput" type="file" accept="image/*" capture="environment" onchange="photoChosen(event)" />
+    <div class="scrim" id="scrim" onclick="closeAllSheets()"></div>
+    <div class="sheet" id="moreSheet" role="dialog" aria-modal="true" aria-label="ตัวเลือกปัญหาของ">
+      <div class="sheet-handle"></div><div class="sheet-head"><h2>ปัญหาของ</h2></div>
+      <button class="sheet-row" onclick="showToast('เปิดแชตฝ่ายจัดงานแล้ว');closeAllSheets()"><svg viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg>แชตฝ่ายจัดงาน</button>
+      <button class="sheet-row" onclick="goBack()"><svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l-7 7 7 7"/></svg>กลับไปส่งมอบ</button>
+      <button class="sheet-row problem" onclick="location.href='ROUNDS-G05-DRIVER-EMERGENCY-TH-v1-10OF10.html'"><svg viewBox="0 0 24 24"><path d="M12 3 3 20h18z"/><path d="M12 9v4M12 17h.01"/></svg>ฉุกเฉิน</button>
+    </div>
+    <div class="toast" id="toast"></div>
+  </main>
+</div>
+<script>
+const phone=document.getElementById('phone');
+const photo=document.getElementById('photo');
+const photoState=document.getElementById('photoState');
+const photoPreview=document.getElementById('photoPreview');
+const sendButton=document.getElementById('sendButton');
+const photoBlock=document.getElementById('photoBlock');
+const cameraInput=document.getElementById('cameraInput');
+const toast=document.getElementById('toast');
+const scrim=document.getElementById('scrim');
+const params=new URLSearchParams(location.search);
+const offline=params.get('offline')==='1';
+let issue=null,photoDone=false,resolutionTimer=null;
+
+const issueConfig={
+  damaged:{title:'ของเสียหาย',summary:'เสียหาย',photo:true,photoLabel:'รูปความเสียหาย',photoAction:'ถ่ายรูปความเสียหาย',waiting:'แจ้งของเสียหาย · แนบรูปแล้ว',decision:'อย่าส่งของชิ้นนี้',action:'ทำรอบต่อ',copy:'ส่งจุดที่เหลือ แล้วนำของนี้กลับ UrbanFlowers'},
+  missing:{title:'ของไม่ครบ',summary:'ของไม่ครบ',photo:false,waiting:'แจ้งของไม่ครบ',decision:'จุดนี้ยังจบไม่ได้',action:'ทำรอบต่อ',copy:'ฝ่ายจัดงานจะจัดการของที่ขาด ให้เก็บของที่เหลือไว้กับคุณ'},
+  wrong:{title:'ของไม่ตรง',summary:'ของไม่ตรง',photo:true,photoLabel:'รูปแพ็กเกจ',photoAction:'ถ่ายรูปฉลากแพ็กเกจ',waiting:'แจ้งของไม่ตรง · แนบรูปแล้ว',decision:'อย่าส่งของชิ้นนี้',action:'ทำรอบต่อ',copy:'ส่งจุดที่เหลือ แล้วนำของนี้กลับ UrbanFlowers'}
+};
+function setState(state){phone.classList.remove('initial','evidence','waiting','resolved');phone.classList.add(state);document.querySelector('.content').scrollTop=0}
+function chooseIssue(type){issue=type;photoDone=false;const c=issueConfig[type];document.getElementById('evidenceTitle').textContent=c.title;document.getElementById('problemSummary').textContent=c.summary;photoBlock.style.display=c.photo?'block':'none';document.getElementById('photoLabel').textContent=c.photoLabel||'';document.getElementById('photoAction').textContent=c.photoAction||'';photo.classList.remove('done');photoState.textContent='ต้องมี';photoState.classList.remove('done');sendButton.disabled=!!c.photo;sendButton.textContent=c.photo?(type==='damaged'?'เพิ่มรูปความเสียหาย':'เพิ่มรูปแพ็กเกจ'):'ส่งให้ฝ่ายจัดงาน';setState('evidence')}
+function capturePhoto(){cameraInput.click()}
+function photoChosen(e){const file=e.target.files&&e.target.files[0];if(!file)return;const url=URL.createObjectURL(file);photoPreview.style.backgroundImage=`url("${url}")`;photoDone=true;photo.classList.add('done');photoState.textContent='เพิ่มแล้ว';photoState.classList.add('done');sendButton.disabled=false;sendButton.textContent='ส่งให้ฝ่ายจัดงาน';showToast('เพิ่มรูปแล้ว')}
+function sendIssue(){if(!issue)return;const c=issueConfig[issue];if(c.photo&&!photoDone){capturePhoto();return}clearTimeout(resolutionTimer);document.getElementById('waitingProblem').textContent=c.waiting;document.getElementById('syncCopy').textContent=offline?'บันทึกไว้ในเครื่อง · จะส่งเมื่อเชื่อมต่อ':'ฝ่ายจัดงานได้รับรายละเอียด'+(c.photo?'และรูปแล้ว':'แล้ว');document.getElementById('waitButton').textContent=offline?'รอซิงก์':'รอฝ่ายจัดงาน';setState('waiting');showToast(offline?'บันทึกไว้ในเครื่อง':'ส่งปัญหาให้ฝ่ายจัดงานแล้ว');if(!offline)resolutionTimer=setTimeout(resolveIssue,1500)}
+function resolveIssue(){const c=issueConfig[issue||'damaged'];document.getElementById('decisionTitle').textContent=c.decision;document.getElementById('decisionAction').textContent=c.action;document.getElementById('decisionCopy').textContent=c.copy;setState('resolved');showToast('ฝ่ายจัดงานส่งขั้นตอนต่อไปแล้ว')}
+function resetIssue(){issue=null;photoDone=false;cameraInput.value='';photoPreview.style.backgroundImage='';setState('initial')}
+function continueRound(){location.href='ROUNDS-E01-ACTIVE-ROUND-OVERVIEW-TH-v1-10OF10.html'}
+function goBack(){location.href='ROUNDS-F03-F04-PROOF-OF-DELIVERY-TH-v1-10OF10.html'}
+function openSheet(id){closeAllSheets(false);document.getElementById(id).classList.add('show');scrim.classList.add('show')}
+function closeAllSheets(hide=true){document.querySelectorAll('.sheet').forEach(s=>s.classList.remove('show'));if(hide)scrim.classList.remove('show')}
+function showToast(msg){toast.textContent=msg;toast.classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>toast.classList.remove('show'),1300)}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAllSheets()});
+// Non-visible QA hooks for narrow-screen/state testing.
+if(params.get('issue')&&issueConfig[params.get('issue')]){chooseIssue(params.get('issue'));if(params.get('photo')==='1'&&issueConfig[issue].photo){photoDone=true;photo.classList.add('done');photoState.textContent='เพิ่มแล้ว';photoState.classList.add('done');sendButton.disabled=false;sendButton.textContent='ส่งให้ฝ่ายจัดงาน'}if(params.get('state')==='waiting')sendIssue();if(params.get('state')==='resolved'){sendIssue();clearTimeout(resolutionTimer);resolveIssue()}}
+</script>
+</body>
+</html>

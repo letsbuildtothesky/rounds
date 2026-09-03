@@ -333,6 +333,9 @@ export function validatePlanRoundPayload(payload: PlanRoundPayload): void {
   if (!payload.routePlan || payload.routePlan.status !== "fits") {
     throw new ContractError("routePlan must be a server-calculated fit");
   }
+  if (!payload.routePlan.capacity || payload.routePlan.capacity.status !== "fits") {
+    throw new ContractError("routePlan capacity must be an evaluated fit");
+  }
   if (payload.routePlan.driverId !== payload.driverId || payload.routePlan.serviceDate !== payload.serviceDate) {
     throw new ContractError("routePlan driver and service date must match the Round");
   }

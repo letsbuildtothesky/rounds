@@ -6,6 +6,7 @@ import type {
 } from "@rounds/contracts";
 import type { ActorContext, PlanningRouteContextGateway } from "./types.js";
 import type { RoutingProvider } from "./routing-provider.js";
+import { evaluateCapacity } from "./capacity-validator.js";
 
 export type PlanningRouteService = {
   preview(actor: ActorContext, request: { serviceDate: string; driverId: string; stopIds: string[] }, now: Date): Promise<PlanningRoutePreview>;
@@ -32,12 +33,22 @@ export function createPlanningRouteService(
       const driver = context.driver;
       if (!driver.effectiveShift) blockingReasons.push("Driver has no effective shift for this service date.");
       if (!driver.vehicleProfile) blockingReasons.push("Driver has no active vehicle profile for this service date.");
-      if (driver.vehicleProfile && context.stops.length > driver.vehicleProfile.maxStopsPerDeparture) {
-        blockingReasons.push(`${driver.vehicleProfile.displayName} allows ${driver.vehicleProfile.maxStopsPerDeparture} Stops per departure.`);
-      }
-      if (driver.vehicleProfile?.departurePattern === "return_after_every_delivery" && context.stops.length > 1) {
-        blockingReasons.push("Vehicle rules require returning to pickup after every delivery.");
-      }
+      const capacity = driver.vehicleProfile
+        ? evaluateCapacity({
+          stopCount: context.stops.length,
+          maxStopsPerDeparture: driver.vehicleProfile.maxStopsPerDeparture,
+          departurePattern: driver.vehicleProfile.departurePattern,
+          cargoRequirements: context.stops.flatMap((stop) => stop.cargoRequirements),
+          cargoLimits: driver.vehicleProfile.cargoLimits,
+        })
+        : {
+          status: "review_required" as const,
+          dimensions: [],
+          reasons: ["Vehicle capacity cannot be evaluated until an active vehicle profile is assigned."],
+          warnings: [],
+        };
+      if (capacity.status !== "fits") blockingReasons.push(...capacity.reasons);
+      warnings.push(...capacity.warnings);
       if (!driver.effectiveShift || !context.pickup) {
         throw new Error(blockingReasons[0] || "Planning route context is incomplete");
       }
@@ -111,6 +122,7 @@ export function createPlanningRouteService(
         stops: evaluatedStops,
         blockingReasons: [...new Set(blockingReasons)],
         warnings: [...new Set(warnings)],
+        capacity,
         geometry: routed.geometry,
       };
     },

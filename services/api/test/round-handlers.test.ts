@@ -34,6 +34,7 @@ const projection: OperationsPlanningProjection = {
     windowStart: "2026-09-02T02:00:00Z",
     windowEnd: "2026-09-02T04:00:00Z",
     manifestSummary: "1× Flower bouquet",
+    cargoRequirements: [{ cargoClassCode: "bouquet", displayName: "Bouquets", quantity: 1, classificationStatus: "classified" }],
   }],
   activeRounds: [],
 };
@@ -56,6 +57,7 @@ const routePreview: PlanningRoutePreview = {
   stops: [{ stopId: projection.unplannedDeliveries[0]!.stopId, sequence: 1, eta: "2026-09-02T01:15:00.000Z", departureAt: "2026-09-02T02:00:00.000Z", windowStart: "2026-09-02T02:00:00.000Z", windowEnd: "2026-09-02T04:00:00.000Z", promiseStatus: "early", waitingSeconds: 2700, latenessSeconds: 0, legDurationSeconds: 900, legDistanceMeters: 2500 }],
   blockingReasons: [],
   warnings: [],
+  capacity: { status: "fits", dimensions: [{ kind: "stops", code: "stops", displayName: "Stops per departure", used: 1, limit: 8, remaining: 7, utilizationPercent: 13, status: "fits" }], constrainingDimension: { kind: "stops", code: "stops" }, reasons: [], warnings: [] },
   geometry: { type: "LineString", coordinates: [[100.5, 13.7], [100.6, 13.8]] },
 };
 const routes = { preview: async () => routePreview };

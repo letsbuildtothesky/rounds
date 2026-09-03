@@ -1,6 +1,7 @@
 import type { OperationsRoundSummary } from "./round.js";
 import type { DeliveryState } from "./delivery.js";
 import type { CommandEnvelope, CommandResult, DomainEventEnvelope } from "./command.js";
+import type { VehicleCargoLimit } from "./capacity.js";
 
 export const operationsRoles = [
   "tenant_owner",
@@ -171,6 +172,7 @@ export type OperationsVehicleProfileSummary = {
   pickupTurnaroundMinutes: number;
   requiresReview: boolean;
   version: number;
+  cargoLimits: VehicleCargoLimit[];
 };
 
 export type OperationsDriverCapacityItem = {

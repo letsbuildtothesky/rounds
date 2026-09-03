@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Rounds — H02 โทรและติดต่อ · Thai-first v1</title>
+<style>
+@import url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@7/fonts/LINESeedSansTH/LINESeedSansTH.css');
+:root{
+  --canvas:#eef1f4;--paper:#fff;--ink:#172238;--ink2:#3d4a5d;--muted:#748094;
+  --line:#e1e6ea;--line2:#cbd4dc;--orange:#ff6420;--orange-soft:#fff2eb;
+  --green:#168b50;--green-soft:#eaf7ef;--red:#bf4a4a;--red-soft:#fff0f0;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;min-height:100%;background:var(--canvas);color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit;cursor:pointer}body{padding:28px}
+.phone{width:393px;height:852px;margin:0 auto;background:#fff;position:relative;overflow:hidden;border:1px solid rgba(23,34,56,.09);border-radius:28px;box-shadow:0 18px 42px rgba(23,34,56,.14)}
+.statusbar{height:28px;padding:0 20px 4px;display:flex;align-items:flex-end;justify-content:space-between;font-size:12px;font-weight:760;background:#fff;position:relative;z-index:50}
+.sb-right{display:flex;align-items:center;gap:6px}.signal{display:flex;align-items:flex-end;gap:1.5px;height:9px}.signal i{display:block;width:2px;background:currentColor;border-radius:1px}.signal i:nth-child(1){height:3px}.signal i:nth-child(2){height:5px}.signal i:nth-child(3){height:7px}.signal i:nth-child(4){height:9px}.battery{width:20px;height:9px;border:1.5px solid currentColor;border-radius:2px;padding:1px;position:relative}.battery:after{content:"";position:absolute;right:-3px;top:1.5px;width:2px;height:4px;background:currentColor}.battery b{display:block;width:78%;height:100%;background:currentColor;border-radius:1px}
+.app{position:absolute;inset:28px 0 0;background:#fff;display:flex;flex-direction:column;min-height:0}
+.topbar{height:64px;flex:0 0 64px;padding:0 18px;display:grid;grid-template-columns:44px minmax(0,1fr) 44px;gap:10px;align-items:center;border-bottom:1px solid var(--line);background:#fff;position:relative;z-index:10}
+.iconbtn{width:44px;height:44px;border:0;background:#fff;color:var(--ink);display:grid;place-items:center;border-radius:6px}.iconbtn:active{background:#f3f5f7}.iconbtn svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.topcopy{min-width:0}.topcopy b{display:block;font-size:17px;line-height:1.05;font-weight:850;letter-spacing:-.025em}.topcopy span{display:block;margin-top:5px;font-size:11.5px;color:var(--muted);font-weight:720;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.topspacer{width:44px;height:44px}
+.context{flex:0 0 58px;min-height:58px;border-bottom:1px solid var(--line);padding:0 20px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;background:#fff}.context small{display:block;color:var(--orange);font-size:10.5px;line-height:1;font-weight:880;letter-spacing:.095em;text-transform:uppercase}.context b{display:block;margin-top:5px;font-size:15px;line-height:1.1;font-weight:840;letter-spacing:-.015em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.context button{height:38px;border:0;background:#fff;color:var(--ink2);font-size:13px;font-weight:820;padding:0 2px}.context button:active{color:var(--orange)}
+.main{flex:1;min-height:0;display:flex;flex-direction:column;background:#fff;position:relative}.hero{padding:38px 26px 22px;flex:1;display:flex;flex-direction:column;min-height:0}.kicker{font-size:11px;line-height:1;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--green);display:flex;align-items:center;gap:8px}.kicker:before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}.kicker.orange{color:var(--orange)}.hero h1{margin:14px 0 0;font-size:42px;line-height:.98;font-weight:900;letter-spacing:-.055em}.hero .sub{margin-top:12px;font-size:17px;line-height:1.3;font-weight:740;color:var(--muted)}
+.voice-label{margin-top:24px;padding:17px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px}.voice-label span{font-size:14px;font-weight:770;color:var(--ink2)}.voice-label b{font-size:14px;font-weight:850;color:var(--green)}
+.recipient-phone{margin-top:24px;padding:17px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:24px;line-height:1;font-weight:870;letter-spacing:-.025em;font-variant-numeric:tabular-nums}.privacy{margin-top:0}.privacy-row{min-height:58px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:30px minmax(0,1fr);gap:10px;align-items:center}.privacy-row svg{width:20px;height:20px;fill:none;stroke:var(--orange);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.privacy-row b{display:block;font-size:13.5px;line-height:1.25;font-weight:830}.privacy-row span{display:block;margin-top:3px;color:var(--muted);font-size:11.8px;line-height:1.3;font-weight:690}
+.actions{padding:12px 20px calc(18px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:#fff}.primary{width:100%;height:62px;border:0;border-radius:7px;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;gap:10px;font-size:16px;font-weight:860}.primary:active{transform:translateY(1px)}.primary svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}.secondary{width:100%;height:48px;margin-top:5px;border:0;background:#fff;color:var(--ink2);font-size:14px;font-weight:810}.secondary:active{color:var(--orange)}.primary.danger{background:var(--red)}
+.dialing{display:none;position:absolute;inset:0;background:#fff;z-index:8;flex-direction:column}.dialing.show{display:flex}.dialing-body{flex:1;padding:50px 26px 24px;text-align:center;display:flex;flex-direction:column;align-items:center}.callmark{width:92px;height:92px;border-radius:50%;background:var(--orange);color:#fff;display:grid;place-items:center}.callmark svg{width:38px;height:38px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.dialing h2{margin:28px 0 0;font-size:32px;line-height:1.02;font-weight:900;letter-spacing:-.05em}.dialing p{margin:9px 0 0;font-size:15px;color:var(--muted);font-weight:720}.dialing .honest{margin-top:26px;padding-top:16px;border-top:1px solid var(--line);width:100%;font-size:12px;line-height:1.4;color:var(--muted);font-weight:690}.dialing-actions{padding:12px 20px calc(18px + env(safe-area-inset-bottom));border-top:1px solid var(--line)}
+.logged{display:none;margin-top:25px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:15px 0}.logged.show{display:flex;align-items:center;justify-content:space-between;gap:12px}.logged span{font-size:13px;color:var(--muted);font-weight:720}.logged b{font-size:14px;font-weight:850}.logged b.good{color:var(--green)}.logged b.warn{color:var(--orange)}
+.scrim{position:absolute;inset:0;background:rgba(23,34,56,.28);opacity:0;pointer-events:none;transition:.16s;z-index:30}.scrim.show{opacity:1;pointer-events:auto}.sheet{position:absolute;left:8px;right:8px;bottom:8px;background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:none;z-index:40;padding:9px 16px 16px;transform:translateY(calc(100% + 22px));transition:.18s ease}.sheet.show{transform:none}.sheet-handle{width:44px;height:4px;border-radius:99px;background:#d4dce3;margin:0 auto 14px}.sheet h2{margin:0 0 12px;font-size:23px;line-height:1.05;font-weight:900;letter-spacing:-.04em}.sheet-row{width:100%;height:58px;border:0;border-top:1px solid var(--line);background:#fff;color:var(--ink);display:flex;align-items:center;justify-content:space-between;text-align:left;font-size:15px;font-weight:830}.sheet-row:first-of-type{border-top:0}.sheet-row:active{color:var(--orange)}.arrow{width:9px;height:9px;border-top:2px solid currentColor;border-right:2px solid currentColor;transform:rotate(45deg);opacity:.55;margin-right:4px}
+.toast{position:absolute;left:18px;right:18px;bottom:92px;z-index:60;background:var(--ink);color:#fff;border-radius:8px;padding:12px 14px;font-size:12.5px;font-weight:760;box-shadow:0 12px 26px rgba(23,34,56,.18);opacity:0;transform:translateY(7px);pointer-events:none;transition:.16s}.toast.show{opacity:1;transform:none}
+@media(max-width:520px){body{padding:0}.phone{width:100vw;height:100dvh;border:0;border-radius:0;box-shadow:none}}
+@media(max-width:340px){.topbar{padding:0 12px}.context{padding:0 14px}.hero{padding:28px 18px 18px}.hero h1{font-size:36px}.actions,.dialing-actions{padding-left:14px;padding-right:14px}.primary{height:58px}.sheet{left:6px;right:6px;bottom:6px;padding-left:14px;padding-right:14px}.privacy-row{min-height:54px}.recipient-phone{font-size:21px}}
+
+
+/* Thai-first composition — locked */
+html,body{font-family:'LINE Seed Sans TH',Tahoma,'Noto Sans Thai',sans-serif}
+.statusbar{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;font-weight:700}
+.phone{box-shadow:none}
+.topcopy b{font-size:17px;line-height:1.3;font-weight:760;letter-spacing:0}.topcopy span{margin-top:2px;font-size:12px;line-height:1.35;font-weight:620}
+.context{min-height:64px;flex-basis:64px}.context small{font-size:12px;line-height:1.35;font-weight:680;letter-spacing:0;text-transform:none}.context b{margin-top:2px;font-size:14.5px;line-height:1.35;font-weight:720;letter-spacing:0}.context button{font-size:13px;font-weight:700}
+.hero{padding:38px 24px 24px}.kicker{font-size:12.5px;line-height:1.4;font-weight:680;letter-spacing:0;text-transform:none}.hero h1{margin-top:10px;font-size:42px;line-height:1.12;font-weight:800;letter-spacing:0}.hero .sub{margin-top:7px;font-size:15.5px;line-height:1.45;font-weight:590}.voice-label{margin-top:26px;padding:18px 0}.voice-label span,.voice-label b{font-size:14px;line-height:1.4}.voice-label span{font-weight:620}.voice-label b{font-weight:720}
+.recipient-phone{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;margin-top:22px;font-size:25px;letter-spacing:-.02em}.privacy-row{min-height:66px;grid-template-columns:28px minmax(0,1fr);gap:11px}.privacy-row b{font-size:14px;line-height:1.4;font-weight:720}.privacy-row span{margin-top:2px;font-size:12.5px;line-height:1.45;font-weight:560}
+.logged{margin-top:22px;padding:15px 0}.logged span{font-size:13px;line-height:1.4;font-weight:600}.logged b{font-size:14px;line-height:1.4;font-weight:720}
+.actions{padding:12px 20px calc(18px + env(safe-area-inset-bottom));box-shadow:none}.primary{height:62px;font-size:16px;line-height:1.4;font-weight:740}.secondary{height:50px;font-size:14px;line-height:1.4;font-weight:650}
+.dialing-body{padding:54px 24px 24px}.callmark{width:88px;height:88px}.dialing h2{margin-top:25px;font-size:32px;line-height:1.25;font-weight:800;letter-spacing:0}.dialing p{margin-top:5px;font-size:15px;line-height:1.4;font-weight:600}.dialing .honest{margin-top:24px;font-size:12.5px;line-height:1.45;font-weight:560}.dialing-actions{box-shadow:none}
+.scrim{background:rgba(23,34,56,.24)}.sheet{box-shadow:none;opacity:0;pointer-events:none;transform:translateY(110%);border-radius:14px;padding-bottom:18px}.sheet.show{opacity:1;pointer-events:auto;transform:none}.sheet h2{margin-bottom:10px;font-size:24px;line-height:1.3;font-weight:780;letter-spacing:0}.sheet-row{height:62px;font-size:15px;line-height:1.4;font-weight:690}.toast{font-family:'LINE Seed Sans TH',Tahoma,'Noto Sans Thai',sans-serif;font-size:13px;line-height:1.45;font-weight:600;box-shadow:none}
+@media(max-width:340px){.topbar{padding:0 12px}.context{padding:0 14px;min-height:62px;flex-basis:62px}.hero{padding:30px 18px 18px}.hero h1{font-size:36px}.hero .sub{font-size:14.5px}.privacy-row{min-height:61px}.recipient-phone{font-size:21px}.actions,.dialing-actions{padding-left:14px;padding-right:14px}.primary{height:58px}.sheet{left:6px;right:6px;bottom:6px;padding-left:14px;padding-right:14px}}
+
+</style>
+</head>
+<body>
+<div class="phone" id="phone">
+  <div class="statusbar"><div>15:51</div><div class="sb-right"><div class="signal"><i></i><i></i><i></i><i></i></div><div>5G</div><div class="battery"><b></b></div></div></div>
+  <main class="app">
+    <header class="topbar">
+      <button class="iconbtn" aria-label="กลับ" onclick="goBack()"><svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+      <div class="topcopy"><b id="topTitle">โทรฝ่ายจัดงาน</b><span id="topSub">รอบ 28 · จุด 1 จาก 4</span></div>
+      <div class="topspacer"></div>
+    </header>
+
+    <section class="context">
+      <div><small>จุด 1 จาก 4</small><b>K. Nattaporn · The Emporio Place</b></div>
+      <button onclick="openStop()">ดูจุดส่ง</button>
+    </section>
+
+    <section class="main">
+      <div class="hero" id="operatorHero">
+        <div class="kicker">ฝ่ายจัดงาน</div>
+        <h1>UrbanFlowers</h1>
+        <div class="sub">โทรผ่าน Rounds</div>
+        <div class="voice-label"><span>สถานะ</span><b>ออนไลน์</b></div>
+        <div class="logged" id="operatorLogged"><span>การโทรล่าสุด</span><b id="operatorOutcome"></b></div>
+      </div>
+
+      <div class="hero" id="recipientHero" hidden>
+        <div class="kicker orange">ผู้รับ</div>
+        <h1>K. Nattaporn</h1>
+        <div class="sub">The Emporio Place · Sukhumvit 24</div>
+        <div class="recipient-phone">+66 89 221 7044</div>
+        <div class="privacy">
+          <div class="privacy-row"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3"/></svg><div><b>เปิดแอปโทรศัพท์</b><span>การโทรหาผู้รับใช้แอปโทรศัพท์ปกติ</span></div></div>
+          <div class="privacy-row"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg><div><b>ผู้รับอาจเห็นเบอร์คุณ</b><span>งานนี้ยังไม่ได้ซ่อนหมายเลขโทรศัพท์</span></div></div>
+        </div>
+        <div class="logged" id="recipientLogged"><span>การโทรล่าสุด</span><b id="recipientOutcome"></b></div>
+      </div>
+
+      <div class="actions" id="operatorActions">
+        <button class="primary" onclick="startOperationsCall()"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3"/></svg>โทรฝ่ายจัดงาน</button>
+        <button class="secondary" onclick="messageOperations()">แชตฝ่ายจัดงาน</button>
+      </div>
+
+      <div class="actions" id="recipientActions" hidden>
+        <button class="primary" onclick="callRecipient()"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3"/></svg>โทรหาผู้รับ</button>
+        <button class="secondary" id="logRecipientBtn" style="display:none" onclick="openOutcomeSheet('recipient')">บันทึกผลการโทร</button>
+      </div>
+
+      <section class="dialing" id="dialing">
+        <div class="dialing-body">
+          <div class="callmark"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3"/></svg></div>
+          <h2>กำลังโทรฝ่ายจัดงาน</h2>
+          <p>UrbanFlowers</p>
+          <div class="honest" id="callTruth">กำลังเชื่อมต่อ</div>
+        </div>
+        <div class="dialing-actions"><button class="primary danger" onclick="endOperationsCall()">วางสาย</button></div>
+      </section>
+    </section>
+
+    <div class="scrim" id="scrim" onclick="closeOutcomeSheet()"></div>
+    <section class="sheet" id="outcomeSheet" role="dialog" aria-modal="true" aria-label="ผลการโทร">
+      <div class="sheet-handle"></div><h2>ผลการโทร</h2>
+      <button class="sheet-row" onclick="saveOutcome('ติดต่อได้')"><span>ติดต่อได้</span><i class="arrow"></i></button>
+      <button class="sheet-row" onclick="saveOutcome('ไม่รับสาย')"><span>ไม่รับสาย</span><i class="arrow"></i></button>
+      <button class="sheet-row" id="thirdOutcome" onclick="saveOutcome('สายไม่ว่าง')"><span>สายไม่ว่าง</span><i class="arrow"></i></button>
+    </section>
+    <div class="toast" id="toast"></div>
+  </main>
+</div>
+<script>
+const qs=new URLSearchParams(location.search);
+let mode=qs.get('contact')==='recipient'?'recipient':'operations';
+let outcomeTarget=mode;
+const operatorHero=document.getElementById('operatorHero');
+const recipientHero=document.getElementById('recipientHero');
+const operatorActions=document.getElementById('operatorActions');
+const recipientActions=document.getElementById('recipientActions');
+const dialing=document.getElementById('dialing');
+const scrim=document.getElementById('scrim');
+const outcomeSheet=document.getElementById('outcomeSheet');
+const toast=document.getElementById('toast');
+
+function configure(){
+  const recipient=mode==='recipient';
+  operatorHero.hidden=recipient;operatorActions.hidden=recipient;
+  recipientHero.hidden=!recipient;recipientActions.hidden=!recipient;
+  document.getElementById('topTitle').textContent=recipient?'โทรหาผู้รับ':'โทรฝ่ายจัดงาน';
+  document.getElementById('thirdOutcome').querySelector('span').textContent=recipient?'สายไม่ว่าง':'โทรไม่สำเร็จ';
+  document.getElementById('thirdOutcome').onclick=()=>saveOutcome(recipient?'สายไม่ว่าง':'โทรไม่สำเร็จ');
+}
+function showToast(msg){toast.textContent=msg;toast.classList.add('show');clearTimeout(showToast.t);showToast.t=setTimeout(()=>toast.classList.remove('show'),1500)}
+function goBack(){if(history.length>1)history.back();else location.href='ROUNDS-H01-OPERATOR-CHAT-TH-v1-10OF10.html'}
+function openStop(){location.href='ROUNDS-E01-ACTIVE-ROUND-OVERVIEW-TH-v1-10OF10.html'}
+function messageOperations(){location.href='ROUNDS-H01-OPERATOR-CHAT-TH-v1-10OF10.html'}
+function startOperationsCall(){dialing.classList.add('show');document.getElementById('callTruth').textContent='กำลังเชื่อมต่อ'}
+function endOperationsCall(){dialing.classList.remove('show');openOutcomeSheet('operations')}
+window.h02CallConnected=()=>{document.querySelector('.dialing h2').textContent='ฝ่ายจัดงาน';document.querySelector('.dialing p').textContent='เชื่อมต่อแล้ว';document.getElementById('callTruth').textContent='โทรผ่าน Rounds'}
+function callRecipient(){
+  document.getElementById('logRecipientBtn').style.display='block';
+  showToast('กำลังเปิดแอปโทรศัพท์');
+  setTimeout(()=>{try{location.href='tel:+66892217044'}catch(e){}},120);
+}
+function openOutcomeSheet(target){outcomeTarget=target;scrim.classList.add('show');outcomeSheet.classList.add('show')}
+function closeOutcomeSheet(){scrim.classList.remove('show');outcomeSheet.classList.remove('show')}
+function saveOutcome(value){
+  closeOutcomeSheet();
+  const rec=outcomeTarget==='recipient';
+  const box=document.getElementById(rec?'recipientLogged':'operatorLogged');
+  const out=document.getElementById(rec?'recipientOutcome':'operatorOutcome');
+  out.textContent=value;out.className=value==='ติดต่อได้'?'good':'warn';box.classList.add('show');
+  showToast(`บันทึกผลการโทร · ${value}`);
+}
+configure();
+window.setH02Contact=(next)=>{mode=next==='recipient'?'recipient':'operations';configure()};
+</script>
+</body>
+</html>

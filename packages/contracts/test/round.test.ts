@@ -33,6 +33,7 @@ const payload = () => ({
     stops: [{ stopId: "10000000-0000-4000-8000-000000000005", sequence: 1, eta: "2026-09-02T01:15:00.000Z", departureAt: "2026-09-02T02:00:00.000Z", windowStart: "2026-09-02T02:00:00.000Z", windowEnd: "2026-09-02T04:00:00.000Z", promiseStatus: "early" as const, waitingSeconds: 2700, latenessSeconds: 0, legDurationSeconds: 900, legDistanceMeters: 2500 }],
     blockingReasons: [],
     warnings: [],
+    capacity: { status: "fits" as const, dimensions: [{ kind: "stops" as const, code: "stops", displayName: "Stops per departure", used: 1, limit: 8, remaining: 7, utilizationPercent: 13, status: "fits" as const }], constrainingDimension: { kind: "stops" as const, code: "stops" }, reasons: [], warnings: [] },
   },
 });
 

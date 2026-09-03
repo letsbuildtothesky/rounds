@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Rounds — F01/F02 ส่งมอบของ · Thai-first v1</title>
+<style>
+@import url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@7/fonts/LINESeedSansTH/LINESeedSansTH.css');
+  :root{
+    --canvas:#eef1f4;
+    --paper:#fff;
+    --ink:#172238;
+    --ink-2:#3d4a5d;
+    --muted:#748094;
+    --line:#e1e6ea;
+    --line-2:#cbd4dc;
+    --orange:#ff6420;
+    --orange-soft:#fff5ef;
+    --green:#168b50;
+    --green-soft:#f1f9f4;
+    --red:#bf4a4a;
+    --red-soft:#fff5f5;
+    --navy:#172238;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%;background:var(--canvas);color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  button,a{font:inherit}
+  body{padding:28px}
+  .frame{width:393px;height:852px;margin:0 auto;background:var(--paper);position:relative;overflow:hidden;border:1px solid rgba(23,34,56,.09);border-radius:28px;box-shadow:0 18px 42px rgba(23,34,56,.14)}
+
+  .statusbar{height:28px;padding:0 20px 4px;display:flex;align-items:flex-end;justify-content:space-between;font-size:12px;font-weight:760;background:#fff;position:relative;z-index:30}
+  .sb-right{display:flex;align-items:center;gap:6px}
+  .signal{display:flex;align-items:flex-end;gap:1.5px;height:9px}.signal i{display:block;width:2px;background:currentColor;border-radius:1px}.signal i:nth-child(1){height:3px}.signal i:nth-child(2){height:5px}.signal i:nth-child(3){height:7px}.signal i:nth-child(4){height:9px}
+  .battery{width:20px;height:9px;border:1.5px solid currentColor;border-radius:2px;padding:1px;position:relative}.battery:after{content:"";position:absolute;right:-3px;top:1.5px;width:2px;height:4px;background:currentColor}.battery b{display:block;width:78%;height:100%;background:currentColor;border-radius:1px}
+
+  .screen{position:absolute;inset:28px 0 0;background:#fff;display:flex;flex-direction:column}
+  .topbar{height:60px;flex:0 0 auto;padding:0 18px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--line)}
+  .back{width:42px;height:42px;border:1px solid var(--line-2);border-radius:7px;background:#fff;display:grid;place-items:center;color:var(--ink);cursor:pointer}
+  .back svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}
+  .top-copy{flex:1;min-width:0}.top-copy small{display:block;font-size:11px;font-weight:850;letter-spacing:.08em;text-transform:uppercase;color:var(--orange)}.top-copy b{display:block;margin-top:4px;font-size:15px;font-weight:810;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .top-meta{font-size:12.5px;font-weight:760;color:var(--muted);white-space:nowrap}
+
+  .content{flex:1;min-height:0;overflow:auto;padding:26px 18px 28px;scrollbar-width:none}.content::-webkit-scrollbar{display:none}
+  .hero{padding-bottom:22px;border-bottom:1px solid var(--line)}
+  .hero h1{margin:0;font-size:32px;line-height:.98;font-weight:900;letter-spacing:-.055em;max-width:310px}
+  .place{margin-top:12px;font-size:13.5px;line-height:1.4;color:var(--muted);font-weight:710}
+  .place b{color:var(--ink-2);font-weight:790}
+
+  .package-line{min-height:58px;display:grid;grid-template-columns:8px minmax(0,1fr) auto;gap:11px;align-items:center;border-bottom:1px solid var(--line)}
+  .package-dot{width:8px;height:8px;border-radius:50%;background:var(--orange)}
+  .package-copy{min-width:0}.package-copy b{display:block;font-size:13.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.package-copy span{display:block;margin-top:4px;font-size:11.8px;color:var(--muted)}
+  .package-side{font-size:11.5px;font-weight:800;color:var(--orange);white-space:nowrap}
+
+  .section-label{margin:24px 0 9px;font-size:11px;font-weight:850;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .choice-list{border-top:1px solid var(--line)}
+  .choice{width:100%;min-height:92px;padding:14px 2px;border:0;border-bottom:1px solid var(--line);background:#fff;color:var(--ink);display:grid;grid-template-columns:minmax(0,1fr) 30px;gap:14px;align-items:center;text-align:left;cursor:pointer}
+  .choice:active{background:#fffaf7;box-shadow:inset 3px 0 0 var(--orange)}
+  .choice:active .choice-arrow{color:var(--orange)}
+  .choice-copy{min-width:0}.choice-copy b{display:block;font-size:19px;line-height:1.15;font-weight:850;letter-spacing:-.025em}.choice-copy span{display:block;margin-top:7px;font-size:12.5px;line-height:1.4;color:var(--muted);font-weight:680}
+  .choice-arrow{width:28px;height:28px;display:grid;place-items:center;color:#8b96a4}
+  .choice-arrow svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .choice.left .choice-copy span{color:#8e6a48}
+
+  .contact-block{margin-top:30px;padding-top:20px;border-top:1px solid var(--line)}
+  .contact-title{font-size:11px;font-weight:850;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  .contact-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .contact{height:54px;border:1px solid var(--line-2);border-radius:7px;background:#fff;color:var(--ink-2);display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;font-weight:790;cursor:pointer;text-decoration:none}
+  .contact:active{background:#f7f9fa}
+  .contact svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+  .unavailable{width:100%;height:48px;margin-top:8px;border:0;background:#fff;color:var(--red);font-size:13px;font-weight:780;cursor:pointer}
+
+  .scrim{position:absolute;inset:0;background:rgba(23,34,56,.28);z-index:60;opacity:0;pointer-events:none;transition:.18s ease}.scrim.show{opacity:1;pointer-events:auto}
+  .sheet{position:absolute;left:0;right:0;bottom:0;z-index:70;background:#fff;border-top:1px solid var(--line-2);border-radius:16px 16px 0 0;padding:10px 18px 22px;transform:translateY(104%);transition:transform .22s cubic-bezier(.22,.72,.24,1);box-shadow:none;}
+  .sheet.show{transform:none}.grip{width:40px;height:4px;border-radius:3px;background:#ccd4db;margin:0 auto 16px}.sheet h2{margin:0;font-size:22px;line-height:1.05;font-weight:880;letter-spacing:-.04em}
+  .sheet p{margin:7px 0 0;font-size:12.5px;line-height:1.45;color:var(--muted)}
+  .sheet-list{margin-top:16px;border-top:1px solid var(--line)}
+  .sheet-action{width:100%;min-height:58px;border:0;border-bottom:1px solid var(--line);background:#fff;color:var(--ink);display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;font-size:14px;font-weight:790;cursor:pointer}
+  .sheet-action span:last-child{color:var(--muted);font-size:19px;font-weight:500}
+  .cancel{width:100%;height:48px;margin-top:8px;border:0;background:#fff;color:var(--muted);font-size:13.5px;font-weight:760;cursor:pointer}
+
+  .toast{position:absolute;left:18px;right:18px;bottom:24px;z-index:90;background:var(--navy);color:#fff;border-radius:7px;padding:12px 14px;font-size:13px;font-weight:740;line-height:1.4;box-shadow:0 12px 28px rgba(23,34,56,.19);opacity:0;transform:translateY(8px);pointer-events:none;transition:.18s ease}.toast.show{opacity:1;transform:none}
+
+  @media(max-width:350px){
+    .topbar{padding-left:14px;padding-right:14px}.content{padding:22px 16px 24px}.hero h1{font-size:29px}.choice{min-height:84px}.choice-copy b{font-size:17.5px}.choice-copy span{font-size:11.8px}.contact-block{margin-top:22px}.contact{font-size:12.2px;gap:6px}.contact svg{width:17px;height:17px}
+  }
+  @media(max-height:700px){.content{padding-top:20px}.hero{padding-bottom:17px}.package-line{min-height:52px}.section-label{margin-top:18px}.choice{min-height:78px;padding-top:10px;padding-bottom:10px}.contact-block{margin-top:20px;padding-top:15px}.unavailable{height:42px}}
+  @media(max-width:460px){body{padding:0;background:#fff}.frame{width:100vw;height:100dvh;border:0;border-radius:0;box-shadow:none}}
+
+
+/* Thai-first composition — locked Rounds TH design language */
+html,body{font-family:'LINE Seed Sans TH',Tahoma,'Noto Sans Thai',sans-serif}
+.statusbar,.top-copy b{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+.topbar{height:62px;flex-basis:62px;padding:0 18px}
+.top-copy small{font-family:'LINE Seed Sans TH',Tahoma,'Noto Sans Thai',sans-serif;font-size:11.8px;line-height:1.4;font-weight:700;letter-spacing:0;text-transform:none}
+.top-copy b{margin-top:2px;font-size:15px;line-height:1.1;font-weight:810}.top-meta{font-size:12.5px;line-height:1.4;font-weight:650}
+.content{padding:24px 18px 27px}.hero{padding-bottom:20px}.hero h1{font-size:36px;line-height:1.18;font-weight:790;letter-spacing:0;max-width:none;white-space:nowrap}.place{margin-top:8px;font-size:13.5px;line-height:1.45;font-weight:600}.place b{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;font-weight:790}
+.package-line{min-height:60px;grid-template-columns:8px minmax(0,1fr) auto;gap:10px}.package-copy b{font-size:13.5px;line-height:1.4;font-weight:700}.package-copy span{font-family:'LINE Seed Sans TH',Tahoma,'Noto Sans Thai',sans-serif;margin-top:3px;font-size:11.8px;line-height:1.35;font-weight:600}.package-side{font-size:11.8px;line-height:1.35;font-weight:680}
+.section-label{margin:22px 0 7px;font-size:11.8px;line-height:1.4;font-weight:700;letter-spacing:0;text-transform:none}
+.choice{min-height:88px;padding:12px 2px;grid-template-columns:minmax(0,1fr) 30px;gap:12px}.choice-copy b{font-size:19px;line-height:1.35;font-weight:760;letter-spacing:0}.choice-copy span{font-family:'LINE Seed Sans TH',Tahoma,'Noto Sans Thai',sans-serif;margin-top:4px;font-size:12.5px;line-height:1.45;font-weight:600;letter-spacing:0}.choice.left .choice-copy span{color:#8e6a48}
+.contact-block{margin-top:26px;padding-top:17px}.contact-title{font-size:11.8px;line-height:1.4;font-weight:700;letter-spacing:0;text-transform:none;margin-bottom:8px}.contact{height:54px;font-size:12.8px;line-height:1.35;font-weight:700;gap:6px}.unavailable{height:46px;margin-top:6px;font-size:12.8px;line-height:1.4;font-weight:700}
+.sheet h2{font-size:22px;line-height:1.35;font-weight:760;letter-spacing:0}.sheet p{font-size:12.5px;line-height:1.45;font-weight:600}.sheet-action{min-height:60px;font-size:14px;line-height:1.4;font-weight:700}.cancel{font-size:13.5px;line-height:1.4;font-weight:650}.toast{font-size:13px;line-height:1.45;font-weight:620}
+@media(max-width:350px){
+  .topbar{height:60px;flex-basis:60px;padding:0 14px}.content{padding:20px 15px 22px}.hero{padding-bottom:17px}.hero h1{font-size:31px}.place{font-size:12.5px}.package-line{min-height:55px}.package-copy b{font-size:12.8px}.package-copy span,.package-side{font-size:11px}
+  .section-label{margin-top:18px}.choice{min-height:80px;padding:10px 2px;gap:9px}.choice-copy b{font-size:17px}.choice-copy span{font-size:11.5px;line-height:1.4}.contact-block{margin-top:20px;padding-top:14px}.contact-row{gap:6px}.contact{font-size:11.7px;height:50px}.contact svg{width:16px;height:16px}.unavailable{font-size:12px;height:43px}
+}
+@media(max-height:700px){.content{padding-top:18px}.hero{padding-bottom:15px}.package-line{min-height:50px}.section-label{margin-top:16px}.choice{min-height:74px;padding-top:8px;padding-bottom:8px}.contact-block{margin-top:17px;padding-top:12px}.unavailable{height:40px}}
+
+</style>
+</head>
+<body>
+<div class="frame">
+  <div class="statusbar">
+    <span>11:24</span>
+    <div class="sb-right"><div class="signal"><i></i><i></i><i></i><i></i></div><span>5G</span><div class="battery"><b></b></div></div>
+  </div>
+
+  <main class="screen">
+    <header class="topbar">
+      <button class="back" id="backBtn" type="button" aria-label="ย้อนกลับ">
+        <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      </button>
+      <div class="top-copy"><small>ถึงจุด 1</small><b>K. Nattaporn</b></div>
+      <div class="top-meta">1 จาก 4</div>
+    </header>
+
+    <section class="content">
+      <div class="hero">
+        <h1>ใครรับของ?</h1>
+        <div class="place"><b>The Emporio Place</b> · สุขุมวิท 24</div>
+      </div>
+
+      <div class="package-line">
+        <span class="package-dot"></span>
+        <span class="package-copy"><b>Midnight Orchid + แจกันแก้ว</b><span>1 แพ็กเกจ</span></span>
+        <span class="package-side">ระวัง</span>
+      </div>
+
+      <div class="section-label">ส่งมอบให้</div>
+      <div class="choice-list" aria-label="เลือกผู้รับของ">
+        <button class="choice" type="button" data-handoff="recipient">
+          <span class="choice-copy"><b>ผู้รับ</b><span>K. Nattaporn</span></span>
+          <span class="choice-arrow"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></span>
+        </button>
+        <button class="choice" type="button" data-handoff="other">
+          <span class="choice-copy"><b>คนอื่นรับแทน</b><span>รีเซปชัน · รปภ. · ครอบครัว · พนักงาน</span></span>
+          <span class="choice-arrow"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></span>
+        </button>
+        <button class="choice left" type="button" data-handoff="left">
+          <span class="choice-copy"><b>วางไว้ที่จุดส่ง</b><span>เฉพาะเมื่อมีคำสั่ง</span></span>
+          <span class="choice-arrow"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></span>
+        </button>
+      </div>
+
+      <div class="contact-block">
+        <div class="contact-title">ติดต่อ</div>
+        <div class="contact-row">
+          <a class="contact" href="tel:+66812345678">
+            <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.33 1.78.62 2.63a2 2 0 0 1-.45 2.11L8 9.73a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.85.29 1.73.5 2.63.62A2 2 0 0 1 22 16.92z"/></svg>
+            <span>โทรหาผู้รับ</span>
+          </a>
+          <a class="contact" href="ROUNDS-H01-OPERATOR-CHAT-TH-v1-10OF10.html">
+            <svg viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg>
+            <span>แชตฝ่ายจัดงาน</span>
+          </a>
+        </div>
+        <button class="unavailable" id="unavailableBtn" type="button">ติดต่อผู้รับไม่ได้</button>
+      </div>
+    </section>
+
+    <div class="scrim" id="scrim"></div>
+    <section class="sheet" id="leftSheet" role="dialog" aria-modal="true" aria-label="วางของไว้ที่จุดส่ง" aria-hidden="true">
+      <div class="grip"></div>
+      <h2>วางไว้ที่จุดส่ง</h2>
+      <div class="sheet-list">
+        <button class="sheet-action" type="button" data-left="reception"><span>รีเซปชัน</span><span>›</span></button>
+        <button class="sheet-action" type="button" data-left="lobby"><span>ล็อบบี้ / ทางเข้า</span><span>›</span></button>
+        <button class="sheet-action" type="button" data-left="door"><span>หน้าประตู</span><span>›</span></button>
+        <button class="sheet-action" type="button" data-left="safe"><span>จุดอื่นที่อนุมัติ</span><span>›</span></button>
+      </div>
+      <button class="cancel" id="cancelSheet" type="button">ยกเลิก</button>
+    </section>
+
+    <div class="toast" id="toast"></div>
+  </main>
+</div>
+<script>
+  const PROOF='ROUNDS-F03-F04-PROOF-OF-DELIVERY-TH-v1-10OF10.html';
+  const scrim=document.getElementById('scrim');
+  const leftSheet=document.getElementById('leftSheet');
+  const toast=document.getElementById('toast');
+
+  function openSheet(){leftSheet.classList.add('show');leftSheet.setAttribute('aria-hidden','false');scrim.classList.add('show')}
+  function closeSheet(){leftSheet.classList.remove('show');leftSheet.setAttribute('aria-hidden','true');scrim.classList.remove('show')}
+  function goProof(kind,extra=''){
+    const q=new URLSearchParams({handoff:kind,stop:'1'});if(extra)q.set('left',extra);
+    location.href=`${PROOF}?${q.toString()}`;
+  }
+  function showToast(msg){toast.textContent=msg;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1400)}
+
+  document.querySelectorAll('.choice').forEach(btn=>btn.addEventListener('click',()=>{
+    const kind=btn.dataset.handoff;
+    if(kind==='left'){openSheet();return}
+    goProof(kind);
+  }));
+  document.querySelectorAll('[data-left]').forEach(btn=>btn.addEventListener('click',()=>goProof('left',btn.dataset.left)));
+  scrim.addEventListener('click',closeSheet);document.getElementById('cancelSheet').addEventListener('click',closeSheet);
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet()});
+  document.getElementById('unavailableBtn').addEventListener('click',()=>{location.href='ROUNDS-G01-RECIPIENT-UNAVAILABLE-TH-v1-10OF10.html'});
+  document.getElementById('backBtn').addEventListener('click',()=>{if(history.length>1)history.back();else location.href='ROUNDS-E02-NAVIGATE-TO-CURRENT-STOP-TH-v1-10OF10.html'});
+</script>
+</body>
+</html>

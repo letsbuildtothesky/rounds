@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Rounds — E01 รอบปัจจุบัน · Thai-first v1</title>
+<style>
+@import url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@7/fonts/LINESeedSansTH/LINESeedSansTH.css');
+  :root{
+    --canvas:#eef1f4;--paper:#fff;--ink:#172238;--ink2:#3d4a5d;--muted:#748094;
+    --line:#e1e6ea;--line2:#cbd4dc;--orange:#ff6420;--green:#168b50;--red:#bf4a4a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%;background:var(--canvas);color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  button,a{font:inherit}
+  body{padding:28px}
+  .frame{width:393px;height:852px;margin:0 auto;background:#eef2f4;position:relative;overflow:hidden;border:1px solid rgba(23,34,56,.09);border-radius:28px;box-shadow:0 18px 42px rgba(23,34,56,.14)}
+  .statusbar{height:28px;padding:0 20px 4px;display:flex;align-items:flex-end;justify-content:space-between;font-size:12px;font-weight:760;background:#fff;position:relative;z-index:50}
+  .sb-right{display:flex;align-items:center;gap:6px}.signal{display:flex;align-items:flex-end;gap:1.5px;height:9px}.signal i{display:block;width:2px;background:currentColor;border-radius:1px}.signal i:nth-child(1){height:3px}.signal i:nth-child(2){height:5px}.signal i:nth-child(3){height:7px}.signal i:nth-child(4){height:9px}.battery{width:20px;height:9px;border:1.5px solid currentColor;border-radius:2px;padding:1px;position:relative}.battery:after{content:"";position:absolute;right:-3px;top:1.5px;width:2px;height:4px;background:currentColor}.battery b{display:block;width:78%;height:100%;background:currentColor;border-radius:1px}
+  .screen{position:absolute;inset:28px 0 0;overflow:hidden;background:#eef2f4}
+
+  .topbar{position:absolute;left:0;right:0;top:0;height:60px;z-index:30;padding:0 14px;background:rgba(255,255,255,.985);border-bottom:1px solid var(--line);display:grid;grid-template-columns:42px minmax(0,1fr) 42px;gap:10px;align-items:center;backdrop-filter:blur(12px)}
+  .top-btn{width:42px;height:42px;border:1px solid transparent;border-radius:6px;background:#fff;color:var(--ink);display:grid;place-items:center;cursor:pointer}.top-btn:hover{border-color:var(--line2);background:#f8fafb}.top-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .top-copy{min-width:0}.top-state{display:flex;align-items:center;gap:7px;font-size:11px;line-height:1;font-weight:820;letter-spacing:.075em;text-transform:uppercase;color:var(--green)}.top-state i{width:7px;height:7px;border-radius:50%;background:currentColor}.top-title{margin-top:5px;font-size:16px;line-height:1.05;font-weight:820;letter-spacing:-.025em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  #map,.fallback-map{position:absolute;left:0;right:0;top:60px;bottom:224px}
+  #map{z-index:1;background:#eef2f4;display:none}.live-map #map{display:block}.live-map .fallback-map{display:none}
+  .fallback-map{z-index:0;background:linear-gradient(180deg,#f7f9fa 0%,#edf2f4 100%);overflow:hidden}.fallback-map .block{position:absolute;background:#e5eaed;border-radius:4px}.fallback-map .park{position:absolute;background:#e2eee5;border-radius:4px}.fallback-map .road{position:absolute;height:8px;background:#fff;box-shadow:0 0 0 1px #dbe2e7;border-radius:999px;transform-origin:left center}.fallback-map .road.major{height:13px}.fallback-place{position:absolute;font-size:10.5px;font-weight:760;color:#8b96a3;letter-spacing:.025em}
+  .fallback-route{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}.fallback-route .shadow{fill:none;stroke:#fff;stroke-width:11;stroke-linecap:round;stroke-linejoin:round}.fallback-route .main{fill:none;stroke:var(--ink);stroke-width:5.5;stroke-linecap:round;stroke-linejoin:round}
+  .fallback-driver{position:absolute;width:28px;height:34px;filter:drop-shadow(0 5px 10px rgba(23,34,56,.18));z-index:5}.fallback-stop{position:absolute;width:29px;height:29px;border-radius:50%;background:#fff;border:3px solid var(--ink);color:var(--ink);display:grid;place-items:center;font-size:11px;font-weight:860;box-shadow:0 5px 12px rgba(23,34,56,.13);z-index:6}.fallback-stop.current{width:34px;height:34px;background:var(--orange);border-color:#fff;color:#fff;font-size:12px}
+  .mapboxgl-ctrl-logo,.mapboxgl-ctrl-attrib{opacity:.5}.mapboxgl-ctrl-bottom-right{right:7px;bottom:7px}.mapboxgl-canvas{outline:none}
+
+  .map-summary{position:absolute;left:12px;top:74px;z-index:18;background:rgba(255,255,255,.96);border:1px solid var(--line);border-radius:6px;padding:9px 10px;box-shadow:0 7px 18px rgba(23,34,56,.07);backdrop-filter:blur(10px)}
+  .map-summary strong{display:block;font-size:13px;font-weight:820}.map-summary span{display:block;margin-top:3px;font-size:11.5px;color:var(--muted);font-weight:690}
+  .loading-note{position:absolute;left:50%;top:76px;z-index:19;transform:translateX(-50%);padding:6px 8px;border:1px solid var(--line);border-radius:5px;background:rgba(255,255,255,.94);font-size:11px;font-weight:720;color:var(--muted);box-shadow:0 5px 14px rgba(23,34,56,.05)}.loading-note.hidden{display:none}
+
+  .update-banner{display:none;position:absolute;left:12px;right:12px;top:74px;z-index:24;min-height:58px;background:#fff8f4;border:1px solid #efd1bf;border-left:3px solid var(--orange);border-radius:6px;padding:10px 12px;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;box-shadow:0 10px 24px rgba(23,34,56,.10)}.update-banner.show{display:grid}.update-banner b{display:block;font-size:13.5px;font-weight:820}.update-banner span{display:block;margin-top:3px;font-size:11.5px;color:#8b654e}.update-banner button{height:36px;border:0;border-radius:5px;background:var(--ink);color:#fff;padding:0 10px;font-size:11.5px;font-weight:790;cursor:pointer}
+
+  .next-dock{position:absolute;left:0;right:0;bottom:0;height:224px;z-index:20;background:rgba(255,255,255,.992);border-top:1px solid var(--line);box-shadow:0 -12px 30px rgba(23,34,56,.07);padding:17px 18px 14px}
+  .next-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:start}.next-kicker{font-size:11px;line-height:1;font-weight:840;letter-spacing:.08em;text-transform:uppercase;color:var(--orange)}.next-name{margin-top:7px;font-size:27px;line-height:.98;font-weight:870;letter-spacing:-.05em}.next-place{margin-top:7px;font-size:12.5px;line-height:1.35;color:var(--muted);font-weight:690}.next-eta{text-align:right;padding-top:13px;white-space:nowrap}.next-eta strong{display:block;font-size:25px;line-height:1;font-weight:860;letter-spacing:-.045em}.next-eta span{display:block;margin-top:6px;font-size:11.5px;color:var(--muted);font-weight:700}
+  .task-line{margin-top:12px;display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:750;color:var(--ink2)}.task-line i{width:7px;height:7px;border-radius:50%;background:var(--orange)}
+  .primary{width:100%;height:60px;margin-top:13px;border:0;border-radius:7px;background:var(--ink);color:#fff;font-size:16.5px;font-weight:820;cursor:pointer;box-shadow:0 7px 16px rgba(23,34,56,.10)}
+  .remaining-btn{width:100%;height:39px;margin-top:7px;border:0;background:#fff;color:var(--ink2);display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 2px;font-size:12.5px;font-weight:760;cursor:pointer}.remaining-btn span:last-child{color:var(--muted);font-size:18px}
+
+  .scrim{position:absolute;inset:0;z-index:40;background:rgba(23,34,56,.20);opacity:0;pointer-events:none;transition:opacity .16s ease}.scrim.show{opacity:1;pointer-events:auto}
+  .sheet{position:absolute;left:8px;right:8px;bottom:8px;z-index:50;background:#fff;border:1px solid var(--line2);border-radius:12px 12px 8px 8px;box-shadow:0 20px 48px rgba(23,34,56,.20);transform:translateY(calc(100% + 20px));opacity:0;pointer-events:none;transition:transform .22s cubic-bezier(.22,.72,.24,1),opacity .16s ease;overflow:hidden}.sheet.show{transform:none;opacity:1;pointer-events:auto}.sheet-handle{height:22px;display:grid;place-items:center}.sheet-handle:after{content:"";width:38px;height:4px;border-radius:99px;background:#ccd4dc}.sheet-head{padding:4px 16px 14px;border-bottom:1px solid var(--line)}.sheet-head b{font-size:18px;font-weight:850;letter-spacing:-.03em}.sheet-head span{display:block;margin-top:4px;font-size:11.5px;color:var(--muted)}
+  .stop-list{max-height:298px;overflow:auto}.stop-row{min-height:67px;padding:10px 16px;display:grid;grid-template-columns:31px minmax(0,1fr) auto;gap:11px;align-items:center;border-bottom:1px solid var(--line)}.stop-row:last-child{border-bottom:0}.stop-num{width:29px;height:29px;border:1px solid var(--line2);border-radius:5px;display:grid;place-items:center;font-size:11.5px;font-weight:830;color:var(--ink2)}.stop-copy{min-width:0}.stop-copy b{display:block;font-size:13.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.stop-copy span{display:block;margin-top:4px;font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.stop-time{text-align:right}.stop-time b{display:block;font-size:12px;font-weight:790}.stop-time span{display:block;margin-top:3px;font-size:11px;color:var(--muted)}
+
+  .action-sheet .sheet-head{padding-bottom:10px}.action-list{display:grid}.action{width:100%;min-height:62px;padding:0 17px;border:0;border-bottom:1px solid var(--line);background:#fff;color:var(--ink);display:grid;grid-template-columns:31px minmax(0,1fr);gap:12px;align-items:center;text-align:left;font-size:15px;font-weight:790;text-decoration:none;cursor:pointer}.action:last-child{border-bottom:0}.action:hover{background:#f7f9fa}.action.issue{color:var(--red)}.action svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+  .driver-marker{width:34px;height:42px;filter:drop-shadow(0 6px 12px rgba(23,34,56,.18))}.driver-marker svg{width:34px;height:42px}.stop-marker{width:29px;height:29px;border-radius:50%;background:#fff;border:3px solid var(--ink);color:var(--ink);display:grid;place-items:center;font-size:11px;font-weight:860;box-shadow:0 5px 12px rgba(23,34,56,.14)}.stop-marker.current{width:35px;height:35px;background:var(--orange);border-color:#fff;color:#fff;font-size:12px}.stop-label{position:absolute;left:50%;top:38px;transform:translateX(-50%);white-space:nowrap;background:rgba(255,255,255,.96);border:1px solid var(--line);border-radius:5px;padding:4px 7px;font-size:11px;font-weight:770;color:var(--ink);box-shadow:0 4px 11px rgba(23,34,56,.06)}
+
+  @media(max-width:350px){
+    .topbar{padding-left:10px;padding-right:10px;grid-template-columns:40px minmax(0,1fr) 40px;gap:7px}.top-btn{width:40px;height:40px}.top-title{font-size:14.5px}
+    #map,.fallback-map{bottom:216px}.map-summary{left:9px;top:71px}.next-dock{height:216px;padding:15px 15px 12px}.next-name{font-size:24px}.next-eta strong{font-size:22px}.primary{height:56px;margin-top:11px}.task-line{margin-top:10px}.remaining-btn{height:35px;margin-top:5px}.stop-row{padding-left:13px;padding-right:13px}
+  }
+  @media(max-width:460px){body{padding:0;background:#eef2f4}.frame{width:100vw;height:100dvh;border:0;border-radius:0;box-shadow:none}}
+
+
+  /* Thai-first composition — locked Rounds TH design language */
+html,body{font-family:'LINE Seed Sans TH',Tahoma,'Noto Sans Thai',sans-serif}
+  .statusbar,.top-title,.next-name,.stop-copy b{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+  .top-state{font-size:11.8px;line-height:1.4;font-weight:700;letter-spacing:0;text-transform:none}
+  .top-title{margin-top:2px;font-size:15.5px;line-height:1.12;font-weight:810;letter-spacing:-.018em}
+  .fallback-place{font-size:11.2px;line-height:1.35;font-weight:620;letter-spacing:0}
+  .map-summary{padding:8px 10px}.map-summary strong{font-size:13px;line-height:1.4;font-weight:700}.map-summary span{margin-top:2px;font-size:11.5px;line-height:1.35;font-weight:600}
+  .loading-note{font-size:11.5px;line-height:1.4;font-weight:600;white-space:nowrap}
+  .update-banner{min-height:61px;padding:9px 10px 9px 12px}.update-banner b{font-size:13px;line-height:1.35;font-weight:720}.update-banner span{margin-top:2px;font-size:11.6px;line-height:1.35;font-weight:600}.update-banner button{height:38px;padding:0 12px;font-size:12px;line-height:1.35;font-weight:700}
+  .next-dock{height:230px;padding:16px 18px 13px}
+  .next-kicker{font-size:12px;line-height:1.4;font-weight:700;letter-spacing:0;text-transform:none}
+  .next-name{margin-top:4px;font-size:27px;line-height:1.02;font-weight:860;letter-spacing:-.04em}
+  .next-place{margin-top:5px;font-size:12.5px;line-height:1.4;font-weight:600}
+  .next-eta{padding-top:11px}.next-eta strong{font-size:22px;line-height:1.15;font-weight:760;letter-spacing:0}.next-eta span{margin-top:3px;font-size:11.8px;line-height:1.35;font-weight:600}
+  .task-line{margin-top:10px;font-size:12.5px;line-height:1.4;font-weight:650}
+  .primary{height:60px;margin-top:11px;font-size:16px;line-height:1.4;font-weight:730;letter-spacing:0}
+  .remaining-btn{height:38px;margin-top:6px;font-size:12.5px;line-height:1.4;font-weight:650}
+  .sheet-head b{font-size:18px;line-height:1.35;font-weight:760;letter-spacing:0}.sheet-head span{margin-top:2px;font-size:11.8px;line-height:1.4;font-weight:600}
+  .stop-row{min-height:70px}.stop-copy b{font-size:13.5px;line-height:1.2;font-weight:800}.stop-copy span{margin-top:4px;font-size:11.7px;line-height:1.4;font-weight:600}.stop-time b{font-size:12px;line-height:1.35;font-weight:700}.stop-time span{margin-top:2px;font-size:11px;line-height:1.3;font-weight:600}
+  .action{min-height:64px;font-size:15px;line-height:1.45;font-weight:700}
+  .stop-label{font-size:11.5px;line-height:1.35;font-weight:650}
+  @media(max-width:350px){
+    .topbar{padding-left:10px;padding-right:10px;grid-template-columns:40px minmax(0,1fr) 40px;gap:7px}.top-btn{width:40px;height:40px}.top-state{font-size:11.2px}.top-title{font-size:14px}
+    #map,.fallback-map{bottom:222px}.next-dock{height:222px;padding:14px 14px 10px}.next-head{gap:9px}.next-kicker{font-size:11.3px}.next-name{font-size:23px}.next-place{font-size:11.6px}.next-eta strong{font-size:19px}.next-eta span{font-size:10.8px}.task-line{font-size:11.6px;margin-top:8px}.primary{height:56px;margin-top:9px;font-size:15.3px}.remaining-btn{height:34px;margin-top:4px;font-size:11.6px}.stop-row{padding-left:13px;padding-right:13px}.stop-copy span{font-size:11px}
+  }
+
+</style>
+</head>
+<body>
+<div class="frame" id="frame">
+  <div class="statusbar"><span>11:18</span><div class="sb-right"><div class="signal"><i></i><i></i><i></i><i></i></div><span>5G</span><div class="battery"><b></b></div></div></div>
+  <main class="screen">
+    <header class="topbar">
+      <button class="top-btn" id="backBtn" aria-label="ย้อนกลับ"><svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+      <div class="top-copy"><div class="top-state"><i></i><span>กำลังส่งงาน</span></div><div class="top-title">UrbanFlowers · 4 จุด</div></div>
+      <button class="top-btn" id="moreBtn" aria-label="ตัวเลือกงาน"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></svg></button>
+    </header>
+
+    <div class="fallback-map" aria-hidden="true">
+      <div class="block" style="left:14px;top:80px;width:76px;height:52px"></div><div class="block" style="left:113px;top:82px;width:74px;height:58px"></div><div class="park" style="right:22px;top:88px;width:80px;height:64px"></div>
+      <div class="block" style="left:32px;bottom:76px;width:74px;height:54px"></div><div class="block" style="left:144px;bottom:58px;width:76px;height:60px"></div><div class="block" style="right:28px;bottom:88px;width:76px;height:54px"></div>
+      <div class="road major" style="left:-25px;top:220px;width:470px;transform:rotate(7deg)"></div><div class="road major" style="left:102px;top:28px;width:390px;transform:rotate(86deg)"></div><div class="road" style="left:24px;top:132px;width:355px;transform:rotate(-3deg)"></div><div class="road" style="left:54px;top:332px;width:330px;transform:rotate(-11deg)"></div>
+      <span class="fallback-place" style="left:18px;top:150px">พร้อมพงษ์</span><span class="fallback-place" style="right:18px;top:285px">สาทร</span>
+      <svg class="fallback-route" viewBox="0 0 393 568" preserveAspectRatio="none"><path class="shadow" d="M58 420 C95 370 106 315 152 276 C190 244 213 181 244 157 C278 131 306 223 302 286 C298 355 331 401 354 436"/><path class="main" d="M58 420 C95 370 106 315 152 276 C190 244 213 181 244 157 C278 131 306 223 302 286 C298 355 331 401 354 436"/></svg>
+      <div class="fallback-driver" style="left:11.7%;top:71.3%"><svg viewBox="0 0 36 44" width="28" height="34"><path d="M18 2 33 40 18 34 3 40Z" fill="#172238" stroke="#fff" stroke-width="3" stroke-linejoin="round"/></svg></div>
+      <div class="fallback-stop current" style="left:34.6%;top:45%">1</div><div class="fallback-stop" style="left:57.5%;top:24.5%">2</div><div class="fallback-stop" style="left:72%;top:47.5%">3</div><div class="fallback-stop" style="left:86%;top:73.6%">4</div>
+    </div>
+    <div id="map" aria-label="แผนที่รอบปัจจุบัน"></div>
+    <div class="loading-note" id="loadingNote">กำลังโหลดแผนที่…</div>
+    <div class="map-summary"><strong>จุด 1 จาก 4</strong><span>เหลือ 18.6 กม.</span></div>
+
+    <div class="update-banner" id="updateBanner"><div><b>รอบอัปเดตแล้ว</b><span>ดูเส้นทางใหม่ก่อนทำงานต่อ</span></div><button id="reviewUpdate">ดู</button></div>
+
+    <section class="next-dock" aria-label="จุดถัดไป">
+      <div class="next-head">
+        <div><div class="next-kicker">จุดถัดไป · 1 จาก 4</div><div class="next-name">K. Nattaporn</div><div class="next-place">สุขุมวิท 24 · The Emporio Place</div></div>
+        <div class="next-eta"><strong>12 นาที</strong><span>4.1 กม.</span></div>
+      </div>
+      <div class="task-line"><i></i><span>ช่อดอกไม้ · ระวัง</span></div>
+      <button class="primary" id="navigateBtn">นำทางไปจุดที่ 1</button>
+      <button class="remaining-btn" id="remainingBtn"><span>อีก 3 จุด · 18.6 กม.</span><span>⌃</span></button>
+    </section>
+
+    <div class="scrim" id="scrim"></div>
+    <section class="sheet" id="remainingSheet" role="dialog" aria-modal="true" aria-label="จุดที่เหลือ" aria-hidden="true">
+      <div class="sheet-handle"></div>
+      <div class="sheet-head"><b>จุดที่เหลือ</b><span>หลังจุด 1</span></div>
+      <div class="stop-list">
+        <div class="stop-row"><div class="stop-num">2</div><div class="stop-copy"><b>James T.</b><span>สาทร · Signature Hamper</span></div><div class="stop-time"><b>+16 นาที</b><span>6.2 กม.</span></div></div>
+        <div class="stop-row"><div class="stop-num">3</div><div class="stop-copy"><b>K. Ploy</b><span>สีลม · ช่อดอกไม้ + เค้ก</span></div><div class="stop-time"><b>+14 นาที</b><span>5.1 กม.</span></div></div>
+        <div class="stop-row"><div class="stop-num">4</div><div class="stop-copy"><b>Anantara Siam</b><span>ราชดำริ · งานจัดดอกไม้ 2 ชิ้น</span></div><div class="stop-time"><b>+16 นาที</b><span>7.3 กม.</span></div></div>
+      </div>
+    </section>
+
+    <section class="sheet action-sheet" id="actionSheet" role="dialog" aria-modal="true" aria-label="ตัวเลือกงาน" aria-hidden="true">
+      <div class="sheet-handle"></div>
+      <div class="sheet-head"><b>ตัวเลือกงาน</b></div>
+      <div class="action-list">
+        <a class="action" href="ROUNDS-H01-OPERATOR-CHAT-TH-v1-10OF10.html"><svg viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg><span>ส่งข้อความถึงฝ่ายจัดงาน</span></a>
+        <a class="action" href="tel:+6625554400"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.33 1.78.62 2.63a2 2 0 0 1-.45 2.11L8 9.73a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.85.29 1.73.5 2.63.62A2 2 0 0 1 22 16.92z"/></svg><span>โทรหาฝ่ายจัดงาน</span></a>
+        <a class="action issue" href="ROUNDS-G04-CANNOT-COMPLETE-DELIVERY-TH-v3-10OF10.html"><svg viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.6 2.7 17a2 2 0 0 0 1.7 3h15.2a2 2 0 0 0 1.7-3L13.7 3.6a2 2 0 0 0-3.4 0z"/></svg><span>แจ้งปัญหา</span></a>
+      </div>
+    </section>
+  </main>
+</div>
+<script>
+  const TOKEN='MAPBOX_TOKEN_REQUIRED';
+  const DRIVER=[100.5696,13.7311];
+  const STOPS=[
+    {n:1,name:'K. Nattaporn',coord:[100.5669,13.7246],current:true},
+    {n:2,name:'James T.',coord:[100.5332,13.7204]},
+    {n:3,name:'K. Ploy',coord:[100.5297,13.7278]},
+    {n:4,name:'Anantara Siam',coord:[100.5414,13.7405]}
+  ];
+  const params=new URLSearchParams(location.search);
+  const frame=document.getElementById('frame');
+  const scrim=document.getElementById('scrim');
+  const remainingSheet=document.getElementById('remainingSheet');
+  const actionSheet=document.getElementById('actionSheet');
+  const loadingNote=document.getElementById('loadingNote');
+  if(params.get('update')==='1') document.getElementById('updateBanner').classList.add('show');
+  document.getElementById('reviewUpdate').addEventListener('click',()=>location.href='ROUNDS-E04-E05-E06-LIVE-ROUND-CHANGE-TH-v1-10OF10.html');
+  document.getElementById('navigateBtn').addEventListener('click',()=>location.href='ROUNDS-E02-NAVIGATE-TO-CURRENT-STOP-TH-v1-10OF10.html');
+  document.getElementById('backBtn').addEventListener('click',()=>{if(history.length>1)history.back();else location.href='ROUNDS-J01-MY-ROUNDS-TH-v1-10OF10.html'});
+  function setSheet(sheet,open){
+    [remainingSheet,actionSheet].forEach(s=>{if(s!==sheet){s.classList.remove('show');s.setAttribute('aria-hidden','true')}});
+    sheet.classList.toggle('show',open);sheet.setAttribute('aria-hidden',String(!open));scrim.classList.toggle('show',open);
+  }
+  document.getElementById('remainingBtn').addEventListener('click',()=>setSheet(remainingSheet,true));
+  document.getElementById('moreBtn').addEventListener('click',()=>setSheet(actionSheet,true));
+  scrim.addEventListener('click',()=>{setSheet(remainingSheet,false);setSheet(actionSheet,false)});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){setSheet(remainingSheet,false);setSheet(actionSheet,false)}});
+
+  function driverEl(){const el=document.createElement('div');el.className='driver-marker';el.innerHTML='<svg viewBox="0 0 36 44"><path d="M18 2 33 40 18 34 3 40Z" fill="#172238" stroke="#fff" stroke-width="3" stroke-linejoin="round"/></svg>';return el}
+  function stopEl(stop){const el=document.createElement('div');el.className='stop-marker'+(stop.current?' current':'');el.textContent=stop.n;if(stop.current){const label=document.createElement('span');label.className='stop-label';label.textContent='ถัดไป';el.appendChild(label)}return el}
+  function fallbackRoute(){return {type:'Feature',geometry:{type:'LineString',coordinates:[DRIVER,...STOPS.map(s=>s.coord)]}}}
+  async function initMap(){
+    if(!window.mapboxgl){loadingNote.textContent='แผนที่ออฟไลน์';return}
+    try{
+      mapboxgl.accessToken=TOKEN;
+      const map=new mapboxgl.Map({container:'map',style:'mapbox://styles/mapbox/light-v11',center:[100.5507,13.7309],zoom:12.5,bearing:0,pitch:0,attributionControl:true,interactive:true});
+      map.dragRotate.disable();map.touchZoomRotate.disableRotation();
+      new mapboxgl.Marker({element:driverEl(),anchor:'center'}).setLngLat(DRIVER).addTo(map);
+      STOPS.forEach(s=>new mapboxgl.Marker({element:stopEl(s),anchor:'center'}).setLngLat(s.coord).addTo(map));
+      map.on('load',async()=>{
+        loadingNote.classList.add('hidden');
+        let route=fallbackRoute();
+        try{
+          const coords=[DRIVER,...STOPS.map(s=>s.coord)].map(c=>c.join(',')).join(';');
+          const r=await fetch(`https://api.mapbox.com/directions/v5/mapbox/driving-traffic/${coords}?geometries=geojson&overview=full&steps=false&access_token=${encodeURIComponent(TOKEN)}`);
+          const data=await r.json();if(data.routes&&data.routes[0])route={type:'Feature',geometry:data.routes[0].geometry};
+        }catch(e){}
+        map.addSource('route',{type:'geojson',data:route});
+        map.addLayer({id:'route-shadow',type:'line',source:'route',layout:{'line-join':'round','line-cap':'round'},paint:{'line-color':'#fff','line-width':10,'line-opacity':.96}});
+        map.addLayer({id:'route',type:'line',source:'route',layout:{'line-join':'round','line-cap':'round'},paint:{'line-color':'#172238','line-width':5.2}});
+        const b=new mapboxgl.LngLatBounds();route.geometry.coordinates.forEach(c=>b.extend(c));map.fitBounds(b,{padding:{top:75,bottom:34,left:34,right:34},duration:0,maxZoom:14.5});
+      });
+    }catch(e){useOffline()}
+  }
+  function useOffline(){frame.classList.remove('live-map');loadingNote.textContent='แผนที่ออฟไลน์';loadingNote.classList.remove('hidden')}
+  function loadMapbox(){
+    if(params.get('offline')==='1'){useOffline();return}
+    const css=document.createElement('link');css.rel='stylesheet';css.href='https://api.mapbox.com/mapbox-gl-js/v3.28.0/mapbox-gl.css';document.head.appendChild(css);
+    const script=document.createElement('script');script.src='https://api.mapbox.com/mapbox-gl-js/v3.28.0/mapbox-gl.js';script.async=true;
+    let done=false;const timer=setTimeout(()=>{if(!done)useOffline()},4500);
+    script.onload=()=>{done=true;clearTimeout(timer);frame.classList.add('live-map');initMap()};script.onerror=()=>{done=true;clearTimeout(timer);useOffline()};document.head.appendChild(script)
+  }
+  loadMapbox();
+</script>
+</body>
+</html>
