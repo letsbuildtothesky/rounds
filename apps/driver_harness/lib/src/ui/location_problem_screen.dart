@@ -401,6 +401,7 @@ class _LocationProblemScreenState extends State<LocationProblemScreen> {
     );
     if (send == true && mounted) {
       await _submit(
+        category: 'wrong_pin',
         label: 'Pin correction',
         oldPoint: _currentPoint,
         newPoint: 'Current driver location',
@@ -423,6 +424,7 @@ class _LocationProblemScreenState extends State<LocationProblemScreen> {
     final evidence = await _readLocation();
     if (evidence == null || !mounted) return;
     await _submit(
+      category: 'wrong_entrance',
       label: choice,
       oldPoint: _currentPoint,
       newPoint: choice == 'Access closed'
@@ -450,6 +452,7 @@ class _LocationProblemScreenState extends State<LocationProblemScreen> {
     if (choice == 'Different building' && evidence == null) return;
     if (!mounted) return;
     await _submit(
+      category: 'wrong_address',
       label: choice,
       oldPoint: _currentPoint,
       newPoint: choice == 'Recipient gave new address'
@@ -482,6 +485,7 @@ class _LocationProblemScreenState extends State<LocationProblemScreen> {
     final evidence = await _readLocation();
     if (evidence == null || !mounted) return;
     await _submit(
+      category: 'cannot_find_location',
       label: "Can't find location",
       oldPoint: _currentPoint,
       newPoint: 'Current driver location',
@@ -517,6 +521,7 @@ class _LocationProblemScreenState extends State<LocationProblemScreen> {
   }
 
   Future<void> _submit({
+    required String category,
     required String label,
     required String oldPoint,
     required String newPoint,
@@ -524,27 +529,19 @@ class _LocationProblemScreenState extends State<LocationProblemScreen> {
   }) async {
     if (_submitting) return;
     setState(() => _submitting = true);
-    final message = StringBuffer()
-      ..writeln('ROUNDS LOCATION OBSERVATION')
-      ..writeln('Round: ${widget.round.reference}')
-      ..writeln(
-        'Stop ${widget.stop.sequence}: ${widget.stop.deliveryReference}',
-      )
-      ..writeln('Context: ${_pickup ? 'pickup' : 'delivery'}')
-      ..writeln('Issue: $label')
-      ..writeln('Expected: $_address')
-      ..writeln(
-        'Expected pin: ${_expectedLatitude.toStringAsFixed(6)},${_expectedLongitude.toStringAsFixed(6)}',
-      );
-    if (evidence != null) {
-      message.writeln(
-        'Driver position: ${evidence.latitude.toStringAsFixed(6)},${evidence.longitude.toStringAsFixed(6)} · ±${evidence.accuracyMeters.round()} m',
-      );
-    }
-    final outcome = await widget.controller.sendOperationsMessage(
-      round: widget.round,
+    final outcome = await widget.controller.reportLocationProblem(
       stop: widget.stop,
-      body: message.toString().trim(),
+      stage: _pickup ? 'pickup' : 'delivery',
+      category: category,
+      detail: label,
+      position: evidence == null
+          ? null
+          : {
+              'latitude': evidence.latitude,
+              'longitude': evidence.longitude,
+              'accuracyMeters': evidence.accuracyMeters,
+              'source': 'rounds_os',
+            },
     );
     if (!mounted) return;
     setState(() => _submitting = false);

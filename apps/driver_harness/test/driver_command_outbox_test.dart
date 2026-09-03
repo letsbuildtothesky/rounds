@@ -114,4 +114,59 @@ void main() {
       await directory.delete(recursive: true);
     }
   });
+
+  test(
+    'typed location observation survives restart with GPS evidence',
+    () async {
+      final directory = await Directory.systemTemp.createTemp(
+        'rounds-location-outbox-test-',
+      );
+      final databasePath = '${directory.path}/outbox.db';
+      try {
+        var database = await databaseFactoryFfi.openDatabase(
+          databasePath,
+          options: OpenDatabaseOptions(
+            version: 1,
+            onCreate: (database, _) =>
+                HarnessDatabase.createCommandOutboxSchema(database),
+          ),
+        );
+        var outbox = DriverCommandOutbox(database);
+        await outbox.enqueue(
+          commandType: 'stop.report_location_problem',
+          aggregateId: 'stop-1',
+          expectedVersion: 5,
+          idempotencyKey: 'location:stop-1:v5:wrong-pin',
+          endpoint: '/v1/driver/stops/stop-1/location-problem',
+          payload: const {
+            'manifestId': 'manifest-1',
+            'manifestVersion': 2,
+            'stage': 'delivery',
+            'category': 'wrong_pin',
+            'detail': 'Current driver location',
+            'position': {
+              'latitude': 13.73,
+              'longitude': 100.568,
+              'accuracyMeters': 8,
+              'source': 'rounds_os',
+            },
+          },
+        );
+        await database.close();
+
+        database = await databaseFactoryFfi.openDatabase(databasePath);
+        outbox = DriverCommandOutbox(database);
+        final restored = await outbox.pendingByType(
+          'stop.report_location_problem',
+        );
+        expect(restored, hasLength(1));
+        expect(restored.single.expectedVersion, 5);
+        expect(restored.single.payloadJson, contains('wrong_pin'));
+        expect(restored.single.payloadJson, contains('rounds_os'));
+        await database.close();
+      } finally {
+        await directory.delete(recursive: true);
+      }
+    },
+  );
 }

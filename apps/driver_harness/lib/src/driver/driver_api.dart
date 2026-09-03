@@ -232,6 +232,33 @@ class DriverApi {
     },
   );
 
+  Future<DriverCommandOutcome> reportLocationProblem({
+    required DriverRoundStopModel stop,
+    required String stage,
+    required String category,
+    required String detail,
+    Map<String, Object?>? position,
+  }) {
+    final payload = <String, Object?>{
+      'manifestId': stop.manifestId,
+      'manifestVersion': stop.manifestVersion,
+      'stage': stage,
+      'category': category,
+      'detail': detail.trim(),
+      'position': ?position,
+    };
+    final fingerprint = sha256.convert(utf8.encode(jsonEncode(payload)));
+    return _queueAndSend(
+      commandType: 'stop.report_location_problem',
+      aggregateId: stop.id,
+      expectedVersion: stop.version,
+      idempotencyKey:
+          'location-problem:${stop.id}:v${stop.version}:$fingerprint',
+      endpoint: '/v1/driver/stops/${stop.id}/location-problem',
+      payload: payload,
+    );
+  }
+
   Future<DriverCommandOutcome> confirmArrival(
     DriverRoundStopModel stop, {
     Map<String, Object?>? position,

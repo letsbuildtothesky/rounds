@@ -6,7 +6,13 @@ import type {
   SendOperationsMessagePayload,
 } from "./communications.js";
 import type { LocationBatch, PositionSample } from "./location.js";
-import { deliveryProblemCategories, pickupProblemCategories, podHandoffTypes } from "./round.js";
+import {
+  deliveryProblemCategories,
+  locationProblemCategories,
+  locationProblemStages,
+  pickupProblemCategories,
+  podHandoffTypes,
+} from "./round.js";
 import type {
   ConfirmPickupCommand,
   ConfirmPickupPayload,
@@ -25,6 +31,8 @@ import type {
   ReportPickupProblemPayload,
   ReportDeliveryProblemCommand,
   ReportDeliveryProblemPayload,
+  ReportLocationProblemCommand,
+  ReportLocationProblemPayload,
 } from "./round.js";
 import {
   operationsExceptionResolutions,
@@ -530,6 +538,32 @@ export function validateReportDeliveryProblemCommand(command: ReportDeliveryProb
   validateReportDeliveryProblemPayload(command.payload);
 }
 
+export function validateReportLocationProblemPayload(payload: ReportLocationProblemPayload): void {
+  assertUuid(payload.manifestId, "manifestId");
+  if (!Number.isInteger(payload.manifestVersion) || payload.manifestVersion < 1) {
+    throw new ContractError("manifestVersion must be a positive integer");
+  }
+  if (!locationProblemStages.includes(payload.stage)) {
+    throw new ContractError("stage is not supported for a location problem");
+  }
+  if (!locationProblemCategories.includes(payload.category)) {
+    throw new ContractError("category is not a supported location problem");
+  }
+  if (payload.detail !== undefined) {
+    assertNonEmpty(payload.detail, "detail");
+    if (payload.detail.trim().length > 500) throw new ContractError("detail exceeds 500 characters");
+  }
+  if (payload.position) validateConfirmStopArrivalPayload({ position: payload.position });
+}
+
+export function validateReportLocationProblemCommand(command: ReportLocationProblemCommand): void {
+  if (command.schemaVersion !== 1 || command.commandType !== "stop.report_location_problem") {
+    throw new ContractError("unsupported ReportLocationProblem command envelope");
+  }
+  validateStopCommandEnvelope(command, "ReportLocationProblem");
+  validateReportLocationProblemPayload(command.payload);
+}
+
 export function validateConfirmStopArrivalPayload(payload: ConfirmStopArrivalPayload): void {
   if (payload.overrideReason !== undefined && payload.overrideReason.trim().length > 500) {
     throw new ContractError("overrideReason exceeds 500 characters");
@@ -610,7 +644,7 @@ export function validateCompleteStopPodCommand(command: CompleteStopPodCommand):
 }
 
 function validateStopCommandEnvelope(
-  command: ReportPickupProblemCommand | ReportDeliveryProblemCommand | ConfirmStopArrivalCommand | CompleteStopPodCommand,
+  command: ReportPickupProblemCommand | ReportDeliveryProblemCommand | ReportLocationProblemCommand | ConfirmStopArrivalCommand | CompleteStopPodCommand,
   name: string,
 ): void {
   assertUuid(command.commandId, "commandId");

@@ -7,8 +7,11 @@ import type {
   OperationsSession,
   ReportPickupProblemCommand,
   ReportPickupProblemResult,
+  ReportLocationProblemCommand,
+  ReportLocationProblemResult,
 } from "@rounds/contracts";
 import { confirmStopArrivalHandler } from "../src/confirm-stop-arrival-handler.js";
+import { reportLocationProblemHandler } from "../src/report-location-problem-handler.js";
 import { reportPickupProblemHandler } from "../src/report-pickup-problem-handler.js";
 import type {
   ActorContext,
@@ -67,6 +70,7 @@ const session: DriverSession = {
 class FakeDriverStopGateway implements IdentityGateway, DriverStopGateway {
   driverSession: DriverSession | null = session;
   problemCommand: ReportPickupProblemCommand | null = null;
+  locationProblemCommand: ReportLocationProblemCommand | null = null;
   arrivalCommand: ConfirmStopArrivalCommand | null = null;
   async authenticate(): Promise<AuthenticatedIdentity | null> { return { authUserId: "auth-user" }; }
   async authorizeTenant(): Promise<ActorContext | null> { return null; }
@@ -83,6 +87,26 @@ class FakeDriverStopGateway implements IdentityGateway, DriverStopGateway {
         deliveryId,
         roundId,
         category: "missing_item",
+        stopState: "exception",
+        deliveryState: "exception",
+      },
+      events: [],
+    };
+  }
+  async reportLocationProblem(command: ReportLocationProblemCommand): Promise<ReportLocationProblemResult> {
+    this.locationProblemCommand = command;
+    return {
+      status: "committed",
+      aggregateVersion: 5,
+      state: {
+        exceptionId: "10000000-0000-4000-8000-000000000032",
+        stopId,
+        deliveryId,
+        roundId,
+        stage: command.payload.stage,
+        category: command.payload.category,
+        hasPositionEvidence: Boolean(command.payload.position),
+        operationsThreadId: "10000000-0000-4000-8000-000000000033",
         stopState: "exception",
         deliveryState: "exception",
       },
@@ -148,6 +172,30 @@ test("driver explicitly confirms arrival with optional GPS evidence", async () =
   assert.equal(response.status, 201);
   assert.equal(gateway.arrivalCommand?.expectedVersion, 4);
   assert.equal(gateway.arrivalCommand?.payload.position?.source, "google_nav");
+});
+
+test("assigned Team driver reports a typed location problem with GPS evidence", async () => {
+  const gateway = new FakeDriverStopGateway();
+  const response = await reportLocationProblemHandler(new Request("http://test/location-problem", {
+    method: "POST",
+    headers: {
+      authorization: "Bearer token",
+      "content-type": "application/json",
+      "idempotency-key": "location-problem:stop-1",
+    },
+    body: JSON.stringify({
+      manifestId,
+      manifestVersion: 1,
+      stage: "delivery",
+      category: "wrong_pin",
+      detail: "Current driver location",
+      position: { latitude: 13.73, longitude: 100.568, accuracyMeters: 8, source: "rounds_os" },
+    }),
+  }), stopId, dependencies(gateway));
+  assert.equal(response.status, 201);
+  assert.equal(gateway.locationProblemCommand?.aggregateId, stopId);
+  assert.equal(gateway.locationProblemCommand?.payload.category, "wrong_pin");
+  assert.equal(gateway.locationProblemCommand?.payload.position?.source, "rounds_os");
 });
 
 test("driver cannot mutate a Stop outside the assigned Round", async () => {

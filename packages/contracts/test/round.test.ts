@@ -14,6 +14,7 @@ import {
   validatePlanningRoutePreviewRequest,
   validateReportPickupProblemCommand,
   validateReportDeliveryProblemCommand,
+  validateReportLocationProblemCommand,
 } from "../src/index.js";
 
 const payload = () => ({
@@ -200,6 +201,40 @@ test("requires verified photo identity for a delivery damage problem", () => {
       mediaAssetId: "not-a-uuid",
     },
   }), ContractError);
+});
+
+test("accepts a typed location problem with optional real position evidence", () => {
+  const base = {
+    schemaVersion: 1 as const,
+    commandType: "stop.report_location_problem" as const,
+    commandId: "10000000-0000-4000-8000-000000000101",
+    traceId: "10000000-0000-4000-8000-000000000102",
+    idempotencyKey: "location-problem:stop-1",
+    tenantId: "10000000-0000-4000-8000-000000000001",
+    aggregateId: "10000000-0000-4000-8000-000000000011",
+    expectedVersion: 5,
+  };
+  assert.doesNotThrow(() => validateReportLocationProblemCommand({
+    ...base,
+    payload: {
+      manifestId: "10000000-0000-4000-8000-000000000012",
+      manifestVersion: 2,
+      stage: "delivery",
+      category: "wrong_pin",
+      detail: "Driver is at the building entrance",
+      position: { latitude: 13.73, longitude: 100.568, accuracyMeters: 8, source: "rounds_os" },
+    },
+  }));
+  assert.throws(() => validateReportLocationProblemCommand({
+    ...base,
+    payload: {
+      manifestId: "10000000-0000-4000-8000-000000000012",
+      manifestVersion: 2,
+      stage: "delivery",
+      category: "wrong_pin",
+      position: { latitude: 130, longitude: 100.568, accuracyMeters: 8, source: "rounds_os" },
+    },
+  }), /latitude/);
 });
 
 test("validates explicit arrival evidence without requiring GPS", () => {

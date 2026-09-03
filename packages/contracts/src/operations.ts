@@ -101,8 +101,21 @@ export type OperationsActionException = {
   driverId: string;
   driverName: string;
   stage: "pickup" | "delivery";
-  category: "missing_item" | "wrong_item" | "damaged_item";
+  category:
+    | "missing_item"
+    | "wrong_item"
+    | "damaged_item"
+    | "wrong_pin"
+    | "wrong_entrance"
+    | "wrong_address"
+    | "cannot_find_location";
   note?: string;
+  expectedCoordinate?: { latitude: number; longitude: number };
+  observedCoordinate?: { latitude: number; longitude: number };
+  observedAccuracyMeters?: number;
+  observedLocationSource?: "google_nav" | "rounds_os" | "unknown";
+  originalStopState?: string;
+  originalDeliveryState?: DeliveryState;
   status: "open";
   manifestVersion: number;
   reportedAt: string;

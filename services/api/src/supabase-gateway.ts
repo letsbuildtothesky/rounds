@@ -33,6 +33,7 @@ import type {
   ConfirmStopArrivalResult,
   CompleteStopPodCommand,
   CompleteStopPodResult,
+  DeliveryState,
   DriverRoundStop,
   DriverSession,
   DriverOperationsThread,
@@ -57,6 +58,8 @@ import type {
   ReportPickupProblemResult,
   ReportDeliveryProblemCommand,
   ReportDeliveryProblemResult,
+  ReportLocationProblemCommand,
+  ReportLocationProblemResult,
   ResolveOperationsExceptionCommand,
   ResolveOperationsExceptionResult,
   SendDriverMessageCommand,
@@ -965,6 +968,23 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     return data as ReportPickupProblemResult;
   }
 
+  async reportLocationProblem(
+    command: ReportLocationProblemCommand,
+    identity: AuthenticatedIdentity,
+  ): Promise<ReportLocationProblemResult> {
+    const actorPersonId = await this.driverActorPersonId(identity);
+    if (!actorPersonId) return {
+      status: "rejected",
+      error: { code: "NOT_AUTHORIZED", message: "Driver identity is not linked" },
+    };
+    const { data, error } = await this.admin.rpc("report_location_problem_command", {
+      p_command: command,
+      p_actor_person_id: actorPersonId,
+    });
+    if (error) throw error;
+    return data as ReportLocationProblemResult;
+  }
+
   async confirmStopArrival(
     command: ConfirmStopArrivalCommand,
     identity: AuthenticatedIdentity,
@@ -1670,13 +1690,17 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
   async getOperationsAction(actor: ActorContext, observedAt: Date): Promise<OperationsActionProjection> {
     type ExceptionRow = {
       id: string; delivery_id: string; stop_id: string; round_id: string; driver_id: string;
-      stage: "pickup" | "delivery"; category: "missing_item" | "wrong_item" | "damaged_item";
+      stage: "pickup" | "delivery";
+      category: "missing_item" | "wrong_item" | "damaged_item" | "wrong_pin" | "wrong_entrance" | "wrong_address" | "cannot_find_location";
       note: string | null; status: "open"; manifest_version: number; reported_at: string;
+      expected_position: unknown; observed_position: unknown; observed_accuracy_meters: number | null;
+      observed_location_source: "google_nav" | "rounds_os" | "unknown" | null;
+      original_stop_state: string | null; original_delivery_state: DeliveryState | null;
     };
     const [planning, exceptionResult] = await Promise.all([
       this.getOperationsPlanning(actor),
       this.admin.from("delivery_exceptions")
-        .select("id, delivery_id, stop_id, round_id, driver_id, stage, category, note, status, manifest_version, reported_at")
+        .select("id, delivery_id, stop_id, round_id, driver_id, stage, category, note, status, manifest_version, reported_at, expected_position, observed_position, observed_accuracy_meters, observed_location_source, original_stop_state, original_delivery_state")
         .eq("tenant_id", actor.tenantId).eq("status", "open")
         .order("reported_at", { ascending: false }).limit(100).returns<ExceptionRow[]>(),
     ]);
@@ -1744,6 +1768,8 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
         const round = roundById.get(item.round_id);
         if (!delivery || !stop || !round) return [];
         const coordinate = parseDatabasePoint(delivery.destination_position);
+        const expectedCoordinate = parseDatabasePoint(item.expected_position);
+        const observedCoordinate = parseDatabasePoint(item.observed_position);
         const threadId = threadByStop.get(`${item.round_id}:${item.stop_id}`);
         return [{
           id: item.id,
@@ -1764,6 +1790,12 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
           stage: item.stage,
           category: item.category,
           ...(item.note ? { note: item.note } : {}),
+          ...(expectedCoordinate ? { expectedCoordinate } : {}),
+          ...(observedCoordinate ? { observedCoordinate } : {}),
+          ...(item.observed_accuracy_meters != null ? { observedAccuracyMeters: item.observed_accuracy_meters } : {}),
+          ...(item.observed_location_source ? { observedLocationSource: item.observed_location_source } : {}),
+          ...(item.original_stop_state ? { originalStopState: item.original_stop_state } : {}),
+          ...(item.original_delivery_state ? { originalDeliveryState: item.original_delivery_state } : {}),
           status: item.status,
           manifestVersion: item.manifest_version,
           reportedAt: item.reported_at,

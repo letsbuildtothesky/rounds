@@ -368,6 +368,57 @@ export type ReportDeliveryProblemResult = CommandResult<
   DeliveryProblemReportedEvent
 >;
 
+export const locationProblemStages = ["pickup", "delivery"] as const;
+export type LocationProblemStage = (typeof locationProblemStages)[number];
+
+export const locationProblemCategories = [
+  "wrong_pin",
+  "wrong_entrance",
+  "wrong_address",
+  "cannot_find_location",
+] as const;
+export type LocationProblemCategory = (typeof locationProblemCategories)[number];
+
+export type ReportLocationProblemPayload = {
+  manifestId: string;
+  manifestVersion: number;
+  stage: LocationProblemStage;
+  category: LocationProblemCategory;
+  detail?: string;
+  position?: ArrivalPositionEvidence;
+};
+
+export type ReportLocationProblemCommand = CommandEnvelope<
+  "stop.report_location_problem",
+  ReportLocationProblemPayload
+>;
+
+export type LocationProblemReportedPayload = {
+  exceptionId: string;
+  stopId: string;
+  deliveryId: string;
+  roundId: string;
+  stage: LocationProblemStage;
+  category: LocationProblemCategory;
+  hasPositionEvidence: boolean;
+  operationsThreadId: string;
+};
+
+export type LocationProblemReportedEvent = DomainEventEnvelope<
+  "stop.location_problem_reported",
+  LocationProblemReportedPayload
+>;
+
+export type ReportLocationProblemState = LocationProblemReportedPayload & {
+  stopState: "exception";
+  deliveryState: "exception";
+};
+
+export type ReportLocationProblemResult = CommandResult<
+  ReportLocationProblemState,
+  LocationProblemReportedEvent
+>;
+
 export type ArrivalPositionEvidence = {
   latitude: number;
   longitude: number;

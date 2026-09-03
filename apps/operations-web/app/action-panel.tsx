@@ -15,6 +15,10 @@ const categoryLabels: Record<OperationsActionException["category"], string> = {
   missing_item: "Missing item",
   wrong_item: "Wrong item",
   damaged_item: "Damaged item",
+  wrong_pin: "Wrong pin",
+  wrong_entrance: "Wrong entrance / access",
+  wrong_address: "Wrong address",
+  cannot_find_location: "Cannot find location",
 };
 
 function timeLabel(value: string, timezone: string): string {
@@ -91,6 +95,7 @@ export function ActionPanel({ accessToken, tenant, onOpenThread }: Props) {
             <div><dt>Delivery</dt><dd>{exception.deliveryReference} · {exception.recipientName}</dd></div>
             <div><dt>Round</dt><dd>{exception.roundReference} · {exception.driverName}</dd></div>
             <div><dt>Location</dt><dd>{exception.rawAddress}</dd></div>
+            {exception.observedCoordinate && <div><dt>Driver observation</dt><dd>{exception.observedCoordinate.latitude.toFixed(6)}, {exception.observedCoordinate.longitude.toFixed(6)}{exception.observedAccuracyMeters != null ? ` · ±${Math.round(exception.observedAccuracyMeters)} m` : ""}</dd></div>}
             <div><dt>Reported</dt><dd>{timeLabel(exception.reportedAt, tenant.timezone)}</dd></div>
           </dl>
           <footer><span>Manifest v{exception.manifestVersion} · {exception.stopState}</span>{exception.operationsThreadId ? <button type="button" disabled={stale} onClick={() => onOpenThread(exception.operationsThreadId!)}>Open driver conversation →</button> : <em>Driver conversation has not started</em>}</footer>

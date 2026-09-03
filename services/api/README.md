@@ -14,6 +14,7 @@ Implemented now:
 - `POST /v1/rounds` manual ordered Team Round approval;
 - `GET /v1/driver/session` authenticated assigned/current Round projection;
 - `POST /v1/driver/rounds/:roundId/pickup` exact manifest verification and custody commit;
+- `POST /v1/driver/stops/:stopId/location-problem` typed pickup/delivery location observation with optional real-device GPS evidence and an explicit Operations hold;
 - Supabase access-token verification;
 - active tenant-membership authorization;
 - server-created command/trace/aggregate IDs;
@@ -45,6 +46,13 @@ current Round from the access token. The request carries every assigned Stop's
 manifest ID/version and exact confirmed line numbers. The database validates
 the complete Round before creating verification/custody evidence or changing
 any state.
+
+Location-problem reporting is deliberately observation-only. The server
+snapshots the authoritative pickup or destination, preserves the locked
+manifest and destination version, and creates an audited Operations exception
+and thread entry. Existing generic exception resolvers are blocked from
+resolving these categories until the address-correction and Driver-
+acknowledgement policies in GAP-006/GAP-007 are approved.
 
 ## Commands
 

@@ -123,6 +123,22 @@ class HarnessAppController extends ChangeNotifier {
     ),
   );
 
+  Future<DriverCommandOutcome?> reportLocationProblem({
+    required DriverRoundStopModel stop,
+    required String stage,
+    required String category,
+    required String detail,
+    Map<String, Object?>? position,
+  }) => _runDriverCommand(
+    () => _driverApi.reportLocationProblem(
+      stop: stop,
+      stage: stage,
+      category: category,
+      detail: detail,
+      position: position,
+    ),
+  );
+
   Future<DriverCommandOutcome?> confirmArrival(
     DriverRoundStopModel stop, {
     String? overrideReason,

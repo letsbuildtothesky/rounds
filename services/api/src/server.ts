@@ -29,6 +29,7 @@ import { reportPickupProblemHandler } from "./report-pickup-problem-handler.js";
 import { preparePodMediaHandler } from "./prepare-pod-media-handler.js";
 import { prepareExceptionMediaHandler } from "./prepare-exception-media-handler.js";
 import { reportDeliveryProblemHandler } from "./report-delivery-problem-handler.js";
+import { reportLocationProblemHandler } from "./report-location-problem-handler.js";
 import { SupabaseGateway } from "./supabase-gateway.js";
 
 const config = readConfig();
@@ -345,6 +346,18 @@ const server = createServer(async (request, response) => {
     if (request.method === "POST" && pickupProblemMatch) {
       const webRequest = await toWebRequest(request);
       const problemResponse = await reportPickupProblemHandler(webRequest, pickupProblemMatch[1]!, {
+        identity: gateway,
+        stops: gateway,
+        uuid: () => crypto.randomUUID(),
+        now: () => new Date(),
+      });
+      sendNode(response, problemResponse);
+      return;
+    }
+    const locationProblemMatch = request.url?.match(/^\/v1\/driver\/stops\/([0-9a-f-]+)\/location-problem$/i);
+    if (request.method === "POST" && locationProblemMatch) {
+      const webRequest = await toWebRequest(request);
+      const problemResponse = await reportLocationProblemHandler(webRequest, locationProblemMatch[1]!, {
         identity: gateway,
         stops: gateway,
         uuid: () => crypto.randomUUID(),
