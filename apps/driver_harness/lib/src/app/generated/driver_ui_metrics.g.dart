@@ -632,6 +632,98 @@ abstract final class DriverG02Metrics {
   static const double compactSheetMapHeight = 145.0;
 }
 
+abstract final class DriverG05Metrics {
+  static const String source = 'ux/driver/en/screens/ROUNDS-G05-DRIVER-EMERGENCY-v2-10OF10.html';
+
+  static const double topBarHeight = 64.0;
+  static const double topBarPaddingHorizontal = 22.0;
+  static const double topEyebrowSize = 10.5;
+  static const double topEyebrowTracking = 0.9975;
+  static const double topTitleGap = 5.0;
+  static const double topTitleSize = 17.0;
+
+  static const double contentPaddingTop = 30.0;
+  static const double contentPaddingHorizontal = 22.0;
+  static const double contentPaddingBottom = 26.0;
+  static const double footerReserve = 128.0;
+  static const double kickerSize = 11.0;
+  static const double kickerTracking = 1.1;
+  static const double kickerDotSize = 8.0;
+  static const double kickerGap = 8.0;
+  static const double heroGap = 11.0;
+  static const double heroSize = 42.0;
+  static const double heroHeight = 0.96;
+  static const double heroTracking = -2.52;
+  static const double subGap = 13.0;
+  static const double subSize = 15.0;
+  static const double subHeight = 1.4;
+  static const double questionGap = 36.0;
+  static const double questionSize = 12.0;
+  static const double questionTracking = 1.08;
+
+  static const double choiceListGap = 8.0;
+  static const double choiceRowHeight = 112.0;
+  static const double choiceIconColumn = 54.0;
+  static const double choiceColumnGap = 15.0;
+  static const double choiceArrowColumn = 18.0;
+  static const double choiceIconSize = 50.0;
+  static const double choiceGlyphSize = 25.0;
+  static const double choiceTitleSize = 20.0;
+  static const double choiceTitleHeight = 1.08;
+  static const double choiceTitleTracking = -0.6;
+  static const double choiceDetailGap = 6.0;
+  static const double choiceDetailSize = 13.0;
+  static const double choiceDetailHeight = 1.35;
+
+  static const double locationMarginTop = 30.0;
+  static const double locationPaddingTop = 19.0;
+  static const double locationColumnGap = 11.0;
+  static const double locationIconSize = 21.0;
+  static const double locationTitleSize = 14.5;
+  static const double locationDetailGap = 4.0;
+  static const double locationDetailSize = 12.5;
+
+  static const double stateMarginTop = 32.0;
+  static const double statePaddingTop = 20.0;
+  static const double stateLabelSize = 10.5;
+  static const double stateLabelTracking = 0.945;
+  static const double stateTitleGap = 7.0;
+  static const double stateTitleSize = 25.0;
+  static const double stateTitleHeight = 1.05;
+  static const double stateTitleTracking = -1.0;
+  static const double stateDetailGap = 8.0;
+  static const double stateDetailSize = 14.0;
+  static const double stateDetailHeight = 1.42;
+
+  static const double footerPaddingTop = 11.0;
+  static const double footerPaddingHorizontal = 22.0;
+  static const double footerPaddingBottom = 17.0;
+  static const double primaryHeight = 62.0;
+  static const double primaryRadius = 7.0;
+  static const double primarySize = 17.0;
+  static const double secondaryHeight = 48.0;
+  static const double secondaryGap = 7.0;
+  static const double secondarySize = 15.0;
+
+  static const double sheetInset = 10.0;
+  static const double sheetRadiusTop = 12.0;
+  static const double sheetRadiusBottom = 8.0;
+  static const double sheetPaddingHorizontal = 18.0;
+  static const double sheetPaddingBottom = 14.0;
+  static const double sheetHandleWidth = 42.0;
+  static const double sheetHandleHeight = 4.0;
+  static const double sheetHandleBottom = 14.0;
+  static const double sheetTitleSize = 22.0;
+  static const double sheetDetailGap = 7.0;
+  static const double sheetDetailSize = 13.0;
+  static const double sheetRowHeight = 66.0;
+  static const double sheetRowColumnGap = 14.0;
+  static const double sheetRowIconSize = 23.0;
+  static const double sheetRowTitleSize = 15.0;
+  static const double sheetRowDetailGap = 4.0;
+  static const double sheetRowDetailSize = 12.0;
+}
+
 abstract final class DriverH03Metrics {
   static const String source = 'ux/driver/en/screens/ROUNDS-H03-CONTACT-HISTORY-v2-10OF10.html';
 

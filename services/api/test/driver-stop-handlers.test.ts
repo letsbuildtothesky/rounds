@@ -9,9 +9,12 @@ import type {
   ReportPickupProblemResult,
   ReportLocationProblemCommand,
   ReportLocationProblemResult,
+  ReportDriverEmergencyCommand,
+  ReportDriverEmergencyResult,
 } from "@rounds/contracts";
 import { confirmStopArrivalHandler } from "../src/confirm-stop-arrival-handler.js";
 import { reportLocationProblemHandler } from "../src/report-location-problem-handler.js";
+import { reportDriverEmergencyHandler } from "../src/report-driver-emergency-handler.js";
 import { reportPickupProblemHandler } from "../src/report-pickup-problem-handler.js";
 import type {
   ActorContext,
@@ -71,6 +74,7 @@ class FakeDriverStopGateway implements IdentityGateway, DriverStopGateway {
   driverSession: DriverSession | null = session;
   problemCommand: ReportPickupProblemCommand | null = null;
   locationProblemCommand: ReportLocationProblemCommand | null = null;
+  emergencyCommand: ReportDriverEmergencyCommand | null = null;
   arrivalCommand: ConfirmStopArrivalCommand | null = null;
   async authenticate(): Promise<AuthenticatedIdentity | null> { return { authUserId: "auth-user" }; }
   async authorizeTenant(): Promise<ActorContext | null> { return null; }
@@ -109,6 +113,27 @@ class FakeDriverStopGateway implements IdentityGateway, DriverStopGateway {
         operationsThreadId: "10000000-0000-4000-8000-000000000033",
         stopState: "exception",
         deliveryState: "exception",
+      },
+      events: [],
+    };
+  }
+  async reportDriverEmergency(command: ReportDriverEmergencyCommand): Promise<ReportDriverEmergencyResult> {
+    this.emergencyCommand = command;
+    return {
+      status: "committed",
+      aggregateVersion: 5,
+      state: {
+        emergencyEventId: "10000000-0000-4000-8000-000000000034",
+        exceptionId: "10000000-0000-4000-8000-000000000035",
+        stopId,
+        deliveryId,
+        roundId,
+        safetyStatus: command.payload.safetyStatus,
+        hasPositionEvidence: Boolean(command.payload.position),
+        operationsThreadId: "10000000-0000-4000-8000-000000000033",
+        stopState: "exception",
+        deliveryState: "exception",
+        emergencyHold: true,
       },
       events: [],
     };
@@ -196,6 +221,27 @@ test("assigned Team driver reports a typed location problem with GPS evidence", 
   assert.equal(gateway.locationProblemCommand?.aggregateId, stopId);
   assert.equal(gateway.locationProblemCommand?.payload.category, "wrong_pin");
   assert.equal(gateway.locationProblemCommand?.payload.position?.source, "rounds_os");
+});
+
+test("assigned Team driver reports a priority emergency with optional location", async () => {
+  const gateway = new FakeDriverStopGateway();
+  const response = await reportDriverEmergencyHandler(new Request("http://test/emergency", {
+    method: "POST",
+    headers: {
+      authorization: "Bearer token",
+      "content-type": "application/json",
+      "idempotency-key": "emergency:stop-1",
+    },
+    body: JSON.stringify({
+      manifestId,
+      manifestVersion: 1,
+      safetyStatus: "urgent",
+      position: { latitude: 13.73, longitude: 100.568, accuracyMeters: 8, source: "rounds_os" },
+    }),
+  }), stopId, dependencies(gateway));
+  assert.equal(response.status, 201);
+  assert.equal(gateway.emergencyCommand?.aggregateId, stopId);
+  assert.equal(gateway.emergencyCommand?.payload.safetyStatus, "urgent");
 });
 
 test("driver cannot mutate a Stop outside the assigned Round", async () => {

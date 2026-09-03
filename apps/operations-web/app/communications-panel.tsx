@@ -116,9 +116,9 @@ export function CommunicationsPanel({ accessToken, tenant, initialThreadId = "" 
         <div className="thread-list-title"><strong>Active threads</strong><span>{projection.threads.length}</span></div>
         {projection.threads.map((thread) => {
           const last = thread.messages.at(-1);
-          return <button type="button" key={thread.id} className={thread.id === selectedThreadId ? "thread-row selected" : "thread-row"} onClick={() => setSelectedThreadId(thread.id)}>
+          return <button type="button" key={thread.id} className={`${thread.id === selectedThreadId ? "thread-row selected" : "thread-row"}${thread.priority === "emergency" ? " emergency" : ""}`} onClick={() => setSelectedThreadId(thread.id)}>
             <span className="driver-avatar">{thread.driverName.slice(0, 1).toUpperCase()}</span>
-            <span className="thread-copy"><strong>{thread.driverName}</strong><small>{thread.roundReference} · Stop {thread.stopSequence}</small><em>{last?.body ?? "No messages yet"}</em></span>
+            <span className="thread-copy"><strong>{thread.priority === "emergency" ? "EMERGENCY · " : ""}{thread.driverName}</strong><small>{thread.roundReference} · Stop {thread.stopSequence}</small><em>{last?.body ?? "No messages yet"}</em></span>
             <time>{last ? timeLabel(last.sentAt, tenant.timezone) : ""}</time>
           </button>;
         })}
@@ -126,8 +126,8 @@ export function CommunicationsPanel({ accessToken, tenant, initialThreadId = "" 
       {selected && <article className="conversation-card">
         <header className="conversation-header">
           <span className="driver-avatar large">{selected.driverName.slice(0, 1).toUpperCase()}</span>
-          <div><p className="eyebrow">TEAM DRIVER · ACTIVE ROUND</p><h2>{selected.driverName}</h2><span>{selected.roundReference} · Stop {selected.stopSequence} · {selected.deliveryReference}</span></div>
-          <span className="live-pill"><i /> Active</span>
+          <div><p className="eyebrow">{selected.priority === "emergency" ? "DRIVER EMERGENCY · PRIORITY" : "TEAM DRIVER · ACTIVE ROUND"}</p><h2>{selected.driverName}</h2><span>{selected.roundReference} · Stop {selected.stopSequence} · {selected.deliveryReference}</span></div>
+          <span className={`live-pill ${selected.priority === "emergency" ? "emergency" : ""}`}><i /> {selected.priority === "emergency" ? "Emergency" : "Active"}</span>
         </header>
         <div className="conversation-context"><div><small>Recipient</small><strong>{selected.recipientName}</strong></div><div><small>Destination</small><strong>{selected.rawAddress}</strong></div></div>
         <div className="message-stream" aria-live="polite">

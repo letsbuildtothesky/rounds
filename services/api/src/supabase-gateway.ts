@@ -63,6 +63,8 @@ import type {
   ReportDeliveryProblemResult,
   ReportLocationProblemCommand,
   ReportLocationProblemResult,
+  ReportDriverEmergencyCommand,
+  ReportDriverEmergencyResult,
   ResolveOperationsExceptionCommand,
   ResolveOperationsExceptionResult,
   SendDriverMessageCommand,
@@ -1066,6 +1068,23 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     return data as ReportLocationProblemResult;
   }
 
+  async reportDriverEmergency(
+    command: ReportDriverEmergencyCommand,
+    identity: AuthenticatedIdentity,
+  ): Promise<ReportDriverEmergencyResult> {
+    const actorPersonId = await this.driverActorPersonId(identity);
+    if (!actorPersonId) return {
+      status: "rejected",
+      error: { code: "NOT_AUTHORIZED", message: "Driver identity is not linked" },
+    };
+    const { data, error } = await this.admin.rpc("report_driver_emergency_command", {
+      p_command: command,
+      p_actor_person_id: actorPersonId,
+    });
+    if (error) throw error;
+    return data as ReportDriverEmergencyResult;
+  }
+
   async confirmStopArrival(
     command: ConfirmStopArrivalCommand,
     identity: AuthenticatedIdentity,
@@ -1136,11 +1155,12 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
   async getOperationsCommunications(actor: ActorContext): Promise<OperationsCommunicationsProjection> {
     type ThreadRow = {
       id: string; round_id: string; stop_id: string; driver_id: string;
-      version: number; updated_at: string;
+      version: number; priority: "normal" | "emergency"; updated_at: string;
     };
     const { data: threads, error: threadsError } = await this.admin.from("operations_threads")
-      .select("id, round_id, stop_id, driver_id, version, updated_at")
-      .eq("tenant_id", actor.tenantId).order("updated_at", { ascending: false }).returns<ThreadRow[]>();
+      .select("id, round_id, stop_id, driver_id, version, priority, updated_at")
+      .eq("tenant_id", actor.tenantId).order("priority", { ascending: true })
+      .order("updated_at", { ascending: false }).returns<ThreadRow[]>();
     if (threadsError) throw threadsError;
     if (!threads?.length) return { tenantId: actor.tenantId, threads: [] };
 
@@ -1198,6 +1218,7 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
         if (!round || !stop || !delivery || !driver) return [];
         return [{
           id: thread.id,
+          priority: thread.priority,
           roundId: thread.round_id,
           roundReference: round.reference,
           stopId: thread.stop_id,
@@ -1789,7 +1810,7 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     type ExceptionRow = {
       id: string; delivery_id: string; stop_id: string; round_id: string; driver_id: string;
       stage: "pickup" | "delivery";
-      category: "missing_item" | "wrong_item" | "damaged_item" | "wrong_pin" | "wrong_entrance" | "wrong_address" | "cannot_find_location";
+      category: "missing_item" | "wrong_item" | "damaged_item" | "wrong_pin" | "wrong_entrance" | "wrong_address" | "cannot_find_location" | "emergency";
       note: string | null; status: "open"; manifest_version: number; reported_at: string;
       expected_position: unknown; observed_position: unknown; observed_accuracy_meters: number | null;
       observed_location_source: "google_nav" | "rounds_os" | "unknown" | null;
@@ -1815,7 +1836,7 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     const stopIds = [...new Set(exceptions.map((item) => item.stop_id))];
     const roundIds = [...new Set(exceptions.map((item) => item.round_id))];
     const driverIds = [...new Set(exceptions.map((item) => item.driver_id))];
-    const [deliveryResult, stopResult, roundResult, roundStopResult, driverResult, threadResult] = await Promise.all([
+    const [deliveryResult, stopResult, roundResult, roundStopResult, driverResult, threadResult, emergencyResult] = await Promise.all([
       this.admin.from("deliveries").select("id, reference, recipient_name, destination_raw_address, destination_position")
         .eq("tenant_id", actor.tenantId).in("id", deliveryIds)
         .returns<{ id: string; reference: string; recipient_name: string; destination_raw_address: string; destination_position: unknown }[]>(),
@@ -1832,6 +1853,9 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
         .eq("tenant_id", actor.tenantId).in("round_id", roundIds).in("stop_id", stopIds)
         .order("updated_at", { ascending: false })
         .returns<{ id: string; round_id: string; stop_id: string; updated_at: string }[]>(),
+      this.admin.from("driver_emergency_events").select("exception_id, safety_status")
+        .eq("tenant_id", actor.tenantId).in("exception_id", exceptions.map((item) => item.id))
+        .returns<{ exception_id: string; safety_status: "safe" | "urgent" }[]>(),
     ]);
     if (deliveryResult.error) throw deliveryResult.error;
     if (stopResult.error) throw stopResult.error;
@@ -1839,6 +1863,7 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     if (roundStopResult.error) throw roundStopResult.error;
     if (driverResult.error) throw driverResult.error;
     if (threadResult.error) throw threadResult.error;
+    if (emergencyResult.error) throw emergencyResult.error;
 
     const personIds = [...new Set((driverResult.data ?? []).map((driver) => driver.person_id))];
     const peopleResult = await this.admin.from("persons").select("id, display_name").in("id", personIds)
@@ -1851,6 +1876,7 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     const personIdByDriver = new Map((driverResult.data ?? []).map((row) => [row.id, row.person_id]));
     const personById = new Map((peopleResult.data ?? []).map((row) => [row.id, row]));
     const threadByStop = new Map<string, string>();
+    const emergencyByException = new Map((emergencyResult.data ?? []).map((row) => [row.exception_id, row.safety_status]));
     for (const thread of threadResult.data ?? []) {
       const key = `${thread.round_id}:${thread.stop_id}`;
       if (!threadByStop.has(key)) threadByStop.set(key, thread.id);
@@ -1892,6 +1918,7 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
           ...(observedCoordinate ? { observedCoordinate } : {}),
           ...(item.observed_accuracy_meters != null ? { observedAccuracyMeters: item.observed_accuracy_meters } : {}),
           ...(item.observed_location_source ? { observedLocationSource: item.observed_location_source } : {}),
+          ...(emergencyByException.get(item.id) ? { emergencySafetyStatus: emergencyByException.get(item.id)! } : {}),
           ...(item.original_stop_state ? { originalStopState: item.original_stop_state } : {}),
           ...(item.original_delivery_state ? { originalDeliveryState: item.original_delivery_state } : {}),
           status: item.status,

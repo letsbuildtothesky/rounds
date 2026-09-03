@@ -16,6 +16,7 @@ import {
   validateReportPickupProblemCommand,
   validateReportDeliveryProblemCommand,
   validateReportLocationProblemCommand,
+  validateReportDriverEmergencyCommand,
 } from "../src/index.js";
 
 const payload = () => ({
@@ -216,6 +217,30 @@ test("requires verified photo identity for a delivery damage problem", () => {
       mediaAssetId: "not-a-uuid",
     },
   }), ContractError);
+});
+
+test("accepts only a typed driver emergency safety status", () => {
+  const command = {
+    schemaVersion: 1 as const,
+    commandType: "stop.report_driver_emergency" as const,
+    commandId: "10000000-0000-4000-8000-000000000101",
+    traceId: "10000000-0000-4000-8000-000000000102",
+    idempotencyKey: "emergency:stop-1",
+    tenantId: "10000000-0000-4000-8000-000000000001",
+    aggregateId: "10000000-0000-4000-8000-000000000011",
+    expectedVersion: 5,
+    payload: {
+      manifestId: "10000000-0000-4000-8000-000000000012",
+      manifestVersion: 1,
+      safetyStatus: "urgent" as const,
+      position: { latitude: 13.74, longitude: 100.54, accuracyMeters: 8, source: "rounds_os" as const },
+    },
+  };
+  assert.doesNotThrow(() => validateReportDriverEmergencyCommand(command));
+  assert.throws(() => validateReportDriverEmergencyCommand({
+    ...command,
+    payload: { ...command.payload, safetyStatus: "later" as "urgent" },
+  }), /safetyStatus/);
 });
 
 test("accepts a typed location problem with optional real position evidence", () => {

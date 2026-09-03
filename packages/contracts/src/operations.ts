@@ -108,12 +108,14 @@ export type OperationsActionException = {
     | "wrong_pin"
     | "wrong_entrance"
     | "wrong_address"
-    | "cannot_find_location";
+    | "cannot_find_location"
+    | "emergency";
   note?: string;
   expectedCoordinate?: { latitude: number; longitude: number };
   observedCoordinate?: { latitude: number; longitude: number };
   observedAccuracyMeters?: number;
   observedLocationSource?: "google_nav" | "rounds_os" | "unknown";
+  emergencySafetyStatus?: "safe" | "urgent";
   originalStopState?: string;
   originalDeliveryState?: DeliveryState;
   status: "open";

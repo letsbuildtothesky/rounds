@@ -42,6 +42,7 @@ export type SendDriverMessageResult = CommandResult<
 >;
 
 export type OperationsCommunicationThread = DriverOperationsThread & {
+  priority: "normal" | "emergency";
   roundReference: string;
   stopSequence: number;
   deliveryId: string;

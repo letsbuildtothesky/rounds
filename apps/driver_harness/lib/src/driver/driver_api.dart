@@ -313,6 +313,29 @@ class DriverApi {
     );
   }
 
+  Future<DriverCommandOutcome> reportDriverEmergency({
+    required DriverRoundStopModel stop,
+    required String safetyStatus,
+    Map<String, Object?>? position,
+  }) {
+    final payload = <String, Object?>{
+      'manifestId': stop.manifestId,
+      'manifestVersion': stop.manifestVersion,
+      'safetyStatus': safetyStatus,
+      'position': ?position,
+    };
+    final fingerprint = sha256.convert(utf8.encode(jsonEncode(payload)));
+    return _queueAndSend(
+      commandType: 'stop.report_driver_emergency',
+      aggregateId: stop.id,
+      expectedVersion: stop.version,
+      idempotencyKey:
+          'driver-emergency:${stop.id}:v${stop.version}:$fingerprint',
+      endpoint: '/v1/driver/stops/${stop.id}/emergency',
+      payload: payload,
+    );
+  }
+
   Future<DriverCommandOutcome> confirmArrival(
     DriverRoundStopModel stop, {
     Map<String, Object?>? position,

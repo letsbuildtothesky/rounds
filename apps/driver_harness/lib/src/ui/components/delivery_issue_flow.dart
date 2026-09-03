@@ -6,6 +6,7 @@ import '../../app/harness_app_controller.dart';
 import '../../driver/driver_session.dart';
 import '../cannot_complete_delivery_screen.dart';
 import '../delivery_package_problem_screen.dart';
+import '../driver_emergency_screen.dart';
 import '../location_problem_screen.dart';
 import '../recipient_unavailable_screen.dart';
 import 'operations_contact_flow.dart';
@@ -93,6 +94,21 @@ Future<bool> openDeliveryIssueFlow(
               round: round,
               stop: stop,
               initialNote: draft.note,
+              launcher: launcher,
+            ),
+          ),
+        ) ??
+        false;
+  }
+
+  if (draft.category == 'Emergency or safety issue') {
+    if (controller == null) return false;
+    return await Navigator.of(context).push<bool>(
+          MaterialPageRoute(
+            builder: (_) => DriverEmergencyScreen(
+              controller: controller,
+              round: round,
+              stop: stop,
               launcher: launcher,
             ),
           ),

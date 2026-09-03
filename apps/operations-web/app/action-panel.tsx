@@ -19,6 +19,7 @@ const categoryLabels: Record<OperationsActionException["category"], string> = {
   wrong_entrance: "Wrong entrance / access",
   wrong_address: "Wrong address",
   cannot_find_location: "Cannot find location",
+  emergency: "Driver emergency",
 };
 
 function timeLabel(value: string, timezone: string): string {
@@ -87,9 +88,10 @@ export function ActionPanel({ accessToken, tenant, onOpenThread }: Props) {
         <div>✓</div><h2>Nothing needs attention.</h2><p>There are no unresolved operational exceptions for {tenant.displayName}.</p>
       </section> : <section className="exception-section">
         <div className="dispatch-card-heading"><div><p className="eyebrow">UNRESOLVED</p><h2>Exception queue</h2></div><span>{projection.exceptions.length} open</span></div>
-        <div className="exception-list">{projection.exceptions.map((exception) => <article className="exception-card" key={exception.id}>
+        <div className="exception-list">{projection.exceptions.map((exception) => <article className={`exception-card ${exception.category === "emergency" ? "emergency" : ""}`} key={exception.id}>
           <div className="exception-accent" />
           <header><div><p className="eyebrow">{exception.stage.toUpperCase()} · STOP {exception.stopSequence || "—"}</p><h3>{categoryLabels[exception.category]}</h3></div><span className="exception-status">OPEN</span></header>
+          {exception.emergencySafetyStatus && <p className="emergency-safety">SAFETY STATUS · {exception.emergencySafetyStatus.toUpperCase()}</p>}
           <p className="exception-note">{exception.note || "The driver did not add a note."}</p>
           <dl className="exception-context">
             <div><dt>Delivery</dt><dd>{exception.deliveryReference} · {exception.recipientName}</dd></div>

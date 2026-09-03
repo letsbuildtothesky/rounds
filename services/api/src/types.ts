@@ -52,6 +52,9 @@ import type {
   ReportLocationProblemCommand,
   ReportLocationProblemPayload,
   ReportLocationProblemResult,
+  ReportDriverEmergencyCommand,
+  ReportDriverEmergencyPayload,
+  ReportDriverEmergencyResult,
   ResolveOperationsExceptionCommand,
   ResolveOperationsExceptionResult,
   SendDriverMessageCommand,
@@ -130,6 +133,10 @@ export interface DriverStopGateway {
     command: ReportLocationProblemCommand,
     identity: AuthenticatedIdentity,
   ): Promise<ReportLocationProblemResult>;
+  reportDriverEmergency(
+    command: ReportDriverEmergencyCommand,
+    identity: AuthenticatedIdentity,
+  ): Promise<ReportDriverEmergencyResult>;
   confirmStopArrival(
     command: ConfirmStopArrivalCommand,
     identity: AuthenticatedIdentity,
@@ -379,6 +386,7 @@ export type PodDependencies = DriverSessionDependencies & {
 
 export type ReportPickupProblemRequestBody = ReportPickupProblemPayload;
 export type ReportLocationProblemRequestBody = ReportLocationProblemPayload;
+export type ReportDriverEmergencyRequestBody = ReportDriverEmergencyPayload;
 export type ConfirmStopArrivalRequestBody = ConfirmStopArrivalPayload;
 export type CompleteStopPodRequestBody = CompleteStopPodPayload;
 export type ReportDeliveryProblemRequestBody = ReportDeliveryProblemPayload;

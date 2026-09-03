@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rounds_driver_harness/src/app/driver_design_system.dart';
+import 'package:rounds_driver_harness/src/app/harness_app_controller.dart';
 import 'package:rounds_driver_harness/src/ui/assigned_round_screen.dart';
 import 'package:rounds_driver_harness/src/ui/components/delivery_issue_flow.dart';
 import 'package:rounds_driver_harness/src/ui/components/operations_contact_flow.dart';
+import 'package:rounds_driver_harness/src/ui/driver_emergency_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   final round = AssignedRoundScreen.demoRound;
@@ -35,9 +38,11 @@ void main() {
     expect(launched?.path, round.pickup.contactPhone);
   });
 
-  testWidgets('emergency message carries exact Round and Stop context', (
+  testWidgets('emergency issue opens canonical G05 without an SMS fallback', (
     tester,
   ) async {
+    SharedPreferences.setMockInitialValues({});
+    final controller = await HarnessAppController.create();
     Uri? launched;
     await _pumpLauncher(
       tester,
@@ -45,6 +50,7 @@ void main() {
         context,
         round: round,
         stop: stop,
+        controller: controller,
         launcher: (uri) async {
           launched = uri;
           return true;
@@ -68,13 +74,9 @@ void main() {
     await tester.tap(find.byKey(const Key('continue-delivery-issue')));
     await tester.pumpAndSettle();
 
-    expect(launched?.scheme, 'sms');
-    expect(launched?.path, round.pickup.contactPhone);
-    final body = launched?.queryParameters['body'] ?? '';
-    expect(body, contains(round.reference));
-    expect(body, contains(stop.deliveryReference));
-    expect(body, contains('Emergency or safety issue'));
-    expect(body, contains('Security will not allow entry.'));
+    expect(find.byType(DriverEmergencyScreen), findsOneWidget);
+    expect(find.text('Are you safe?'), findsOneWidget);
+    expect(launched, isNull);
   });
 
   testWidgets('delivery issue drawer exposes the native damage-photo path', (

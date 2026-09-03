@@ -626,6 +626,16 @@
         "compactMapHeight": 145
       }
     },
+    "G05": {
+      "source": "ux/driver/en/screens/ROUNDS-G05-DRIVER-EMERGENCY-v2-10OF10.html",
+      "topBar": { "height": 64, "paddingHorizontal": 22, "eyebrowSize": 10.5, "eyebrowTracking": 0.9975, "titleGap": 5, "titleSize": 17 },
+      "content": { "paddingTop": 30, "paddingHorizontal": 22, "paddingBottom": 26, "footerReserve": 128, "kickerSize": 11, "kickerTracking": 1.1, "kickerDotSize": 8, "kickerGap": 8, "heroGap": 11, "heroSize": 42, "heroHeight": 0.96, "heroTracking": -2.52, "subGap": 13, "subSize": 15, "subHeight": 1.4, "questionGap": 36, "questionSize": 12, "questionTracking": 1.08 },
+      "choice": { "listGap": 8, "rowHeight": 112, "iconColumn": 54, "columnGap": 15, "arrowColumn": 18, "iconSize": 50, "glyphSize": 25, "titleSize": 20, "titleHeight": 1.08, "titleTracking": -0.6, "detailGap": 6, "detailSize": 13, "detailHeight": 1.35 },
+      "location": { "marginTop": 30, "paddingTop": 19, "columnGap": 11, "iconSize": 21, "titleSize": 14.5, "detailGap": 4, "detailSize": 12.5 },
+      "state": { "marginTop": 32, "paddingTop": 20, "labelSize": 10.5, "labelTracking": 0.945, "titleGap": 7, "titleSize": 25, "titleHeight": 1.05, "titleTracking": -1, "detailGap": 8, "detailSize": 14, "detailHeight": 1.42 },
+      "footer": { "paddingTop": 11, "paddingHorizontal": 22, "paddingBottom": 17, "primaryHeight": 62, "primaryRadius": 7, "primarySize": 17, "secondaryHeight": 48, "secondaryGap": 7, "secondarySize": 15 },
+      "sheet": { "inset": 10, "radiusTop": 12, "radiusBottom": 8, "paddingHorizontal": 18, "paddingBottom": 14, "handleWidth": 42, "handleHeight": 4, "handleBottom": 14, "titleSize": 22, "detailGap": 7, "detailSize": 13, "rowHeight": 66, "rowColumnGap": 14, "rowIconSize": 23, "rowTitleSize": 15, "rowDetailGap": 4, "rowDetailSize": 12 }
+    },
     "H03": {
       "source": "ux/driver/en/screens/ROUNDS-H03-CONTACT-HISTORY-v2-10OF10.html",
       "topBar": {

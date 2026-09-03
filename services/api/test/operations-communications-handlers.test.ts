@@ -27,6 +27,7 @@ const actor: ActorContext = {
 };
 const thread: OperationsCommunicationThread = {
   id: threadId,
+  priority: "normal",
   roundId: "10000000-0000-4000-8000-000000000010",
   roundReference: "ROUND-001",
   stopId: "10000000-0000-4000-8000-000000000011",

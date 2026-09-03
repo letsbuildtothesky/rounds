@@ -40,7 +40,10 @@ import type {
   ReportDeliveryProblemPayload,
   ReportLocationProblemCommand,
   ReportLocationProblemPayload,
+  ReportDriverEmergencyCommand,
+  ReportDriverEmergencyPayload,
 } from "./round.js";
+import { driverEmergencySafetyStatuses } from "./round.js";
 import {
   operationsExceptionResolutions,
   type ConfirmDeliveryReturnCommand,
@@ -630,6 +633,25 @@ export function validateReportLocationProblemCommand(command: ReportLocationProb
   validateReportLocationProblemPayload(command.payload);
 }
 
+export function validateReportDriverEmergencyPayload(payload: ReportDriverEmergencyPayload): void {
+  assertUuid(payload.manifestId, "manifestId");
+  if (!Number.isInteger(payload.manifestVersion) || payload.manifestVersion < 1) {
+    throw new ContractError("manifestVersion must be a positive integer");
+  }
+  if (!driverEmergencySafetyStatuses.includes(payload.safetyStatus)) {
+    throw new ContractError("safetyStatus is not supported for a driver emergency");
+  }
+  if (payload.position) validateConfirmStopArrivalPayload({ position: payload.position });
+}
+
+export function validateReportDriverEmergencyCommand(command: ReportDriverEmergencyCommand): void {
+  if (command.schemaVersion !== 1 || command.commandType !== "stop.report_driver_emergency") {
+    throw new ContractError("unsupported ReportDriverEmergency command envelope");
+  }
+  validateStopCommandEnvelope(command, "ReportDriverEmergency");
+  validateReportDriverEmergencyPayload(command.payload);
+}
+
 export function validateConfirmStopArrivalPayload(payload: ConfirmStopArrivalPayload): void {
   if (payload.overrideReason !== undefined && payload.overrideReason.trim().length > 500) {
     throw new ContractError("overrideReason exceeds 500 characters");
@@ -710,7 +732,7 @@ export function validateCompleteStopPodCommand(command: CompleteStopPodCommand):
 }
 
 function validateStopCommandEnvelope(
-  command: ReportPickupProblemCommand | ReportDeliveryProblemCommand | ReportLocationProblemCommand | ConfirmStopArrivalCommand | CompleteStopPodCommand | LogContactAttemptCommand,
+  command: ReportPickupProblemCommand | ReportDeliveryProblemCommand | ReportLocationProblemCommand | ReportDriverEmergencyCommand | ConfirmStopArrivalCommand | CompleteStopPodCommand | LogContactAttemptCommand,
   name: string,
 ): void {
   assertUuid(command.commandId, "commandId");

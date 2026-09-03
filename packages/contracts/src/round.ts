@@ -524,6 +524,49 @@ export type ReportLocationProblemResult = CommandResult<
   LocationProblemReportedEvent
 >;
 
+export const driverEmergencySafetyStatuses = ["safe", "urgent"] as const;
+export type DriverEmergencySafetyStatus =
+  (typeof driverEmergencySafetyStatuses)[number];
+
+export type ReportDriverEmergencyPayload = {
+  manifestId: string;
+  manifestVersion: number;
+  safetyStatus: DriverEmergencySafetyStatus;
+  position?: ArrivalPositionEvidence;
+};
+
+export type ReportDriverEmergencyCommand = CommandEnvelope<
+  "stop.report_driver_emergency",
+  ReportDriverEmergencyPayload
+>;
+
+export type DriverEmergencyReportedPayload = {
+  emergencyEventId: string;
+  exceptionId: string;
+  stopId: string;
+  deliveryId: string;
+  roundId: string;
+  safetyStatus: DriverEmergencySafetyStatus;
+  hasPositionEvidence: boolean;
+  operationsThreadId: string;
+};
+
+export type DriverEmergencyReportedEvent = DomainEventEnvelope<
+  "stop.driver_emergency_reported",
+  DriverEmergencyReportedPayload
+>;
+
+export type ReportDriverEmergencyState = DriverEmergencyReportedPayload & {
+  stopState: "exception";
+  deliveryState: "exception";
+  emergencyHold: true;
+};
+
+export type ReportDriverEmergencyResult = CommandResult<
+  ReportDriverEmergencyState,
+  DriverEmergencyReportedEvent
+>;
+
 export type ArrivalPositionEvidence = {
   latitude: number;
   longitude: number;

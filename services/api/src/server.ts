@@ -31,6 +31,7 @@ import { preparePodMediaHandler } from "./prepare-pod-media-handler.js";
 import { prepareExceptionMediaHandler } from "./prepare-exception-media-handler.js";
 import { reportDeliveryProblemHandler } from "./report-delivery-problem-handler.js";
 import { reportLocationProblemHandler } from "./report-location-problem-handler.js";
+import { reportDriverEmergencyHandler } from "./report-driver-emergency-handler.js";
 import { logContactAttemptHandler } from "./log-contact-attempt-handler.js";
 import { SupabaseGateway } from "./supabase-gateway.js";
 
@@ -391,6 +392,18 @@ const server = createServer(async (request, response) => {
         now: () => new Date(),
       });
       sendNode(response, problemResponse);
+      return;
+    }
+    const driverEmergencyMatch = request.url?.match(/^\/v1\/driver\/stops\/([0-9a-f-]+)\/emergency$/i);
+    if (request.method === "POST" && driverEmergencyMatch) {
+      const webRequest = await toWebRequest(request);
+      const emergencyResponse = await reportDriverEmergencyHandler(webRequest, driverEmergencyMatch[1]!, {
+        identity: gateway,
+        stops: gateway,
+        uuid: () => crypto.randomUUID(),
+        now: () => new Date(),
+      });
+      sendNode(response, emergencyResponse);
       return;
     }
     const contactAttemptMatch = request.url?.match(/^\/v1\/driver\/stops\/([0-9a-f-]+)\/contact-attempts$/i);
