@@ -160,6 +160,105 @@ export type OperationsActionProjection = {
   exceptions: OperationsActionException[];
 };
 
+export type OperationsVehicleProfileSummary = {
+  id: string;
+  code: string;
+  displayName: string;
+  vehicleGroup: "motorbike" | "car" | "van" | "pickup" | "cargo_bike" | "other";
+  departurePattern: "multi_stop" | "return_after_every_delivery" | "return_after_round" | "return_when_capacity_exhausted";
+  maxStopsPerDeparture: number;
+  planningDeliveriesPerBlock: number;
+  pickupTurnaroundMinutes: number;
+  requiresReview: boolean;
+  version: number;
+};
+
+export type OperationsDriverCapacityItem = {
+  driverId: string;
+  displayName: string;
+  initials: string;
+  phone?: string;
+  vehiclePlate?: string;
+  presence: {
+    state: "live" | "stale" | "unknown";
+    capturedAt?: string;
+  };
+  availability: {
+    state: "on_round" | "loading" | "available" | "off_shift" | "schedule_required";
+    label: string;
+    nextAvailableAt?: string;
+    projectionBasis: string;
+  };
+  effectiveShift?: {
+    source: "recurring" | "exception";
+    startAt: string;
+    endAt: string;
+    crossesMidnight: boolean;
+  };
+  schedule?: {
+    id: string;
+    version: number;
+    weekdays: number[];
+    startLocal: string;
+    endLocal: string;
+    note?: string;
+  };
+  vehicleProfile?: OperationsVehicleProfileSummary;
+  currentRound?: {
+    id: string;
+    reference: string;
+    state: "approved" | "loading" | "active";
+    stopCount: number;
+  };
+  completedDeliveriesToday: number;
+};
+
+export type OperationsDriversProjection = {
+  tenantId: string;
+  serviceDate: string;
+  observedAt: string;
+  drivers: OperationsDriverCapacityItem[];
+  vehicleProfiles: OperationsVehicleProfileSummary[];
+  summary: {
+    ownDrivers: number;
+    scheduled: number;
+    activeRounds: number;
+    availableNow: number;
+    scheduleRequired: number;
+    vehicleGroups: Record<string, number>;
+  };
+};
+
+export type SetDriverRecurringSchedulePayload = {
+  weekdays: number[];
+  startLocal: string;
+  endLocal: string;
+  vehicleProfileId: string;
+  note?: string;
+};
+
+export type SetDriverRecurringScheduleCommand = CommandEnvelope<
+  "operations.set_driver_recurring_schedule",
+  SetDriverRecurringSchedulePayload
+>;
+export type DriverRecurringScheduleSetPayload = {
+  scheduleId: string;
+  driverId: string;
+  weekdays: number[];
+  startLocal: string;
+  endLocal: string;
+  vehicleProfileId: string;
+  updatedAt: string;
+};
+export type DriverRecurringScheduleSetEvent = DomainEventEnvelope<
+  "operations.driver_recurring_schedule_set",
+  DriverRecurringScheduleSetPayload
+>;
+export type SetDriverRecurringScheduleResult = CommandResult<
+  DriverRecurringScheduleSetPayload,
+  DriverRecurringScheduleSetEvent
+>;
+
 export type OperationsDeliveryItem = {
   deliveryId: string;
   reference: string;

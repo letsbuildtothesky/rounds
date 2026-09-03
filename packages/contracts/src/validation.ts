@@ -28,9 +28,43 @@ import {
   type ConfirmDeliveryReturnPayload,
   type ResolveOperationsExceptionCommand,
   type ResolveOperationsExceptionPayload,
+  type SetDriverRecurringScheduleCommand,
+  type SetDriverRecurringSchedulePayload,
 } from "./operations.js";
 
 export class ContractError extends Error {}
+
+export function validateSetDriverRecurringSchedulePayload(payload: SetDriverRecurringSchedulePayload): void {
+  if (!Array.isArray(payload.weekdays) || payload.weekdays.length < 1 || payload.weekdays.length > 7) {
+    throw new ContractError("weekdays must contain one to seven ISO weekdays");
+  }
+  const distinct = new Set(payload.weekdays);
+  if (distinct.size !== payload.weekdays.length || payload.weekdays.some((day) => !Number.isInteger(day) || day < 1 || day > 7)) {
+    throw new ContractError("weekdays must contain unique integers from 1 to 7");
+  }
+  if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(payload.startLocal) || !/^([01]\d|2[0-3]):[0-5]\d$/.test(payload.endLocal)) {
+    throw new ContractError("schedule times must use HH:mm");
+  }
+  if (payload.startLocal === payload.endLocal) throw new ContractError("schedule start and end must differ");
+  assertUuid(payload.vehicleProfileId, "vehicleProfileId");
+  if (payload.note !== undefined && payload.note.trim().length > 500) throw new ContractError("note exceeds 500 characters");
+}
+
+export function validateSetDriverRecurringScheduleCommand(command: SetDriverRecurringScheduleCommand): void {
+  if (command.schemaVersion !== 1 || command.commandType !== "operations.set_driver_recurring_schedule") {
+    throw new ContractError("unsupported SetDriverRecurringSchedule command envelope");
+  }
+  assertUuid(command.commandId, "commandId");
+  assertUuid(command.traceId, "traceId");
+  assertUuid(command.tenantId, "tenantId");
+  assertUuid(command.aggregateId, "aggregateId");
+  assertNonEmpty(command.idempotencyKey, "idempotencyKey");
+  if (command.idempotencyKey.length > 200) throw new ContractError("idempotencyKey exceeds 200 characters");
+  if (!Number.isInteger(command.expectedVersion) || command.expectedVersion < 0) {
+    throw new ContractError("SetDriverRecurringSchedule expectedVersion must be a non-negative integer");
+  }
+  validateSetDriverRecurringSchedulePayload(command.payload);
+}
 
 export function validateResolveOperationsExceptionPayload(payload: ResolveOperationsExceptionPayload): void {
   assertUuid(payload.exceptionId, "exceptionId");

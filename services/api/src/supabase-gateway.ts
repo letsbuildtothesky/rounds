@@ -13,6 +13,7 @@ import type {
   OperationsHistoryGateway,
   OperationsActionGateway,
   OperationsDeliveriesGateway,
+  OperationsDriversGateway,
   OperationsRoundDetailGateway,
   OperationsCommunicationsGateway,
   PodGateway,
@@ -36,6 +37,7 @@ import type {
   OperationsHistoryProjection,
   OperationsActionProjection,
   OperationsDeliveriesProjection,
+  OperationsDriversProjection,
   OperationsRoundDetail,
   OperationsCommunicationThread,
   OperationsCommunicationsProjection,
@@ -54,6 +56,8 @@ import type {
   SendDriverMessageResult,
   SendOperationsMessageCommand,
   SendOperationsMessageResult,
+  SetDriverRecurringScheduleCommand,
+  SetDriverRecurringScheduleResult,
 } from "@rounds/contracts";
 
 type MembershipRow = {
@@ -133,7 +137,38 @@ export function parseDatabasePoint(value: unknown): { latitude: number; longitud
   return undefined;
 }
 
-export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway, RoundGateway, PickupGateway, DriverStopGateway, DriverCommunicationsGateway, OperationsCommunicationsGateway, PodGateway, OperationsHistoryGateway, OperationsActionGateway, OperationsDeliveriesGateway, OperationsRoundDetailGateway {
+function addCalendarDay(serviceDate: string): string {
+  const value = new Date(`${serviceDate}T00:00:00.000Z`);
+  value.setUTCDate(value.getUTCDate() + 1);
+  return value.toISOString().slice(0, 10);
+}
+
+function zonedLocalIso(serviceDate: string, localTime: string, timezone: string): string {
+  const [year, month, day] = serviceDate.split("-").map(Number);
+  const [hour, minute] = localTime.split(":").map(Number);
+  const target = Date.UTC(year!, month! - 1, day!, hour!, minute!);
+  let candidate = target;
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: timezone, year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23",
+  });
+  for (let pass = 0; pass < 2; pass += 1) {
+    const parts = Object.fromEntries(formatter.formatToParts(new Date(candidate)).map((part) => [part.type, part.value]));
+    const represented = Date.UTC(Number(parts.year), Number(parts.month) - 1, Number(parts.day), Number(parts.hour), Number(parts.minute));
+    candidate -= represented - target;
+  }
+  return new Date(candidate).toISOString();
+}
+
+function compactLocalTime(value: string): string {
+  return value.slice(0, 5);
+}
+
+function initials(displayName: string): string {
+  return displayName.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]!.toUpperCase()).join("") || "DR";
+}
+
+export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway, RoundGateway, PickupGateway, DriverStopGateway, DriverCommunicationsGateway, OperationsCommunicationsGateway, PodGateway, OperationsHistoryGateway, OperationsActionGateway, OperationsDeliveriesGateway, OperationsDriversGateway, OperationsRoundDetailGateway {
   private readonly admin: SupabaseClient;
 
   constructor(
@@ -1080,6 +1115,219 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     });
     if (error) throw error;
     return data as ReportDeliveryProblemResult;
+  }
+
+  async setDriverRecurringSchedule(
+    command: SetDriverRecurringScheduleCommand,
+    actor: ActorContext,
+  ): Promise<SetDriverRecurringScheduleResult> {
+    const { data, error } = await this.admin.rpc("set_driver_recurring_schedule_command", {
+      p_command: command,
+      p_actor_person_id: actor.personId,
+    });
+    if (error) throw error;
+    return data as SetDriverRecurringScheduleResult;
+  }
+
+  async getOperationsDrivers(
+    actor: ActorContext,
+    serviceDate: string,
+    observedAt: Date,
+  ): Promise<OperationsDriversProjection> {
+    type CapacityDriverRow = { id: string; person_id: string; vehicle_plate: string | null };
+    type CapacityPersonRow = { id: string; display_name: string; phone_e164: string | null };
+    type VehicleProfileRow = {
+      id: string; code: string; display_name: string;
+      vehicle_group: "motorbike" | "car" | "van" | "pickup" | "cargo_bike" | "other";
+      departure_pattern: "multi_stop" | "return_after_every_delivery" | "return_after_round" | "return_when_capacity_exhausted";
+      max_stops_per_departure: number; planning_deliveries_per_block: number;
+      pickup_turnaround_minutes: number; requires_review: boolean; version: number;
+    };
+    type AssignmentRow = { driver_id: string; vehicle_profile_id: string };
+    type ScheduleRow = {
+      id: string; driver_id: string; weekdays: number[]; start_local: string; end_local: string;
+      vehicle_profile_id: string; note: string | null; version: number;
+    };
+    type ShiftExceptionRow = {
+      driver_id: string; exception_kind: "shift" | "off"; start_local: string | null;
+      end_local: string | null; vehicle_profile_id: string | null;
+    };
+    type CurrentRoundRow = {
+      id: string; reference: string; driver_id: string;
+      state: "approved" | "loading" | "active"; updated_at: string;
+    };
+    type CurrentPositionRow = { driver_id: string; captured_at: string };
+    type TodayPodRow = { driver_id: string };
+
+    const { data: relationships, error: relationshipsError } = await this.admin.from("driver_tenant_relationships")
+      .select("driver_id").eq("tenant_id", actor.tenantId).eq("relationship_kind", "team")
+      .eq("status", "active").is("deleted_at", null).returns<{ driver_id: string }[]>();
+    if (relationshipsError) throw relationshipsError;
+    const driverIds = [...new Set((relationships ?? []).map((row) => row.driver_id))];
+    if (!driverIds.length) return {
+      tenantId: actor.tenantId, serviceDate, observedAt: observedAt.toISOString(), drivers: [], vehicleProfiles: [],
+      summary: { ownDrivers: 0, scheduled: 0, activeRounds: 0, availableNow: 0, scheduleRequired: 0, vehicleGroups: {} },
+    };
+    const tenantResult = await this.admin.from("tenants").select("timezone").eq("id", actor.tenantId)
+      .single<{ timezone: string }>();
+    if (tenantResult.error) throw tenantResult.error;
+    const timezone = tenantResult.data.timezone;
+    const dayStart = zonedLocalIso(serviceDate, "00:00", timezone);
+    const dayEnd = zonedLocalIso(addCalendarDay(serviceDate), "00:00", timezone);
+    const [driverResult, assignmentResult, vehicleResult, scheduleResult, exceptionResult, roundResult, positionResult, podResult] = await Promise.all([
+      this.admin.from("driver_profiles").select("id, person_id, vehicle_plate").in("id", driverIds)
+        .eq("active", true).is("deleted_at", null).returns<CapacityDriverRow[]>(),
+      this.admin.from("driver_vehicle_assignments").select("driver_id, vehicle_profile_id")
+        .eq("tenant_id", actor.tenantId).in("driver_id", driverIds).eq("is_default", true)
+        .is("effective_to", null).is("deleted_at", null).returns<AssignmentRow[]>(),
+      this.admin.from("vehicle_profiles")
+        .select("id, code, display_name, vehicle_group, departure_pattern, max_stops_per_departure, planning_deliveries_per_block, pickup_turnaround_minutes, requires_review, version")
+        .eq("tenant_id", actor.tenantId).eq("active", true).is("deleted_at", null).returns<VehicleProfileRow[]>(),
+      this.admin.from("driver_recurring_schedules")
+        .select("id, driver_id, weekdays, start_local, end_local, vehicle_profile_id, note, version")
+        .eq("tenant_id", actor.tenantId).in("driver_id", driverIds).eq("active", true)
+        .is("deleted_at", null).returns<ScheduleRow[]>(),
+      this.admin.from("driver_shift_exceptions")
+        .select("driver_id, exception_kind, start_local, end_local, vehicle_profile_id")
+        .eq("tenant_id", actor.tenantId).in("driver_id", driverIds).eq("service_date", serviceDate)
+        .is("deleted_at", null).returns<ShiftExceptionRow[]>(),
+      this.admin.from("rounds").select("id, reference, driver_id, state, updated_at")
+        .eq("tenant_id", actor.tenantId).in("driver_id", driverIds).in("state", ["approved", "loading", "active"])
+        .is("deleted_at", null).order("updated_at", { ascending: false }).returns<CurrentRoundRow[]>(),
+      this.admin.from("driver_position_current").select("driver_id, captured_at")
+        .in("driver_id", driverIds).returns<CurrentPositionRow[]>(),
+      this.admin.from("pod_records").select("driver_id").eq("tenant_id", actor.tenantId)
+        .gte("delivered_at", dayStart).lt("delivered_at", dayEnd).returns<TodayPodRow[]>(),
+    ]);
+    for (const result of [driverResult, assignmentResult, vehicleResult, scheduleResult, exceptionResult, roundResult, positionResult, podResult]) {
+      if (result.error) throw result.error;
+    }
+    const drivers = driverResult.data ?? [];
+    const personIds = drivers.map((driver) => driver.person_id);
+    const roundIds = (roundResult.data ?? []).map((round) => round.id);
+    const [peopleResult, roundStopsResult] = await Promise.all([
+      this.admin.from("persons").select("id, display_name, phone_e164").in("id", personIds)
+        .returns<CapacityPersonRow[]>(),
+      this.admin.from("round_stops").select("round_id").eq("tenant_id", actor.tenantId)
+        .in("round_id", roundIds.length ? roundIds : ["00000000-0000-0000-0000-000000000000"])
+        .returns<{ round_id: string }[]>(),
+    ]);
+    if (peopleResult.error) throw peopleResult.error;
+    if (roundStopsResult.error) throw roundStopsResult.error;
+
+    const profileSummary = (vehicleResult.data ?? []).map((profile) => ({
+      id: profile.id, code: profile.code, displayName: profile.display_name,
+      vehicleGroup: profile.vehicle_group, departurePattern: profile.departure_pattern,
+      maxStopsPerDeparture: profile.max_stops_per_departure,
+      planningDeliveriesPerBlock: profile.planning_deliveries_per_block,
+      pickupTurnaroundMinutes: profile.pickup_turnaround_minutes,
+      requiresReview: profile.requires_review, version: profile.version,
+    }));
+    const profileById = new Map(profileSummary.map((profile) => [profile.id, profile]));
+    const personById = new Map((peopleResult.data ?? []).map((person) => [person.id, person]));
+    const assignmentByDriver = new Map((assignmentResult.data ?? []).map((assignment) => [assignment.driver_id, assignment]));
+    const scheduleByDriver = new Map((scheduleResult.data ?? []).map((schedule) => [schedule.driver_id, schedule]));
+    const exceptionByDriver = new Map((exceptionResult.data ?? []).map((exception) => [exception.driver_id, exception]));
+    const positionByDriver = new Map((positionResult.data ?? []).map((position) => [position.driver_id, position]));
+    const roundByDriver = new Map<string, CurrentRoundRow>();
+    for (const round of roundResult.data ?? []) if (!roundByDriver.has(round.driver_id)) roundByDriver.set(round.driver_id, round);
+    const stopCountByRound = new Map<string, number>();
+    for (const stop of roundStopsResult.data ?? []) stopCountByRound.set(stop.round_id, (stopCountByRound.get(stop.round_id) ?? 0) + 1);
+    const completedByDriver = new Map<string, number>();
+    for (const pod of podResult.data ?? []) completedByDriver.set(pod.driver_id, (completedByDriver.get(pod.driver_id) ?? 0) + 1);
+    const isoDay = new Date(`${serviceDate}T00:00:00.000Z`).getUTCDay() || 7;
+    const observedMs = observedAt.getTime();
+
+    const items = drivers.flatMap((driver) => {
+      const person = personById.get(driver.person_id);
+      if (!person) return [];
+      const schedule = scheduleByDriver.get(driver.id);
+      const exception = exceptionByDriver.get(driver.id);
+      const currentRound = roundByDriver.get(driver.id);
+      const exceptionShift = exception?.exception_kind === "shift" && exception.start_local && exception.end_local && exception.vehicle_profile_id
+        ? { source: "exception" as const, startLocal: compactLocalTime(exception.start_local), endLocal: compactLocalTime(exception.end_local), vehicleProfileId: exception.vehicle_profile_id }
+        : undefined;
+      const recurringShift = !exception && schedule?.weekdays.includes(isoDay)
+        ? { source: "recurring" as const, startLocal: compactLocalTime(schedule.start_local), endLocal: compactLocalTime(schedule.end_local), vehicleProfileId: schedule.vehicle_profile_id }
+        : undefined;
+      const shift = exceptionShift ?? recurringShift;
+      const shiftStart = shift ? zonedLocalIso(serviceDate, shift.startLocal, timezone) : undefined;
+      const crossesMidnight = !!shift && shift.endLocal <= shift.startLocal;
+      const shiftEnd = shift ? zonedLocalIso(crossesMidnight ? addCalendarDay(serviceDate) : serviceDate, shift.endLocal, timezone) : undefined;
+      const profileId = shift?.vehicleProfileId ?? schedule?.vehicle_profile_id
+        ?? assignmentByDriver.get(driver.id)?.vehicle_profile_id;
+      const vehicleProfile = profileId ? profileById.get(profileId) : undefined;
+      const position = positionByDriver.get(driver.id);
+      const positionAgeMs = position ? observedMs - Date.parse(position.captured_at) : Number.POSITIVE_INFINITY;
+      const presence = position
+        ? { state: positionAgeMs <= 120_000 ? "live" as const : "stale" as const, capturedAt: position.captured_at }
+        : { state: "unknown" as const };
+      const withinShift = !!shiftStart && !!shiftEnd && observedMs >= Date.parse(shiftStart) && observedMs < Date.parse(shiftEnd);
+      let availability: {
+        state: "on_round" | "loading" | "available" | "off_shift" | "schedule_required";
+        label: string; nextAvailableAt?: string; projectionBasis: string;
+      };
+      if (currentRound?.state === "active") availability = {
+        state: "on_round", label: `On ${currentRound.reference}`,
+        projectionBasis: "Current Round is active; route completion estimate is not connected yet.",
+      };
+      else if (currentRound) availability = {
+        state: "loading", label: `${currentRound.reference} · ${currentRound.state}`,
+        projectionBasis: "Assigned work blocks new capacity until the current Round is closed.",
+      };
+      else if (!schedule) availability = {
+        state: "schedule_required", label: "Schedule required",
+        projectionBasis: "No recurring own-team schedule has been configured.",
+      };
+      else if (withinShift) availability = {
+        state: "available", label: "Available now",
+        projectionBasis: "Inside the effective shift with no current Round.",
+      };
+      else availability = {
+        state: "off_shift", label: exception?.exception_kind === "off" ? "Off · date exception" : "Off shift",
+        ...(shiftStart && observedMs < Date.parse(shiftStart) ? { nextAvailableAt: shiftStart } : {}),
+        projectionBasis: exception?.exception_kind === "off"
+          ? "A date-specific day-off exception overrides the recurring schedule."
+          : shift ? "Outside the effective shift window." : "Today is not a scheduled recurring workday.",
+      };
+      return [{
+        driverId: driver.id, displayName: person.display_name, initials: initials(person.display_name),
+        ...(person.phone_e164 ? { phone: person.phone_e164 } : {}),
+        ...(driver.vehicle_plate ? { vehiclePlate: driver.vehicle_plate } : {}),
+        presence, availability,
+        ...(shiftStart && shiftEnd && shift ? { effectiveShift: {
+          source: shift.source, startAt: shiftStart, endAt: shiftEnd, crossesMidnight,
+        } } : {}),
+        ...(schedule ? { schedule: {
+          id: schedule.id, version: schedule.version, weekdays: schedule.weekdays,
+          startLocal: compactLocalTime(schedule.start_local), endLocal: compactLocalTime(schedule.end_local),
+          ...(schedule.note ? { note: schedule.note } : {}),
+        } } : {}),
+        ...(vehicleProfile ? { vehicleProfile } : {}),
+        ...(currentRound ? { currentRound: {
+          id: currentRound.id, reference: currentRound.reference, state: currentRound.state,
+          stopCount: stopCountByRound.get(currentRound.id) ?? 0,
+        } } : {}),
+        completedDeliveriesToday: completedByDriver.get(driver.id) ?? 0,
+      }];
+    });
+    const vehicleGroups: Record<string, number> = {};
+    for (const item of items) {
+      const group = item.vehicleProfile?.vehicleGroup ?? "unconfigured";
+      vehicleGroups[group] = (vehicleGroups[group] ?? 0) + 1;
+    }
+    return {
+      tenantId: actor.tenantId, serviceDate, observedAt: observedAt.toISOString(),
+      drivers: items, vehicleProfiles: profileSummary,
+      summary: {
+        ownDrivers: items.length,
+        scheduled: items.filter((item) => item.effectiveShift).length,
+        activeRounds: items.filter((item) => item.currentRound?.state === "active").length,
+        availableNow: items.filter((item) => item.availability.state === "available").length,
+        scheduleRequired: items.filter((item) => !item.schedule).length,
+        vehicleGroups,
+      },
+    };
   }
 
   async getOperationsHistory(actor: ActorContext): Promise<OperationsHistoryProjection> {

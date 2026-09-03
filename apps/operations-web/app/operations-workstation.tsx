@@ -14,6 +14,7 @@ import type {
 import { OperationsMap, type OperationsMapCamera, type OperationsMapMode } from "./operations-map";
 import { OperationsMenuIcon, OperationsSectionSheet, type OperationsSectionKey } from "./operations-section-sheet";
 import { DeliveriesWorkspace } from "./deliveries-workspace";
+import { DriversWorkspace } from "./drivers-workspace";
 import { RoundDetailWorkspace } from "./round-detail-workspace";
 
 const roundsApiUrl = process.env.NEXT_PUBLIC_ROUNDS_API_URL ?? "http://127.0.0.1:8080";
@@ -30,10 +31,13 @@ type Props = {
   deliveryIntake?: ReactNode;
   deliveryIntakeOpen?: boolean;
   deliveriesOpen?: boolean;
+  driversOpen?: boolean;
   deliveryRefreshKey?: number;
   onCloseDeliveryIntake?: () => void;
   onDeliveries?: () => void;
+  onDrivers?: () => void;
   onCloseDeliveries?: () => void;
+  onCloseDrivers?: () => void;
   onAddDelivery: () => void;
   onHistory: () => void;
   onCommunications: (threadId?: string) => void;
@@ -101,7 +105,7 @@ function nextRoundReference(deliveries: UnplannedDeliverySummary[]): string {
   return `ROUND-${serviceDate.replaceAll("-", "")}-${time}`;
 }
 
-export function OperationsWorkstation({ accessToken, tenant, userName, demoMode = false, deliveryIntake, deliveryIntakeOpen = false, deliveriesOpen = false, deliveryRefreshKey = 0, onCloseDeliveryIntake, onDeliveries, onCloseDeliveries, onAddDelivery, onHistory, onCommunications, onSignOut }: Props) {
+export function OperationsWorkstation({ accessToken, tenant, userName, demoMode = false, deliveryIntake, deliveryIntakeOpen = false, deliveriesOpen = false, driversOpen = false, deliveryRefreshKey = 0, onCloseDeliveryIntake, onDeliveries, onDrivers, onCloseDeliveries, onCloseDrivers, onAddDelivery, onHistory, onCommunications, onSignOut }: Props) {
   const [projection, setProjection] = useState<OperationsActionProjection | null>(null);
   const [planning, setPlanning] = useState<OperationsPlanningProjection | null>(null);
   const [planningDate, setPlanningDate] = useState(() => new Intl.DateTimeFormat("en-CA", { timeZone: tenant.timezone }).format(new Date()));
@@ -271,13 +275,13 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
       <div className="v45-wordmark">Rounds<i /></div>
       <div className="v45-workspace"><b>{tenant.displayName}</b><span>Bangkok · Automatic dispatch</span></div>
       <nav className="v45-nav" aria-label="Operations sections">
-        <button className={!deliveriesOpen ? "on" : ""} type="button" onClick={onCloseDeliveries}>Dispatch</button>
+        <button className={!deliveriesOpen && !driversOpen ? "on" : ""} type="button" onClick={() => { onCloseDeliveries?.(); onCloseDrivers?.(); }}>Dispatch</button>
         <button className={deliveriesOpen ? "on" : ""} type="button" onClick={onDeliveries}>Deliveries</button>
-        <button type="button" disabled title="Drivers workspace is not connected yet">Drivers</button>
+        <button className={driversOpen ? "on" : ""} type="button" onClick={onDrivers}>Drivers</button>
         <button type="button" onClick={onHistory}>History</button>
         <button type="button" disabled title="Settings workspace is not connected yet">Settings</button>
       </nav>
-      <button className="v45-section-trigger" type="button" aria-haspopup="dialog" aria-expanded={sectionMenuOpen} onClick={() => setSectionMenuOpen(true)}><span>{deliveriesOpen || deliveryIntakeOpen ? "Deliveries" : "Dispatch"}</span><OperationsMenuIcon /></button>
+      <button className="v45-section-trigger" type="button" aria-haspopup="dialog" aria-expanded={sectionMenuOpen} onClick={() => setSectionMenuOpen(true)}><span>{driversOpen ? "Drivers" : deliveriesOpen || deliveryIntakeOpen ? "Deliveries" : "Dispatch"}</span><OperationsMenuIcon /></button>
       <div className="v45-spacer" />
       <button className="v45-network" type="button" disabled title="Network dispatch is outside the connected Own-Team slice"><i /><span>Own Team</span><ChevronIcon /></button>
       <button className="v45-util" type="button" title="Driver communications" onClick={() => onCommunications()}><MessageIcon />{buckets.action.length > 0 && <b>{buckets.action.length}</b>}</button>
@@ -289,11 +293,12 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
 
     <OperationsSectionSheet
       open={sectionMenuOpen}
-      current={deliveriesOpen || deliveryIntakeOpen ? "deliveries" : "action"}
+      current={driversOpen ? "drivers" : deliveriesOpen || deliveryIntakeOpen ? "deliveries" : "action"}
       onClose={() => setSectionMenuOpen(false)}
       onSelect={(section: OperationsSectionKey) => {
-        if (section === "action") { onCloseDeliveryIntake?.(); onCloseDeliveries?.(); }
-        else if (section === "deliveries") { onCloseDeliveryIntake?.(); onDeliveries?.(); }
+        if (section === "action") { onCloseDeliveryIntake?.(); onCloseDeliveries?.(); onCloseDrivers?.(); }
+        else if (section === "deliveries") { onCloseDeliveryIntake?.(); onCloseDrivers?.(); onDeliveries?.(); }
+        else if (section === "drivers") { onCloseDeliveryIntake?.(); onCloseDeliveries?.(); onDrivers?.(); }
         else if (section === "communications") onCommunications();
         else if (section === "history") onHistory();
       }}
@@ -381,6 +386,14 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
           setQuery(item.reference);
           setSelection(null);
         }}
+        onCommunications={() => onCommunications()}
+      />}
+
+      {driversOpen && accessToken && <DriversWorkspace
+        accessToken={accessToken}
+        tenant={tenant}
+        onBackToDispatch={() => { onCloseDrivers?.(); }}
+        onOpenRound={(roundId) => { onCloseDrivers?.(); setRoundDetailId(roundId); }}
         onCommunications={() => onCommunications()}
       />}
 

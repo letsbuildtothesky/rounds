@@ -195,17 +195,20 @@ export default function OperationsPage() {
   if (!authSession) return <LoginScreen supabase={supabase} error={error} setError={setError} onPreview={developmentPreviewEnabled ? () => setDevelopmentPreview(true) : undefined} />;
   if (loadingProfile) return <LoadingScreen label="Checking merchant access" />;
 
-  if (operationsSession && selectedTenant && (section === "action" || section === "deliveries")) {
+  if (operationsSession && selectedTenant && (section === "action" || section === "deliveries" || section === "drivers")) {
     return <OperationsWorkstation
       accessToken={authSession.access_token}
       tenant={selectedTenant}
       userName={operationsSession?.user.displayName ?? authSession.user.email ?? "Operations"}
       deliveryIntakeOpen={deliveryIntakeOpen}
       deliveriesOpen={section === "deliveries"}
+      driversOpen={section === "drivers"}
       deliveryRefreshKey={deliveryRevision}
       onCloseDeliveryIntake={() => setDeliveryIntakeOpen(false)}
       onDeliveries={() => { setDeliveryIntakeOpen(false); setSection("deliveries"); }}
+      onDrivers={() => { setDeliveryIntakeOpen(false); setSection("drivers"); }}
       onCloseDeliveries={() => setSection("action")}
+      onCloseDrivers={() => setSection("action")}
       deliveryIntake={<DeliveryIntake
         operationsSession={operationsSession}
         selectedTenant={selectedTenant}
@@ -233,7 +236,7 @@ export default function OperationsPage() {
     <div className="operations-shell">
       <header className="app-header">
         <div className="brand"><RoundsMark /><span>ROUNDS</span></div>
-        <nav aria-label="Operations sections"><button type="button" className={section === "action" ? "active" : ""} onClick={() => setSection("action")}>Dispatch</button><button type="button" className={section === "deliveries" ? "active" : ""} onClick={() => setSection("deliveries")}>Deliveries</button><button type="button" className={section === "communications" ? "active" : ""} onClick={() => setSection("communications")}>Communications</button><button type="button" className={section === "history" ? "active" : ""} onClick={() => setSection("history")}>History</button></nav>
+        <nav aria-label="Operations sections"><button type="button" className={section === "action" ? "active" : ""} onClick={() => setSection("action")}>Dispatch</button><button type="button" className={section === "deliveries" ? "active" : ""} onClick={() => setSection("deliveries")}>Deliveries</button><button type="button" className={section === "drivers" ? "active" : ""} onClick={() => setSection("drivers")}>Drivers</button><button type="button" className={section === "communications" ? "active" : ""} onClick={() => setSection("communications")}>Communications</button><button type="button" className={section === "history" ? "active" : ""} onClick={() => setSection("history")}>History</button></nav>
         <div className="account">
           <div><strong>{operationsSession?.user.displayName ?? authSession.user.email}</strong><small>{selectedTenant ? roleLabel(selectedTenant.role) : "No access"}</small></div>
           <button type="button" onClick={() => void signOut()}>Sign out</button>

@@ -14,6 +14,8 @@ import { readConfig } from "./config.js";
 import { operationsSessionHandler } from "./operations-session-handler.js";
 import { operationsActionHandler } from "./operations-action-handler.js";
 import { operationsDeliveriesHandler } from "./operations-deliveries-handler.js";
+import { operationsDriversHandler } from "./operations-drivers-handler.js";
+import { setDriverRecurringScheduleHandler } from "./set-driver-recurring-schedule-handler.js";
 import { operationsRoundDetailHandler } from "./operations-round-detail-handler.js";
 import { resolveOperationsExceptionHandler } from "./resolve-operations-exception-handler.js";
 import { confirmDeliveryReturnHandler } from "./confirm-delivery-return-handler.js";
@@ -93,7 +95,7 @@ const server = createServer(async (request, response) => {
         "access-control-allow-origin": origin,
         "access-control-allow-credentials": "true",
         "access-control-allow-methods": "GET, POST, OPTIONS",
-        "access-control-allow-headers": "authorization, content-type, idempotency-key, x-rounds-tenant-id, x-trace-id",
+        "access-control-allow-headers": "authorization, content-type, idempotency-key, if-match-version, x-rounds-tenant-id, x-trace-id",
         "access-control-max-age": "600",
         vary: "origin",
       }).end();
@@ -146,6 +148,29 @@ const server = createServer(async (request, response) => {
         now: () => new Date(),
       });
       sendNode(response, addOperationsCors(deliveriesResponse, request.headers.origin));
+      return;
+    }
+    if (request.method === "GET" && new URL(request.url ?? "/", "http://rounds.local").pathname === "/v1/operations/drivers") {
+      const webRequest = await toWebRequest(request);
+      const driversResponse = await operationsDriversHandler(webRequest, {
+        identity: gateway,
+        drivers: gateway,
+        uuid: () => crypto.randomUUID(),
+        now: () => new Date(),
+      });
+      sendNode(response, addOperationsCors(driversResponse, request.headers.origin));
+      return;
+    }
+    const recurringScheduleMatch = request.url?.match(/^\/v1\/operations\/drivers\/([0-9a-f-]+)\/recurring-schedule$/i);
+    if (request.method === "POST" && recurringScheduleMatch) {
+      const webRequest = await toWebRequest(request);
+      const scheduleResponse = await setDriverRecurringScheduleHandler(webRequest, recurringScheduleMatch[1]!, {
+        identity: gateway,
+        drivers: gateway,
+        uuid: () => crypto.randomUUID(),
+        now: () => new Date(),
+      });
+      sendNode(response, addOperationsCors(scheduleResponse, request.headers.origin));
       return;
     }
     const operationsRoundMatch = request.url?.match(/^\/v1\/operations\/rounds\/([0-9a-f-]+)$/i);

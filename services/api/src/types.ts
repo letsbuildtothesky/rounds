@@ -19,6 +19,7 @@ import type {
   OperationsHistoryProjection,
   OperationsActionProjection,
   OperationsDeliveriesProjection,
+  OperationsDriversProjection,
   OperationsRoundDetail,
   OperationsCommunicationsProjection,
   OperationsCommunicationThread,
@@ -38,6 +39,9 @@ import type {
   SendDriverMessageResult,
   SendOperationsMessageCommand,
   SendOperationsMessageResult,
+  SetDriverRecurringScheduleCommand,
+  SetDriverRecurringSchedulePayload,
+  SetDriverRecurringScheduleResult,
 } from "@rounds/contracts";
 
 export type { OperationsRole } from "@rounds/contracts";
@@ -150,6 +154,14 @@ export interface OperationsDeliveriesGateway {
   getOperationsDeliveries(actor: ActorContext, observedAt: Date): Promise<OperationsDeliveriesProjection>;
 }
 
+export interface OperationsDriversGateway {
+  getOperationsDrivers(actor: ActorContext, serviceDate: string, observedAt: Date): Promise<OperationsDriversProjection>;
+  setDriverRecurringSchedule(
+    command: SetDriverRecurringScheduleCommand,
+    actor: ActorContext,
+  ): Promise<SetDriverRecurringScheduleResult>;
+}
+
 export interface OperationsRoundDetailGateway {
   getOperationsRoundDetail(roundId: string, actor: ActorContext, observedAt: Date): Promise<OperationsRoundDetail | null>;
 }
@@ -196,6 +208,16 @@ export type OperationsDeliveriesDependencies = {
   uuid: () => string;
   now: () => Date;
 };
+
+export type OperationsDriversDependencies = {
+  identity: IdentityGateway;
+  drivers: OperationsDriversGateway;
+  uuid: () => string;
+  now: () => Date;
+};
+
+export type SetDriverRecurringScheduleDependencies = OperationsDriversDependencies;
+export type SetDriverRecurringScheduleRequestBody = SetDriverRecurringSchedulePayload;
 
 export type OperationsRoundDetailDependencies = {
   identity: IdentityGateway;
