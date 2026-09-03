@@ -8,12 +8,12 @@ import '../app/generated/driver_ui_metrics.g.dart';
 import '../app/harness_app_controller.dart';
 import '../driver/driver_session.dart';
 import '../navigation/google_navigation_surface.dart';
-import 'components/delivery_issue_flow.dart';
 import 'components/navigation_instruction_card.dart';
 import 'components/navigation_pickup_dock.dart';
 import 'components/navigation_road_controls.dart';
 import 'components/operations_contact_flow.dart';
 import 'components/rounds_action_drawer.dart';
+import 'location_problem_screen.dart';
 import 'operations_chat_screen.dart';
 import 'pickup_confirmation_screen.dart';
 
@@ -245,13 +245,15 @@ class _PickupNavigationScreenState extends State<PickupNavigationScreen> {
           ),
         );
       case 'issue':
-        await openDeliveryIssueFlow(
-          context,
-          round: widget.round,
-          stop: firstStop,
-          damageEvidenceAvailable: false,
-          controller: widget.controller,
-          launcher: widget.launcher,
+        await Navigator.of(context).push<void>(
+          MaterialPageRoute(
+            builder: (_) => LocationProblemScreen(
+              controller: widget.controller,
+              round: widget.round,
+              stop: firstStop,
+              problemContext: LocationProblemContext.pickup,
+            ),
+          ),
         );
       case 'maps':
         await _openExternal(

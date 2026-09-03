@@ -103,7 +103,7 @@ Canonical inventory: `specs/product/ROUNDS-DRIVER-CANONICAL-MANIFEST-v6.md` and 
 | F03 / F04 Proof of delivery | Pilot P0 | `ACCEPTED` | Real camera photo, retained draft, resumable upload, server hash/size verification and commit survived Android bench relaunch. | Road/degraded-network acceptance and final canonical visual parity. |
 | F08 Stop complete / next Stop | Pilot P0 | `VERIFIED` | Multi-stop continuation and golden geometry coverage exist. | Physical multi-stop acceptance with real server data. |
 | G01 Recipient unavailable | Slice 2 P0 | `PARTIAL` | Category appears in a common issue drawer and can open external messaging. | Durable typed exception, evidence, Operations resolution and recovery state. |
-| G02 Address/pin/entrance problem | Slice 2 P0 | `PARTIAL` | Category appears in the issue drawer. | Durable server exception, corrected destination/pin flow and route consequence handling. |
+| G02 Address/pin/entrance problem | Slice 2 P0 | `PARTIAL` | Canonical measured G02 now opens from pickup navigation and the delivery issue flow, captures real device-location evidence, survives offline through the durable Operations-message outbox and was visually accepted on the connected Samsung. It deliberately does not claim that a reported pin is corrected. | Add a typed server exception and Operations-confirmed correction, preserve original destination truth, version the changed destination and route consequence, then require Driver acknowledgement through E04–E06. Pickup-location mutation authority also remains undefined and is not inferred. |
 | G03 Package problem | Pilot/Slice 2 P0 | `VERIFIED` | Damage photo retention/outbox, authenticated upload, audited Operations hold, return confirmation and terminal reconciliation exist. | Complete all canonical package subtypes and final device visual acceptance. |
 | G04 Cannot complete | Slice 2 P0 | `PARTIAL` | Category appears in the issue drawer. | Durable outcome choices, custody disposition and Operations resolution. |
 | G05 Emergency | Slice 2 P0 | `PARTIAL` | Category appears in the issue drawer. | Dedicated priority channel, acknowledgement, escalation and non-dismissible safety behavior. |
@@ -203,6 +203,7 @@ This sequence does not promote later slices; it orders the already authorized En
 ### Checkpoint C — remaining own-driver operational states
 
 - **Completed C1 2026-09-03:** D01 pickup navigation uses the server pickup pin and live embedded Google guidance, renders the canonical measured instruction/dock states and enters D03/D04 only after the explicit pickup-arrival action.
+- **C2 observation entry implemented 2026-09-03:** canonical G02 captures real GPS evidence and durably sends an offline-safe location observation to Operations without pretending that Operations approved a correction. Typed resolution, destination versioning, route consequences and Driver acknowledgement remain open, so G02 stays `PARTIAL`.
 - Implement durable G01/G02/G04/G05 exception paths and Operations outcomes.
 - Implement E04–E06 post-pickup change acknowledgement after GAP-007 closes.
 - Complete H02/H03 contact event/history behavior.

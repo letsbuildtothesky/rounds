@@ -5,6 +5,7 @@ import '../../app/driver_design_system.dart';
 import '../../app/harness_app_controller.dart';
 import '../../driver/driver_session.dart';
 import '../delivery_package_problem_screen.dart';
+import '../location_problem_screen.dart';
 import 'operations_contact_flow.dart';
 
 class DeliveryIssueDraft {
@@ -48,6 +49,22 @@ Future<bool> openDeliveryIssueFlow(
           ),
         ) ??
         false;
+  }
+
+  if (draft.category == 'Address or entrance problem') {
+    if (controller == null) return false;
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder: (_) => LocationProblemScreen(
+          controller: controller,
+          round: round,
+          stop: stop,
+          problemContext: LocationProblemContext.delivery,
+          launcher: launcher,
+        ),
+      ),
+    );
+    return false;
   }
 
   final phone = round.pickup.contactPhone.trim();

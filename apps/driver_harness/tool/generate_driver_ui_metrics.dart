@@ -56,6 +56,12 @@ String generateDriverUiMetrics(Map<String, dynamic> json) {
   final f08 = screens['F08'] as Map<String, dynamic>;
   final f08Complete = f08['completeBar'] as Map<String, dynamic>;
   final f08Dock = f08['nextDock'] as Map<String, dynamic>;
+  final g02 = screens['G02'] as Map<String, dynamic>;
+  final g02Top = g02['topBar'] as Map<String, dynamic>;
+  final g02Content = g02['content'] as Map<String, dynamic>;
+  final g02Choice = g02['choice'] as Map<String, dynamic>;
+  final g02Footer = g02['footer'] as Map<String, dynamic>;
+  final g02Sheet = g02['sheet'] as Map<String, dynamic>;
   final i01 = screens['I01'] as Map<String, dynamic>;
   final i01Top = i01['topBar'] as Map<String, dynamic>;
   final i01Hero = i01['hero'] as Map<String, dynamic>;
@@ -414,6 +420,99 @@ abstract final class DriverF08Metrics {
   static const double primarySize = ${_double(f08Dock['primarySize'])};
   static const double remainingHeight = ${_double(f08Dock['remainingHeight'])};
   static const double remainingMarginTop = ${_double(f08Dock['remainingMarginTop'])};
+}
+
+abstract final class DriverG02Metrics {
+  static const String source = '${g02['source']}';
+
+  static const double topBarHeight = ${_double(g02Top['height'])};
+  static const double topBarPaddingHorizontal = ${_double(g02Top['paddingHorizontal'])};
+  static const double topButtonSize = ${_double(g02Top['buttonSize'])};
+  static const double topColumnGap = ${_double(g02Top['columnGap'])};
+  static const double topButtonRadius = ${_double(g02Top['buttonRadius'])};
+  static const double topIconSize = ${_double(g02Top['iconSize'])};
+  static const double topKickerSize = ${_double(g02Top['kickerSize'])};
+  static const double topKickerWeight = ${_double(g02Top['kickerWeight'])};
+  static const double topKickerTracking = ${_double(g02Top['kickerTracking'])};
+  static const double topTitleGap = ${_double(g02Top['titleGap'])};
+  static const double topTitleSize = ${_double(g02Top['titleSize'])};
+  static const double topTitleWeight = ${_double(g02Top['titleWeight'])};
+  static const double topTitleTracking = ${_double(g02Top['titleTracking'])};
+
+  static const double contentPaddingTop = ${_double(g02Content['paddingTop'])};
+  static const double contentPaddingHorizontal = ${_double(g02Content['paddingHorizontal'])};
+  static const double compactContentPaddingTop = ${_double(g02Content['compactPaddingTop'])};
+  static const double compactContentPaddingHorizontal = ${_double(g02Content['compactPaddingHorizontal'])};
+  static const double contentPaddingBottom = ${_double(g02Content['paddingBottom'])};
+  static const double footerReserve = ${_double(g02Content['footerReserve'])};
+  static const double compactFooterReserve = ${_double(g02Content['compactFooterReserve'])};
+  static const double issueSize = ${_double(g02Content['issueSize'])};
+  static const double issueWeight = ${_double(g02Content['issueWeight'])};
+  static const double issueTracking = ${_double(g02Content['issueTracking'])};
+  static const double issueDotSize = ${_double(g02Content['issueDotSize'])};
+  static const double heroGap = ${_double(g02Content['heroGap'])};
+  static const double heroSize = ${_double(g02Content['heroSize'])};
+  static const double compactHeroSize = ${_double(g02Content['compactHeroSize'])};
+  static const double heroHeight = ${_double(g02Content['heroHeight'])};
+  static const double heroWeight = ${_double(g02Content['heroWeight'])};
+  static const double heroTracking = ${_double(g02Content['heroTracking'])};
+  static const double locationGap = ${_double(g02Content['locationGap'])};
+  static const double locationSize = ${_double(g02Content['locationSize'])};
+  static const double locationHeight = ${_double(g02Content['locationHeight'])};
+  static const double contextGap = ${_double(g02Content['contextGap'])};
+  static const double contextPaddingTop = ${_double(g02Content['contextPaddingTop'])};
+  static const double sectionGap = ${_double(g02Content['sectionGap'])};
+  static const double compactSectionGap = ${_double(g02Content['compactSectionGap'])};
+
+  static const double choiceHeight = ${_double(g02Choice['height'])};
+  static const double compactChoiceHeight = ${_double(g02Choice['compactHeight'])};
+  static const double choiceIconColumn = ${_double(g02Choice['iconColumn'])};
+  static const double compactChoiceIconColumn = ${_double(g02Choice['compactIconColumn'])};
+  static const double choiceColumnGap = ${_double(g02Choice['columnGap'])};
+  static const double compactChoiceColumnGap = ${_double(g02Choice['compactColumnGap'])};
+  static const double choiceIconSize = ${_double(g02Choice['iconSize'])};
+  static const double compactChoiceIconSize = ${_double(g02Choice['compactIconSize'])};
+  static const double choiceTitleSize = ${_double(g02Choice['titleSize'])};
+  static const double compactChoiceTitleSize = ${_double(g02Choice['compactTitleSize'])};
+  static const double choiceTitleHeight = ${_double(g02Choice['titleHeight'])};
+  static const double choiceTitleWeight = ${_double(g02Choice['titleWeight'])};
+  static const double choiceTitleTracking = ${_double(g02Choice['titleTracking'])};
+
+  static const double footerPaddingTop = ${_double(g02Footer['paddingTop'])};
+  static const double footerPaddingHorizontal = ${_double(g02Footer['paddingHorizontal'])};
+  static const double compactFooterPaddingHorizontal = ${_double(g02Footer['compactPaddingHorizontal'])};
+  static const double footerPaddingBottom = ${_double(g02Footer['paddingBottom'])};
+  static const double primaryHeight = ${_double(g02Footer['primaryHeight'])};
+  static const double compactPrimaryHeight = ${_double(g02Footer['compactPrimaryHeight'])};
+  static const double primaryRadius = ${_double(g02Footer['primaryRadius'])};
+  static const double primarySize = ${_double(g02Footer['primarySize'])};
+  static const double primaryWeight = ${_double(g02Footer['primaryWeight'])};
+  static const double secondaryHeight = ${_double(g02Footer['secondaryHeight'])};
+  static const double compactSecondaryHeight = ${_double(g02Footer['compactSecondaryHeight'])};
+  static const double secondarySize = ${_double(g02Footer['secondarySize'])};
+  static const double secondaryWeight = ${_double(g02Footer['secondaryWeight'])};
+
+  static const double sheetInset = ${_double(g02Sheet['inset'])};
+  static const double compactSheetInset = ${_double(g02Sheet['compactInset'])};
+  static const double sheetRadiusTop = ${_double(g02Sheet['radiusTop'])};
+  static const double sheetRadiusBottom = ${_double(g02Sheet['radiusBottom'])};
+  static const double sheetHandleHeight = ${_double(g02Sheet['handleHeight'])};
+  static const double sheetHandleWidth = ${_double(g02Sheet['handleWidth'])};
+  static const double sheetHandleThickness = ${_double(g02Sheet['handleThickness'])};
+  static const double sheetHeadPaddingHorizontal = ${_double(g02Sheet['headPaddingHorizontal'])};
+  static const double compactSheetHeadPaddingHorizontal = ${_double(g02Sheet['compactHeadPaddingHorizontal'])};
+  static const double sheetHeadPaddingBottom = ${_double(g02Sheet['headPaddingBottom'])};
+  static const double sheetTitleSize = ${_double(g02Sheet['titleSize'])};
+  static const double compactSheetTitleSize = ${_double(g02Sheet['compactTitleSize'])};
+  static const double sheetRowHeight = ${_double(g02Sheet['rowHeight'])};
+  static const double compactSheetRowHeight = ${_double(g02Sheet['compactRowHeight'])};
+  static const double sheetRowPaddingHorizontal = ${_double(g02Sheet['rowPaddingHorizontal'])};
+  static const double compactSheetRowPaddingHorizontal = ${_double(g02Sheet['compactRowPaddingHorizontal'])};
+  static const double sheetRowIconSize = ${_double(g02Sheet['rowIconSize'])};
+  static const double sheetRowSize = ${_double(g02Sheet['rowSize'])};
+  static const double compactSheetRowSize = ${_double(g02Sheet['compactRowSize'])};
+  static const double sheetMapHeight = ${_double(g02Sheet['mapHeight'])};
+  static const double compactSheetMapHeight = ${_double(g02Sheet['compactMapHeight'])};
 }
 
 abstract final class DriverI01Metrics {

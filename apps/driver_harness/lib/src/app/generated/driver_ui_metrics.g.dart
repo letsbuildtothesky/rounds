@@ -352,6 +352,99 @@ abstract final class DriverF08Metrics {
   static const double remainingMarginTop = 7.0;
 }
 
+abstract final class DriverG02Metrics {
+  static const String source = 'ux/driver/en/screens/ROUNDS-G02-ADDRESS-PROBLEM-v2-10OF10.html';
+
+  static const double topBarHeight = 64.0;
+  static const double topBarPaddingHorizontal = 18.0;
+  static const double topButtonSize = 44.0;
+  static const double topColumnGap = 10.0;
+  static const double topButtonRadius = 6.0;
+  static const double topIconSize = 22.0;
+  static const double topKickerSize = 10.5;
+  static const double topKickerWeight = 850.0;
+  static const double topKickerTracking = 0.945;
+  static const double topTitleGap = 5.0;
+  static const double topTitleSize = 17.0;
+  static const double topTitleWeight = 840.0;
+  static const double topTitleTracking = -0.425;
+
+  static const double contentPaddingTop = 27.0;
+  static const double contentPaddingHorizontal = 22.0;
+  static const double compactContentPaddingTop = 18.0;
+  static const double compactContentPaddingHorizontal = 17.0;
+  static const double contentPaddingBottom = 26.0;
+  static const double footerReserve = 112.0;
+  static const double compactFooterReserve = 105.0;
+  static const double issueSize = 11.0;
+  static const double issueWeight = 880.0;
+  static const double issueTracking = 1.045;
+  static const double issueDotSize = 8.0;
+  static const double heroGap = 10.0;
+  static const double heroSize = 39.0;
+  static const double compactHeroSize = 34.0;
+  static const double heroHeight = 0.98;
+  static const double heroWeight = 880.0;
+  static const double heroTracking = -2.145;
+  static const double locationGap = 12.0;
+  static const double locationSize = 15.0;
+  static const double locationHeight = 1.35;
+  static const double contextGap = 25.0;
+  static const double contextPaddingTop = 19.0;
+  static const double sectionGap = 29.0;
+  static const double compactSectionGap = 20.0;
+
+  static const double choiceHeight = 69.0;
+  static const double compactChoiceHeight = 56.0;
+  static const double choiceIconColumn = 34.0;
+  static const double compactChoiceIconColumn = 30.0;
+  static const double choiceColumnGap = 12.0;
+  static const double compactChoiceColumnGap = 9.0;
+  static const double choiceIconSize = 23.0;
+  static const double compactChoiceIconSize = 21.0;
+  static const double choiceTitleSize = 16.0;
+  static const double compactChoiceTitleSize = 14.5;
+  static const double choiceTitleHeight = 1.15;
+  static const double choiceTitleWeight = 820.0;
+  static const double choiceTitleTracking = -0.24;
+
+  static const double footerPaddingTop = 11.0;
+  static const double footerPaddingHorizontal = 22.0;
+  static const double compactFooterPaddingHorizontal = 17.0;
+  static const double footerPaddingBottom = 17.0;
+  static const double primaryHeight = 62.0;
+  static const double compactPrimaryHeight = 58.0;
+  static const double primaryRadius = 7.0;
+  static const double primarySize = 17.0;
+  static const double primaryWeight = 860.0;
+  static const double secondaryHeight = 48.0;
+  static const double compactSecondaryHeight = 44.0;
+  static const double secondarySize = 15.0;
+  static const double secondaryWeight = 820.0;
+
+  static const double sheetInset = 10.0;
+  static const double compactSheetInset = 7.0;
+  static const double sheetRadiusTop = 12.0;
+  static const double sheetRadiusBottom = 8.0;
+  static const double sheetHandleHeight = 22.0;
+  static const double sheetHandleWidth = 38.0;
+  static const double sheetHandleThickness = 4.0;
+  static const double sheetHeadPaddingHorizontal = 18.0;
+  static const double compactSheetHeadPaddingHorizontal = 15.0;
+  static const double sheetHeadPaddingBottom = 13.0;
+  static const double sheetTitleSize = 23.0;
+  static const double compactSheetTitleSize = 21.0;
+  static const double sheetRowHeight = 64.0;
+  static const double compactSheetRowHeight = 59.0;
+  static const double sheetRowPaddingHorizontal = 18.0;
+  static const double compactSheetRowPaddingHorizontal = 15.0;
+  static const double sheetRowIconSize = 22.0;
+  static const double sheetRowSize = 16.0;
+  static const double compactSheetRowSize = 14.5;
+  static const double sheetMapHeight = 160.0;
+  static const double compactSheetMapHeight = 145.0;
+}
+
 abstract final class DriverI01Metrics {
   static const String source = 'ux/driver/en/screens/ROUNDS-I01-ROUND-COMPLETE-v3-10OF10.html';
 

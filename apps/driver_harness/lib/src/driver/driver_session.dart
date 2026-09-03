@@ -118,6 +118,7 @@ class DriverRoundStopModel {
     required this.windowStart,
     required this.windowEnd,
     required this.manifestItems,
+    this.accessNote,
   });
 
   final String id;
@@ -136,6 +137,7 @@ class DriverRoundStopModel {
   final String windowStart;
   final String windowEnd;
   final List<DriverManifestItemModel> manifestItems;
+  final String? accessNote;
 
   factory DriverRoundStopModel.fromJson(Map<String, dynamic> json) =>
       DriverRoundStopModel(
@@ -154,6 +156,7 @@ class DriverRoundStopModel {
         longitude: (json['longitude'] as num).toDouble(),
         windowStart: json['windowStart'] as String,
         windowEnd: json['windowEnd'] as String,
+        accessNote: json['accessNote'] as String?,
         manifestItems: (json['manifestItems'] as List<dynamic>)
             .map(
               (item) => DriverManifestItemModel.fromJson(
