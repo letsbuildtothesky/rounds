@@ -524,6 +524,69 @@ abstract final class DriverG02Metrics {
   static const double compactSheetMapHeight = 145.0;
 }
 
+abstract final class DriverH03Metrics {
+  static const String source = 'ux/driver/en/screens/ROUNDS-H03-CONTACT-HISTORY-v2-10OF10.html';
+
+  static const double topBarHeight = 64.0;
+  static const double topBarPaddingHorizontal = 18.0;
+  static const double topButtonSize = 44.0;
+  static const double topColumnGap = 10.0;
+  static const double topIconSize = 22.0;
+  static const double topTitleSize = 17.0;
+  static const double topStatusGap = 5.0;
+  static const double topStatusSize = 11.5;
+  static const double topStatusDotSize = 7.0;
+  static const double topStatusDotGap = 7.0;
+
+  static const double contextHeight = 74.0;
+  static const double contextPaddingHorizontal = 20.0;
+  static const double contextColumnGap = 12.0;
+  static const double contextKickerSize = 10.5;
+  static const double contextKickerTracking = 0.9975;
+  static const double contextNameGap = 6.0;
+  static const double contextNameSize = 16.0;
+  static const double contextMetaGap = 4.0;
+  static const double contextMetaSize = 11.7;
+  static const double contextActionHeight = 38.0;
+  static const double contextActionSize = 13.0;
+
+  static const double connectionPaddingVertical = 8.0;
+  static const double connectionPaddingHorizontal = 20.0;
+  static const double connectionSize = 12.0;
+  static const double connectionHeight = 1.3;
+
+  static const double ledgerPaddingTop = 18.0;
+  static const double ledgerPaddingHorizontal = 20.0;
+  static const double ledgerPaddingBottom = 24.0;
+  static const double daySize = 11.0;
+  static const double dayTracking = 0.88;
+  static const double dayBottom = 12.0;
+  static const double timelineLeft = 58.0;
+  static const double timeColumnWidth = 44.0;
+  static const double dotColumnWidth = 12.0;
+  static const double eventColumnGap = 8.0;
+  static const double eventMinHeight = 68.0;
+  static const double eventBottom = 18.0;
+  static const double timePaddingTop = 2.0;
+  static const double timeSize = 11.5;
+  static const double dotSize = 10.0;
+  static const double dotPaddingTop = 3.0;
+  static const double eventTitleSize = 13.5;
+  static const double eventTitleHeight = 1.22;
+  static const double detailGap = 4.0;
+  static const double detailSize = 12.2;
+  static const double detailHeight = 1.35;
+  static const double humanSize = 13.0;
+  static const double humanHeight = 1.4;
+
+  static const double footerPaddingTop = 10.0;
+  static const double footerPaddingHorizontal = 16.0;
+  static const double footerPaddingBottom = 14.0;
+  static const double primaryHeight = 54.0;
+  static const double primaryRadius = 7.0;
+  static const double primarySize = 16.0;
+}
+
 abstract final class DriverI01Metrics {
   static const String source = 'ux/driver/en/screens/ROUNDS-I01-ROUND-COMPLETE-v3-10OF10.html';
 

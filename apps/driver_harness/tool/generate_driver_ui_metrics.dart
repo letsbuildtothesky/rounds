@@ -69,6 +69,12 @@ String generateDriverUiMetrics(Map<String, dynamic> json) {
   final g02Choice = g02['choice'] as Map<String, dynamic>;
   final g02Footer = g02['footer'] as Map<String, dynamic>;
   final g02Sheet = g02['sheet'] as Map<String, dynamic>;
+  final h03 = screens['H03'] as Map<String, dynamic>;
+  final h03Top = h03['topBar'] as Map<String, dynamic>;
+  final h03Context = h03['context'] as Map<String, dynamic>;
+  final h03Connection = h03['connection'] as Map<String, dynamic>;
+  final h03Ledger = h03['ledger'] as Map<String, dynamic>;
+  final h03Footer = h03['footer'] as Map<String, dynamic>;
   final i01 = screens['I01'] as Map<String, dynamic>;
   final i01Top = i01['topBar'] as Map<String, dynamic>;
   final i01Hero = i01['hero'] as Map<String, dynamic>;
@@ -599,6 +605,69 @@ abstract final class DriverG02Metrics {
   static const double compactSheetRowSize = ${_double(g02Sheet['compactRowSize'])};
   static const double sheetMapHeight = ${_double(g02Sheet['mapHeight'])};
   static const double compactSheetMapHeight = ${_double(g02Sheet['compactMapHeight'])};
+}
+
+abstract final class DriverH03Metrics {
+  static const String source = '${h03['source']}';
+
+  static const double topBarHeight = ${_double(h03Top['height'])};
+  static const double topBarPaddingHorizontal = ${_double(h03Top['paddingHorizontal'])};
+  static const double topButtonSize = ${_double(h03Top['buttonSize'])};
+  static const double topColumnGap = ${_double(h03Top['columnGap'])};
+  static const double topIconSize = ${_double(h03Top['iconSize'])};
+  static const double topTitleSize = ${_double(h03Top['titleSize'])};
+  static const double topStatusGap = ${_double(h03Top['statusGap'])};
+  static const double topStatusSize = ${_double(h03Top['statusSize'])};
+  static const double topStatusDotSize = ${_double(h03Top['statusDotSize'])};
+  static const double topStatusDotGap = ${_double(h03Top['statusDotGap'])};
+
+  static const double contextHeight = ${_double(h03Context['height'])};
+  static const double contextPaddingHorizontal = ${_double(h03Context['paddingHorizontal'])};
+  static const double contextColumnGap = ${_double(h03Context['columnGap'])};
+  static const double contextKickerSize = ${_double(h03Context['kickerSize'])};
+  static const double contextKickerTracking = ${_double(h03Context['kickerTracking'])};
+  static const double contextNameGap = ${_double(h03Context['nameGap'])};
+  static const double contextNameSize = ${_double(h03Context['nameSize'])};
+  static const double contextMetaGap = ${_double(h03Context['metaGap'])};
+  static const double contextMetaSize = ${_double(h03Context['metaSize'])};
+  static const double contextActionHeight = ${_double(h03Context['actionHeight'])};
+  static const double contextActionSize = ${_double(h03Context['actionSize'])};
+
+  static const double connectionPaddingVertical = ${_double(h03Connection['paddingVertical'])};
+  static const double connectionPaddingHorizontal = ${_double(h03Connection['paddingHorizontal'])};
+  static const double connectionSize = ${_double(h03Connection['size'])};
+  static const double connectionHeight = ${_double(h03Connection['height'])};
+
+  static const double ledgerPaddingTop = ${_double(h03Ledger['paddingTop'])};
+  static const double ledgerPaddingHorizontal = ${_double(h03Ledger['paddingHorizontal'])};
+  static const double ledgerPaddingBottom = ${_double(h03Ledger['paddingBottom'])};
+  static const double daySize = ${_double(h03Ledger['daySize'])};
+  static const double dayTracking = ${_double(h03Ledger['dayTracking'])};
+  static const double dayBottom = ${_double(h03Ledger['dayBottom'])};
+  static const double timelineLeft = ${_double(h03Ledger['timelineLeft'])};
+  static const double timeColumnWidth = ${_double(h03Ledger['timeColumnWidth'])};
+  static const double dotColumnWidth = ${_double(h03Ledger['dotColumnWidth'])};
+  static const double eventColumnGap = ${_double(h03Ledger['columnGap'])};
+  static const double eventMinHeight = ${_double(h03Ledger['eventMinHeight'])};
+  static const double eventBottom = ${_double(h03Ledger['eventBottom'])};
+  static const double timePaddingTop = ${_double(h03Ledger['timePaddingTop'])};
+  static const double timeSize = ${_double(h03Ledger['timeSize'])};
+  static const double dotSize = ${_double(h03Ledger['dotSize'])};
+  static const double dotPaddingTop = ${_double(h03Ledger['dotPaddingTop'])};
+  static const double eventTitleSize = ${_double(h03Ledger['titleSize'])};
+  static const double eventTitleHeight = ${_double(h03Ledger['titleHeight'])};
+  static const double detailGap = ${_double(h03Ledger['detailGap'])};
+  static const double detailSize = ${_double(h03Ledger['detailSize'])};
+  static const double detailHeight = ${_double(h03Ledger['detailHeight'])};
+  static const double humanSize = ${_double(h03Ledger['humanSize'])};
+  static const double humanHeight = ${_double(h03Ledger['humanHeight'])};
+
+  static const double footerPaddingTop = ${_double(h03Footer['paddingTop'])};
+  static const double footerPaddingHorizontal = ${_double(h03Footer['paddingHorizontal'])};
+  static const double footerPaddingBottom = ${_double(h03Footer['paddingBottom'])};
+  static const double primaryHeight = ${_double(h03Footer['primaryHeight'])};
+  static const double primaryRadius = ${_double(h03Footer['primaryRadius'])};
+  static const double primarySize = ${_double(h03Footer['primarySize'])};
 }
 
 abstract final class DriverI01Metrics {

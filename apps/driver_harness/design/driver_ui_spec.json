@@ -547,6 +547,73 @@
         "compactMapHeight": 145
       }
     },
+    "H03": {
+      "source": "ux/driver/en/screens/ROUNDS-H03-CONTACT-HISTORY-v2-10OF10.html",
+      "topBar": {
+        "height": 64,
+        "paddingHorizontal": 18,
+        "buttonSize": 44,
+        "columnGap": 10,
+        "iconSize": 22,
+        "titleSize": 17,
+        "statusGap": 5,
+        "statusSize": 11.5,
+        "statusDotSize": 7,
+        "statusDotGap": 7
+      },
+      "context": {
+        "height": 74,
+        "paddingHorizontal": 20,
+        "columnGap": 12,
+        "kickerSize": 10.5,
+        "kickerTracking": 0.9975,
+        "nameGap": 6,
+        "nameSize": 16,
+        "metaGap": 4,
+        "metaSize": 11.7,
+        "actionHeight": 38,
+        "actionSize": 13
+      },
+      "connection": {
+        "paddingVertical": 8,
+        "paddingHorizontal": 20,
+        "size": 12,
+        "height": 1.3
+      },
+      "ledger": {
+        "paddingTop": 18,
+        "paddingHorizontal": 20,
+        "paddingBottom": 24,
+        "daySize": 11,
+        "dayTracking": 0.88,
+        "dayBottom": 12,
+        "timelineLeft": 58,
+        "timeColumnWidth": 44,
+        "dotColumnWidth": 12,
+        "columnGap": 8,
+        "eventMinHeight": 68,
+        "eventBottom": 18,
+        "timePaddingTop": 2,
+        "timeSize": 11.5,
+        "dotSize": 10,
+        "dotPaddingTop": 3,
+        "titleSize": 13.5,
+        "titleHeight": 1.22,
+        "detailGap": 4,
+        "detailSize": 12.2,
+        "detailHeight": 1.35,
+        "humanSize": 13,
+        "humanHeight": 1.4
+      },
+      "footer": {
+        "paddingTop": 10,
+        "paddingHorizontal": 16,
+        "paddingBottom": 14,
+        "primaryHeight": 54,
+        "primaryRadius": 7,
+        "primarySize": 16
+      }
+    },
     "I01": {
       "source": "ux/driver/en/screens/ROUNDS-I01-ROUND-COMPLETE-v3-10OF10.html",
       "topBar": {

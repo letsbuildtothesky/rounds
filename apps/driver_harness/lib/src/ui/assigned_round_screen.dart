@@ -8,6 +8,7 @@ import '../app/harness_app_controller.dart';
 import '../driver/driver_session.dart';
 import 'components/round_overview_map.dart';
 import 'components/rounds_action_drawer.dart';
+import 'contact_history_screen.dart';
 import 'debug_pod_acceptance_screen.dart';
 import 'navigation_harness_screen.dart';
 import 'pickup_navigation_screen.dart';
@@ -327,6 +328,11 @@ class _RoundTopBar extends StatelessWidget {
           label: controller.strings.chooseLanguage,
           icon: Icons.language,
         ),
+        const RoundsDrawerAction(
+          value: 'contact-history',
+          label: 'Contact history',
+          icon: Icons.history,
+        ),
         if (controller.driverConfigured)
           const RoundsDrawerAction(
             value: 'signout',
@@ -355,6 +361,17 @@ class _RoundTopBar extends StatelessWidget {
       );
     }
     if (value == 'signout') controller.signOutDriver();
+    if (value == 'contact-history') {
+      Navigator.of(context).push<void>(
+        MaterialPageRoute(
+          builder: (_) => ContactHistoryScreen(
+            controller: controller,
+            round: round,
+            stop: nextOperationalStop(round) ?? round.stops.last,
+          ),
+        ),
+      );
+    }
     if (value == 'pod-acceptance') {
       Navigator.of(context).push(
         MaterialPageRoute<void>(

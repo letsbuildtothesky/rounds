@@ -19,6 +19,7 @@ void main() {
     expect(find.text('Round actions'), findsOneWidget);
     expect(find.text('Refresh Round'), findsOneWidget);
     expect(find.text('Choose language'), findsOneWidget);
+    expect(find.text('Contact history'), findsOneWidget);
     expect(find.text('Test camera + restart'), findsOneWidget);
     expect(find.byType(PopupMenuButton), findsNothing);
   });
