@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(20);
+select plan(22);
 
 select has_function(
   'public',
@@ -163,6 +163,7 @@ select 'round', jsonb_build_object(
   'payload', jsonb_build_object(
     'reference', 'ROUND-TEST-001',
     'serviceDate', '2026-09-02',
+    'departureAt', '2026-09-02T01:00:00Z',
     'driverId', '30000000-0000-4000-8000-000000000002',
     'stopIds', jsonb_build_array(
       (select id from public.delivery_stops where delivery_id = '30000000-0000-4000-8000-000000000100')
@@ -202,6 +203,24 @@ select is(
   ) -> 'error' ->> 'code'),
   'INVALID_STATE',
   'a Round cannot be approved without a matching server route fit'
+);
+
+select is(
+  (public.plan_and_approve_round_command(
+    (select body #- '{payload,departureAt}' from round_test_commands where name = 'round'),
+    '30000000-0000-4000-8000-000000000007'
+  ) -> 'error' ->> 'code'),
+  'INVALID_STATE',
+  'a Round cannot be approved without an explicit requested departure'
+);
+
+select is(
+  (public.plan_and_approve_round_command(
+    jsonb_set((select body from round_test_commands where name = 'round'), '{payload,departureAt}', '"2026-09-02T01:15:00Z"'::jsonb),
+    '30000000-0000-4000-8000-000000000007'
+  ) -> 'error' ->> 'code'),
+  'INVALID_STATE',
+  'a Round cannot be approved when the requested and routed departures differ'
 );
 
 select is(

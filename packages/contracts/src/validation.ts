@@ -330,6 +330,9 @@ export function validatePlanRoundPayload(payload: PlanRoundPayload): void {
     throw new ContractError("stopIds cannot contain duplicates");
   }
   payload.stopIds.forEach((stopId, index) => assertUuid(stopId, `stopIds[${index}]`));
+  if (!payload.departureAt || !Number.isFinite(Date.parse(payload.departureAt))) {
+    throw new ContractError("departureAt must be an ISO date-time");
+  }
   if (!payload.routePlan || payload.routePlan.status !== "fits") {
     throw new ContractError("routePlan must be a server-calculated fit");
   }
@@ -338,6 +341,9 @@ export function validatePlanRoundPayload(payload: PlanRoundPayload): void {
   }
   if (payload.routePlan.driverId !== payload.driverId || payload.routePlan.serviceDate !== payload.serviceDate) {
     throw new ContractError("routePlan driver and service date must match the Round");
+  }
+  if (Date.parse(payload.routePlan.departureAt) !== Date.parse(payload.departureAt)) {
+    throw new ContractError("routePlan departure must match departureAt");
   }
   if (JSON.stringify(payload.routePlan.stopIds) !== JSON.stringify(payload.stopIds)) {
     throw new ContractError("routePlan stop order must match stopIds");
@@ -359,6 +365,9 @@ export function validatePlanningRoutePreviewRequest(payload: PlanningRoutePrevie
     throw new ContractError("stopIds cannot contain duplicates");
   }
   payload.stopIds.forEach((stopId, index) => assertUuid(stopId, `stopIds[${index}]`));
+  if (payload.departureAt !== undefined && !Number.isFinite(Date.parse(payload.departureAt))) {
+    throw new ContractError("departureAt must be an ISO date-time");
+  }
 }
 
 export function validatePlanRoundCommand(command: PlanRoundCommand): void {

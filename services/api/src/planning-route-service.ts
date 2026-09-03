@@ -1,6 +1,7 @@
 import type {
   OperationsDriverCapacityItem,
   PlanningRoutePreview,
+  PlanningRoutePreviewRequest,
   PlanningRouteSnapshot,
   UnplannedDeliverySummary,
 } from "@rounds/contracts";
@@ -9,7 +10,7 @@ import type { RoutingProvider } from "./routing-provider.js";
 import { evaluateCapacity } from "./capacity-validator.js";
 
 export type PlanningRouteService = {
-  preview(actor: ActorContext, request: { serviceDate: string; driverId: string; stopIds: string[] }, now: Date): Promise<PlanningRoutePreview>;
+  preview(actor: ActorContext, request: PlanningRoutePreviewRequest, now: Date): Promise<PlanningRoutePreview>;
 };
 
 function localServiceDate(now: Date, timezone: string): string {
@@ -54,7 +55,12 @@ export function createPlanningRouteService(
       }
       const shiftStart = new Date(driver.effectiveShift.startAt);
       const shiftEnd = new Date(driver.effectiveShift.endAt);
-      const departure = request.serviceDate === localServiceDate(now, context.timezone) && now > shiftStart ? now : shiftStart;
+      const requestedDeparture = request.departureAt ? new Date(request.departureAt) : undefined;
+      const departure = requestedDeparture
+        ?? (request.serviceDate === localServiceDate(now, context.timezone) && now > shiftStart ? now : shiftStart);
+      if (departure < shiftStart) blockingReasons.push("Requested departure is before the effective driver shift.");
+      if (departure >= shiftEnd) blockingReasons.push("Requested departure is outside the effective driver shift.");
+      if (requestedDeparture && departure.getTime() < now.getTime() - 5_000) blockingReasons.push("Requested departure is in the past.");
       const providerDeparture = departure.getTime() >= now.getTime() - 5_000
         ? new Date(Math.max(departure.getTime(), now.getTime() + 1_000)).toISOString()
         : undefined;

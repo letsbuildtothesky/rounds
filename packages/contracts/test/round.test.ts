@@ -19,6 +19,7 @@ const payload = () => ({
   serviceDate: "2026-09-02",
   driverId: "10000000-0000-4000-8000-000000000002",
   stopIds: ["10000000-0000-4000-8000-000000000005"],
+  departureAt: "2026-09-02T01:00:00.000Z",
   routePlan: {
     status: "fits" as const,
     serviceDate: "2026-09-02",
@@ -47,12 +48,34 @@ test("rejects duplicate Stops", () => {
   assert.throws(() => validatePlanRoundPayload(input), ContractError);
 });
 
+test("requires the requested departure to match the routed departure", () => {
+  const missing = payload() as ReturnType<typeof payload> & { departureAt?: string };
+  delete missing.departureAt;
+  assert.throws(() => validatePlanRoundPayload(missing as ReturnType<typeof payload>), /departureAt/);
+
+  const changed = payload();
+  changed.departureAt = "2026-09-02T01:15:00.000Z";
+  assert.throws(() => validatePlanRoundPayload(changed), /routePlan departure/);
+});
+
 test("validates route preview identity and ordered Stops", () => {
   assert.doesNotThrow(() => validatePlanningRoutePreviewRequest({
     serviceDate: payload().serviceDate,
     driverId: payload().driverId,
     stopIds: payload().stopIds,
   }));
+  assert.doesNotThrow(() => validatePlanningRoutePreviewRequest({
+    serviceDate: payload().serviceDate,
+    driverId: payload().driverId,
+    stopIds: payload().stopIds,
+    departureAt: "2026-09-02T01:15:00.000Z",
+  }));
+  assert.throws(() => validatePlanningRoutePreviewRequest({
+    serviceDate: payload().serviceDate,
+    driverId: payload().driverId,
+    stopIds: payload().stopIds,
+    departureAt: "tomorrow-ish",
+  }), /departureAt/);
 });
 
 test("requires a new aggregate command", () => {

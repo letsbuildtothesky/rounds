@@ -127,6 +127,7 @@ test("viewer can inspect planning but cannot approve a Round", async () => {
       serviceDate: "2026-09-02",
       driverId: projection.drivers[0]!.id,
       stopIds: [projection.unplannedDeliveries[0]!.stopId],
+      departureAt: routePreview.departureAt,
     }),
   }), { identity: gateway, planning: gateway, routes, uuid: ids(), now: () => new Date("2026-09-01T12:00:00Z") });
   assert.equal(response.status, 403);
@@ -148,11 +149,14 @@ test("commits the explicit Stop order under the authenticated tenant", async () 
       serviceDate: "2026-09-02",
       driverId: projection.drivers[0]!.id,
       stopIds: [projection.unplannedDeliveries[0]!.stopId],
+      departureAt: routePreview.departureAt,
     }),
   }), { identity: gateway, planning: gateway, routes, uuid: ids(), now: () => new Date("2026-09-01T12:00:00Z") });
   assert.equal(response.status, 201);
   assert.equal(gateway.lastCommand?.tenantId, tenantId);
   assert.deepEqual(gateway.lastCommand?.payload.stopIds, [projection.unplannedDeliveries[0]!.stopId]);
+  assert.equal(gateway.lastCommand?.payload.departureAt, routePreview.departureAt);
+  assert.equal(gateway.lastCommand?.payload.routePlan.departureAt, routePreview.departureAt);
   assert.equal(gateway.lastCommand?.payload.routePlan.provider.name, "mapbox");
   assert.equal("geometry" in (gateway.lastCommand?.payload.routePlan ?? {}), false);
 });
@@ -167,7 +171,7 @@ test("never reaches the database when server routing misses a promise", async ()
   const response = await planRoundHandler(new Request("http://test/v1/rounds", {
     method: "POST",
     headers: { authorization: "Bearer token", "content-type": "application/json", "x-rounds-tenant-id": tenantId, "idempotency-key": "round:blocked" },
-    body: JSON.stringify({ reference: "ROUND-BLOCKED", serviceDate: "2026-09-02", driverId: projection.drivers[0]!.id, stopIds: [projection.unplannedDeliveries[0]!.stopId] }),
+    body: JSON.stringify({ reference: "ROUND-BLOCKED", serviceDate: "2026-09-02", driverId: projection.drivers[0]!.id, stopIds: [projection.unplannedDeliveries[0]!.stopId], departureAt: routePreview.departureAt }),
   }), { identity: gateway, planning: gateway, routes: blockedRoutes, uuid: ids(), now: () => new Date("2026-09-01T12:00:00Z") });
   assert.equal(response.status, 409);
   assert.equal(gateway.lastCommand, null);

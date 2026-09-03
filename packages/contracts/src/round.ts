@@ -83,6 +83,7 @@ export type PlanningRoutePreviewRequest = {
   serviceDate: string;
   driverId: string;
   stopIds: string[];
+  departureAt?: string;
 };
 
 export type PlanningRoutePreview = PlanningRouteSnapshot & {
@@ -158,6 +159,7 @@ export type PlanRoundPayload = {
   serviceDate: string;
   driverId: string;
   stopIds: string[];
+  departureAt: string;
   routePlan: PlanningRouteSnapshot;
 };
 

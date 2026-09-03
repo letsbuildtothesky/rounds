@@ -46,6 +46,31 @@ test("waits after an early routed arrival and accepts the promised window", asyn
   assert.deepEqual(preview.geometry.coordinates[1], [100.56, 13.75]);
 });
 
+test("recalculates from an explicit dispatcher departure", async () => {
+  let routedDeparture = "";
+  const service = createPlanningRouteService(gateway(), { calculate: async (request) => {
+    routedDeparture = request.departureAt ?? "";
+    return route;
+  } });
+  const requested = "2026-09-04T01:30:00.000Z";
+  const preview = await service.preview(actor, { serviceDate: "2026-09-04", driverId, stopIds: [stopId], departureAt: requested }, new Date("2026-09-03T12:00:00.000Z"));
+  assert.equal(preview.departureAt, requested);
+  assert.equal(routedDeparture, requested);
+  assert.equal(preview.stops[0]?.eta, "2026-09-04T01:45:00.000Z");
+});
+
+test("blocks an explicit departure outside the effective shift", async () => {
+  const service = createPlanningRouteService(gateway(), { calculate: async () => route });
+  const preview = await service.preview(actor, {
+    serviceDate: "2026-09-04",
+    driverId,
+    stopIds: [stopId],
+    departureAt: "2026-09-04T10:15:00.000Z",
+  }, new Date("2026-09-03T12:00:00.000Z"));
+  assert.equal(preview.status, "blocked");
+  assert.match(preview.blockingReasons.join(" "), /outside the effective driver shift/);
+});
+
 test("blocks approval when routed arrival misses the promise", async () => {
   const service = createPlanningRouteService(gateway("2026-09-04T01:00:00.000Z", "2026-09-04T01:10:00.000Z"), { calculate: async () => route });
   const preview = await service.preview(actor, { serviceDate: "2026-09-04", driverId, stopIds: [stopId] }, new Date("2026-09-03T12:00:00.000Z"));

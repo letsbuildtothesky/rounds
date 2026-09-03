@@ -135,7 +135,7 @@ Canonical visual source: `ux/operations/rounds-operations-current-v45.html`. The
 | Deliveries workspace | Pilot P1 | `VERIFIED` | Server-backed delivery list/details and operational states exist. | Complete filters, edit boundaries and remaining v45 record states. |
 | Manual plan construction | Slice 2 P0 | `VERIFIED` | Date, ordered Stop selection, own driver, shared multidimensional capacity check, real route/window preview and explicit approval exist. | Configure production cargo values and add service dwell after the responsible business decisions. |
 | Automatic plan generation | Slice 2 P1 | `SPECIFIED` | Intentionally not simulated in React. | Explainable heuristic, proposed plan persistence, uncovered-work truth and tests. |
-| Plan adjustment before approval | Slice 2 P0 | `PARTIAL` | Selection can be cleared/rebuilt; canonical HTML demonstrates richer movement. | Server preview/commit for Stop move, reorder, departure change and affected-lane recalculation. |
+| Plan adjustment before approval | Slice 2 P0 | `PARTIAL` | Canonical Stop-order controls and ±15-minute departure adjustment now trigger fresh server route/window/shift/cargo preview; approval recalculates and the database requires the requested departure to match the routed departure. | Add versioned Stop movement between existing Rounds with source/destination consequence preview and affected-Round-only recalculation. |
 | Round approval/assignment | Pilot/Slice 2 P0 | `VERIFIED` | Server recalculates route, validates window/shift/cargo, database independently recalculates multidimensional capacity, requires fitting snapshots, then atomically assigns. | Run live cargo-configured acceptance and add service dwell before declaring full BS-09 approval. |
 | Round execution detail | Pilot P0 | `VERIFIED` | Server-backed Stop/custody/exception state and communication links exist. | Remaining v45 Round actions and realtime projection depth. |
 | Pickup exception resolution | Pilot P0 | `VERIFIED` | Audited correction returns Stop to assigned and requires manifest recheck. | Broader pickup outcomes/evidence views. |
@@ -195,7 +195,8 @@ This sequence does not promote later slices; it orders the already authorized En
 ### Checkpoint B — canonical Round management
 
 - Connect server-backed Round overview/detail actions required by v45.
-- Add Stop move/reorder/departure preview and versioned commit.
+- **Completed B1 2026-09-03:** pre-approval Stop reorder and departure adjustment recalculate route/window/shift/cargo truth and commit the matching departure through the versioned approval boundary.
+- Add versioned Stop movement between existing Rounds.
 - Recalculate only affected Rounds and present consequences before confirmation.
 - Keep automatic plan generation absent until its real heuristic and persistence exist.
 
