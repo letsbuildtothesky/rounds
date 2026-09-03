@@ -134,7 +134,7 @@ test("viewer can inspect planning but cannot approve a Round", async () => {
   assert.equal(gateway.lastCommand, null);
 });
 
-test("commits the explicit Stop order under the authenticated tenant", async () => {
+test("commits the explicit Stop order with the server-calculated departure", async () => {
   const gateway = new FakeGateway();
   const response = await planRoundHandler(new Request("http://test/v1/rounds", {
     method: "POST",
@@ -149,7 +149,6 @@ test("commits the explicit Stop order under the authenticated tenant", async () 
       serviceDate: "2026-09-02",
       driverId: projection.drivers[0]!.id,
       stopIds: [projection.unplannedDeliveries[0]!.stopId],
-      departureAt: routePreview.departureAt,
     }),
   }), { identity: gateway, planning: gateway, routes, uuid: ids(), now: () => new Date("2026-09-01T12:00:00Z") });
   assert.equal(response.status, 201);

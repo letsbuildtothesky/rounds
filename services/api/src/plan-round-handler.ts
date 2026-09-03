@@ -59,7 +59,12 @@ export async function planRoundHandler(
     return json(409, { error: { code: "INVALID_STATE", message: error instanceof Error ? error.message : "Round route cannot be evaluated" } }, traceId);
   }
 
-  const payload = { ...requestBody, reference: requestBody.reference.trim(), routePlan };
+  const payload = {
+    ...requestBody,
+    reference: requestBody.reference.trim(),
+    departureAt: routePlan.departureAt,
+    routePlan,
+  };
 
   const command = {
     schemaVersion: 1 as const,

@@ -75,11 +75,11 @@ function request(path: string, commit = false): Request {
   return new Request(`http://test${path}`, { method: "POST", headers: { authorization: "Bearer token", "content-type": "application/json", "x-rounds-tenant-id": tenantId, ...(commit ? { "idempotency-key": "move:one" } : {}) }, body: JSON.stringify({ sourceRoundId: sourceId, targetRoundId: targetId, stopId: movedStopId, sourceExpectedVersion: 3, targetExpectedVersion: 7 }) });
 }
 
-function dependencies(gateway: Gateway) {
+function dependencies(gateway: Gateway, clock = now, routeRequests: PlanningRoutePreviewRequest[] = []) {
   return {
-    identity: gateway, rounds: gateway, now: () => now,
+    identity: gateway, rounds: gateway, now: () => clock,
     uuid: () => "10000000-0000-4000-8000-000000000099",
-    routes: { previewAssigned: async (_actor: ActorContext, _roundIds: string[], input: PlanningRoutePreviewRequest) => route(input.driverId, input.stopIds), preview: async (_actor: ActorContext, input: PlanningRoutePreviewRequest) => route(input.driverId, input.stopIds) },
+    routes: { previewAssigned: async (_actor: ActorContext, _roundIds: string[], input: PlanningRoutePreviewRequest) => { routeRequests.push(input); return route(input.driverId, input.stopIds); }, preview: async (_actor: ActorContext, input: PlanningRoutePreviewRequest) => route(input.driverId, input.stopIds) },
   };
 }
 
@@ -101,6 +101,18 @@ test("recalculates again and commits one geometry-free, dual-version move comman
   assert.equal(gateway.command?.payload.targetExpectedVersion, 7);
   assert.deepEqual(gateway.command?.payload.targetStopIds, [movedStopId, targetStopId]);
   assert.equal("geometry" in (gateway.command?.payload.targetRoutePlan ?? {}), false);
+});
+
+test("recalculates an unstarted current-day Round from live time when its saved departure has passed", async () => {
+  const gateway = new Gateway();
+  const routeRequests: PlanningRoutePreviewRequest[] = [];
+  const response = await roundMovePreviewHandler(
+    request("/v1/operations/rounds/move-preview"),
+    dependencies(gateway, new Date("2026-09-04T02:00:00.000Z"), routeRequests),
+  );
+  assert.equal(response.status, 200);
+  assert.equal(routeRequests.length, 2);
+  assert.ok(routeRequests.every((routeRequest) => routeRequest.departureAt === undefined));
 });
 
 test("custody protection blocks preview and never reaches the move command", async () => {

@@ -284,7 +284,9 @@ export type PlanRoundDependencies = OperationsPlanningDependencies & {
   now: () => Date;
 };
 
-export type PlanRoundRequestBody = Omit<PlanRoundPayload, "routePlan">;
+export type PlanRoundRequestBody = Omit<PlanRoundPayload, "routePlan" | "departureAt"> & {
+  departureAt?: string;
+};
 
 export type PlanningRouteDependencies = {
   identity: IdentityGateway;

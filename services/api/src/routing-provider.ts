@@ -25,6 +25,16 @@ export class RoutingProviderError extends Error {
   }
 }
 
+function mapboxDepartureAt(value: string): string {
+  const parsed = new Date(value);
+  if (!Number.isFinite(parsed.getTime())) {
+    throw new RoutingProviderError("Routing departure time must be an ISO date-time");
+  }
+  // Mapbox's depart_at parser accepts RFC 3339 seconds, but rejects the
+  // fractional seconds emitted by Date#toISOString in live requests.
+  return parsed.toISOString().replace(/\.\d{3}Z$/, "Z");
+}
+
 type MapboxDirectionsBody = {
   code?: string;
   message?: string;
@@ -58,7 +68,7 @@ export class MapboxRoutingProvider implements RoutingProvider {
       overview: "simplified",
       steps: "false",
     });
-    if (request.departureAt) query.set("depart_at", request.departureAt);
+    if (request.departureAt) query.set("depart_at", mapboxDepartureAt(request.departureAt));
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), this.timeoutMs);
     let response: Response;

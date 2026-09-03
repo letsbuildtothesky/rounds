@@ -32,6 +32,10 @@ async function body(request: Request): Promise<MoveRoundStopRequest> {
   return payload;
 }
 
+function retainedDeparture(departureAt: string, now: Date): string | undefined {
+  return Date.parse(departureAt) > now.getTime() + 5_000 ? departureAt : undefined;
+}
+
 async function calculate(
   payload: MoveRoundStopRequest,
   dependencies: RoundMoveDependencies,
@@ -64,18 +68,20 @@ async function calculate(
   let targetAfter: PlanningRoutePreview | undefined;
   if (reasons.length === 0) {
     if (!dependencies.routes.previewAssigned) throw new Error("Assigned Round routing is unavailable");
+    const sourceDeparture = retainedDeparture(sourceDetail.routePlan!.departureAt, now);
+    const targetDeparture = retainedDeparture(targetDetail.routePlan!.departureAt, now);
     [sourceAfter, targetAfter] = await Promise.all([
       sourceStopIds.length ? dependencies.routes.previewAssigned(actor, [sourceDetail.id, targetDetail.id], {
         serviceDate: sourceDetail.serviceDate,
         driverId: sourceDetail.driver.id,
         stopIds: sourceStopIds,
-        departureAt: sourceDetail.routePlan!.departureAt,
+        ...(sourceDeparture ? { departureAt: sourceDeparture } : {}),
       }, now) : Promise.resolve(undefined),
       dependencies.routes.previewAssigned(actor, [sourceDetail.id, targetDetail.id], {
         serviceDate: targetDetail.serviceDate,
         driverId: targetDetail.driver.id,
         stopIds: targetStopIds,
-        departureAt: targetDetail.routePlan!.departureAt,
+        ...(targetDeparture ? { departureAt: targetDeparture } : {}),
       }, now),
     ]);
     if (sourceAfter?.status === "blocked") reasons.push(...sourceAfter.blockingReasons.map((reason) => `${sourceDetail.reference}: ${reason}`));

@@ -101,6 +101,6 @@ test("normalizes a successful Mapbox Directions response without exposing its to
   const result = await provider.calculate({ coordinates: [{ latitude: 13.73, longitude: 100.53 }, { latitude: 13.75, longitude: 100.56 }], departureAt: "2026-09-04T01:00:00.000Z" });
   assert.equal(result.durationSeconds, 900);
   assert.match(requestedUrl, /driving-traffic/);
-  assert.match(requestedUrl, /depart_at=/);
+  assert.equal(new URL(requestedUrl).searchParams.get("depart_at"), "2026-09-04T01:00:00Z");
   assert.ok(!JSON.stringify(result).includes("secret-token"));
 });

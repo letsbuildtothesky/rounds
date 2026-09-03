@@ -390,7 +390,7 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
           serviceDate: chosenDeliveries[0]!.serviceDate,
           driverId: planningDriverId,
           stopIds: selectedStops,
-          departureAt: routePreview!.departureAt,
+          ...(requestedDepartureAt ? { departureAt: requestedDepartureAt } : {}),
         }),
       });
       const body = await response.json() as PlanRoundResult | ApiError;
