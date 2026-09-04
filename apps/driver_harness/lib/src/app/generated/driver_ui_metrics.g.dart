@@ -813,6 +813,57 @@ abstract final class DriverE04E06Metrics {
   static const double shortBreakpointHeight = 740.0;
 }
 
+abstract final class DriverF01F02Metrics {
+  static const String sourceEnglish = 'ux/driver/en/screens/ROUNDS-F01-F02-DROPOFF-HANDOFF-v3-10OF10.html';
+  static const String sourceThai = 'ux/driver/th/ROUNDS-F01-F02-DROPOFF-HANDOFF-TH-v1-10OF10.html';
+
+  static const double englishTopBarHeight = 60.0;
+  static const double thaiTopBarHeight = 62.0;
+  static const double thaiCompactTopBarHeight = 60.0;
+  static const double contentPaddingHorizontal = 18.0;
+  static const double compactContentPaddingHorizontal = 15.0;
+  static const double englishContentPaddingTop = 26.0;
+  static const double englishCompactContentPaddingTop = 22.0;
+  static const double englishShortContentPaddingTop = 20.0;
+  static const double englishContentPaddingBottom = 28.0;
+  static const double thaiContentPaddingTop = 24.0;
+  static const double thaiCompactContentPaddingTop = 20.0;
+  static const double thaiShortContentPaddingTop = 18.0;
+  static const double thaiContentPaddingBottom = 27.0;
+  static const double englishHeroSize = 32.0;
+  static const double englishCompactHeroSize = 29.0;
+  static const double thaiHeroSize = 36.0;
+  static const double thaiCompactHeroSize = 31.0;
+  static const double englishHeroPaddingBottom = 22.0;
+  static const double thaiHeroPaddingBottom = 20.0;
+  static const double shortHeroPaddingBottom = 15.0;
+  static const double englishPlaceGap = 12.0;
+  static const double thaiPlaceGap = 8.0;
+  static const double englishPackageMinHeight = 58.0;
+  static const double thaiPackageMinHeight = 60.0;
+  static const double compactPackageMinHeight = 55.0;
+  static const double englishSectionMarginTop = 24.0;
+  static const double thaiSectionMarginTop = 22.0;
+  static const double compactSectionMarginTop = 18.0;
+  static const double shortSectionMarginTop = 16.0;
+  static const double englishSectionMarginBottom = 9.0;
+  static const double thaiSectionMarginBottom = 7.0;
+  static const double englishChoiceMinHeight = 92.0;
+  static const double englishCompactChoiceMinHeight = 84.0;
+  static const double thaiChoiceMinHeight = 88.0;
+  static const double thaiCompactChoiceMinHeight = 80.0;
+  static const double shortChoiceMinHeight = 74.0;
+  static const double englishContactMarginTop = 30.0;
+  static const double thaiContactMarginTop = 26.0;
+  static const double compactContactMarginTop = 20.0;
+  static const double shortContactMarginTop = 17.0;
+  static const double englishContactPaddingTop = 20.0;
+  static const double thaiContactPaddingTop = 17.0;
+  static const double compactContactPaddingTop = 14.0;
+  static const double shortContactPaddingTop = 12.0;
+  static const double shortBreakpointHeight = 700.0;
+}
+
 abstract final class DriverF08Metrics {
   static const String source = 'ux/driver/en/screens/ROUNDS-F08-STOP-COMPLETE-NEXT-STOP-v4-10OF10.html';
 

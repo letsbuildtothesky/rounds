@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:rounds_driver_harness/src/app/app_strings.dart';
 import 'package:rounds_driver_harness/src/app/driver_design_system.dart';
 import 'package:rounds_driver_harness/src/app/generated/driver_ui_metrics.g.dart';
-import 'package:rounds_driver_harness/src/app/harness_app_controller.dart';
 import 'package:rounds_driver_harness/src/app/rounds_harness_app.dart';
 import 'package:rounds_driver_harness/src/driver/driver_session.dart';
 import 'package:rounds_driver_harness/src/ui/pickup_navigation_screen.dart';

@@ -86,6 +86,15 @@ String generateDriverUiMetrics(Map<String, dynamic> json) {
   final e04Panel = e04e06['panel'] as Map<String, dynamic>;
   final e04Actions = e04e06['actions'] as Map<String, dynamic>;
   final e04Short = e04e06['short'] as Map<String, dynamic>;
+  final f01f02 = screens['F01F02'] as Map<String, dynamic>;
+  final f01Top = f01f02['topBar'] as Map<String, dynamic>;
+  final f01Content = f01f02['content'] as Map<String, dynamic>;
+  final f01Hero = f01f02['hero'] as Map<String, dynamic>;
+  final f01Package = f01f02['package'] as Map<String, dynamic>;
+  final f01Section = f01f02['section'] as Map<String, dynamic>;
+  final f01Choice = f01f02['choice'] as Map<String, dynamic>;
+  final f01Contact = f01f02['contact'] as Map<String, dynamic>;
+  final f01Short = f01f02['short'] as Map<String, dynamic>;
   final f08 = screens['F08'] as Map<String, dynamic>;
   final f08Complete = f08['completeBar'] as Map<String, dynamic>;
   final f08Dock = f08['nextDock'] as Map<String, dynamic>;
@@ -977,6 +986,57 @@ abstract final class DriverE04E06Metrics {
   static const double actionRadius = ${_double(e04Actions['radius'])};
 
   static const double shortBreakpointHeight = ${_double(e04Short['breakpointHeight'])};
+}
+
+abstract final class DriverF01F02Metrics {
+  static const String sourceEnglish = '${f01f02['sourceEnglish']}';
+  static const String sourceThai = '${f01f02['sourceThai']}';
+
+  static const double englishTopBarHeight = ${_double(f01Top['englishHeight'])};
+  static const double thaiTopBarHeight = ${_double(f01Top['thaiHeight'])};
+  static const double thaiCompactTopBarHeight = ${_double(f01Top['thaiCompactHeight'])};
+  static const double contentPaddingHorizontal = ${_double(f01Content['paddingHorizontal'])};
+  static const double compactContentPaddingHorizontal = ${_double(f01Content['compactPaddingHorizontal'])};
+  static const double englishContentPaddingTop = ${_double(f01Content['englishPaddingTop'])};
+  static const double englishCompactContentPaddingTop = ${_double(f01Content['englishCompactPaddingTop'])};
+  static const double englishShortContentPaddingTop = ${_double(f01Content['englishShortPaddingTop'])};
+  static const double englishContentPaddingBottom = ${_double(f01Content['englishPaddingBottom'])};
+  static const double thaiContentPaddingTop = ${_double(f01Content['thaiPaddingTop'])};
+  static const double thaiCompactContentPaddingTop = ${_double(f01Content['thaiCompactPaddingTop'])};
+  static const double thaiShortContentPaddingTop = ${_double(f01Content['thaiShortPaddingTop'])};
+  static const double thaiContentPaddingBottom = ${_double(f01Content['thaiPaddingBottom'])};
+  static const double englishHeroSize = ${_double(f01Hero['englishSize'])};
+  static const double englishCompactHeroSize = ${_double(f01Hero['englishCompactSize'])};
+  static const double thaiHeroSize = ${_double(f01Hero['thaiSize'])};
+  static const double thaiCompactHeroSize = ${_double(f01Hero['thaiCompactSize'])};
+  static const double englishHeroPaddingBottom = ${_double(f01Hero['englishPaddingBottom'])};
+  static const double thaiHeroPaddingBottom = ${_double(f01Hero['thaiPaddingBottom'])};
+  static const double shortHeroPaddingBottom = ${_double(f01Hero['shortPaddingBottom'])};
+  static const double englishPlaceGap = ${_double(f01Hero['englishPlaceGap'])};
+  static const double thaiPlaceGap = ${_double(f01Hero['thaiPlaceGap'])};
+  static const double englishPackageMinHeight = ${_double(f01Package['englishMinHeight'])};
+  static const double thaiPackageMinHeight = ${_double(f01Package['thaiMinHeight'])};
+  static const double compactPackageMinHeight = ${_double(f01Package['compactMinHeight'])};
+  static const double englishSectionMarginTop = ${_double(f01Section['englishMarginTop'])};
+  static const double thaiSectionMarginTop = ${_double(f01Section['thaiMarginTop'])};
+  static const double compactSectionMarginTop = ${_double(f01Section['compactMarginTop'])};
+  static const double shortSectionMarginTop = ${_double(f01Section['shortMarginTop'])};
+  static const double englishSectionMarginBottom = ${_double(f01Section['englishMarginBottom'])};
+  static const double thaiSectionMarginBottom = ${_double(f01Section['thaiMarginBottom'])};
+  static const double englishChoiceMinHeight = ${_double(f01Choice['englishMinHeight'])};
+  static const double englishCompactChoiceMinHeight = ${_double(f01Choice['englishCompactMinHeight'])};
+  static const double thaiChoiceMinHeight = ${_double(f01Choice['thaiMinHeight'])};
+  static const double thaiCompactChoiceMinHeight = ${_double(f01Choice['thaiCompactMinHeight'])};
+  static const double shortChoiceMinHeight = ${_double(f01Choice['shortMinHeight'])};
+  static const double englishContactMarginTop = ${_double(f01Contact['englishMarginTop'])};
+  static const double thaiContactMarginTop = ${_double(f01Contact['thaiMarginTop'])};
+  static const double compactContactMarginTop = ${_double(f01Contact['compactMarginTop'])};
+  static const double shortContactMarginTop = ${_double(f01Contact['shortMarginTop'])};
+  static const double englishContactPaddingTop = ${_double(f01Contact['englishPaddingTop'])};
+  static const double thaiContactPaddingTop = ${_double(f01Contact['thaiPaddingTop'])};
+  static const double compactContactPaddingTop = ${_double(f01Contact['compactPaddingTop'])};
+  static const double shortContactPaddingTop = ${_double(f01Contact['shortPaddingTop'])};
+  static const double shortBreakpointHeight = ${_double(f01Short['breakpointHeight'])};
 }
 
 abstract final class DriverF08Metrics {

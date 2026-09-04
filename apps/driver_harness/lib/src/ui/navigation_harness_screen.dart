@@ -16,7 +16,7 @@ import 'components/navigation_stop_dock.dart';
 import 'components/delivery_issue_flow.dart';
 import 'components/operations_contact_flow.dart';
 import 'components/rounds_action_drawer.dart';
-import 'proof_of_delivery_screen.dart';
+import 'dropoff_handoff_screen.dart';
 import 'post_delivery_screen.dart';
 import 'operations_chat_screen.dart';
 
@@ -346,9 +346,11 @@ class _NavigationHarnessScreenState extends State<NavigationHarnessScreen> {
     if (currentStop == null) return;
     final completed = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
-        builder: (_) => ProofOfDeliveryScreen(
+        builder: (_) => DropoffHandoffScreen(
           controller: widget.controller,
+          round: widget.round,
           stop: currentStop,
+          stopCount: widget.stopCount,
         ),
       ),
     );

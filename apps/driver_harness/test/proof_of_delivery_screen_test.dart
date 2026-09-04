@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rounds_driver_harness/src/app/rounds_harness_app.dart';
+import 'package:rounds_driver_harness/src/driver/driver_handoff_selection.dart';
 import 'package:rounds_driver_harness/src/driver/driver_session.dart';
 import 'package:rounds_driver_harness/src/ui/proof_of_delivery_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  testWidgets('POD requires receiver choice, locked manifest and a photo', (
+  testWidgets('POD consumes the prior handoff and requires a photo', (
     tester,
   ) async {
     SharedPreferences.setMockInitialValues({
@@ -40,16 +41,20 @@ void main() {
     );
     await tester.pumpWidget(
       MaterialApp(
-        home: ProofOfDeliveryScreen(controller: controller, stop: stop),
+        home: ProofOfDeliveryScreen(
+          controller: controller,
+          stop: stop,
+          handoff: const DriverHandoffSelection.someoneElse(),
+        ),
       ),
     );
 
-    expect(find.text('Who received it?'), findsOneWidget);
+    expect(find.text('Proof of delivery'), findsOneWidget);
+    expect(find.text('Received by someone else'), findsOneWidget);
     expect(find.text('Locked manifest · v1'), findsOneWidget);
     expect(find.text('1× Bouquet'), findsOneWidget);
-    expect(find.text('Recipient'), findsOneWidget);
-    expect(find.text('Someone else'), findsOneWidget);
-    expect(find.text('Left at location'), findsOneWidget);
+    expect(find.text('Relationship or role'), findsOneWidget);
+    expect(find.byKey(const Key('handoff-recipient')), findsNothing);
     await tester.scrollUntilVisible(
       find.byKey(const Key('complete-delivery')),
       400,

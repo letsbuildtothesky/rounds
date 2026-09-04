@@ -810,6 +810,61 @@
       "actions": { "primaryHeight": 60, "compactPrimaryHeight": 56, "shortPrimaryHeight": 52, "secondaryHeight": 48, "shortSecondaryHeight": 44, "radius": 7 },
       "short": { "breakpointHeight": 740 }
     },
+    "F01F02": {
+      "sourceEnglish": "ux/driver/en/screens/ROUNDS-F01-F02-DROPOFF-HANDOFF-v3-10OF10.html",
+      "sourceThai": "ux/driver/th/ROUNDS-F01-F02-DROPOFF-HANDOFF-TH-v1-10OF10.html",
+      "topBar": { "englishHeight": 60, "thaiHeight": 62, "thaiCompactHeight": 60 },
+      "content": {
+        "paddingHorizontal": 18,
+        "compactPaddingHorizontal": 15,
+        "englishPaddingTop": 26,
+        "englishCompactPaddingTop": 22,
+        "englishShortPaddingTop": 20,
+        "englishPaddingBottom": 28,
+        "thaiPaddingTop": 24,
+        "thaiCompactPaddingTop": 20,
+        "thaiShortPaddingTop": 18,
+        "thaiPaddingBottom": 27
+      },
+      "hero": {
+        "englishSize": 32,
+        "englishCompactSize": 29,
+        "thaiSize": 36,
+        "thaiCompactSize": 31,
+        "englishPaddingBottom": 22,
+        "thaiPaddingBottom": 20,
+        "shortPaddingBottom": 15,
+        "englishPlaceGap": 12,
+        "thaiPlaceGap": 8
+      },
+      "package": { "englishMinHeight": 58, "thaiMinHeight": 60, "compactMinHeight": 55 },
+      "section": {
+        "englishMarginTop": 24,
+        "thaiMarginTop": 22,
+        "compactMarginTop": 18,
+        "shortMarginTop": 16,
+        "englishMarginBottom": 9,
+        "thaiMarginBottom": 7
+      },
+      "choice": {
+        "englishMinHeight": 92,
+        "englishCompactMinHeight": 84,
+        "thaiMinHeight": 88,
+        "thaiCompactMinHeight": 80,
+        "shortMinHeight": 74
+      },
+      "contact": {
+        "englishMarginTop": 30,
+        "thaiMarginTop": 26,
+        "compactMarginTop": 20,
+        "shortMarginTop": 17,
+        "englishPaddingTop": 20,
+        "thaiPaddingTop": 17,
+        "compactPaddingTop": 14,
+        "shortPaddingTop": 12
+      },
+      "short": { "breakpointHeight": 700 }
+    },
     "F08": {
       "source": "ux/driver/en/screens/ROUNDS-F08-STOP-COMPLETE-NEXT-STOP-v4-10OF10.html",
       "completeBar": {
