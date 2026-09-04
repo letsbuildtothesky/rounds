@@ -10,7 +10,7 @@
   navigation entry.
 - Keeps Dispatch and the real Mapbox operating map visible while contacting a
   driver.
-- Opens the existing server-backed thread as the v45 compact 420 px window.
+- Opens the existing server-backed thread as the v45 compact 438 px window.
 - Keeps the Round/exception drawer beside Communications on wide desktop.
 - Uses the constrained-width overlay rule rather than squeezing two permanent
   panels onto a smaller board.

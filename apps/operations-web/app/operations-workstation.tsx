@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type {
   OperationsActionException,
   OperationsActionProjection,
@@ -14,7 +14,7 @@ import type {
   PlanningRoutePreview,
   UnplannedDeliverySummary,
 } from "@rounds/contracts";
-import { OperationsMap, type OperationsMapCamera, type OperationsMapMode } from "./operations-map";
+import { OperationsMap, type OperationsMapCamera, type OperationsMapHandle, type OperationsMapMode } from "./operations-map";
 import { OperationsMenuIcon, OperationsSectionSheet, type OperationsSectionKey } from "./operations-section-sheet";
 import { DeliveriesWorkspace } from "./deliveries-workspace";
 import { DriversWorkspace } from "./drivers-workspace";
@@ -119,8 +119,10 @@ const exceptionLabels: Record<OperationsActionException["category"], string> = {
 };
 
 const mapModeCopy: Record<OperationsMapMode, { label: string; description: string; hint: string }> = {
-  operations: { label: "Operations", description: "Live driver and destination positions only", hint: "server-backed positions only" },
+  operations: { label: "Operations", description: "Quiet map · routes and decisions first", hint: "routes and decisions first" },
   satellite: { label: "Satellite", description: "Real-world aerial imagery for access and site checks", hint: "inspect real-world access" },
+  site: { label: "3D Site", description: "Close building-level view · approach + handoff", hint: "building + approach + handoff" },
+  street: { label: "Street", description: "Street-level imagery · Google preferred / Mapillary fallback", hint: "street imagery provider view" },
 };
 
 function shortTime(value: string, timezone: string): string {
@@ -180,6 +182,7 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
   const [mapMode, setMapMode] = useState<OperationsMapMode>("operations");
   const [mapMenuOpen, setMapMenuOpen] = useState(false);
   const [mapCamera, setMapCamera] = useState<OperationsMapCamera>({ bearing: 0, pitch: 0 });
+  const operationsMapRef = useRef<OperationsMapHandle>(null);
   const [mapHint, setMapHint] = useState("");
   const [roundDetailId, setRoundDetailId] = useState("");
 
@@ -296,6 +299,33 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
     if (tab === "action") return buckets.action.filter((item) => !needle || `${item.deliveryReference} ${item.recipientName} ${item.rawAddress}`.toLowerCase().includes(needle));
     return buckets[tab].filter((item) => !needle || `${item.reference} ${item.driverName} ${item.state}`.toLowerCase().includes(needle));
   }, [buckets, query, tab]);
+
+  const mapPlanningDeliveries = useMemo(
+    () => planning?.unplannedDeliveries.filter((delivery) => delivery.serviceDate === planningDate) ?? [],
+    [planning, planningDate],
+  );
+
+  const handleMapCameraChange = useCallback((camera: OperationsMapCamera) => {
+    setMapCamera((current) => Math.abs(current.bearing - camera.bearing) < 0.01 && Math.abs(current.pitch - camera.pitch) < 0.01 ? current : camera);
+  }, []);
+
+  const streetContext = useMemo(() => {
+    if (selection?.kind === "exception") {
+      return { title: `${selection.item.deliveryReference} · ${selection.item.recipientName}`, address: selection.item.rawAddress, coordinate: selection.item.coordinate ?? { latitude: 13.735, longitude: 100.5598 } };
+    }
+    if (selection?.kind === "delivery") {
+      return { title: `${selection.item.reference} · ${selection.item.recipientName}`, address: selection.item.rawAddress, coordinate: selection.item.coordinate ?? { latitude: 13.735, longitude: 100.5598 } };
+    }
+    if (selection?.kind === "round" && selection.item.currentPosition) {
+      return { title: `${selection.item.reference} · ${selection.item.driverName}`, address: "Current server-reported driver position", coordinate: selection.item.currentPosition };
+    }
+    const fallback = projection?.exceptions.find((item) => item.coordinate);
+    return {
+      title: fallback ? `${fallback.deliveryReference} · ${fallback.recipientName}` : "Bangkok operations area",
+      address: fallback?.rawAddress ?? "Select a delivery or driver marker for a precise street viewpoint.",
+      coordinate: fallback?.coordinate ?? { latitude: 13.735, longitude: 100.5598 },
+    };
+  }, [projection, selection]);
 
   const activeRounds = buckets.live.length;
   const chosenDeliveries = useMemo(() => planning?.unplannedDeliveries.filter((delivery) => selectedStops.includes(delivery.stopId)) ?? [], [planning, selectedStops]);
@@ -474,13 +504,14 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
         <div className="v45-map-header"><strong>Bangkok · {dispatchMode === "live" ? "Live" : "Plan"}</strong><span>{dispatchMode === "plan" ? `${planning?.unplannedDeliveries.filter((delivery) => delivery.serviceDate === planningDate).length ?? 0} unplanned` : tab === "action" ? "All deliveries" : `${visible.length} ${tab}`}</span><button type="button" disabled title="Round overview is not connected yet">Rounds</button><button type="button" disabled title="Automatic planning is not connected yet"><i />Manual</button><div className="v45-spacer" /><em><i />{stale ? "Connection delayed" : dispatchMode === "plan" ? "Draft only" : "On time"}</em><span>{dispatchMode === "plan" ? `${selectedStops.length} selected · not approved` : <>Live rounds <b>{activeRounds}</b></>}</span></div>
         <div className="v45-map-body" onClick={() => setMapMenuOpen(false)}>
           <OperationsMap
+            ref={operationsMapRef}
             mode={dispatchMode}
             mapMode={mapMode}
             rounds={projection?.rounds ?? []}
             exceptions={projection?.exceptions ?? []}
-            planningDeliveries={planning?.unplannedDeliveries.filter((delivery) => delivery.serviceDate === planningDate) ?? []}
+            planningDeliveries={mapPlanningDeliveries}
             routeGeometry={routePreview?.geometry}
-            onCameraChange={setMapCamera}
+            onCameraChange={handleMapCameraChange}
             onSelectRound={(round) => { setDispatchMode("live"); setTab(round.state === "complete" ? "done" : round.state === "active" ? "live" : "ready"); setSelection({ kind: "round", item: round }); }}
             onSelectException={(item) => { setDispatchMode("live"); setTab("action"); setSelection({ kind: "exception", item }); }}
             onSelectDelivery={(item) => { setDispatchMode("plan"); setSelection({ kind: "delivery", item }); }}
@@ -488,22 +519,29 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
           <div className="v45-map-mode" onClick={(event) => event.stopPropagation()}>
             <button type="button" aria-haspopup="menu" aria-expanded={mapMenuOpen} onClick={() => setMapMenuOpen((open) => !open)}>{mapModeCopy[mapMode].label}<span>▾</span></button>
             <div className={`v45-map-mode-menu ${mapMenuOpen ? "open" : ""}`} role="menu">
-              {(["operations", "satellite"] as OperationsMapMode[]).map((item) => <button key={item} type="button" role="menuitemradio" aria-checked={mapMode === item} className={mapMode === item ? "on" : ""} onClick={() => { setMapMode(item); setMapMenuOpen(false); }}><b>{mapModeCopy[item].label}</b><span>{mapModeCopy[item].description}</span></button>)}
+              {(["operations", "satellite", "site", "street"] as OperationsMapMode[]).map((item) => <button key={item} type="button" role="menuitemradio" aria-checked={mapMode === item} className={mapMode === item ? "on" : ""} onClick={() => { setMapMode(item); setMapMenuOpen(false); }}><b>{mapModeCopy[item].label}</b><span>{mapModeCopy[item].description}</span></button>)}
+              <button className="v45-map-layer" type="button" disabled><span><b>Weather layer</b><small>Requires a live weather feed</small></span><em>NOT CONNECTED</em></button>
+              <button className="v45-map-layer" type="button" disabled><span><b>Network supply</b><small>Requires approved network-capacity data</small></span><em>NOT CONNECTED</em></button>
             </div>
           </div>
           {demoMode && <div className="v45-preview-badge"><b>PREVIEW DATA</b><span>Positions shown here are UX samples, not live drivers.</span></div>}
-          {!demoMode && !loading && <div className="v45-map-truth"><b>{routePreview ? "Server-routed proposal" : "Live map truth"}</b><span>{routePreview ? `${(routePreview.distanceMeters / 1000).toFixed(1)} km · ${Math.ceil(routePreview.durationSeconds / 60)} min · ${routePreview.provider.profile}` : "Only server-reported driver positions and saved destination pins are shown."}</span></div>}
           {mapHint && <div className="v45-map-hint"><strong>{mapHint.split(" · ")[0]}</strong> · {mapHint.split(" · ").slice(1).join(" · ")}</div>}
-          <div className="v45-legend"><span><i className="own" />Driver position</span><span><i className="destination" />Destination</span></div>
-          <button className="v45-focus" type="button" onClick={() => window.dispatchEvent(new CustomEvent("rounds-map-control", { detail: "focus" }))}><FocusIcon />Focus map</button>
+          {mapMode !== "street" && <><div className="v45-legend"><span><i className="own" />Own</span><span><i className="network" />Network</span><span><i className="external" />External</span><span><i className="traffic" />Traffic impact</span></div>
+          <button className="v45-focus" type="button" onClick={() => operationsMapRef.current?.control("focus")}><FocusIcon />Focus map</button>
           <div className="v45-camera">
-            <button type="button" title="Zoom in" onClick={() => window.dispatchEvent(new CustomEvent("rounds-map-control", { detail: "zoom-in" }))}>+</button>
-            <button type="button" title="Zoom out" onClick={() => window.dispatchEvent(new CustomEvent("rounds-map-control", { detail: "zoom-out" }))}>−</button>
-            <button type="button" title="Rotate left" onClick={() => window.dispatchEvent(new CustomEvent("rounds-map-control", { detail: "rotate-left" }))}>↶</button>
-            <button type="button" className="compass" title="Return North" onClick={() => window.dispatchEvent(new CustomEvent("rounds-map-control", { detail: "north" }))}><span style={{ transform: `rotate(${-mapCamera.bearing}deg)` }}>↑</span><small>{Math.round((mapCamera.bearing % 360 + 360) % 360)}°</small></button>
-            <button type="button" title="Rotate right" onClick={() => window.dispatchEvent(new CustomEvent("rounds-map-control", { detail: "rotate-right" }))}>↷</button>
-            <button type="button" className={mapCamera.pitch >= 20 ? "on" : ""} title="Toggle 2D / 3D" onClick={() => window.dispatchEvent(new CustomEvent("rounds-map-control", { detail: "toggle-pitch" }))}>{mapCamera.pitch >= 20 ? "2D" : "3D"}</button>
-          </div>
+            <button type="button" title="Zoom in" onClick={() => operationsMapRef.current?.control("zoom-in")}>+</button>
+            <button type="button" title="Zoom out" onClick={() => operationsMapRef.current?.control("zoom-out")}>−</button>
+            <button type="button" title="Rotate left" onClick={() => operationsMapRef.current?.control("rotate-left")}>↶</button>
+            <button type="button" className="compass" title="Return North" onClick={() => operationsMapRef.current?.control("north")}><span style={{ transform: `rotate(${-mapCamera.bearing}deg)` }}>↑</span><small>{Math.round((mapCamera.bearing % 360 + 360) % 360)}°</small></button>
+            <button type="button" title="Rotate right" onClick={() => operationsMapRef.current?.control("rotate-right")}>↷</button>
+            <button type="button" className={mapCamera.pitch >= 20 ? "on" : ""} title="Toggle 2D / 3D" onClick={() => {
+              operationsMapRef.current?.control(mapCamera.pitch >= 20 ? "pitch-2d" : "pitch-3d");
+            }}>{mapCamera.pitch >= 20 ? "2D" : "3D"}</button>
+          </div></>}
+          {mapMode === "street" && <div className="v45-street-panel">
+            <section><div><small>STREET IMAGERY</small><h2>See the entrance before the driver arrives.</h2><p>Street imagery is supplied by a separate provider from the Rounds Mapbox map. Open the selected, real coordinate in Google Street View; Mapillary remains the fallback when coverage is missing.</p><article><span><b>Google Street View</b><small>Preferred provider · consistent Bangkok coverage</small></span><em>RECOMMENDED</em></article><article><span><b>Mapillary</b><small>Free crowdsourced imagery · coverage varies by street</small></span><em>FALLBACK</em></article></div></section>
+            <aside><small>SELECTED SITE</small><h3>{streetContext.title}</h3><p>{streetContext.address}</p><dl><div><dt>Latitude</dt><dd>{streetContext.coordinate.latitude.toFixed(6)}</dd></div><div><dt>Longitude</dt><dd>{streetContext.coordinate.longitude.toFixed(6)}</dd></div><div><dt>Source</dt><dd>Saved operational coordinate</dd></div></dl><button className="primary" type="button" onClick={() => window.open(`https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${streetContext.coordinate.latitude},${streetContext.coordinate.longitude}`, "_blank", "noopener,noreferrer")}>Open Google Street View</button><button type="button" onClick={() => setMapMode("operations")}>Back to Operations map</button></aside>
+          </div>}
         </div>
 
         {dispatchMode === "plan" && <PlanningTimeline

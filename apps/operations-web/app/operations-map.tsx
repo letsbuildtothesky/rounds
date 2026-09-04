@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import mapboxgl, { type LngLatLike, type Map as MapboxMap } from "mapbox-gl";
 import type { OperationsActionException, OperationsRoundSummary, UnplannedDeliverySummary } from "@rounds/contracts";
 
-export type OperationsMapMode = "operations" | "satellite";
+export type OperationsMapMode = "operations" | "satellite" | "site" | "street";
 export type OperationsMapCamera = { bearing: number; pitch: number };
+export type OperationsMapControl = "focus" | "zoom-in" | "zoom-out" | "rotate-left" | "rotate-right" | "north" | "pitch-2d" | "pitch-3d";
+export type OperationsMapHandle = { control: (action: OperationsMapControl) => void };
 
 type Props = {
   mode: "live" | "plan";
@@ -20,8 +22,6 @@ type Props = {
   onSelectDelivery: (delivery: UnplannedDeliverySummary) => void;
 };
 
-type MapControl = "focus" | "zoom-in" | "zoom-out" | "rotate-left" | "rotate-right" | "north" | "toggle-pitch";
-
 const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? "";
 const bangkokCenter: [number, number] = [100.5598, 13.735];
 
@@ -31,11 +31,27 @@ function initials(name: string): string {
 
 function styleForMode(mode: OperationsMapMode): string {
   return mode === "satellite"
-    ? "mapbox://styles/mapbox/satellite-streets-v12"
-    : "mapbox://styles/mapbox/light-v11";
+    ? "mapbox://styles/mapbox/standard-satellite"
+    : "mapbox://styles/mapbox/standard";
 }
 
-export function OperationsMap({ mode, mapMode, rounds, exceptions, planningDeliveries, routeGeometry, onCameraChange, onSelectRound, onSelectException, onSelectDelivery }: Props) {
+function styleConfig(mode: OperationsMapMode) {
+  return {
+    basemap: {
+      theme: mode === "satellite" ? "default" : "faded",
+      lightPreset: "day",
+      showPointOfInterestLabels: false,
+      showTransitLabels: false,
+      showPedestrianRoads: false,
+      show3dObjects: mode === "site",
+      showPlaceLabels: true,
+      showRoadLabels: true,
+      showAdminBoundaries: false,
+    },
+  };
+}
+
+export const OperationsMap = forwardRef<OperationsMapHandle, Props>(function OperationsMap({ mode, mapMode, rounds, exceptions, planningDeliveries, routeGeometry, onCameraChange, onSelectRound, onSelectException, onSelectDelivery }, ref) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MapboxMap | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
@@ -45,6 +61,38 @@ export function OperationsMap({ mode, mapMode, rounds, exceptions, planningDeliv
   const [state, setState] = useState<"loading" | "ready" | "error">(token ? "loading" : "error");
 
   callbacksRef.current = { onCameraChange, onSelectRound, onSelectException, onSelectDelivery };
+
+  useImperativeHandle(ref, () => ({
+    control(action) {
+      const map = mapRef.current;
+      if (!map) return;
+      if (action === "zoom-in") map.zoomIn({ duration: 180 });
+      if (action === "zoom-out") map.zoomOut({ duration: 180 });
+      if (action === "rotate-left") {
+        const bearing = map.getBearing() - 20;
+        map.easeTo({ bearing, duration: 220 });
+        callbacksRef.current.onCameraChange({ bearing, pitch: map.getPitch() });
+      }
+      if (action === "rotate-right") {
+        const bearing = map.getBearing() + 20;
+        map.easeTo({ bearing, duration: 220 });
+        callbacksRef.current.onCameraChange({ bearing, pitch: map.getPitch() });
+      }
+      if (action === "north") {
+        map.easeTo({ bearing: 0, duration: 300 });
+        callbacksRef.current.onCameraChange({ bearing: 0, pitch: map.getPitch() });
+      }
+      if (action === "pitch-2d" || action === "pitch-3d") {
+        const pitch = action === "pitch-2d" ? 0 : 52;
+        map.easeTo({ pitch, duration: 350 });
+        callbacksRef.current.onCameraChange({ bearing: map.getBearing(), pitch });
+      }
+      if (action === "focus") {
+        if (boundsRef.current) map.fitBounds(boundsRef.current, { padding: { top: 95, right: 90, bottom: 80, left: 90 }, maxZoom: 14.5, duration: 500 });
+        else map.easeTo({ center: bangkokCenter as LngLatLike, zoom: 12.55, pitch: 0, bearing: 0, duration: 450 });
+      }
+    },
+  }), []);
 
   useEffect(() => {
     if (!containerRef.current || !token || mapRef.current) return;
@@ -62,6 +110,7 @@ export function OperationsMap({ mode, mapMode, rounds, exceptions, planningDeliv
         minZoom: 10,
         maxZoom: 19,
         logoPosition: "bottom-left",
+        config: styleConfig("operations"),
       });
     } catch {
       setState("error");
@@ -69,22 +118,7 @@ export function OperationsMap({ mode, mapMode, rounds, exceptions, planningDeliv
     }
     mapRef.current = map;
     const publishCamera = () => callbacksRef.current.onCameraChange({ bearing: map.getBearing(), pitch: map.getPitch() });
-    const focus = () => {
-      if (boundsRef.current) map.fitBounds(boundsRef.current, { padding: { top: 95, right: 90, bottom: 80, left: 90 }, maxZoom: 14.5, duration: 500 });
-      else map.easeTo({ center: bangkokCenter as LngLatLike, zoom: 12.55, pitch: 0, bearing: 0, duration: 450 });
-    };
-    const handleControl = (event: Event) => {
-      const action = (event as CustomEvent<MapControl>).detail;
-      if (action === "zoom-in") map.zoomIn({ duration: 180 });
-      if (action === "zoom-out") map.zoomOut({ duration: 180 });
-      if (action === "rotate-left") map.easeTo({ bearing: map.getBearing() - 20, duration: 220 });
-      if (action === "rotate-right") map.easeTo({ bearing: map.getBearing() + 20, duration: 220 });
-      if (action === "north") map.easeTo({ bearing: 0, duration: 300 });
-      if (action === "toggle-pitch") map.easeTo({ pitch: map.getPitch() < 20 ? 52 : 0, duration: 350 });
-      if (action === "focus") focus();
-    };
-    window.addEventListener("rounds-map-control", handleControl);
-    map.on("move", publishCamera);
+    map.on("moveend", publishCamera);
     map.on("load", () => {
       setState("ready");
       publishCamera();
@@ -93,7 +127,6 @@ export function OperationsMap({ mode, mapMode, rounds, exceptions, planningDeliv
     return () => {
       markersRef.current.forEach((marker) => marker.remove());
       markersRef.current = [];
-      window.removeEventListener("rounds-map-control", handleControl);
       map.remove();
       mapRef.current = null;
     };
@@ -104,13 +137,17 @@ export function OperationsMap({ mode, mapMode, rounds, exceptions, planningDeliv
     if (!map || state !== "ready" || appliedModeRef.current === mapMode) return;
     appliedModeRef.current = mapMode;
     setState("loading");
-    map.setStyle(styleForMode(mapMode));
-    map.once("style.load", () => setState("ready"));
+    map.setStyle(styleForMode(mapMode), {
+      config: styleConfig(mapMode),
+      localFontFamily: undefined,
+      localIdeographFontFamily: undefined,
+    });
+    map.once("idle", () => setState("ready"));
   }, [mapMode, state]);
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || state !== "ready") return;
+    if (!map || state !== "ready" || !map.isStyleLoaded()) return;
     const sourceId = "rounds-proposed-route";
     const source = map.getSource(sourceId) as mapboxgl.GeoJSONSource | undefined;
     const data = { type: "Feature" as const, properties: {}, geometry: routeGeometry ?? { type: "LineString" as const, coordinates: [] } };
@@ -124,7 +161,7 @@ export function OperationsMap({ mode, mapMode, rounds, exceptions, planningDeliv
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || state !== "ready") return;
+    if (!map || state !== "ready" || !map.isStyleLoaded()) return;
     markersRef.current.forEach((marker) => marker.remove());
     markersRef.current = [];
 
@@ -149,7 +186,7 @@ export function OperationsMap({ mode, mapMode, rounds, exceptions, planningDeliv
       coordinates.push(coordinate);
       const element = document.createElement("button");
       element.type = "button";
-      element.className = "v45-mapbox-stop";
+      element.className = `v45-mapbox-stop${mode === "plan" ? " planning" : ""}`;
       element.textContent = String(index + 1);
       element.title = item.recipientName;
       element.addEventListener("click", () => {
@@ -163,10 +200,15 @@ export function OperationsMap({ mode, mapMode, rounds, exceptions, planningDeliv
     const focusCoordinates = routeCoordinates.length ? routeCoordinates : coordinates;
     if (focusCoordinates.length) {
       boundsRef.current = focusCoordinates.reduce((bounds, coordinate) => bounds.extend(coordinate), new mapboxgl.LngLatBounds(focusCoordinates[0], focusCoordinates[0]));
-      map.fitBounds(boundsRef.current, { padding: { top: 95, right: 90, bottom: 80, left: 90 }, maxZoom: 14.5, duration: 650 });
+      if (mapMode === "site") {
+        const siteCoordinate = coordinates.at(-1) ?? focusCoordinates.at(-1)!;
+        map.flyTo({ center: siteCoordinate, zoom: 17.2, pitch: 52, bearing: map.getBearing(), duration: 900, essential: true });
+      } else if (mapMode !== "street") {
+        map.fitBounds(boundsRef.current, { padding: { top: 95, right: 90, bottom: 80, left: 90 }, maxZoom: 14.5, pitch: 0, duration: 650 });
+      }
     } else {
       boundsRef.current = null;
-      map.easeTo({ center: bangkokCenter as LngLatLike, zoom: 12.55, duration: 450 });
+      map.easeTo({ center: bangkokCenter as LngLatLike, zoom: mapMode === "site" ? 16.5 : 12.55, pitch: mapMode === "site" ? 52 : 0, duration: 450 });
     }
   }, [exceptions, mapMode, mode, planningDeliveries, rounds, routeGeometry, state]);
 
@@ -175,4 +217,4 @@ export function OperationsMap({ mode, mapMode, rounds, exceptions, planningDeliv
     {state === "loading" && <div className="v45-mapbox-state"><b>Loading Mapbox</b><span>Preparing the selected basemap…</span></div>}
     {state === "error" && <div className="v45-mapbox-state error"><b>Map service unavailable</b><span>Dispatch remains usable; no substitute geography is drawn.</span></div>}
   </>;
-}
+});

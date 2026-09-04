@@ -7,10 +7,21 @@
 
 ## Changelog
 
+- **2026-09-04 · Checkpoint 37:** Aligns the Dispatch shell and embedded
+  Communications window to the canonical final v45 override measurements,
+  including the 438 × 650 px desktop conversation surface, flat Live/Plan
+  tabs, responsive rail/drawer geometry, marker language and map controls.
+  The operating map now uses Mapbox Standard with the specified faded
+  Operations presentation, Standard Satellite for real aerial imagery, real
+  building-level 3D and deterministic zoom/rotation/north/pitch/focus
+  controls. Street mode hands the selected saved coordinate to Google Street
+  View with Mapillary stated as fallback. Weather and network-supply layers
+  remain visibly unavailable until their real data sources exist; no fake
+  operational layer is rendered.
 - **2026-09-04 · Checkpoint 36:** Removes the non-canonical standalone
   Communications workspace from desktop and responsive navigation. Real
   Operations messaging now opens inside the v45 Dispatch map as the specified
-  compact 420 px conversation window, coexists beside the contextual drawer
+  compact 438 px conversation window, coexists beside the contextual drawer
   at wide desktop widths, becomes the dominant overlay at constrained widths,
   and minimizes into a persistent bottom conversation tray. The original
   message/media backend and offline draft behavior are retained rather than
