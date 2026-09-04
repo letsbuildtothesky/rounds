@@ -217,6 +217,36 @@ test("requires verified photo identity for a delivery damage problem", () => {
       mediaAssetId: "not-a-uuid",
     },
   }), ContractError);
+  assert.throws(() => validateReportDeliveryProblemCommand({
+    schemaVersion: 1,
+    commandType: "stop.report_delivery_problem",
+    commandId: "10000000-0000-4000-8000-000000000101",
+    traceId: "10000000-0000-4000-8000-000000000102",
+    idempotencyKey: "delivery-problem:wrong:stop-1",
+    tenantId: "10000000-0000-4000-8000-000000000001",
+    aggregateId: "10000000-0000-4000-8000-000000000011",
+    expectedVersion: 5,
+    payload: {
+      manifestId: "10000000-0000-4000-8000-000000000012",
+      manifestVersion: 1,
+      category: "wrong_item",
+    },
+  }), ContractError);
+  assert.doesNotThrow(() => validateReportDeliveryProblemCommand({
+    schemaVersion: 1,
+    commandType: "stop.report_delivery_problem",
+    commandId: "10000000-0000-4000-8000-000000000101",
+    traceId: "10000000-0000-4000-8000-000000000102",
+    idempotencyKey: "delivery-problem:missing:stop-1",
+    tenantId: "10000000-0000-4000-8000-000000000001",
+    aggregateId: "10000000-0000-4000-8000-000000000011",
+    expectedVersion: 5,
+    payload: {
+      manifestId: "10000000-0000-4000-8000-000000000012",
+      manifestVersion: 1,
+      category: "missing_item",
+    },
+  }));
 });
 
 test("accepts only a typed driver emergency safety status", () => {

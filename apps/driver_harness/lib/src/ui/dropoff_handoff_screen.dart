@@ -219,6 +219,7 @@ class DropoffHandoffScreen extends StatelessWidget {
             podBuilder?.call(selection) ??
             ProofOfDeliveryScreen(
               controller: controller,
+              round: round,
               stop: stop,
               stopCount: stopCount,
               handoff: selection,

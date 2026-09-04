@@ -17,6 +17,7 @@ typedef DeliveryPhotoCapture = Future<XFile?> Function();
 class ProofOfDeliveryScreen extends StatefulWidget {
   const ProofOfDeliveryScreen({
     required this.controller,
+    required this.round,
     required this.stop,
     this.stopCount = 1,
     this.handoff = const DriverHandoffSelection.recipient(),
@@ -26,6 +27,7 @@ class ProofOfDeliveryScreen extends StatefulWidget {
   });
 
   final HarnessAppController controller;
+  final DriverRoundModel round;
   final DriverRoundStopModel stop;
   final int stopCount;
   final DriverHandoffSelection handoff;
@@ -155,6 +157,7 @@ class _ProofOfDeliveryScreenState extends State<ProofOfDeliveryScreen> {
                                         builder: (_) =>
                                             DeliveryPackageProblemScreen(
                                               controller: widget.controller,
+                                              round: widget.round,
                                               stop: widget.stop,
                                             ),
                                       ),

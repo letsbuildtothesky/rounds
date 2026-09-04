@@ -7,6 +7,10 @@
 
 ## Changelog
 
+- **2026-09-04 · Checkpoint 27:** Completes the canonical English/Thai G03
+  package-problem subtype surface, exact generated geometry, durable category
+  handling and database/API acceptance rules. Functional status remains
+  `VERIFIED`; physical visual and live multi-subtype acceptance remain open.
 - **2026-09-04 · Checkpoint 26:** Records canonical English/Thai D03/D04
   localization, responsive Thai verification and the remaining unlocked-device
   acceptance boundary. Coverage scores are unchanged because functional status
@@ -111,7 +115,7 @@ Canonical inventory: `specs/product/ROUNDS-DRIVER-CANONICAL-MANIFEST-v6.md` and 
 | F08 Stop complete / next Stop | Pilot P0 | `VERIFIED` | Multi-stop continuation and golden geometry coverage exist. | Physical multi-stop acceptance with real server data. |
 | G01 Recipient unavailable | Slice 2 P0 | `PARTIAL` | The measured canonical G01 opens from the delivery issue drawer, launches the real native dialer, retains an authenticated/audited call-attempt ledger, changes to a second-call action after one failed attempt and exposes the real Operations contact channel after two. It never invents a waiting or approved decision. | Define GAP-006 custody outcomes, then add a typed recipient-unavailable hold, real Operations decision and recovery state. |
 | G02 Address/pin/entrance problem | Slice 2 P0 | `PARTIAL` | Canonical measured G02 opens from pickup navigation and the delivery issue flow, captures optional real device-location evidence and survives restart/offline through the durable command outbox. A typed versioned/idempotent server command snapshots the authoritative expected location, preserves destination/manifest truth, opens an audited Operations hold and projects the comparison into v45. The separate authorized E04–E06 live-change command now versions destination changes and Driver acknowledgement without weakening the hold. | Define the remaining GAP-006 exception-resolution outcome, then connect an explicit Operations correction decision to the live-change boundary before releasing the hold. Pickup-location mutation authority remains undefined and is not inferred. |
-| G03 Package problem | Pilot/Slice 2 P0 | `VERIFIED` | Damage photo retention/outbox, authenticated upload, audited Operations hold, return confirmation and terminal reconciliation exist. | Complete all canonical package subtypes and final device visual acceptance. |
+| G03 Package problem | Pilot/Slice 2 P0 | `VERIFIED` | The English and Thai canonical initial, evidence and waiting states now use generated board measurements, the supplied bottom action drawer and real Stop/manifest truth. Damaged, missing and wrong-package categories are typed end to end; damaged/wrong require retained, verified photo evidence while missing explicitly submits without fabricating a photo. Category/photo drafts survive restart, all three open the existing audited Operations hold, and migration `202609040002` is applied remotely. Automated geometry, localization, contract, API and outbox coverage passes. An English Samsung debug-preview pass covered initial, damage-evidence and action-drawer composition and exposed the now-fixed photo-width defect. | Complete Thai and waiting-state physical visual acceptance plus live damaged/missing/wrong submissions against an arrived Stop. The only defined terminal reconciliation remains the existing physical damaged-item return; no missing/wrong Operations outcome is invented before GAP-006 is closed. |
 | G04 Cannot complete | Slice 2 P0 | `PARTIAL` | The supplied measured G04 now opens from the delivery issue drawer with the canonical no-access/refused/closed/other reasons, real recipient dialing, durable Driver-selected contact evidence and a durable structured Operations message. Its waiting state truthfully preserves Driver custody and never invents a return, continuation or approved decision. | Define GAP-006 custody outcomes, then add a typed cannot-complete hold, real Operations disposition and recovery state. |
 | G05 Emergency | Slice 2 P0 | `PARTIAL` | The canonical measured G05 opens from the issue drawer, requires one explicit safe/urgent status before dismissal, captures optional real position without blocking safety reporting, survives offline through the command outbox and commits an immutable emergency event plus protected priority Operations hold/thread. Urgent help exposes explicit 1669/191 dialer handoffs, while Driver and Operations surfaces never invent acknowledgement, reassignment or release. | GAP-006 must define Operations acknowledgement, escalation ownership, reassignment and audited hold release before the flow can become verified; physical-device and real Driver-to-Operations acceptance remain open. |
 | H01 Operations chat | Pilot P1 | `VERIFIED` | Persistent Team Driver ↔ Operations text thread works through the server. | Offline draft/send state and attachment support. |
@@ -229,11 +233,20 @@ This sequence does not promote later slices; it orders the already authorized En
 - **D1 launch/language surface implemented 2026-09-03:** canonical A01 timing/animation and Thai-first A01B English/Thai geometry now use generated board measurements. Local pre-auth locale persistence, returning-Driver bypass and 320 px Thai layout are covered automatically; authenticated profile sync, all-active-screen string coverage and physical acceptance remain open.
 - **D4 POD canonical parity implemented 2026-09-04:** F03/F04 now uses generated measurements from the supplied English/Thai boards, transmits only explicitly confirmed delivery-manifest lines and preserves the already accepted retained/resumable photo and atomic completion path. Unsupported conditional signature/GPS claims remain isolated under GAP-014. The next authorized closure is physical F03/F04 English/Thai and degraded-network acceptance, followed by the remaining active-screen localization pass.
 - **D5 D03/D04 localization completed 2026-09-04:** pickup confirmation, manifest handling, problem reporting and sync/error states now resolve through one English/Thai copy authority based on the supplied boards. A Thai reference-width interaction test exposed and closed two real narrow-layout overflows. All 123 Driver tests, Flutter analysis and the Android build pass; the APK is installed on the connected Samsung, with unlocked physical comparison still open.
+- **D6 G03 subtype parity completed 2026-09-04:** G03 now implements the
+  supplied English/Thai initial, evidence and waiting compositions from one
+  generated metrics contract. Damaged, missing and wrong-package commands are
+  typed through Flutter, API contracts and PostgreSQL; photo evidence is
+  required only where the boards require it. The remote database migration,
+  automated geometry/localization tests and Android install pass. Physical
+  screen comparison and live arrived-Stop acceptance remain open, and no
+  unsupported GAP-006 decision state is exposed.
 - Complete assigned-Round offline read cache and consolidated sync truth.
 - Finish N01/N02/N03 recovery states.
 - Run golden/reference-viewport comparisons for every in-scope board.
 - Run physical multi-stop, degraded-network, background, battery and motorcycle road acceptance.
-- Continue the remaining active-screen localization pass with canonical G03 package-problem states; do not promote unsupported exception outcomes.
+- Complete physical English/Thai G03 comparison and live subtype acceptance;
+  do not promote unsupported exception outcomes.
 
 ### Checkpoint E — Thai implementation and production gates
 

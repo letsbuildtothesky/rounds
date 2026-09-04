@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:rounds_driver_harness/src/app/driver_design_system.dart';
 import 'package:rounds_driver_harness/src/app/harness_app_controller.dart';
+import 'package:rounds_driver_harness/src/ui/assigned_round_screen.dart';
 import 'package:rounds_driver_harness/src/driver/driver_handoff_selection.dart';
 import 'package:rounds_driver_harness/src/driver/driver_session.dart';
 import 'package:rounds_driver_harness/src/storage/pod_draft_photo_store.dart';
@@ -227,6 +228,7 @@ class _PodFixture {
     theme: buildRoundsDriverTheme(),
     home: ProofOfDeliveryScreen(
       controller: controller,
+      round: AssignedRoundScreen.demoRound,
       stop: _stop,
       stopCount: 4,
       handoff: handoff,

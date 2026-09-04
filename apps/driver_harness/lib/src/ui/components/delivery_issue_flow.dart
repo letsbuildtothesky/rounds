@@ -46,7 +46,9 @@ Future<bool> openDeliveryIssueFlow(
           MaterialPageRoute(
             builder: (_) => DeliveryPackageProblemScreen(
               controller: controller,
+              round: round,
               stop: stop,
+              initialCategory: DeliveryPackageProblemCategory.damaged,
               initialNote: draft.note,
             ),
           ),

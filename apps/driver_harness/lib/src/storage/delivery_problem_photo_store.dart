@@ -34,6 +34,17 @@ class DeliveryProblemPhotoStore {
   String restoreNote(String stopId) =>
       _preferences.getString(_noteKey(stopId)) ?? '';
 
+  String? restoreCategory(String stopId) =>
+      _preferences.getString(_categoryKey(stopId));
+
+  Future<void> saveCategory(String stopId, String? category) async {
+    if (category == null) {
+      await _preferences.remove(_categoryKey(stopId));
+      return;
+    }
+    await _preferences.setString(_categoryKey(stopId), category);
+  }
+
   Future<void> saveNote(String stopId, String note) async {
     if (note.isEmpty) {
       await _preferences.remove(_noteKey(stopId));
@@ -73,9 +84,20 @@ class DeliveryProblemPhotoStore {
     await Future.wait([
       _preferences.remove(_key(stopId)),
       _preferences.remove(_noteKey(stopId)),
+      _preferences.remove(_categoryKey(stopId)),
     ]);
+  }
+
+  Future<void> clearPhoto(String stopId) async {
+    final savedPath = _preferences.getString(_key(stopId));
+    if (savedPath != null) {
+      final file = File(savedPath);
+      if (await file.exists()) await file.delete();
+    }
+    await _preferences.remove(_key(stopId));
   }
 
   String _key(String stopId) => 'delivery_problem_photo_$stopId';
   String _noteKey(String stopId) => 'delivery_problem_note_$stopId';
+  String _categoryKey(String stopId) => 'delivery_problem_category_$stopId';
 }

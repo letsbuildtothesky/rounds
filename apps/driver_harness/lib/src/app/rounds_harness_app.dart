@@ -5,6 +5,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import '../ui/assigned_round_screen.dart';
 import '../ui/driver_login_screen.dart';
 import '../ui/driver_splash_screen.dart';
+import '../ui/delivery_package_problem_screen.dart';
 import '../ui/dropoff_handoff_screen.dart';
 import '../ui/language_screen.dart';
 import '../ui/live_delivery_change_screen.dart';
@@ -105,6 +106,13 @@ class _RoundsHarnessAppState extends State<RoundsHarnessApp> {
         round: AssignedRoundScreen.demoRound,
         stop: AssignedRoundScreen.demoRound.stops.first,
         stopCount: AssignedRoundScreen.demoRound.stops.length,
+      );
+    }
+    if (!kReleaseMode && _previewScreen == 'package-problem') {
+      return DeliveryPackageProblemScreen(
+        controller: widget.controller,
+        round: AssignedRoundScreen.demoRound,
+        stop: AssignedRoundScreen.demoRound.stops.first,
       );
     }
     if (!_splashComplete) {

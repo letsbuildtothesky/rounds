@@ -324,13 +324,15 @@ class HarnessAppController extends ChangeNotifier {
     ),
   );
 
-  Future<DriverCommandOutcome?> reportDeliveryDamage({
+  Future<DriverCommandOutcome?> reportDeliveryProblem({
     required DriverRoundStopModel stop,
-    required String capturedPhotoPath,
+    required String category,
+    String? capturedPhotoPath,
     String? note,
   }) => _runDriverCommand(
-    () => _driverApi.reportDeliveryDamage(
+    () => _driverApi.reportDeliveryProblem(
       stop: stop,
+      category: category,
       capturedPhotoPath: capturedPhotoPath,
       note: note,
     ),

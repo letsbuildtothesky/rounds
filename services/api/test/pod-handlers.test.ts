@@ -38,6 +38,7 @@ const session: DriverSession = {
 
 class FakePodGateway implements IdentityGateway, PodGateway {
   verificationResult: Record<string, unknown> = { status: "verified" };
+  verificationCalls = 0;
   completed: CompleteStopPodCommand | null = null;
   deliveryProblem: ReportDeliveryProblemCommand | null = null;
   async authenticate(): Promise<AuthenticatedIdentity | null> { return { authUserId: "auth-user" }; }
@@ -50,13 +51,17 @@ class FakePodGateway implements IdentityGateway, PodGateway {
   async prepareExceptionMedia(): Promise<Record<string, unknown>> {
     return { status: "prepared", mediaAssetId, bucket: "pod-evidence", path: "private/exception.jpg", assetState: "staged", tusEndpoint: "https://storage/upload/resumable", uploadAuthorization: "driver_session" };
   }
-  async verifyPodMedia(): Promise<Record<string, unknown>> { return this.verificationResult; }
+  async verifyPodMedia(): Promise<Record<string, unknown>> {
+    this.verificationCalls += 1;
+    return this.verificationResult;
+  }
   async reportDeliveryProblem(command: ReportDeliveryProblemCommand): Promise<ReportDeliveryProblemResult> {
     this.deliveryProblem = command;
     return { status: "committed", aggregateVersion: 6, state: {
-      exceptionId: "10000000-0000-4000-8000-000000000040", mediaAssetId,
+      exceptionId: "10000000-0000-4000-8000-000000000040",
+      ...(command.payload.mediaAssetId ? { mediaAssetId: command.payload.mediaAssetId } : {}),
       stopId, deliveryId: session.currentRound!.stops[0]!.deliveryId,
-      roundId: session.currentRound!.id, category: "damaged_item",
+      roundId: session.currentRound!.id, category: command.payload.category,
       stopState: "exception", deliveryState: "exception",
     }, events: [] };
   }
@@ -151,4 +156,21 @@ test("unuploaded damage evidence never creates an exception", async () => {
   }), stopId, dependencies(gateway));
   assert.equal(response.status, 422);
   assert.equal(gateway.deliveryProblem, null);
+});
+
+test("reports a missing package without fabricating photo evidence", async () => {
+  const gateway = new FakePodGateway();
+  const response = await reportDeliveryProblemHandler(new Request("http://test/delivery-problem", {
+    method: "POST",
+    headers: { authorization: "Bearer token", "content-type": "application/json", "idempotency-key": "delivery-problem:missing:stop-1" },
+    body: JSON.stringify({
+      manifestId: session.currentRound!.stops[0]!.manifestId,
+      manifestVersion: 1,
+      category: "missing_item",
+    }),
+  }), stopId, dependencies(gateway));
+  assert.equal(response.status, 201);
+  assert.equal(gateway.verificationCalls, 0);
+  assert.equal(gateway.deliveryProblem?.payload.category, "missing_item");
+  assert.equal(gateway.deliveryProblem?.payload.mediaAssetId, undefined);
 });

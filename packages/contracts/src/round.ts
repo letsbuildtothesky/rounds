@@ -432,7 +432,11 @@ export type ReportPickupProblemResult = CommandResult<
   PickupProblemReportedEvent
 >;
 
-export const deliveryProblemCategories = ["damaged_item"] as const;
+export const deliveryProblemCategories = [
+  "damaged_item",
+  "missing_item",
+  "wrong_item",
+] as const;
 
 export type DeliveryProblemCategory = (typeof deliveryProblemCategories)[number];
 
@@ -440,7 +444,7 @@ export type ReportDeliveryProblemPayload = {
   manifestId: string;
   manifestVersion: number;
   category: DeliveryProblemCategory;
-  mediaAssetId: string;
+  mediaAssetId?: string;
   note?: string;
 };
 
@@ -451,7 +455,7 @@ export type ReportDeliveryProblemCommand = CommandEnvelope<
 
 export type DeliveryProblemReportedPayload = {
   exceptionId: string;
-  mediaAssetId: string;
+  mediaAssetId?: string;
   stopId: string;
   deliveryId: string;
   roundId: string;

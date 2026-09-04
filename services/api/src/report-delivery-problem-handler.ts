@@ -47,10 +47,12 @@ export async function reportDeliveryProblemHandler(
       message: error instanceof ContractError ? error.message : "Delivery problem command is invalid",
     } }, traceId);
   }
-  const verification = await dependencies.stops.verifyPodMedia(payload.mediaAssetId, identity);
-  if (verification.status === "rejected") {
-    const error = verification.error as { code: Parameters<typeof statusForCommandError>[0]; message: string };
-    return json(statusForCommandError(error.code), verification, traceId);
+  if (payload.mediaAssetId) {
+    const verification = await dependencies.stops.verifyPodMedia(payload.mediaAssetId, identity);
+    if (verification.status === "rejected") {
+      const error = verification.error as { code: Parameters<typeof statusForCommandError>[0]; message: string };
+      return json(statusForCommandError(error.code), verification, traceId);
+    }
   }
   const result = await dependencies.stops.reportDeliveryProblem(command, identity);
   if (result.status === "rejected") return json(statusForCommandError(result.error.code), result, traceId);

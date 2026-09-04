@@ -641,12 +641,18 @@ export function validateReportPickupProblemCommand(command: ReportPickupProblemC
 
 export function validateReportDeliveryProblemPayload(payload: ReportDeliveryProblemPayload): void {
   assertUuid(payload.manifestId, "manifestId");
-  assertUuid(payload.mediaAssetId, "mediaAssetId");
+  const mediaAssetId = payload.mediaAssetId;
   if (!Number.isInteger(payload.manifestVersion) || payload.manifestVersion < 1) {
     throw new ContractError("manifestVersion must be a positive integer");
   }
   if (!deliveryProblemCategories.includes(payload.category)) {
     throw new ContractError("category is not a supported delivery problem");
+  }
+  if (payload.category === "missing_item") {
+    if (mediaAssetId !== undefined) assertUuid(mediaAssetId, "mediaAssetId");
+  } else {
+    if (mediaAssetId === undefined) throw new ContractError("mediaAssetId is required");
+    assertUuid(mediaAssetId, "mediaAssetId");
   }
   if (payload.note !== undefined && payload.note.trim().length > 500) {
     throw new ContractError("note exceeds 500 characters");

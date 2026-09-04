@@ -439,11 +439,31 @@ class DriverApi {
     return _syncPodEvidence(record, token);
   }
 
-  Future<DriverCommandOutcome> reportDeliveryDamage({
+  Future<DriverCommandOutcome> reportDeliveryProblem({
     required DriverRoundStopModel stop,
-    required String capturedPhotoPath,
+    required String category,
+    String? capturedPhotoPath,
     String? note,
   }) async {
+    if (category == 'missing_item') {
+      return _queueAndSend(
+        commandType: 'stop.report_delivery_problem',
+        aggregateId: stop.id,
+        expectedVersion: stop.version,
+        idempotencyKey:
+            'delivery-problem:${stop.id}:$category:${stop.manifestVersion}',
+        endpoint: '/v1/driver/stops/${stop.id}/delivery-problem',
+        payload: {
+          'manifestId': stop.manifestId,
+          'manifestVersion': stop.manifestVersion,
+          'category': category,
+          if (note != null && note.trim().isNotEmpty) 'note': note.trim(),
+        },
+      );
+    }
+    if (capturedPhotoPath == null) {
+      throw const DriverApiException('Photo evidence is required');
+    }
     final source = File(capturedPhotoPath);
     final bytes = await source.readAsBytes();
     if (bytes.isEmpty || bytes.length > 6291456) {
@@ -468,7 +488,7 @@ class DriverApi {
       expectedStopVersion: stop.version,
       manifestId: stop.manifestId,
       manifestVersion: stop.manifestVersion,
-      category: 'damaged_item',
+      category: category,
       localPath: durablePath,
       sha256: digest,
       byteSize: bytes.length,

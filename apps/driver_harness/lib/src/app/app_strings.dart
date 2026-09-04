@@ -124,6 +124,65 @@ class AppStrings {
       ? 'ไม่สามารถส่งปัญหาการรับของได้'
       : 'Pickup problem could not be sent';
 
+  String stopProgress(int sequence, int total) =>
+      isThai ? 'จุด $sequence จาก $total' : 'Stop $sequence of $total';
+  String get deliveryProblem => isThai ? 'ปัญหาการส่ง' : 'Delivery problem';
+  String get packageProblem => isThai ? 'ของมีปัญหา' : 'Package problem';
+  String get packageInCustody => isThai ? 'ของที่รับมา' : 'Package in custody';
+  String get pickupVerified =>
+      isThai ? 'ยืนยันการรับของแล้ว' : 'Pickup verified';
+  String get packageWhatIsWrong => isThai ? 'ปัญหาอะไร?' : 'What is wrong?';
+  String get packageDamaged => isThai ? 'เสียหาย' : 'Damaged';
+  String get packageDamagedHelp =>
+      isThai ? 'ของหรือบรรจุภัณฑ์เสียหาย' : 'Package or item is damaged';
+  String get packageMissing => isThai ? 'ของไม่ครบ' : 'Missing';
+  String get packageMissingHelp =>
+      isThai ? 'ของที่ต้องส่งไม่ครบ' : 'Expected item is not here';
+  String get packageWrong => isThai ? 'ของไม่ตรง' : 'Wrong package';
+  String get packageWrongHelp =>
+      isThai ? 'ของไม่ตรงกับจุดส่งนี้' : 'Package does not match this stop';
+  String get custodyRecord => isThai ? 'ข้อมูลตอนรับของ' : 'Custody record';
+  String get custodyUnchanged =>
+      isThai ? 'ข้อมูลรับของยังไม่เปลี่ยน' : 'Pickup record remains unchanged';
+  String get required => isThai ? 'ต้องมี' : 'Required';
+  String get added => isThai ? 'เพิ่มแล้ว' : 'Added';
+  String get damagePhoto => isThai ? 'รูปความเสียหาย' : 'Damage photo';
+  String get packagePhoto => isThai ? 'รูปแพ็กเกจ' : 'Package photo';
+  String get photographDamage =>
+      isThai ? 'ถ่ายรูปความเสียหาย' : 'Photograph the damage';
+  String get photographPackage =>
+      isThai ? 'ถ่ายรูปฉลากแพ็กเกจ' : 'Photograph the package label';
+  String get tapToCapture => isThai ? 'แตะเพื่อถ่าย' : 'Tap to capture';
+  String get photoAdded => isThai ? 'เพิ่มรูปแล้ว' : 'Photo added';
+  String get addDamagePhoto =>
+      isThai ? 'เพิ่มรูปความเสียหาย' : 'Add damage photo';
+  String get addPackagePhoto =>
+      isThai ? 'เพิ่มรูปแพ็กเกจ' : 'Add package photo';
+  String get sendToOperations =>
+      isThai ? 'ส่งให้ฝ่ายจัดงาน' : 'Send to Operations';
+  String get changeProblem => isThai ? 'เปลี่ยนปัญหา' : 'Change problem';
+  String get messageOperations =>
+      isThai ? 'แชตฝ่ายจัดงาน' : 'Message Operations';
+  String get sentToOperations =>
+      isThai ? 'ส่งให้ฝ่ายจัดงานแล้ว' : 'Sent to Operations';
+  String get waitingForDecision => isThai ? 'รอคำตอบ' : 'Waiting for decision';
+  String get keepPackage =>
+      isThai ? 'เก็บของไว้กับคุณก่อน' : 'Keep the package with you';
+  String get operationsReview =>
+      isThai ? 'ฝ่ายจัดงานตรวจสอบ' : 'Operations review';
+  String get waitingForOperations =>
+      isThai ? 'รอฝ่ายจัดงาน' : 'Waiting for Operations';
+  String get waitingToSync => isThai ? 'รอซิงก์' : 'Waiting to sync';
+  String get savedLocally => isThai
+      ? 'บันทึกไว้ในเครื่อง · จะส่งเมื่อเชื่อมต่อ'
+      : 'Saved locally. It will send when Rounds reconnects.';
+  String get operationsHasIssue => isThai
+      ? 'ฝ่ายจัดงานได้รับรายละเอียดและรูปแล้ว'
+      : 'Operations has the structured issue and photo evidence.';
+  String get operationsHasIssueNoPhoto => isThai
+      ? 'ฝ่ายจัดงานได้รับรายละเอียดแล้ว'
+      : 'Operations has the structured issue.';
+
   String pickupHandlingNote(String note) {
     if (!isThai) return note;
     final normalized = note.toLowerCase();
