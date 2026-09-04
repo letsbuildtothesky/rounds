@@ -864,6 +864,95 @@ abstract final class DriverF01F02Metrics {
   static const double shortBreakpointHeight = 700.0;
 }
 
+abstract final class DriverF03F04Metrics {
+  static const String sourceEnglish = 'ux/driver/en/screens/ROUNDS-F03-F04-PROOF-OF-DELIVERY-v6-10OF10.html';
+  static const String sourceThai = 'ux/driver/th/ROUNDS-F03-F04-PROOF-OF-DELIVERY-TH-v1-10OF10.html';
+
+  static const double topBarHeight = 62.0;
+  static const double topBarPaddingHorizontal = 18.0;
+  static const double compactTopBarPaddingHorizontal = 14.0;
+  static const double topButtonSize = 42.0;
+  static const double topGap = 12.0;
+
+  static const double contentPaddingTop = 22.0;
+  static const double contentPaddingHorizontal = 18.0;
+  static const double compactEnglishContentPaddingHorizontal = 16.0;
+  static const double compactThaiContentPaddingHorizontal = 15.0;
+  static const double footerReserve = 116.0;
+  static const double compactThaiContentPaddingTop = 19.0;
+  static const double compactThaiFooterReserve = 112.0;
+
+  static const double englishHeroSize = 31.0;
+  static const double compactEnglishHeroSize = 28.0;
+  static const double thaiHeroSize = 34.0;
+  static const double compactThaiHeroSize = 29.0;
+  static const double englishHeroPaddingBottom = 20.0;
+  static const double thaiHeroPaddingBottom = 19.0;
+  static const double heroRowGap = 18.0;
+  static const double thaiHeroRowGap = 15.0;
+  static const double compactThaiHeroRowGap = 9.0;
+  static const double englishHandoffGap = 11.0;
+  static const double thaiHandoffGap = 9.0;
+  static const double progressSize = 25.0;
+  static const double thaiProgressSize = 24.0;
+  static const double compactProgressSize = 23.0;
+  static const double compactThaiProgressSize = 22.0;
+
+  static const double englishSectionMarginTop = 22.0;
+  static const double thaiSectionMarginTop = 20.0;
+  static const double compactThaiSectionMarginTop = 17.0;
+  static const double englishSectionHeadBottom = 9.0;
+  static const double thaiSectionHeadBottom = 8.0;
+
+  static const double englishManifestMinHeight = 78.0;
+  static const double thaiManifestMinHeight = 80.0;
+  static const double compactThaiManifestMinHeight = 74.0;
+  static const double manifestPaddingHorizontal = 13.0;
+  static const double compactThaiManifestPaddingHorizontal = 10.0;
+  static const double manifestCheckSize = 26.0;
+  static const double manifestCheckColumn = 30.0;
+  static const double compactManifestCheckColumn = 28.0;
+  static const double manifestGap = 11.0;
+  static const double thaiManifestGap = 10.0;
+  static const double compactThaiManifestGap = 8.0;
+
+  static const double englishProblemHeight = 44.0;
+  static const double thaiProblemHeight = 42.0;
+  static const double compactThaiProblemHeight = 39.0;
+  static const double englishReceiverMinHeight = 62.0;
+  static const double thaiReceiverMinHeight = 64.0;
+  static const double englishPhotoMinHeight = 188.0;
+  static const double thaiPhotoMinHeight = 184.0;
+  static const double compactEnglishPhotoMinHeight = 172.0;
+  static const double compactThaiPhotoMinHeight = 164.0;
+  static const double cameraSize = 54.0;
+  static const double englishAutomaticMarginTop = 20.0;
+  static const double thaiAutomaticMarginTop = 18.0;
+  static const double automaticMinHeight = 44.0;
+
+  static const double footerPaddingTop = 10.0;
+  static const double footerPaddingHorizontal = 18.0;
+  static const double compactEnglishFooterPaddingHorizontal = 16.0;
+  static const double compactThaiFooterPaddingHorizontal = 15.0;
+  static const double footerPaddingBottom = 18.0;
+  static const double primaryHeight = 64.0;
+  static const double compactThaiPrimaryHeight = 60.0;
+  static const double primaryRadius = 7.0;
+
+  static const double sheetPaddingHorizontal = 18.0;
+  static const double sheetPaddingTop = 10.0;
+  static const double sheetPaddingBottom = 20.0;
+  static const double sheetRadius = 18.0;
+  static const double sheetHandleWidth = 44.0;
+  static const double sheetHandleHeight = 4.0;
+  static const double sheetTitleSize = 22.0;
+  static const double thaiSheetTitleSize = 23.0;
+  static const double sheetRowHeight = 58.0;
+  static const double thaiSheetRowHeight = 60.0;
+  static const double sheetCancelHeight = 48.0;
+  static const double shortBreakpointHeight = 700.0;
+}
+
 abstract final class DriverF08Metrics {
   static const String source = 'ux/driver/en/screens/ROUNDS-F08-STOP-COMPLETE-NEXT-STOP-v4-10OF10.html';
 

@@ -95,6 +95,19 @@ String generateDriverUiMetrics(Map<String, dynamic> json) {
   final f01Choice = f01f02['choice'] as Map<String, dynamic>;
   final f01Contact = f01f02['contact'] as Map<String, dynamic>;
   final f01Short = f01f02['short'] as Map<String, dynamic>;
+  final f03f04 = screens['F03F04'] as Map<String, dynamic>;
+  final f03Top = f03f04['topBar'] as Map<String, dynamic>;
+  final f03Content = f03f04['content'] as Map<String, dynamic>;
+  final f03Hero = f03f04['hero'] as Map<String, dynamic>;
+  final f03Section = f03f04['section'] as Map<String, dynamic>;
+  final f03Manifest = f03f04['manifest'] as Map<String, dynamic>;
+  final f03Problem = f03f04['problem'] as Map<String, dynamic>;
+  final f03Receiver = f03f04['receiver'] as Map<String, dynamic>;
+  final f03Photo = f03f04['photo'] as Map<String, dynamic>;
+  final f03Automatic = f03f04['automatic'] as Map<String, dynamic>;
+  final f03Footer = f03f04['footer'] as Map<String, dynamic>;
+  final f03Sheet = f03f04['sheet'] as Map<String, dynamic>;
+  final f03Short = f03f04['short'] as Map<String, dynamic>;
   final f08 = screens['F08'] as Map<String, dynamic>;
   final f08Complete = f08['completeBar'] as Map<String, dynamic>;
   final f08Dock = f08['nextDock'] as Map<String, dynamic>;
@@ -1037,6 +1050,95 @@ abstract final class DriverF01F02Metrics {
   static const double compactContactPaddingTop = ${_double(f01Contact['compactPaddingTop'])};
   static const double shortContactPaddingTop = ${_double(f01Contact['shortPaddingTop'])};
   static const double shortBreakpointHeight = ${_double(f01Short['breakpointHeight'])};
+}
+
+abstract final class DriverF03F04Metrics {
+  static const String sourceEnglish = '${f03f04['sourceEnglish']}';
+  static const String sourceThai = '${f03f04['sourceThai']}';
+
+  static const double topBarHeight = ${_double(f03Top['height'])};
+  static const double topBarPaddingHorizontal = ${_double(f03Top['paddingHorizontal'])};
+  static const double compactTopBarPaddingHorizontal = ${_double(f03Top['compactPaddingHorizontal'])};
+  static const double topButtonSize = ${_double(f03Top['buttonSize'])};
+  static const double topGap = ${_double(f03Top['gap'])};
+
+  static const double contentPaddingTop = ${_double(f03Content['paddingTop'])};
+  static const double contentPaddingHorizontal = ${_double(f03Content['paddingHorizontal'])};
+  static const double compactEnglishContentPaddingHorizontal = ${_double(f03Content['compactEnglishPaddingHorizontal'])};
+  static const double compactThaiContentPaddingHorizontal = ${_double(f03Content['compactThaiPaddingHorizontal'])};
+  static const double footerReserve = ${_double(f03Content['footerReserve'])};
+  static const double compactThaiContentPaddingTop = ${_double(f03Content['compactThaiPaddingTop'])};
+  static const double compactThaiFooterReserve = ${_double(f03Content['compactThaiFooterReserve'])};
+
+  static const double englishHeroSize = ${_double(f03Hero['englishSize'])};
+  static const double compactEnglishHeroSize = ${_double(f03Hero['compactEnglishSize'])};
+  static const double thaiHeroSize = ${_double(f03Hero['thaiSize'])};
+  static const double compactThaiHeroSize = ${_double(f03Hero['compactThaiSize'])};
+  static const double englishHeroPaddingBottom = ${_double(f03Hero['englishPaddingBottom'])};
+  static const double thaiHeroPaddingBottom = ${_double(f03Hero['thaiPaddingBottom'])};
+  static const double heroRowGap = ${_double(f03Hero['rowGap'])};
+  static const double thaiHeroRowGap = ${_double(f03Hero['thaiRowGap'])};
+  static const double compactThaiHeroRowGap = ${_double(f03Hero['compactThaiRowGap'])};
+  static const double englishHandoffGap = ${_double(f03Hero['englishHandoffGap'])};
+  static const double thaiHandoffGap = ${_double(f03Hero['thaiHandoffGap'])};
+  static const double progressSize = ${_double(f03Hero['progressSize'])};
+  static const double thaiProgressSize = ${_double(f03Hero['thaiProgressSize'])};
+  static const double compactProgressSize = ${_double(f03Hero['compactProgressSize'])};
+  static const double compactThaiProgressSize = ${_double(f03Hero['compactThaiProgressSize'])};
+
+  static const double englishSectionMarginTop = ${_double(f03Section['englishMarginTop'])};
+  static const double thaiSectionMarginTop = ${_double(f03Section['thaiMarginTop'])};
+  static const double compactThaiSectionMarginTop = ${_double(f03Section['compactThaiMarginTop'])};
+  static const double englishSectionHeadBottom = ${_double(f03Section['englishHeadBottom'])};
+  static const double thaiSectionHeadBottom = ${_double(f03Section['thaiHeadBottom'])};
+
+  static const double englishManifestMinHeight = ${_double(f03Manifest['englishMinHeight'])};
+  static const double thaiManifestMinHeight = ${_double(f03Manifest['thaiMinHeight'])};
+  static const double compactThaiManifestMinHeight = ${_double(f03Manifest['compactThaiMinHeight'])};
+  static const double manifestPaddingHorizontal = ${_double(f03Manifest['paddingHorizontal'])};
+  static const double compactThaiManifestPaddingHorizontal = ${_double(f03Manifest['compactThaiPaddingHorizontal'])};
+  static const double manifestCheckSize = ${_double(f03Manifest['checkSize'])};
+  static const double manifestCheckColumn = ${_double(f03Manifest['checkColumn'])};
+  static const double compactManifestCheckColumn = ${_double(f03Manifest['compactCheckColumn'])};
+  static const double manifestGap = ${_double(f03Manifest['gap'])};
+  static const double thaiManifestGap = ${_double(f03Manifest['thaiGap'])};
+  static const double compactThaiManifestGap = ${_double(f03Manifest['compactThaiGap'])};
+
+  static const double englishProblemHeight = ${_double(f03Problem['englishHeight'])};
+  static const double thaiProblemHeight = ${_double(f03Problem['thaiHeight'])};
+  static const double compactThaiProblemHeight = ${_double(f03Problem['compactThaiHeight'])};
+  static const double englishReceiverMinHeight = ${_double(f03Receiver['englishMinHeight'])};
+  static const double thaiReceiverMinHeight = ${_double(f03Receiver['thaiMinHeight'])};
+  static const double englishPhotoMinHeight = ${_double(f03Photo['englishMinHeight'])};
+  static const double thaiPhotoMinHeight = ${_double(f03Photo['thaiMinHeight'])};
+  static const double compactEnglishPhotoMinHeight = ${_double(f03Photo['compactEnglishMinHeight'])};
+  static const double compactThaiPhotoMinHeight = ${_double(f03Photo['compactThaiMinHeight'])};
+  static const double cameraSize = ${_double(f03Photo['cameraSize'])};
+  static const double englishAutomaticMarginTop = ${_double(f03Automatic['englishMarginTop'])};
+  static const double thaiAutomaticMarginTop = ${_double(f03Automatic['thaiMarginTop'])};
+  static const double automaticMinHeight = ${_double(f03Automatic['minHeight'])};
+
+  static const double footerPaddingTop = ${_double(f03Footer['paddingTop'])};
+  static const double footerPaddingHorizontal = ${_double(f03Footer['paddingHorizontal'])};
+  static const double compactEnglishFooterPaddingHorizontal = ${_double(f03Footer['compactEnglishPaddingHorizontal'])};
+  static const double compactThaiFooterPaddingHorizontal = ${_double(f03Footer['compactThaiPaddingHorizontal'])};
+  static const double footerPaddingBottom = ${_double(f03Footer['paddingBottom'])};
+  static const double primaryHeight = ${_double(f03Footer['primaryHeight'])};
+  static const double compactThaiPrimaryHeight = ${_double(f03Footer['compactThaiPrimaryHeight'])};
+  static const double primaryRadius = ${_double(f03Footer['radius'])};
+
+  static const double sheetPaddingHorizontal = ${_double(f03Sheet['paddingHorizontal'])};
+  static const double sheetPaddingTop = ${_double(f03Sheet['paddingTop'])};
+  static const double sheetPaddingBottom = ${_double(f03Sheet['paddingBottom'])};
+  static const double sheetRadius = ${_double(f03Sheet['radius'])};
+  static const double sheetHandleWidth = ${_double(f03Sheet['handleWidth'])};
+  static const double sheetHandleHeight = ${_double(f03Sheet['handleHeight'])};
+  static const double sheetTitleSize = ${_double(f03Sheet['titleSize'])};
+  static const double thaiSheetTitleSize = ${_double(f03Sheet['thaiTitleSize'])};
+  static const double sheetRowHeight = ${_double(f03Sheet['rowHeight'])};
+  static const double thaiSheetRowHeight = ${_double(f03Sheet['thaiRowHeight'])};
+  static const double sheetCancelHeight = ${_double(f03Sheet['cancelHeight'])};
+  static const double shortBreakpointHeight = ${_double(f03Short['breakpointHeight'])};
 }
 
 abstract final class DriverF08Metrics {

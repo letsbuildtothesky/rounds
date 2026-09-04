@@ -388,6 +388,7 @@ class DriverApi {
   Future<DriverCommandOutcome> completePod({
     required DriverRoundStopModel stop,
     required String capturedPhotoPath,
+    required List<int> confirmedLineNumbers,
     required String handoffType,
     String? receiverName,
     String? receiverRelationship,
@@ -420,9 +421,7 @@ class DriverApi {
       expectedStopVersion: stop.version,
       manifestId: stop.manifestId,
       manifestVersion: stop.manifestVersion,
-      confirmedLineNumbers: stop.manifestItems
-          .map((item) => item.lineNumber)
-          .toList(growable: false),
+      confirmedLineNumbers: confirmedLineNumbers,
       localPath: durablePath,
       sha256: digest,
       byteSize: bytes.length,

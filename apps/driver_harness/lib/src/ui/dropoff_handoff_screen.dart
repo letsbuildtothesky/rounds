@@ -220,6 +220,7 @@ class DropoffHandoffScreen extends StatelessWidget {
             ProofOfDeliveryScreen(
               controller: controller,
               stop: stop,
+              stopCount: stopCount,
               handoff: selection,
             ),
       ),

@@ -305,6 +305,7 @@ class HarnessAppController extends ChangeNotifier {
   Future<DriverCommandOutcome?> completePod({
     required DriverRoundStopModel stop,
     required String capturedPhotoPath,
+    required List<int> confirmedLineNumbers,
     required String handoffType,
     String? receiverName,
     String? receiverRelationship,
@@ -314,6 +315,7 @@ class HarnessAppController extends ChangeNotifier {
     () => _driverApi.completePod(
       stop: stop,
       capturedPhotoPath: capturedPhotoPath,
+      confirmedLineNumbers: confirmedLineNumbers,
       handoffType: handoffType,
       receiverName: receiverName,
       receiverRelationship: receiverRelationship,

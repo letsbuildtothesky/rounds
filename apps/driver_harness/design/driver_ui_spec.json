@@ -865,6 +865,64 @@
       },
       "short": { "breakpointHeight": 700 }
     },
+    "F03F04": {
+      "sourceEnglish": "ux/driver/en/screens/ROUNDS-F03-F04-PROOF-OF-DELIVERY-v6-10OF10.html",
+      "sourceThai": "ux/driver/th/ROUNDS-F03-F04-PROOF-OF-DELIVERY-TH-v1-10OF10.html",
+      "topBar": { "height": 62, "paddingHorizontal": 18, "compactPaddingHorizontal": 14, "buttonSize": 42, "gap": 12 },
+      "content": {
+        "paddingTop": 22,
+        "paddingHorizontal": 18,
+        "compactEnglishPaddingHorizontal": 16,
+        "compactThaiPaddingHorizontal": 15,
+        "footerReserve": 116,
+        "compactThaiPaddingTop": 19,
+        "compactThaiFooterReserve": 112
+      },
+      "hero": {
+        "englishSize": 31,
+        "compactEnglishSize": 28,
+        "thaiSize": 34,
+        "compactThaiSize": 29,
+        "englishPaddingBottom": 20,
+        "thaiPaddingBottom": 19,
+        "rowGap": 18,
+        "thaiRowGap": 15,
+        "compactThaiRowGap": 9,
+        "englishHandoffGap": 11,
+        "thaiHandoffGap": 9,
+        "progressSize": 25,
+        "thaiProgressSize": 24,
+        "compactProgressSize": 23,
+        "compactThaiProgressSize": 22
+      },
+      "section": {
+        "englishMarginTop": 22,
+        "thaiMarginTop": 20,
+        "compactThaiMarginTop": 17,
+        "englishHeadBottom": 9,
+        "thaiHeadBottom": 8
+      },
+      "manifest": {
+        "englishMinHeight": 78,
+        "thaiMinHeight": 80,
+        "compactThaiMinHeight": 74,
+        "paddingHorizontal": 13,
+        "compactThaiPaddingHorizontal": 10,
+        "checkSize": 26,
+        "checkColumn": 30,
+        "compactCheckColumn": 28,
+        "gap": 11,
+        "thaiGap": 10,
+        "compactThaiGap": 8
+      },
+      "problem": { "englishHeight": 44, "thaiHeight": 42, "compactThaiHeight": 39 },
+      "receiver": { "englishMinHeight": 62, "thaiMinHeight": 64 },
+      "photo": { "englishMinHeight": 188, "thaiMinHeight": 184, "compactEnglishMinHeight": 172, "compactThaiMinHeight": 164, "cameraSize": 54 },
+      "automatic": { "englishMarginTop": 20, "thaiMarginTop": 18, "minHeight": 44 },
+      "footer": { "paddingTop": 10, "paddingHorizontal": 18, "compactEnglishPaddingHorizontal": 16, "compactThaiPaddingHorizontal": 15, "paddingBottom": 18, "primaryHeight": 64, "compactThaiPrimaryHeight": 60, "radius": 7 },
+      "sheet": { "paddingHorizontal": 18, "paddingTop": 10, "paddingBottom": 20, "radius": 18, "handleWidth": 44, "handleHeight": 4, "titleSize": 22, "thaiTitleSize": 23, "rowHeight": 58, "thaiRowHeight": 60, "cancelHeight": 48 },
+      "short": { "breakpointHeight": 700 }
+    },
     "F08": {
       "source": "ux/driver/en/screens/ROUNDS-F08-STOP-COMPLETE-NEXT-STOP-v4-10OF10.html",
       "completeBar": {
