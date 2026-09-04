@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../app/app_strings.dart';
 import '../app/driver_design_system.dart';
 import '../app/generated/driver_ui_metrics.g.dart';
 import '../app/harness_app_controller.dart';
@@ -41,6 +42,7 @@ class _PickupConfirmationScreenState extends State<PickupConfirmationScreen> {
       '${stop.id}:${item.lineNumber}';
 
   Future<void> _confirm() async {
+    final copy = widget.controller.strings;
     if (!_ready || _submitting) return;
     setState(() => _submitting = true);
     final outcome = await widget.controller.confirmPickup(widget.round);
@@ -52,19 +54,15 @@ class _PickupConfirmationScreenState extends State<PickupConfirmationScreen> {
     setState(() => _submitting = false);
     if (outcome?.pendingSync ?? false) {
       setState(() => _pendingSync = true);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Pickup saved on this phone. Pending sync — custody is not confirmed yet.',
-          ),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(copy.pickupSavedLocally)));
       return;
     }
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          widget.controller.driverError ?? 'Pickup could not be confirmed',
+          widget.controller.driverError ?? copy.pickupCouldNotConfirm,
         ),
       ),
     );
@@ -72,11 +70,13 @@ class _PickupConfirmationScreenState extends State<PickupConfirmationScreen> {
 
   Future<void> _reportProblem() async {
     if (_submitting || _pendingSync) return;
+    final copy = widget.controller.strings;
     final draft = await showModalBottomSheet<_PickupProblemDraft>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      builder: (context) => _PickupProblemSheet(stops: widget.round.stops),
+      builder: (context) =>
+          _PickupProblemSheet(stops: widget.round.stops, copy: copy),
     );
     if (draft == null || !mounted) return;
     setState(() => _submitting = true);
@@ -88,29 +88,23 @@ class _PickupConfirmationScreenState extends State<PickupConfirmationScreen> {
     if (!mounted) return;
     setState(() => _submitting = false);
     if (outcome?.committed ?? false) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Pickup problem sent to Operations. Pickup stopped.'),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(copy.pickupProblemSent)));
       Navigator.of(context).pop(false);
       return;
     }
     if (outcome?.pendingSync ?? false) {
       setState(() => _pendingSync = true);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Problem saved on this phone. Pending sync — do not confirm pickup.',
-          ),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(copy.pickupProblemSavedLocally)));
       return;
     }
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          widget.controller.driverError ?? 'Pickup problem could not be sent',
+          widget.controller.driverError ?? copy.pickupProblemCouldNotSend,
         ),
       ),
     );
@@ -118,6 +112,7 @@ class _PickupConfirmationScreenState extends State<PickupConfirmationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final copy = widget.controller.strings;
     final compact =
         MediaQuery.sizeOf(context).width <
         DriverReferenceViewport.compactBreakpoint;
@@ -132,7 +127,7 @@ class _PickupConfirmationScreenState extends State<PickupConfirmationScreen> {
             children: [
               Column(
                 children: [
-                  _PickupTopBar(round: widget.round),
+                  _PickupTopBar(round: widget.round, copy: copy),
                   Expanded(
                     child: ListView(
                       key: const Key('pickup-content'),
@@ -148,6 +143,7 @@ class _PickupConfirmationScreenState extends State<PickupConfirmationScreen> {
                           lineCount: _lineCount,
                           unitCount: _unitCount,
                           compact: compact,
+                          copy: copy,
                         ),
                         SizedBox(height: DriverD03D04Metrics.manifestMarginTop),
                         _PickupManifest(
@@ -155,6 +151,7 @@ class _PickupConfirmationScreenState extends State<PickupConfirmationScreen> {
                           compact: compact,
                           confirmed: _confirmed,
                           itemKey: _key,
+                          copy: copy,
                           onToggle: (stop, item) => setState(() {
                             final key = _key(stop, item);
                             if (!_confirmed.add(key)) _confirmed.remove(key);
@@ -163,6 +160,7 @@ class _PickupConfirmationScreenState extends State<PickupConfirmationScreen> {
                         SizedBox(height: DriverD03D04Metrics.problemMarginTop),
                         _PickupProblemButton(
                           key: const Key('pickup-problem'),
+                          copy: copy,
                           onPressed: _submitting || _pendingSync
                               ? null
                               : _reportProblem,
@@ -180,6 +178,7 @@ class _PickupConfirmationScreenState extends State<PickupConfirmationScreen> {
                 height: DriverD03D04Metrics.footerHeight,
                 child: _PickupFooter(
                   compact: compact,
+                  copy: copy,
                   pendingSync: _pendingSync,
                   submitting: _submitting,
                   onPressed: _ready && !_submitting && !_pendingSync
@@ -196,9 +195,10 @@ class _PickupConfirmationScreenState extends State<PickupConfirmationScreen> {
 }
 
 class _PickupTopBar extends StatelessWidget {
-  const _PickupTopBar({required this.round});
+  const _PickupTopBar({required this.round, required this.copy});
 
   final DriverRoundModel round;
+  final AppStrings copy;
 
   @override
   Widget build(BuildContext context) {
@@ -243,9 +243,9 @@ class _PickupTopBar extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'AT PICKUP',
-                  style: TextStyle(
+                Text(
+                  copy.pickupEyebrow,
+                  style: const TextStyle(
                     color: RoundsColors.orange,
                     fontSize: DriverD03D04Metrics.topEyebrowSize,
                     height: 1,
@@ -275,7 +275,7 @@ class _PickupTopBar extends StatelessWidget {
           ),
           const SizedBox(width: DriverD03D04Metrics.topMetaGap),
           Text(
-            '$deliveryCount ${deliveryCount == 1 ? 'delivery' : 'deliveries'}',
+            copy.pickupDeliveryCount(deliveryCount),
             style: _pickupTextStyle(
               color: RoundsColors.muted,
               size: DriverD03D04Metrics.topMetaSize,
@@ -295,12 +295,14 @@ class _PickupHero extends StatelessWidget {
     required this.lineCount,
     required this.unitCount,
     required this.compact,
+    required this.copy,
   });
 
   final int confirmed;
   final int lineCount;
   final int unitCount;
   final bool compact;
+  final AppStrings copy;
 
   @override
   Widget build(BuildContext context) => Container(
@@ -320,7 +322,7 @@ class _PickupHero extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                'Confirm pickup',
+                copy.confirmPickup,
                 maxLines: 1,
                 overflow: TextOverflow.fade,
                 softWrap: false,
@@ -353,9 +355,9 @@ class _PickupHero extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: DriverD03D04Metrics.progressLabelGap),
-                const Text(
-                  'confirmed',
-                  style: TextStyle(
+                Text(
+                  copy.pickupConfirmed,
+                  style: const TextStyle(
                     color: RoundsColors.muted,
                     fontSize: DriverD03D04Metrics.progressLabelSize,
                     fontWeight: FontWeight.w700,
@@ -372,26 +374,13 @@ class _PickupHero extends StatelessWidget {
           ],
         ),
         const SizedBox(height: DriverD03D04Metrics.summaryGap),
-        Text.rich(
-          TextSpan(
-            children: [
-              TextSpan(
-                text: '$unitCount package${unitCount == 1 ? '' : 's'}',
-                style: _pickupTextStyle(
-                  color: RoundsColors.inkSecondary,
-                  size: DriverD03D04Metrics.summarySize,
-                  height: 1,
-                  weight: DriverD03D04Metrics.summaryStrongWeight,
-                ),
-              ),
-              const TextSpan(text: ' · physical manifest'),
-            ],
-          ),
+        Text(
+          copy.pickupManifestSummary(unitCount),
           style: _pickupTextStyle(
-            color: RoundsColors.muted,
+            color: RoundsColors.inkSecondary,
             size: DriverD03D04Metrics.summarySize,
             height: 1,
-            weight: DriverD03D04Metrics.summaryWeight,
+            weight: DriverD03D04Metrics.summaryStrongWeight,
           ),
         ),
       ],
@@ -405,12 +394,14 @@ class _PickupManifest extends StatelessWidget {
     required this.compact,
     required this.confirmed,
     required this.itemKey,
+    required this.copy,
     required this.onToggle,
   });
 
   final DriverRoundModel round;
   final bool compact;
   final Set<String> confirmed;
+  final AppStrings copy;
   final String Function(DriverRoundStopModel stop, DriverManifestItemModel item)
   itemKey;
   final void Function(DriverRoundStopModel stop, DriverManifestItemModel item)
@@ -448,7 +439,7 @@ class _PickupManifest extends StatelessWidget {
             child: Row(
               children: [
                 Text(
-                  'Collect',
+                  copy.pickupCollect,
                   style: _pickupTextStyle(
                     color: RoundsColors.ink,
                     size: DriverD03D04Metrics.manifestHeadTitleSize,
@@ -456,17 +447,21 @@ class _PickupManifest extends StatelessWidget {
                     weight: DriverD03D04Metrics.manifestHeadTitleWeight,
                   ),
                 ),
-                const Spacer(),
                 const SizedBox(
                   width: DriverD03D04Metrics.manifestHeadColumnGap,
                 ),
-                Text(
-                  'Tap when physically present',
-                  style: _pickupTextStyle(
-                    color: RoundsColors.muted,
-                    size: DriverD03D04Metrics.manifestHeadMetaSize,
-                    height: 1,
-                    weight: DriverD03D04Metrics.manifestHeadMetaWeight,
+                Expanded(
+                  child: Text(
+                    copy.pickupTapWhenPresent,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.end,
+                    style: _pickupTextStyle(
+                      color: RoundsColors.muted,
+                      size: DriverD03D04Metrics.manifestHeadMetaSize,
+                      height: 1,
+                      weight: DriverD03D04Metrics.manifestHeadMetaWeight,
+                    ),
                   ),
                 ),
               ],
@@ -485,6 +480,7 @@ class _PickupManifest extends StatelessWidget {
                 itemKey(entries[index].stop, entries[index].item),
               ),
               compact: compact,
+              copy: copy,
               isLast: index == entries.length - 1,
               onTap: () => onToggle(entries[index].stop, entries[index].item),
             ),
@@ -495,9 +491,14 @@ class _PickupManifest extends StatelessWidget {
 }
 
 class _PickupProblemButton extends StatelessWidget {
-  const _PickupProblemButton({required this.onPressed, super.key});
+  const _PickupProblemButton({
+    required this.onPressed,
+    required this.copy,
+    super.key,
+  });
 
   final VoidCallback? onPressed;
+  final AppStrings copy;
 
   @override
   Widget build(BuildContext context) => SizedBox(
@@ -522,7 +523,7 @@ class _PickupProblemButton extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            'Pickup problem',
+            copy.pickupProblem,
             style: _pickupTextStyle(
               color: RoundsColors.red,
               size: DriverD03D04Metrics.problemSize,
@@ -543,12 +544,14 @@ class _PickupProblemButton extends StatelessWidget {
 class _PickupFooter extends StatelessWidget {
   const _PickupFooter({
     required this.compact,
+    required this.copy,
     required this.pendingSync,
     required this.submitting,
     required this.onPressed,
   });
 
   final bool compact;
+  final AppStrings copy;
   final bool pendingSync;
   final bool submitting;
   final VoidCallback? onPressed;
@@ -587,10 +590,10 @@ class _PickupFooter extends StatelessWidget {
         ),
         child: Text(
           pendingSync
-              ? 'Pending sync — not confirmed'
+              ? copy.pickupPendingSync
               : submitting
-              ? 'Sending to server…'
-              : 'Confirm pickup',
+              ? copy.pickupSending
+              : copy.confirmPickup,
           style: _pickupTextStyle(
             color: onPressed == null ? const Color(0xFF85909D) : Colors.white,
             size: DriverD03D04Metrics.primarySize,
@@ -611,8 +614,9 @@ class _PickupProblemDraft {
 }
 
 class _PickupProblemSheet extends StatefulWidget {
-  const _PickupProblemSheet({required this.stops});
+  const _PickupProblemSheet({required this.stops, required this.copy});
   final List<DriverRoundStopModel> stops;
+  final AppStrings copy;
 
   @override
   State<_PickupProblemSheet> createState() => _PickupProblemSheetState();
@@ -642,21 +646,22 @@ class _PickupProblemSheetState extends State<_PickupProblemSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text(
-            'Pickup problem',
-            style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900),
+          Text(
+            widget.copy.pickupProblem,
+            style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w900),
           ),
           const SizedBox(height: 6),
-          const Text(
-            'Choose the exact delivery and problem. Ordinary pickup will stop until Operations resolves it.',
-            style: TextStyle(color: Color(0xFF748094)),
+          Text(
+            widget.copy.pickupProblemLead,
+            style: const TextStyle(color: Color(0xFF748094)),
           ),
           const SizedBox(height: 18),
           DropdownButtonFormField<DriverRoundStopModel>(
             initialValue: _stop,
-            decoration: const InputDecoration(
-              labelText: 'Delivery',
-              border: OutlineInputBorder(),
+            isExpanded: true,
+            decoration: InputDecoration(
+              labelText: widget.copy.delivery,
+              border: const OutlineInputBorder(),
             ),
             items: widget.stops
                 .map(
@@ -674,29 +679,29 @@ class _PickupProblemSheetState extends State<_PickupProblemSheet> {
             },
           ),
           const SizedBox(height: 16),
-          const Text(
-            'What is wrong?',
-            style: TextStyle(fontWeight: FontWeight.w900),
+          Text(
+            widget.copy.pickupWhatIsWrong,
+            style: const TextStyle(fontWeight: FontWeight.w900),
           ),
           RadioGroup<String>(
             groupValue: _category,
             onChanged: (value) => setState(() => _category = value),
-            child: const Column(
+            child: Column(
               children: [
                 RadioListTile(
                   value: 'missing_item',
-                  title: Text('Missing item'),
-                  subtitle: Text('An expected package or item is not here'),
+                  title: Text(widget.copy.pickupMissingItem),
+                  subtitle: Text(widget.copy.pickupMissingItemHelp),
                 ),
                 RadioListTile(
                   value: 'wrong_item',
-                  title: Text('Wrong item'),
-                  subtitle: Text('The package does not match this delivery'),
+                  title: Text(widget.copy.pickupWrongItem),
+                  subtitle: Text(widget.copy.pickupWrongItemHelp),
                 ),
                 RadioListTile(
                   value: 'damaged_item',
-                  title: Text('Damaged item'),
-                  subtitle: Text('The package or item is damaged'),
+                  title: Text(widget.copy.pickupDamagedItem),
+                  subtitle: Text(widget.copy.pickupDamagedItemHelp),
                 ),
               ],
             ),
@@ -706,9 +711,9 @@ class _PickupProblemSheetState extends State<_PickupProblemSheet> {
             controller: _note,
             maxLength: 500,
             maxLines: 3,
-            decoration: const InputDecoration(
-              labelText: 'Note for Operations (optional)',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: widget.copy.pickupOperationsNote,
+              border: const OutlineInputBorder(),
             ),
           ),
           const SizedBox(height: 10),
@@ -722,7 +727,7 @@ class _PickupProblemSheetState extends State<_PickupProblemSheet> {
             style: FilledButton.styleFrom(
               backgroundColor: const Color(0xFFB43F3F),
             ),
-            child: const Text('Send to Operations'),
+            child: Text(widget.copy.pickupSendToOperations),
           ),
         ],
       ),
@@ -737,6 +742,7 @@ class _ManifestLine extends StatelessWidget {
     required this.recipient,
     required this.checked,
     required this.compact,
+    required this.copy,
     required this.isLast,
     required this.onTap,
     super.key,
@@ -746,6 +752,7 @@ class _ManifestLine extends StatelessWidget {
   final String recipient;
   final bool checked;
   final bool compact;
+  final AppStrings copy;
   final bool isLast;
   final VoidCallback onTap;
 
@@ -858,7 +865,7 @@ class _ManifestLine extends StatelessWidget {
                         height: DriverD03D04Metrics.manifestCareGap,
                       ),
                       Text(
-                        item.handlingNote!,
+                        copy.pickupHandlingNote(item.handlingNote!),
                         style: _pickupTextStyle(
                           color:
                               item.handlingNote!.toLowerCase().contains('cool')

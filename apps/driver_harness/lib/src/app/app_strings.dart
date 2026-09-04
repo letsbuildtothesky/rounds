@@ -70,4 +70,65 @@ class AppStrings {
       : 'Interchange 21, Sukhumvit Road, Bangkok';
   String get recipient =>
       isThai ? 'คุณศิริพร · UrbanFlowers' : 'Siriporn · UrbanFlowers';
+
+  String get pickupEyebrow => isThai ? 'ถึงจุดรับของ' : 'AT PICKUP';
+  String pickupDeliveryCount(int count) => isThai
+      ? '$count งานส่ง'
+      : '$count ${count == 1 ? 'delivery' : 'deliveries'}';
+  String get confirmPickup => isThai ? 'ยืนยันรับของ' : 'Confirm pickup';
+  String get pickupConfirmed => isThai ? 'ยืนยันแล้ว' : 'confirmed';
+  String pickupManifestSummary(int count) => isThai
+      ? '$count แพ็กเกจ · ตรวจของจริง'
+      : '$count package${count == 1 ? '' : 's'} · physical manifest';
+  String get pickupCollect => isThai ? 'รับของ' : 'Collect';
+  String get pickupTapWhenPresent =>
+      isThai ? 'แตะเมื่อของอยู่กับคุณแล้ว' : 'Tap when physically present';
+  String get pickupProblem => isThai ? 'มีปัญหารับของ' : 'Pickup problem';
+  String get pickupPendingSync =>
+      isThai ? 'รอซิงค์ — ยังไม่ได้ยืนยัน' : 'Pending sync — not confirmed';
+  String get pickupSending =>
+      isThai ? 'กำลังส่งไปยังเซิร์ฟเวอร์…' : 'Sending to server…';
+  String get pickupProblemLead => isThai
+      ? 'เลือกงานส่งและปัญหาที่ตรงกัน การรับของจะหยุดจนกว่าฝ่ายปฏิบัติการจะแก้ไข'
+      : 'Choose the exact delivery and problem. Ordinary pickup will stop until Operations resolves it.';
+  String get delivery => isThai ? 'งานส่ง' : 'Delivery';
+  String get pickupWhatIsWrong => isThai ? 'มีปัญหาอะไร?' : 'What is wrong?';
+  String get pickupMissingItem => isThai ? 'ของไม่ครบ' : 'Missing item';
+  String get pickupMissingItemHelp => isThai
+      ? 'ไม่พบแพ็กเกจหรือสิ่งของที่ควรมี'
+      : 'An expected package or item is not here';
+  String get pickupWrongItem => isThai ? 'ของไม่ตรง' : 'Wrong item';
+  String get pickupWrongItemHelp => isThai
+      ? 'แพ็กเกจไม่ตรงกับงานส่งนี้'
+      : 'The package does not match this delivery';
+  String get pickupDamagedItem => isThai ? 'ของเสียหาย' : 'Damaged item';
+  String get pickupDamagedItemHelp =>
+      isThai ? 'แพ็กเกจหรือสิ่งของเสียหาย' : 'The package or item is damaged';
+  String get pickupOperationsNote => isThai
+      ? 'หมายเหตุถึงฝ่ายปฏิบัติการ (ไม่บังคับ)'
+      : 'Note for Operations (optional)';
+  String get pickupSendToOperations =>
+      isThai ? 'ส่งให้ฝ่ายปฏิบัติการ' : 'Send to Operations';
+  String get pickupSavedLocally => isThai
+      ? 'บันทึกการรับของไว้ในโทรศัพท์แล้ว กำลังรอซิงค์ — ยังไม่ยืนยันการรับผิดชอบ'
+      : 'Pickup saved on this phone. Pending sync — custody is not confirmed yet.';
+  String get pickupCouldNotConfirm =>
+      isThai ? 'ไม่สามารถยืนยันการรับของได้' : 'Pickup could not be confirmed';
+  String get pickupProblemSent => isThai
+      ? 'ส่งปัญหาให้ฝ่ายปฏิบัติการแล้ว หยุดการรับของ'
+      : 'Pickup problem sent to Operations. Pickup stopped.';
+  String get pickupProblemSavedLocally => isThai
+      ? 'บันทึกปัญหาไว้ในโทรศัพท์แล้ว กำลังรอซิงค์ — อย่ายืนยันการรับของ'
+      : 'Problem saved on this phone. Pending sync — do not confirm pickup.';
+  String get pickupProblemCouldNotSend => isThai
+      ? 'ไม่สามารถส่งปัญหาการรับของได้'
+      : 'Pickup problem could not be sent';
+
+  String pickupHandlingNote(String note) {
+    if (!isThai) return note;
+    final normalized = note.toLowerCase();
+    if (normalized.contains('cool')) return 'เก็บให้เย็น';
+    if (normalized.contains('fragile')) return 'ระวัง';
+    return note;
+  }
 }

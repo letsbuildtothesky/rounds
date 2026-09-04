@@ -97,4 +97,79 @@ void main() {
       isNotNull,
     );
   });
+
+  testWidgets('pickup and its problem drawer use the canonical Thai copy', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    SharedPreferences.setMockInitialValues({
+      'driver_locale': 'th-TH',
+      'driver_locale_selected': true,
+    });
+    final controller = await HarnessAppController.create();
+    const round = DriverRoundModel(
+      id: 'round-th',
+      reference: 'ROUND-TH',
+      serviceDate: '2026-09-04',
+      state: 'approved',
+      version: 1,
+      tenantName: 'UrbanFlowers',
+      pickup: DriverPickupModel(
+        displayName: 'UrbanFlowers',
+        rawAddress: 'Bangkok',
+        contactName: 'Dispatch',
+        contactPhone: '+66000000000',
+      ),
+      stops: [
+        DriverRoundStopModel(
+          id: 'stop-th',
+          sequence: 1,
+          state: 'assigned',
+          version: 1,
+          destinationVersion: 1,
+          manifestId: 'manifest-th',
+          manifestVersion: 1,
+          deliveryReference: 'UF-TH-001',
+          recipientName: 'คุณศิริพร',
+          recipientPhone: '+66999999999',
+          rawAddress: 'Bangkok',
+          latitude: 13.7,
+          longitude: 100.5,
+          windowStart: '2026-09-04T02:00:00Z',
+          windowEnd: '2026-09-04T04:00:00Z',
+          manifestItems: [
+            DriverManifestItemModel(
+              lineNumber: 1,
+              description: 'ช่อดอกไม้',
+              quantity: 2,
+              handlingNote: 'Fragile',
+            ),
+          ],
+        ),
+      ],
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: PickupConfirmationScreen(controller: controller, round: round),
+      ),
+    );
+
+    expect(find.text('ถึงจุดรับของ'), findsOneWidget);
+    expect(find.text('1 งานส่ง'), findsOneWidget);
+    expect(find.text('ยืนยันรับของ'), findsWidgets);
+    expect(find.text('2 แพ็กเกจ · ตรวจของจริง'), findsOneWidget);
+    expect(find.text('ระวัง'), findsOneWidget);
+    expect(find.text('Confirm pickup'), findsNothing);
+
+    await tester.tap(find.byKey(const Key('pickup-problem')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('ของไม่ครบ'), findsOneWidget);
+    expect(find.text('ของไม่ตรง'), findsOneWidget);
+    expect(find.text('ของเสียหาย'), findsOneWidget);
+    expect(find.text('Missing item'), findsNothing);
+  });
 }
