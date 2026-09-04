@@ -2,7 +2,13 @@
 
 **Version:** 1.5
 **Status:** Canonical — Settings S1–S5 complete + edge-state lock
-**Canonical UX checkpoint:** `rounds-edge-states-v45.html`
+**Canonical UX checkpoint:** `ux/operations/rounds-operations-current-v45.html`
+
+## Changelog
+
+- **v1.5 — 2026-09-04:** Consolidated customer-audience terminology with
+  the canonical actor model. Settings uses `Buyer` and `Recipient`; it does not
+  use ambiguous `Sender` UI terminology.
 
 ## 1. Product role
 
@@ -192,7 +198,9 @@ The UI must explain the shared chain without creating a second algorithm:
 
 ## 7. Phase sequence note
 
-S2 established Dispatch + Delivery Rules. S3 and S4 below are now completed canonical phases; only S5 remains pending.
+Settings S1–S5 are complete at the canonical product/UX level. The sections
+below define the consolidated contract; implementation status and release QA
+remain tracked by the Implementation Coverage and Gap Control.
 
 
 ## 8. Settings S3 · Network + External Capacity
@@ -346,14 +354,17 @@ The Tracking page leads with the customer-experience posture rather than a gener
 It must expose:
 
 - branded tracking page on/off;
-- Sender/Buyer audience on/off;
+- Buyer audience on/off;
 - Recipient audience on/off;
 - surprise protection;
 - active customer channels.
 
 ### 10.5 Audience separation
 
-Sender and Recipient remain separate roles. Their information and event routing may differ. Buyer = Recipient is deduplicated automatically.
+Buyer and Recipient remain separate roles. Their information and event routing
+may differ. A gifting buyer may be described contextually as the gift sender,
+but `Sender` is not a generic Settings actor. Buyer = Recipient is deduplicated
+automatically.
 
 Recipient-facing information remains intentionally more discreet where merchant policy or surprise protection requires it.
 
@@ -369,11 +380,15 @@ Internal Operations↔Driver communications remain a different system and are ne
 
 ### 10.7 Event routing
 
-The merchant can toggle Sender / Recipient routing independently for canonical delivery events. Event routing consumes committed Rounds events; it never creates or reverses operational truth.
+The merchant can toggle Buyer / Recipient routing independently for canonical
+delivery events. Event routing consumes committed Rounds events; it never
+creates or reverses operational truth.
 
 ### 10.8 Preview / privacy
 
-Sender and Recipient preview actions are real. They must visually demonstrate the privacy boundary without exposing private driver phone, other Round Stops, private merchant notes or protected gift details.
+Buyer and Recipient preview actions are real. They must visually demonstrate
+the privacy boundary without exposing private driver phone, other Round Stops,
+private merchant notes or protected gift details.
 
 ### 10.9 Interaction quality
 
@@ -442,23 +457,29 @@ Every visible Settings control must either:
 
 A decorative control that appears actionable is prohibited.
 
-## 12. Remaining product-wide finish
-
-Settings S1–S5 is complete. Still pending outside Settings:
-
-- final product-wide quiet / error / loading state pass;
-- final laptop/iPad responsive QA;
-- Driver App parity verification against the updated mobile-screen implementation.
-
-Any future Settings behavior change must update this controlling spec in the same work cycle.
-
-## S5B · Connection/loading/degraded-state lock
+### 11.6 Connection/loading/degraded-state lock
 
 Settings connection surfaces must expose truthful transitional states.
 
-- `Test connection`, reconciliation and similar remote checks visibly enter `Checking…`/loading before success or failure.
-- An operator-browser offline state blocks a remote connection test; it does not write a fake healthy result.
+- `Test connection`, reconciliation and similar remote checks visibly enter
+  `Checking…`/loading before success or failure.
+- An operator-browser offline state blocks a remote connection test; it does
+  not write a fake healthy result.
 - Disconnect/unconfigured is a stable setup state, not a red system failure.
-- A remote-provider/API failure must distinguish provider health from merchant configuration and from browser connectivity.
-- Existing saved settings remain readable while a remote dependency is degraded.
-- Recovery should refresh current connection health before the page claims `Healthy`.
+- A remote-provider/API failure must distinguish provider health from merchant
+  configuration and from browser connectivity.
+- Existing saved settings remain readable while a remote dependency is
+  degraded.
+- Recovery refreshes current connection health before the page claims
+  `Healthy`.
+
+## 12. Implementation and release boundary
+
+Settings S1–S5 is complete as a product/UX contract. Implementation status,
+browser/device acceptance, Driver parity and product-wide release gates are
+tracked by the Implementation Coverage and Gap Control and BS-17; they do not
+change this specification's completion status.
+
+Any future Settings behavior change must update this controlling spec in the same work cycle.
+
+*End of Rounds · Settings Control Center*

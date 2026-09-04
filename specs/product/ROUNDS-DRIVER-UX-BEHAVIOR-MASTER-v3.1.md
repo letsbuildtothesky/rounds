@@ -9,6 +9,12 @@
 **Purpose:** Defines the final interaction behavior of Driver App screens as UX is approved.  
 **Relationship to other specs:** This document sits between the product/operating specs and the eventual technical build specification. The final HTML prototypes demonstrate these behaviors visually.
 
+## Changelog
+
+- **v3.1 — 2026-09-04:** Consolidated the historical append-only behavior
+  blocks into named sections of this master and removed addendum precedence
+  language. Driver behavior is unchanged.
+
 ## Working rule
 
 A screen is added here only when its UX behavior is sufficiently agreed to be used as a build reference.
@@ -159,7 +165,7 @@ The final 47-screen Driver board set dated 2026-09-01 is now behaviorally closed
 
 ---
 
-# ADDENDUM · Location-aware Driver Behavior
+# Location-aware Driver Behavior
 
 **Canonical detailed spec:** `ROUNDS-SPEC-4-MAPPING-ADDRESS-INTELLIGENCE-v1.8.md`
 
@@ -202,7 +208,7 @@ This confirmation is written as an observation and contributes to merchant-level
 
 ---
 
-# ADDENDUM · Traffic, ETA & Arrival Context
+# Traffic, ETA & Arrival Context
 
 **Canonical mapping rules:** `ROUNDS-SPEC-4-MAPPING-ADDRESS-INTELLIGENCE-v1.8.md`
 
@@ -215,7 +221,7 @@ This confirmation is written as an observation and contributes to merchant-level
 
 ---
 
-# ADDENDUM · Weather + Dispatcher Communication
+# Weather + Dispatcher Communication
 
 - Driver chat remains reachable from in-flight delivery context.
 - Dispatcher messages arrive realtime and may contain text, voice, file or location context.
@@ -225,7 +231,7 @@ This confirmation is written as an observation and contributes to merchant-level
 
 ---
 
-# ADDENDUM · Realtime Dispatcher Contact & Route Updates
+# Realtime Dispatcher Contact & Route Updates
 
 **Controlling cross-surface spec:** `ROUNDS-SPEC-6-DISPATCH-ROUTE-EDITING-COMMS-v1.11.md`
 
@@ -238,7 +244,7 @@ Driver app behavior:
 - while actively navigating, route mutation must update navigation safely and preserve the current Stop/custody state;
 - driver may acknowledge updated route through message/voice without leaving operational flow.
 
-# ADDENDUM · Physical Manifest Verification & Shared Rich Communications
+# Physical Manifest Verification & Shared Rich Communications
 
 ## D03/D04 — Pickup Confirmation is now behavior-locked
 
@@ -292,7 +298,7 @@ On tablet/desktop-class driver environments, drag/drop may accelerate file/link 
 
 Physical-verification events and route changes appear as system events in the same delivery history without being represented as if a human typed them.
 
-# D-ADDENDUM · Live Route / Destination Updates After Pickup
+# Live Route / Destination Updates After Pickup
 
 **Status:** Behavior locked
 
@@ -317,7 +323,7 @@ If the driver cannot safely comply with the change, the acknowledgement surface 
 
 ---
 
-# v2.6 ADDENDUM · Network Availability + Merchant Contact Permissions
+# Network Availability + Merchant Contact Permissions
 
 **Controlling cross-surface spec:** `ROUNDS-SPEC-10-DRIVERS-LIVE-AVAILABILITY-CONTACT-v1.4.md`
 
@@ -381,9 +387,10 @@ The app/history may record availability changes for operational reconstruction, 
 - reliability evidence becomes materially stronger after acceptance or during a scheduled team obligation.
 
 
-# v3.0 ADDENDUM · Final 47-Screen Driver Contract
+# Final 47-Screen Driver Contract
 
-This addendum controls any behavior not already described earlier in this master.
+This section completes the behavior contract for the canonical 47-screen
+Driver library.
 
 ## A01 / A01B — Splash and language
 
@@ -488,7 +495,7 @@ This addendum controls any behavior not already described earlier in this master
 - Offline does not fabricate command success. Drafts/evidence/outbox remain locally safe until sync.
 - GPS unavailable exposes cached-route/recovery behavior where safe and labels location freshness honestly.
 
-# v3.0 ADDENDUM · Localization invariants
+# Localization invariants
 
 - Production is one localized app.
 - `th-TH` is the primary Thailand locale; `en` is secondary.
@@ -496,3 +503,5 @@ This addendum controls any behavior not already described earlier in this master
 - Thai translations may expand/reflow layouts but may not remove information or change operational semantics.
 - Do not translate merchant/recipient free text silently unless a future explicit translation feature is introduced.
 - Thai UI QA is required at 320 px and on low-cost Android before pilot.
+
+*End of Rounds Driver App — UX Behavior Master*

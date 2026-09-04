@@ -2,7 +2,8 @@
 
 **Date:** 2026-09-01  
 **Status:** Canonical Driver App V1 board set after Operations parity refinement  
-**Canonical English UX source:** `ROUNDS-DRIVER-APP-ENGLISH-BOARDS-2026-09-01/`  
+**Canonical English UX source:** `ux/driver/en/screens/`
+**Canonical Thai UX source:** `ux/driver/th/`
 **HTML board files:** 47
 
 ## 1. Production localization rule

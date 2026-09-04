@@ -2,7 +2,7 @@
 
 **Version:** 1.1  
 **Status:** Canonical product/build specification  
-**Canonical UX checkpoint:** `rounds-edge-states-v45.html`  
+**Canonical UX checkpoint:** `ux/operations/rounds-operations-current-v45.html`
 **Related specs:** Business Product Master, Driver + Broadcast Operating Model, Mapping & Address Intelligence, Drivers Live Availability & Contact, Operations Visual System
 
 ## 1. Purpose

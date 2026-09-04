@@ -6,6 +6,13 @@
 **Scope:** Business model, product thesis, network model, operating model, commercial model, and V1 boundaries.  
 **Visual authority:** This business/product master does not duplicate pixel-level UI rules. Current visual behavior is defined by the canonical Operations HTML, the Driver board library, the Operations Visual System, and the Driver UI Constitution. Those sources are already designed and are not waiting for a separate redesign.
 
+## Changelog
+
+- **v2.26 — 2026-09-04:** Consolidated the append-only product phases into
+  the owning master, removed the premature end marker and replaced
+  supersession instructions with direct canonical statements. Product behavior
+  is unchanged.
+
 ---
 
 ## Implementation boundary — product-complete V1 vs first deploy
@@ -1824,11 +1831,9 @@ And the trust promise beneath it:
 
 ---
 
-*End of ROUNDS — SPEC 2 · Business & Product Master Specification*
-
 ---
 
-# ADDENDUM · Business-side Mapping & Address Intelligence
+## Business-side Mapping & Address Intelligence
 
 **Canonical detailed spec:** `ROUNDS-SPEC-4-MAPPING-ADDRESS-INTELLIGENCE-v1.8.md`
 
@@ -1877,7 +1882,7 @@ The merchant does not need to adopt Mapbox-specific IDs.
 
 ---
 
-# ADDENDUM · Dispatch Map Phase 2
+## Dispatch Map Phase 2
 
 **Canonical mapping rules:** `ROUNDS-SPEC-4-MAPPING-ADDRESS-INTELLIGENCE-v1.8.md`
 
@@ -1893,7 +1898,7 @@ Dispatcher UX requirements:
 
 ---
 
-# ADDENDUM · Weather, Driver Communications, Tracking & Commerce Integration
+## Weather, Driver Communications, Tracking & Commerce Integration
 
 ## Live driver communication
 
@@ -1924,7 +1929,7 @@ Core product decision:
 
 ---
 
-# ADDENDUM · Route Editing & Driver Communications
+## Route Editing & Driver Communications
 
 **Controlling detailed spec:** `ROUNDS-SPEC-6-DISPATCH-ROUTE-EDITING-COMMS-v1.11.md`
 
@@ -1939,9 +1944,9 @@ Business Dispatch now separates operating context from human communication.
 
 ---
 
-# ADDENDUM · Business Product Completion
+## Business Product Completion
 
-**Controlling UX:** `rounds-edge-states-v45.html`
+**Controlling UX:** `ux/operations/rounds-operations-current-v45.html`
 
 This addendum locks the completed business-side navigation and management model.
 
@@ -2050,10 +2055,10 @@ See `ROUNDS-SPEC-7-EXTERNAL-COURIERS-v1.4.md`.
 
 ---
 
-# ADDENDUM · Intelligent New Delivery Intake
+## Intelligent New Delivery Intake
 
 **Version:** Business Product Master v2.7  
-**Controlling UX:** `rounds-edge-states-v45.html`
+**Controlling UX:** `ux/operations/rounds-operations-current-v45.html`
 
 ## Product rule
 
@@ -2256,9 +2261,10 @@ Do not embed privileged AI credentials in client HTML.
 - Added delivery uses reviewed structured fields rather than demo placeholder values.
 ---
 
-# ADDENDUM · Unified New Delivery Intake
+## Unified New Delivery Intake
 
-**Version correction:** This supersedes any Phase 1A wording that implies the dispatcher must choose between an AI intake mode and a manual-entry mode.
+**Canonical interaction:** The dispatcher does not choose between separate AI
+and manual-entry modes. Both operate on one continuous intake surface.
 
 ## Locked interaction
 
@@ -2329,9 +2335,9 @@ over explaining the AI feature.
 
 ---
 
-# ADDENDUM · Merchant / Buyer / Recipient / Pickup Actor Model
+## Merchant / Buyer / Recipient / Pickup Actor Model
 
-This addendum supersedes any UX wording that uses `sender` ambiguously.
+The canonical actor model does not use `sender` as an ambiguous generic role.
 
 ## Canonical actors
 
@@ -2430,12 +2436,13 @@ Legacy `sender` fields may temporarily remain as compatibility aliases but must 
 
 ---
 
-# ADDENDUM · Phase 1B1 — Vehicle, Cargo & Round Rules
+## Phase 1B1 — Vehicle, Cargo & Round Rules
 
 **Status:** Locked before UX implementation  
 **Purpose:** Give Rounds enough physical-operating knowledge to build valid Rounds from large delivery sets.
 
-This addendum supersedes the earlier simplified model where a vehicle was represented mainly by a generic `stops per slot` planning number.
+The canonical vehicle model is multidimensional and is not represented mainly
+by a generic `stops per slot` planning number.
 
 ---
 
@@ -2767,7 +2774,7 @@ Round/Stop planning should snapshot the controlling vehicle-profile version or r
 
 ---
 
-# ADDENDUM · Phase 1B2 — Bulk Delivery Intake
+## Phase 1B2 — Bulk Delivery Intake
 
 **Status:** Locked before UX implementation  
 **Purpose:** Make one delivery and 40+ deliveries use the same intake architecture.
@@ -3005,7 +3012,7 @@ source
 
 ---
 
-# ADDENDUM · Phase 1B3A — Plan Rounds Workspace
+## Phase 1B3A — Plan Rounds Workspace
 
 **Status:** Locked before UX implementation  
 **Purpose:** Turn a large unplanned delivery pool into understandable sequential Rounds across available own drivers.
@@ -3250,7 +3257,7 @@ The first UX does not need to expose every algorithmic score, but must expose de
 
 ---
 
-# ADDENDUM · Phase 1B3B — Plan Adjustment & Approval
+## Phase 1B3B — Plan Adjustment & Approval
 
 **Status:** Locked before UX implementation  
 **Purpose:** Make a generated plan safely editable and convert it into executable Rounds only after explicit approval.
@@ -3485,7 +3492,7 @@ Production storage belongs in the planning/audit data model.
 - Remaining uncovered deliveries survive approval.
 ---
 
-# IMPLEMENTATION RECONCILIATION · Phase 1B3B
+## Phase 1B3B implementation reconciliation
 
 The implemented UX confirms the following controlling details.
 
@@ -3550,7 +3557,7 @@ No Network or external courier is booked as a side effect of own-fleet plan appr
 
 ---
 
-# ADDENDUM · Phase 1B3C — Planning Precision
+## Phase 1B3C — Planning Precision
 
 **Status:** Locked before UX implementation  
 **Purpose:** Make Planning truthful across dates, operating hours and physical capacity dimensions.
@@ -3757,7 +3764,7 @@ Upcoming Rounds created from the plan inherit the selected service date.
 - Approval stores/inherits the planning date.
 ---
 
-# IMPLEMENTATION RECONCILIATION · Phase 1B3C
+## Phase 1B3C implementation reconciliation
 
 The implemented planning precision pass confirms the following additional controlling details.
 
@@ -3833,9 +3840,10 @@ Constrained by Stops + Flowers
 
 The legacy planning `loadPercent` compatibility value may still exist internally, but where used it should reflect the highest active physical utilization rather than Stop count alone.
 
-# Phase 1C · Physical Delivery Truth — Manifest, Verification & POD
+## Phase 1C · Physical Delivery Truth — Manifest, Verification & POD
 
-This addendum supersedes any older model that treats `items` as display-only text or a single generic package label.
+The canonical manifest does not treat `items` as display-only text or a single
+generic package label.
 
 ## Canonical physical manifest
 
@@ -3980,7 +3988,7 @@ Delivered · 10:42
 
 The temporary state settles into the normal completed marker after a few seconds. It is operational feedback, not gamified confetti and not the source of truth itself.
 
-# Phase 3B · Shared Communication Attachment Model
+## Phase 3B · Shared Communication Attachment Model
 
 Operations and Driver App use one delivery/Round conversation record.
 
@@ -4059,7 +4067,7 @@ Human messages and attachment references can be copied from both Operations and 
 
 Photos/files/links/locations, calls, voice notes, system route events and normal messages remain attached to the delivery/Round history after the live conversation is minimized or closed.
 
-# Phase 1C4 · Post-Pickup Live Change Control
+## Phase 1C4 · Post-Pickup Live Change Control
 
 ## Role-surface separation
 
@@ -4191,7 +4199,7 @@ After apply:
 
 ---
 
-## v2.19 Addendum · Live Driver Availability, Contact Permission, and Privacy
+## Live Driver Availability, Contact Permission, and Privacy
 
 **Controlling detailed spec:** `ROUNDS-SPEC-10-DRIVERS-LIVE-AVAILABILITY-CONTACT-v1.4.md`
 
@@ -4301,10 +4309,10 @@ The current day must be visually explicit and capacity summaries must be calcula
 
 ---
 
-# ADDENDUM · Settings Control Center S1
+## Settings Control Center S1
 
 **Version:** Business Product Master v2.21  
-**Controlling UX:** `rounds-edge-states-v45.html`
+**Controlling UX:** `ux/operations/rounds-operations-current-v45.html`
 
 ## Settings overview role
 
@@ -4350,7 +4358,7 @@ Each row exposes current state, one or two meaningful boundary facts, and a real
 
 The Overview may summarize system protections that remain active across configuration, including custody immutability, exception escalation, Network consent boundaries and surprise-protection rules. These reminders are descriptive only; edits remain in the owning settings surfaces.
 
-# ADDENDUM · Network Supply Map Layer
+## Network Supply Map Layer
 
 **Version:** Business Product Master v2.22  
 **Date:** 30 August 2026
@@ -4394,7 +4402,7 @@ After acceptance for this merchant, the normal job-linked live-tracking contract
 
 Production implementation should use a native Mapbox GeoJSON/vector source with clustering and viewport/radius filtering rather than one DOM marker per Network driver. Generalized supply may update on a slower cadence such as approximately 10–30 seconds; exact higher-frequency tracking remains reserved for accepted active work where permitted.
 
-# ADDENDUM · External Courier Live Execution Finish
+## External Courier Live Execution Finish
 
 **Version:** Business Product Master v2.23  
 **Date:** 31 August 2026
@@ -4425,7 +4433,7 @@ Rules:
 - external provider delivery/POD contributes to the same unified History/evidence system;
 - standalone prototypes may simulate provider lifecycle events, but production truth must originate from server-side provider API/webhook integration.
 
-# ADDENDUM · Operations Edge States & Device Scope
+## Operations Edge States & Device Scope
 
 **Version:** Business Product Master v2.24  
 **Date:** 31 August 2026
@@ -4460,7 +4468,7 @@ Full Rounds Operations is canonical on **laptop and iPad-class work surfaces**. 
 A future phone companion may provide narrow functions such as alerts, urgent approval/rejection and record lookup, but it is not the canonical full Operations interface. The Driver App remains the phone-first field product.
 
 
-# ADDENDUM · Driver App Final Board + Localization + Commerce API Closure
+## Driver App Final Board + Localization + Commerce API Closure
 
 ## Driver V1 board closure
 
@@ -4495,3 +4503,5 @@ A connector is an adapter and onboarding surface, not an alternate fulfillment e
 ## Build boundary
 
 Exact REST/OpenAPI schemas, auth, idempotency keys, webhook signatures/retries and connector implementation are Engineering Build Spec work. Product behavior above is locked.
+
+*End of ROUNDS — SPEC 2 · Business & Product Master Specification*

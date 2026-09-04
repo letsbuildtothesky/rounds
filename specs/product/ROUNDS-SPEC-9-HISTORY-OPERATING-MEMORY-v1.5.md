@@ -1,8 +1,14 @@
 # Rounds · History Operating Memory
 
-**Version:** 1.5  
+**Version:** 1.5
 **Status:** Canonical — H1 Overview, H2 Deliveries, H3 Drivers and H4 Incidents complete  
-**Canonical UX checkpoint:** `rounds-edge-states-v45.html`
+**Canonical UX checkpoint:** `ux/operations/rounds-operations-current-v45.html`
+
+## Changelog
+
+- **v1.5 — 2026-09-04:** Removed stale phase language that still described
+  H3/H4 as pending after their canonical sections were completed. The four
+  History workspaces remain distinct and complete at the product/UX level.
 
 ## 1. Product purpose
 
@@ -157,7 +163,8 @@ Approved controlled phases:
 - **H1 — Overview**: completed.
 - **H2 — Deliveries history**: completed as unified delivery record, source filters, search, economics and evidence detail.
 - **H3 — Driver history**: completed as the evidence-based driver operating record with live context separated from durable performance.
-- **H4 — Incidents**: pending full incident ledger, cause-attribution filters, review state and evidence workflow.
+- **H4 — Incidents**: completed as the incident ledger with cause-attribution
+  filters, review state and evidence workflow.
 
 Existing Driver/Incident records remain functional until those dedicated visual/product phases are approved.
 
@@ -180,7 +187,8 @@ Canonical H2 behavior:
 - driver performance treatment must preserve the fair-attribution rules from H1;
 - delivery evidence reports are real downloadable records in the prototype, not ghost/export-toast controls.
 
-Phase H2 does not redesign Driver History or the full Incidents surface. Those remain dedicated later phases.
+Deliveries does not absorb Driver History or Incidents. Those remain dedicated
+workspaces governed by sections 11 and H4 below.
 
 ## 10. Pre-H3 driver availability and performance lock
 
@@ -304,7 +312,8 @@ H3 must make the causal treatment explicit:
 - they are not automatically counted against driver reliability;
 - under-review handling/custody events remain under review until evidence supports attribution.
 
-Phase H3 does not redesign the full Incidents ledger. That remains H4.
+Driver History does not absorb the Incidents ledger. Incidents remains the
+separate H4 workspace below.
 
 
 ## H4 · Incidents workspace

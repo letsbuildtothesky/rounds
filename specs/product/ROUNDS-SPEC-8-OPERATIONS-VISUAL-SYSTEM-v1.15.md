@@ -2,7 +2,7 @@
 
 **Version:** 1.15
 **Status:** Canonical — Operations visual system + History H1–H4 + Drivers V5 + Settings S1–S5 + Network Supply + External Courier Finish + Responsive workstation + edge-state lock
-**Canonical UX checkpoint:** `rounds-edge-states-v45.html`
+**Canonical UX checkpoint:** `ux/operations/rounds-operations-current-v45.html`
 
 ## 1. Purpose
 

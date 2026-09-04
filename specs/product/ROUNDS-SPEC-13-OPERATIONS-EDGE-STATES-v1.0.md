@@ -2,7 +2,7 @@
 
 **Version:** 1.0  
 **Status:** Canonical product/build specification  
-**Canonical UX checkpoint:** `rounds-edge-states-v45.html`  
+**Canonical UX checkpoint:** `ux/operations/rounds-operations-current-v45.html`
 **Scope:** Operations web app; cross-surface loading, quiet, offline, stale, degraded and recovery behavior
 
 ## 1. Purpose

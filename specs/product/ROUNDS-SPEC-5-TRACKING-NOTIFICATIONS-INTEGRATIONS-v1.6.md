@@ -505,7 +505,9 @@ Settings may preview Sender and Recipient tracking experiences, but previews mus
 - tokenized/unguessable tracking links in production;
 - POD/details only where merchant policy permits.
 
-`rounds-edge-states-v45.html` is the canonical Operations UX checkpoint; its Settings S4 surface contains the current integrations/tracking UX.
+`ux/operations/rounds-operations-current-v45.html` is the canonical Operations
+UX checkpoint; its Settings S4 surface contains the current
+integrations/tracking UX.
 
 
 # ADDENDUM · Canonical Commerce Intake API & Connector Model

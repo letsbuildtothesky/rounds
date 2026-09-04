@@ -1,8 +1,8 @@
 # Rounds · Drivers Live Availability & Contact Contract
 
-**Version:** 1.4  
-**Status:** Canonical — availability/contact contract + History H3 + Drivers V5 command surface + Network Supply + edge-state semantics  
-**Canonical UX checkpoint:** `rounds-edge-states-v45.html`  
+**Version:** 1.4
+**Status:** Canonical — availability/contact contract + History H3 + Drivers V5 command surface + Network Supply + edge-state semantics
+**Canonical UX checkpoint:** `ux/operations/rounds-operations-current-v45.html`
 **Related specs:** Business Product Master, Driver + Broadcast Operating Model, Dispatch Route Editing & Communications, Driver UX Behavior Master, History Operating Memory
 
 ## 1. Purpose

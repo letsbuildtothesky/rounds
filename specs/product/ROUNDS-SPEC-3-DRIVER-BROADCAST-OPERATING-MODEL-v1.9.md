@@ -6,6 +6,13 @@
 **Depends on:** ROUNDS — SPEC 2 · Business & Product Master  
 **Purpose:** Define how Rounds behaves operationally from the moment delivery work exists until the work is completed, including driver work modes, broadcast waves, offers, multi-stop Rounds, arrival/pickup/delivery verification, proof of delivery, live changes, and exceptions.
 
+## Changelog
+
+- **v1.9 — 2026-09-04:** Consolidated the appended operating-model sections
+  into the owning document, removed the premature end marker and aligned the
+  buyer/recipient terminology with the canonical actor model. Product behavior
+  is unchanged.
+
 **Explicitly excluded from this specification:**
 - visual styling;
 - colors;
@@ -843,7 +850,7 @@ The current Stop can carry context necessary for correct delivery, such as:
 - special instructions;
 - building/entrance notes;
 - item warnings;
-- sender/recipient distinction;
+- buyer/recipient distinction;
 - surprise/discreet instructions;
 - merchant-specific handling policy;
 - whether signature/photo/name is required;
@@ -853,9 +860,12 @@ Commercial context should be available where it changes operational behavior, bu
 
 ---
 
-# 23. Sender and recipient are separate parties
+# 23. Buyer and recipient are separate parties
 
-Rounds should support deliveries where the person who bought/sent the order is not the person receiving it.
+Rounds supports deliveries where the buyer is not the person receiving the
+order. A gifting buyer may be described contextually as the gift sender, but
+`sender` is not a generic delivery actor because courier providers may use it
+for the pickup contact.
 
 This is fundamental for:
 - flowers;
@@ -867,7 +877,7 @@ This is fundamental for:
 
 A Delivery may therefore have:
 - merchant;
-- sender/buyer;
+- buyer;
 - recipient;
 - alternative receiver.
 
@@ -920,7 +930,7 @@ The required evidence depends on:
 - order value/risk;
 - delivery type;
 - handoff type;
-- sender requirement;
+- buyer requirement;
 - recipient requirement;
 - previous exception state.
 
@@ -1002,7 +1012,7 @@ Signature is conditional, not universal.
 
 It may be required when:
 - merchant policy requires it;
-- sender requested signed delivery;
+- buyer requested signed delivery;
 - delivery type is high-value;
 - intended recipient handoff requires it.
 
@@ -1068,7 +1078,7 @@ V1 must support structured paths for at least:
 6. Vehicle or mechanical problem;
 7. Driver accident or emergency;
 8. Merchant cancellation;
-9. Recipient/sender requests a change.
+9. Recipient/buyer requests a change.
 
 ---
 
@@ -1087,7 +1097,7 @@ Possible flow:
 Possible next actions:
 - wait X minutes;
 - retry call;
-- contact sender;
+- contact buyer;
 - contact dispatch;
 - leave with concierge/security;
 - leave at door with photo if allowed;
@@ -1851,7 +1861,7 @@ The April visual language, layouts, color system, role styling, screen count, an
 14. **POD adapts to merchant policy and handoff type.**
 15. **Required proof blocks completion until satisfied.**
 16. **Failure is a structured workflow, not a free-text afterthought.**
-17. **Sender and recipient can be separate parties.**
+17. **Buyer and recipient can be separate parties.**
 18. **Contact attempts can become part of delivery evidence.**
 19. **Post-pickup reassignment must account for physical custody.**
 20. **Broadcast failure is shown honestly with next actions.**
@@ -1859,17 +1869,18 @@ The April visual language, layouts, color system, role styling, screen count, an
 22. **Rounds should be able to insert live work into active Rounds when operationally safe.**
 23. **Driver safety and glanceability outrank decorative UI during active road use.**
 24. **Critical accepted work must be able to survive poor connectivity.**
-25. **This specification defines behavior only; visual UX is intentionally still open.**
+25. **This specification defines behavior; visual UX is controlled by the
+    canonical Operations artifact, Driver boards and their visual
+    constitutions.**
 
 ---
 
-# 65. Next document / next phase
+# 65. Implementation sequence
 
-With this behavioral model locked, the next work is not yet the technical build spec.
-
-The next phase is:
-
-## **Golden Loop UX**
+The canonical UX and Engineering Build Specs now exist. Active implementation
+scope is controlled by `CODEX-BUILD-ORDER.md`, the Implementation Scope Ladder
+and the Implementation Coverage and Gap Control. This product-complete Network
+model does not authorize implementation of later slices.
 
 Design the Business Broadcast and Driver execution states together so both sides of the same event remain coherent.
 
@@ -1890,11 +1901,9 @@ After the golden loop is working visually and behaviorally, expand into:
 
 ---
 
-*End of ROUNDS — SPEC 3 · Driver + Broadcast Operating Model*
-
 ---
 
-# ADDENDUM · Wrong Address, Site Access & Learned Location
+# 67. Wrong Address, Site Access & Learned Location
 
 **Canonical detailed spec:** `ROUNDS-SPEC-4-MAPPING-ADDRESS-INTELLIGENCE-v1.8.md`
 
@@ -1910,7 +1919,7 @@ On wrong-address/cannot-locate:
 4. resolve/search provider data;
 5. present proposed correction;
 6. show impact on route/time/fare;
-7. obtain sender/recipient/merchant confirmation according to policy;
+7. obtain buyer/recipient/merchant confirmation according to policy;
 8. obtain Network driver consent if material accepted scope changes;
 9. save correction as an observation;
 10. promote to learned knowledge only with sufficient evidence.
@@ -1935,7 +1944,7 @@ Dispatcher may use site inspection modes during exceptions. Street imagery avail
 
 ---
 
-# ADDENDUM · Traffic-aware Operating Decisions
+# 68. Traffic-aware Operating Decisions
 
 **Canonical mapping rules:** `ROUNDS-SPEC-4-MAPPING-ADDRESS-INTELLIGENCE-v1.8.md`
 
@@ -1961,7 +1970,7 @@ For accepted Network work, traffic does not authorize Rounds to silently change 
 
 ---
 
-# ADDENDUM · Weather, ETA and Communication During Live Operation
+# 69. Weather, ETA and Communication During Live Operation
 
 ## Weather-aware operation
 
@@ -1986,7 +1995,7 @@ Rounds ETA may include current traffic plus a separately explainable weather/han
 
 ---
 
-# ADDENDUM · Route Mutation & Driver Contact
+# 70. Route Mutation & Driver Contact
 
 **Controlling detailed spec:** `ROUNDS-SPEC-6-DISPATCH-ROUTE-EDITING-COMMS-v1.11.md`
 
@@ -1998,7 +2007,7 @@ Direct driver communication is available only once a driver has an operational r
 
 ---
 
-# ADDENDUM · External Capacity after Network
+# 71. External Capacity after Network
 
 **Dedicated provider spec:** `ROUNDS-SPEC-7-EXTERNAL-COURIERS-v1.4.md`
 
@@ -2071,7 +2080,7 @@ Rounds must not imply that Network-driver consent rules automatically apply to t
 
 ---
 
-# ADDENDUM · Vehicle/Cargo Eligibility Contract
+# 72. Vehicle/Cargo Eligibility Contract
 
 Rounds Network driver eligibility must use the merchant's current physical Round rules.
 
@@ -2105,11 +2114,13 @@ The offered payout/boost applies to a defined physical Round scope. If cargo or 
 
 ---
 
-# v1.7 Addendum · Published Availability and Pre-Job Merchant Contact
+# 73. Published Availability and Pre-Job Merchant Contact
 
 **Controlling detailed spec:** `ROUNDS-SPEC-10-DRIVERS-LIVE-AVAILABILITY-CONTACT-v1.4.md`
 
-This addendum clarifies how driver availability participates in Broadcast eligibility and how merchant contact works before a Network job has been accepted.
+This section defines how driver availability participates in Broadcast
+eligibility and how merchant contact works before a Network job has been
+accepted.
 
 ## Published Network availability
 
@@ -2171,7 +2182,7 @@ A driver being offline, not open for jobs, or simply unavailable is not a negati
 
 Performance evidence begins at meaningful commitments: Offer response/acceptance, accepted-job cancellation/no-show, pickup/delivery execution, custody/POD and incidents.
 
-# ADDENDUM · Network Supply Visibility Before Broadcast
+# 74. Network Supply Visibility Before Broadcast
 
 **Version:** 1.9  
 **Date:** 30 August 2026
@@ -2189,3 +2200,5 @@ Before a Broadcast begins, Operations may optionally view nearby Network supply 
 ## Privacy and accepted-work transition
 
 Pre-acceptance supply positions are generalized. When a Network driver accepts this merchant's work, the driver leaves the anonymous/generalized supply representation for that job and enters the normal accepted-work Round/tracking/communication contract.
+
+*End of ROUNDS — SPEC 3 · Driver + Broadcast Operating Model*

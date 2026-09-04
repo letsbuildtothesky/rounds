@@ -3,7 +3,15 @@
 **Version:** 1.11
 **Status:** Canonical controlling specification  
 **Scope:** Dispatcher web UX, Driver app communication contract, Realtime, VoIP, route-edit interaction  
-**UX reference:** `rounds-edge-states-v45.html` (inherits current Dispatch/communications behavior from the canonical Operations build)
+**UX reference:** `ux/operations/rounds-operations-current-v45.html`
+
+## Changelog
+
+- **v1.11 — 2026-09-04:** Consolidated the canonical driver-marker and
+  composer/history rules in place. Normal click/tap opens the driver action
+  popover; `Open Round` is an explicit action. The attachment menu contains
+  sendable objects only, while Contact History remains separate navigation.
+  Historical append-only headings were converted into numbered sections.
 
 ---
 
@@ -317,10 +325,25 @@ Each human message can show:
 Canonical composer:
 
 ```text
-[ Mic ] [ Message…                    ] [ Send ]
+[ + ] [ Message…                    ] [ Mic ] [ Send ]
 ```
 
 Mic is first-class and immediately visible.
+
+`+` contains sendable secondary objects only:
+
+```text
+Photo
+File
+Location
+Map context
+```
+
+Selected, dropped or pasted attachments are staged before Send. Multiple
+attachments may be staged and removed independently. Typed or pasted URLs stay
+in ordinary message text and are auto-detected; there is no separate Link
+action. Contact History is separate navigation in the conversation
+context/header and must not appear inside `+`.
 
 Enter sends.
 
@@ -468,9 +491,11 @@ Also add a quiet system message to the communication thread.
 
 ---
 
-# 10. Customer/sender calls are different
+# 10. Buyer/recipient calls are different
 
-Do not confuse dispatcher↔driver VoIP with driver/dispatcher calls to sender or recipient.
+Do not confuse dispatcher↔driver VoIP with calls to a commerce buyer or delivery
+recipient. Avoid the generic UI label `sender`: courier providers may use it for
+the merchant pickup contact, while a gifting buyer may be the gift sender.
 
 The existing native-dialer/privacy rule for customer calls remains controlling until a later masked-calling spec explicitly replaces it.
 
@@ -618,14 +643,9 @@ This spec does not add:
 - customer SMS/email tracking notification UX (covered by Spec 5);
 - WhatsApp/LINE driver chat unless separately integrated later.
 
-*End of specification.*
+# 17. Canonical Communications Visual Contract
 
-
----
-
-# v1.1 · Canonical Communications Visual Contract
-
-The v6 Communications surface supersedes earlier chat-drawer layouts.
+The canonical Communications surface uses the following visual contract.
 
 ## Separation of concerns
 
@@ -676,9 +696,9 @@ Production records real audio; UX study can simulate audio and timing.
 
 ## Map shortcuts
 
-- click driver = open Round;
-- right-click = Message / Call / Voice note / Center / Open Round;
-- long-press on touch = same quick-contact menu.
+- click/tap driver = open the driver action popover;
+- `Open Round` is an explicit action in that popover;
+- right-click/long-press may open the same popover as optional shortcuts.
 
 ## Acceptance
 
@@ -691,9 +711,10 @@ Production records real audio; UX study can simulate audio and timing.
 
 ---
 
-# v1.2 · Canonical Dispatcher Communications Surface
+# 18. Canonical Dispatcher Communications Surface
 
-This version supersedes earlier visual implementations of dispatcher chat/call while preserving their backend contracts and history.
+This section preserves the backend contracts and history while defining the
+canonical dispatcher chat/call surface.
 
 ## Architectural rule
 
@@ -754,7 +775,8 @@ Rules:
 - Shift+Enter inserts line break;
 - Send disabled when empty;
 - mic is always first-class and adjacent to Send;
-- `+` contains secondary context actions such as Share Map Context and Contact History.
+- `+` contains sendable objects only: Photo, File, Location and Map context;
+- Contact History remains a separate conversation-context/header action.
 
 ## Voice notes
 
@@ -805,11 +827,13 @@ Only one active dispatcher-driver voice call is supported per communications sur
 ## Map quick contact
 
 Desktop:
-- left click driver → open Round;
-- right click → Message / Call / Voice note / Center / Open Round.
+- click/tap driver → action popover containing Message / Call / Voice note /
+  Center / Open Round;
+- right-click may open the same popover as an optional shortcut.
 
 Touch/iPad:
-- long press → same quick-contact menu.
+- tap opens the action popover;
+- long-press may open the same popover as an optional shortcut.
 
 Communication access must not require navigating away from Dispatch.
 
@@ -819,7 +843,8 @@ Communication access must not require navigating away from Dispatch.
 - no message/quick-action collisions;
 - thread scroll and composer are independent;
 - Round drawer stays usable on wide desktop;
-- right-click/long-press driver contact works;
+- normal click/tap driver contact works without requiring a shortcut;
+- optional right-click/long-press opens the same actions where supported;
 - voice record → preview → delete/send works;
 - sent voice bubble works;
 - Call → connected timer → mute/speaker → end works;
@@ -830,7 +855,7 @@ Communication access must not require navigating away from Dispatch.
 
 ---
 
-# v1.3 Addendum · First-class Round Driver Contact
+# 19. First-class Round Driver Contact
 
 Driver communications must not depend on the current Stop being present in the visible Dispatch order collection.
 
@@ -852,9 +877,10 @@ Acceptance test:
 5. Driver name, Round, Stop context and history remain correct.
 ---
 
-# v1.4 Addendum · Persistent Conversation Tray & Map Communication State
+# 20. Persistent Conversation Tray & Map Communication State
 
-This addendum supersedes earlier communications interaction statements where they conflict.
+This section defines the shared persistence and map-notification state used by
+the canonical interaction above.
 
 ## Canonical driver-marker interaction
 
@@ -892,9 +918,9 @@ Supabase Realtime (or equivalent production realtime channel) should update a si
 
 ---
 
-# ADDENDUM · Final Driver Contact Interaction Lock
+# 21. Driver Contact Interaction Lock
 
-This addendum supersedes any earlier rule that a normal driver-marker click directly opens the Round.
+The following interaction is canonical throughout this specification.
 
 ## Driver marker click/tap
 
@@ -992,9 +1018,9 @@ The dispatcher must still be able to inspect:
 
 while speaking to the driver.
 
-# v1.6 Addendum · Physical Verification + Rich Communication Cleanup
+# 22. Physical Verification + Rich Communication
 
-This addendum is controlling where it conflicts with earlier composer/history language.
+This section expands the canonical composer/history language in section 6.2.
 
 ## Physical manifest visibility on Dispatch
 
@@ -1045,8 +1071,6 @@ File
 Location
 Map context
 ```
-
-The previous requirement placing Contact History inside `+` is superseded.
 
 Contact History is a navigation action in the conversation context/header beside Driver view / Open Round where space permits.
 
@@ -1116,7 +1140,7 @@ Both surfaces support Copy for human messages and useful attachment references.
 - Files/media can be filtered separately from messages/calls.
 - Operations and Driver App show the same persisted conversation history.
 
-# Addendum · Post-Pickup Live Change Control
+# 23. Post-Pickup Live Change Control
 
 ## Operations-only UX
 
@@ -1199,7 +1223,7 @@ Changing the destination is not a custody transfer. The same driver continues to
 
 ---
 
-# v1.9 Addendum · Availability Contact vs Delivery Communications
+# 24. Availability Contact vs Delivery Communications
 
 **Controlling availability/contact spec:** `ROUNDS-SPEC-10-DRIVERS-LIVE-AVAILABILITY-CONTACT-v1.4.md`
 
@@ -1252,7 +1276,7 @@ Do not reveal unrestricted exact pre-acceptance Network-driver location in a con
 
 A driver contact action is visible only when the current relationship/state actually permits it. Do not show disabled-looking-but-clickable `Message` or `Call` controls for unknown Network candidates.
 
-# v1.9 Addendum · External Courier Live Lifecycle
+# 25. External Courier Live Lifecycle
 
 The Dispatch board must treat a booked external courier as live operational work, not as a detached provider link.
 
@@ -1276,7 +1300,7 @@ POD received
 - Quote expiry is enforced before booking; stale/mismatched quotes require requote.
 - Delivered external work may not be considered evidence-complete until provider POD is normalized/imported where the provider supplies proof.
 
-# v1.10 Addendum · Offline / Loading / Quiet-State Dispatch Contract
+# 26. Offline / Loading / Quiet-State Dispatch Contract
 
 The Dispatch workstation must preserve operational truth under partial connectivity.
 
@@ -1304,3 +1328,5 @@ A Mapbox/map dependency failure must not blank or disable the rest of Dispatch. 
 - A proposed plan with zero uncovered deliveries states that all deliveries are covered.
 
 Never show a success/empty state while a live request is still loading.
+
+*End of specification.*
