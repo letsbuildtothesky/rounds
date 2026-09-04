@@ -5,6 +5,13 @@
 **Status:** Active implementation-control specification  
 **Applies to:** English own-fleet Pilot / Slice 1 closure and Slice 2 execution
 
+## Changelog
+
+- **2026-09-04 · Checkpoint 26:** Records canonical English/Thai D03/D04
+  localization, responsive Thai verification and the remaining unlocked-device
+  acceptance boundary. Coverage scores are unchanged because functional status
+  remains `VERIFIED`.
+
 ## 1. Purpose
 
 This document prevents design drift and false completion claims by connecting the canonical product/UX sources to code, verification evidence, known gaps and the next build sequence.
@@ -95,7 +102,7 @@ Canonical inventory: `specs/product/ROUNDS-DRIVER-CANONICAL-MANIFEST-v6.md` and 
 | B02 / B03 Verification + Network home | Network | `DEFERRED` | Intentionally absent. | Slice 5+ only. |
 | C01 / C03 Delivery offers | Network | `DEFERRED` | Team work is assigned, not offered. | Slice 5+ only. |
 | D01 Navigate to pickup | Pilot P0 | `VERIFIED` | An approved assigned Round now routes through the canonical D01 state using the authoritative pickup coordinate, live Google maneuver/ETA/distance events, measured D01 geometry, the canonical bottom action drawer and the D01→D03/D04 arrival transition. Automated/golden checks and a live Samsung provider check pass. | Physically approach the pickup to accept the 100 m/native-arrival reveal, then finish degraded-network/background road gates. |
-| D03 / D04 Pickup confirmation | Pilot P0 | `VERIFIED` | Exact manifest checklist, offline command outbox, version/idempotency checks and server custody commit exist. | Complete final physical multi-item acceptance and visual comparison. |
+| D03 / D04 Pickup confirmation | Pilot P0 | `VERIFIED` | Exact manifest checklist, offline command outbox, version/idempotency checks and server custody commit exist. English and Thai now use the canonical D03/D04 copy through the shared locale layer, including manifest handling labels, problem reporting and honest pending/failure states. English geometry/golden coverage and a Thai 393 px no-overflow interaction test pass; the configured APK is installed on the connected Samsung. | Complete final physical multi-item English/Thai acceptance and visual comparison with the phone unlocked. |
 | E01 Active Round overview | Pilot P0 | `VERIFIED` | Real Round data, map, measured UI metrics and golden geometry tests exist. | Final physical-device visual acceptance for supported widths. |
 | E02 Navigate to current Stop | Pilot P0 | `ACCEPTED` | Embedded Google navigation, TWO_WHEELER route, arrival command and physical Samsung bench operation have been exercised. | Motorcycle road, degraded-network, background and battery field gates remain open. |
 | E04–E06 Live Round change | Slice 2 P0 | `IMPLEMENTED` | The supplied measured Driver surface now renders server-authored before/after truth and route impact, supports Operations contact, and durably acknowledges one assigned versioned update. Operations previews real route/promise/shift consequences, atomically changes only authorized destination/window/sequence truth, preserves locked custody, exposes awaiting/acknowledged state, and blocks stale versions. Automated API/widget coverage, remote migration application and Android build/launch pass. | Exercise the complete Operations apply → physical Driver acknowledge → Operations observed transition against a live active multi-Stop Round, add canonical map-based pin selection, and finish device visual/road acceptance. Network paid add-Stop consent remains deferred. |
@@ -221,10 +228,12 @@ This sequence does not promote later slices; it orders the already authorized En
 
 - **D1 launch/language surface implemented 2026-09-03:** canonical A01 timing/animation and Thai-first A01B English/Thai geometry now use generated board measurements. Local pre-auth locale persistence, returning-Driver bypass and 320 px Thai layout are covered automatically; authenticated profile sync, all-active-screen string coverage and physical acceptance remain open.
 - **D4 POD canonical parity implemented 2026-09-04:** F03/F04 now uses generated measurements from the supplied English/Thai boards, transmits only explicitly confirmed delivery-manifest lines and preserves the already accepted retained/resumable photo and atomic completion path. Unsupported conditional signature/GPS claims remain isolated under GAP-014. The next authorized closure is physical F03/F04 English/Thai and degraded-network acceptance, followed by the remaining active-screen localization pass.
+- **D5 D03/D04 localization completed 2026-09-04:** pickup confirmation, manifest handling, problem reporting and sync/error states now resolve through one English/Thai copy authority based on the supplied boards. A Thai reference-width interaction test exposed and closed two real narrow-layout overflows. All 123 Driver tests, Flutter analysis and the Android build pass; the APK is installed on the connected Samsung, with unlocked physical comparison still open.
 - Complete assigned-Round offline read cache and consolidated sync truth.
 - Finish N01/N02/N03 recovery states.
 - Run golden/reference-viewport comparisons for every in-scope board.
 - Run physical multi-stop, degraded-network, background, battery and motorcycle road acceptance.
+- Continue the remaining active-screen localization pass with canonical G03 package-problem states; do not promote unsupported exception outcomes.
 
 ### Checkpoint E — Thai implementation and production gates
 
