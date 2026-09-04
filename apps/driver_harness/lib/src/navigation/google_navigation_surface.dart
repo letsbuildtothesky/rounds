@@ -385,7 +385,9 @@ class _GoogleNavigationSurfaceState extends State<GoogleNavigationSurface>
 
   Future<void> _reviewLocationAccess() async {
     await Navigator.of(context).push<void>(
-      MaterialPageRoute(builder: (_) => const DriverPermissionsScreen()),
+      MaterialPageRoute(
+        builder: (_) => DriverPermissionsScreen(locale: widget.strings.locale),
+      ),
     );
     if (!mounted) return;
     await _initialize();

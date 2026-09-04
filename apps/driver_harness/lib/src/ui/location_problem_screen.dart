@@ -512,7 +512,11 @@ class _LocationProblemScreenState extends State<LocationProblemScreen> {
       return await widget.locationProvider();
     } catch (error) {
       if (error is DriverLocationAccessException && mounted) {
-        await showLocationPermissionRecovery(context, error);
+        await showLocationPermissionRecovery(
+          context,
+          error,
+          locale: widget.controller.locale,
+        );
         return null;
       }
       if (mounted) {

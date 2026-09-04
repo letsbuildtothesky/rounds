@@ -196,7 +196,10 @@ class _NavigationHarnessScreenState extends State<NavigationHarnessScreen> {
 
   Future<void> _reviewLocationAccess() async {
     await Navigator.of(context).push<void>(
-      MaterialPageRoute(builder: (_) => const DriverPermissionsScreen()),
+      MaterialPageRoute(
+        builder: (_) =>
+            DriverPermissionsScreen(locale: widget.controller.locale),
+      ),
     );
     if (mounted) await _retryGps();
   }

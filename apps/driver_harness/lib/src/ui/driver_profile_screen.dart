@@ -138,7 +138,9 @@ class DriverProfileScreen extends StatelessWidget {
 
   void _openPermissions(BuildContext context) {
     Navigator.of(context).push<void>(
-      MaterialPageRoute(builder: (_) => const DriverPermissionsScreen()),
+      MaterialPageRoute(
+        builder: (_) => DriverPermissionsScreen(locale: controller.locale),
+      ),
     );
   }
 

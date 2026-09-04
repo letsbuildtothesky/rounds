@@ -349,7 +349,10 @@ class _ProofOfDeliveryScreenState extends State<ProofOfDeliveryScreen> {
                   : 'The delivery photo could not be retained. Try again.');
       });
       if (isCameraPermissionError(error)) {
-        await showCameraPermissionRecovery(context);
+        await showCameraPermissionRecovery(
+          context,
+          locale: widget.controller.locale,
+        );
       }
     }
   }

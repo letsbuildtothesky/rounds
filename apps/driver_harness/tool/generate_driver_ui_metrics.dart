@@ -182,6 +182,9 @@ String generateDriverUiMetrics(Map<String, dynamic> json) {
   final n01Actions = n01['actions'] as Map<String, dynamic>;
   final n01Compact = n01['compact'] as Map<String, dynamic>;
   final n01Short = n01['short'] as Map<String, dynamic>;
+  final n01Thai = n01['thai'] as Map<String, dynamic>;
+  final n01CompactThai = n01['compactThai'] as Map<String, dynamic>;
+  final n01ShortThai = n01['shortThai'] as Map<String, dynamic>;
   final n02 = screens['N02'] as Map<String, dynamic>;
   final n02Top = n02['topBar'] as Map<String, dynamic>;
   final n02Main = n02['main'] as Map<String, dynamic>;
@@ -2022,6 +2025,7 @@ abstract final class DriverL01Metrics {
 
 abstract final class DriverN01Metrics {
   static const String source = '${n01['source']}';
+  static const String sourceThai = '${n01['sourceThai']}';
 
   static const double topBarHeight = ${_double(n01Top['height'])};
   static const double topBarPaddingHorizontal = ${_double(n01Top['paddingHorizontal'])};
@@ -2082,6 +2086,36 @@ abstract final class DriverN01Metrics {
   static const double shortTruthRowMinHeight = ${_double(n01Short['truthRowMinHeight'])};
   static const double shortPrimaryHeight = ${_double(n01Short['primaryHeight'])};
   static const double shortSecondaryHeight = ${_double(n01Short['secondaryHeight'])};
+  static const double thaiStepSize = ${_double(n01Thai['stepSize'])};
+  static const double thaiIconBottom = ${_double(n01Thai['iconBottom'])};
+  static const double thaiTitleSize = ${_double(n01Thai['titleSize'])};
+  static const double thaiTitleHeight = ${_double(n01Thai['titleHeight'])};
+  static const double thaiLeadTop = ${_double(n01Thai['leadTop'])};
+  static const double thaiLeadSize = ${_double(n01Thai['leadSize'])};
+  static const double thaiLeadHeight = ${_double(n01Thai['leadHeight'])};
+  static const double thaiTruthTop = ${_double(n01Thai['truthTop'])};
+  static const double thaiTruthRowMinHeight = ${_double(n01Thai['truthRowMinHeight'])};
+  static const double thaiTruthCopySize = ${_double(n01Thai['truthCopySize'])};
+  static const double thaiTruthCopyHeight = ${_double(n01Thai['truthCopyHeight'])};
+  static const double thaiSecondaryHeight = ${_double(n01Thai['secondaryHeight'])};
+  static const double thaiSecondaryTop = ${_double(n01Thai['secondaryTop'])};
+  static const double compactThaiIconBottom = ${_double(n01CompactThai['iconBottom'])};
+  static const double compactThaiTitleSize = ${_double(n01CompactThai['titleSize'])};
+  static const double compactThaiTitleHeight = ${_double(n01CompactThai['titleHeight'])};
+  static const double compactThaiLeadTop = ${_double(n01CompactThai['leadTop'])};
+  static const double compactThaiLeadSize = ${_double(n01CompactThai['leadSize'])};
+  static const double compactThaiLeadHeight = ${_double(n01CompactThai['leadHeight'])};
+  static const double compactThaiTruthTop = ${_double(n01CompactThai['truthTop'])};
+  static const double compactThaiTruthRowMinHeight = ${_double(n01CompactThai['truthRowMinHeight'])};
+  static const double compactThaiTruthCopySize = ${_double(n01CompactThai['truthCopySize'])};
+  static const double compactThaiPrimarySize = ${_double(n01CompactThai['primarySize'])};
+  static const double compactThaiSecondaryHeight = ${_double(n01CompactThai['secondaryHeight'])};
+  static const double shortThaiIconBottom = ${_double(n01ShortThai['iconBottom'])};
+  static const double shortThaiTitleSize = ${_double(n01ShortThai['titleSize'])};
+  static const double shortThaiLeadTop = ${_double(n01ShortThai['leadTop'])};
+  static const double shortThaiLeadSize = ${_double(n01ShortThai['leadSize'])};
+  static const double shortThaiTruthTop = ${_double(n01ShortThai['truthTop'])};
+  static const double shortThaiSecondaryHeight = ${_double(n01ShortThai['secondaryHeight'])};
 }
 
 abstract final class DriverN02Metrics {

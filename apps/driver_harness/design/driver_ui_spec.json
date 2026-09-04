@@ -1770,6 +1770,7 @@
     },
     "N01": {
       "source": "ux/driver/en/screens/ROUNDS-N01-PERMISSIONS-v3-10OF10.html",
+      "sourceThai": "ux/driver/th/ROUNDS-N01-PERMISSIONS-TH-v1-10OF10.html",
       "topBar": {
         "height": 58,
         "paddingHorizontal": 20,
@@ -1838,6 +1839,42 @@
         "truthRowMinHeight": 50,
         "primaryHeight": 56,
         "secondaryHeight": 42
+      },
+      "thai": {
+        "stepSize": 12.5,
+        "iconBottom": 28,
+        "titleSize": 39,
+        "titleHeight": 1.14,
+        "leadTop": 15,
+        "leadSize": 16.5,
+        "leadHeight": 1.55,
+        "truthTop": 27,
+        "truthRowMinHeight": 64,
+        "truthCopySize": 14,
+        "truthCopyHeight": 1.48,
+        "secondaryHeight": 48,
+        "secondaryTop": 5
+      },
+      "compactThai": {
+        "iconBottom": 21,
+        "titleSize": 33,
+        "titleHeight": 1.16,
+        "leadTop": 12,
+        "leadSize": 15,
+        "leadHeight": 1.52,
+        "truthTop": 20,
+        "truthRowMinHeight": 56,
+        "truthCopySize": 12.8,
+        "primarySize": 16,
+        "secondaryHeight": 43
+      },
+      "shortThai": {
+        "iconBottom": 18,
+        "titleSize": 31,
+        "leadTop": 10,
+        "leadSize": 14.5,
+        "truthTop": 16,
+        "secondaryHeight": 40
       }
     },
     "N02": {

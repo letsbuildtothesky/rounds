@@ -1824,6 +1824,7 @@ abstract final class DriverL01Metrics {
 
 abstract final class DriverN01Metrics {
   static const String source = 'ux/driver/en/screens/ROUNDS-N01-PERMISSIONS-v3-10OF10.html';
+  static const String sourceThai = 'ux/driver/th/ROUNDS-N01-PERMISSIONS-TH-v1-10OF10.html';
 
   static const double topBarHeight = 58.0;
   static const double topBarPaddingHorizontal = 20.0;
@@ -1884,6 +1885,36 @@ abstract final class DriverN01Metrics {
   static const double shortTruthRowMinHeight = 50.0;
   static const double shortPrimaryHeight = 56.0;
   static const double shortSecondaryHeight = 42.0;
+  static const double thaiStepSize = 12.5;
+  static const double thaiIconBottom = 28.0;
+  static const double thaiTitleSize = 39.0;
+  static const double thaiTitleHeight = 1.14;
+  static const double thaiLeadTop = 15.0;
+  static const double thaiLeadSize = 16.5;
+  static const double thaiLeadHeight = 1.55;
+  static const double thaiTruthTop = 27.0;
+  static const double thaiTruthRowMinHeight = 64.0;
+  static const double thaiTruthCopySize = 14.0;
+  static const double thaiTruthCopyHeight = 1.48;
+  static const double thaiSecondaryHeight = 48.0;
+  static const double thaiSecondaryTop = 5.0;
+  static const double compactThaiIconBottom = 21.0;
+  static const double compactThaiTitleSize = 33.0;
+  static const double compactThaiTitleHeight = 1.16;
+  static const double compactThaiLeadTop = 12.0;
+  static const double compactThaiLeadSize = 15.0;
+  static const double compactThaiLeadHeight = 1.52;
+  static const double compactThaiTruthTop = 20.0;
+  static const double compactThaiTruthRowMinHeight = 56.0;
+  static const double compactThaiTruthCopySize = 12.8;
+  static const double compactThaiPrimarySize = 16.0;
+  static const double compactThaiSecondaryHeight = 43.0;
+  static const double shortThaiIconBottom = 18.0;
+  static const double shortThaiTitleSize = 31.0;
+  static const double shortThaiLeadTop = 10.0;
+  static const double shortThaiLeadSize = 14.5;
+  static const double shortThaiTruthTop = 16.0;
+  static const double shortThaiSecondaryHeight = 40.0;
 }
 
 abstract final class DriverN02Metrics {

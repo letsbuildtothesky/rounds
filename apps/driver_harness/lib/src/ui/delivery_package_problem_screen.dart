@@ -257,7 +257,10 @@ class _DeliveryPackageProblemScreenState
                   : 'The photo could not be saved. Try again.');
       });
       if (isCameraPermissionError(error)) {
-        await showCameraPermissionRecovery(context);
+        await showCameraPermissionRecovery(
+          context,
+          locale: widget.controller.locale,
+        );
       }
     }
   }

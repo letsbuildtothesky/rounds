@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rounds_driver_harness/src/app/app_strings.dart';
 import 'package:rounds_driver_harness/src/permissions/driver_permissions_screen.dart';
 import 'package:rounds_driver_harness/src/permissions/location_access.dart';
 
@@ -30,7 +31,10 @@ void main() {
       );
       expect(find.text('Allow location'), findsOneWidget);
       expect(find.text('Allow notifications'), findsNothing);
-      expect(find.textContaining('Camera is requested only'), findsOneWidget);
+      expect(
+        find.text('Used only while working or open for jobs'),
+        findsOneWidget,
+      );
 
       await tester.tap(find.byKey(const Key('n01-primary')));
       await tester.pumpAndSettle();
@@ -60,6 +64,71 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(gateway.locationSettingsCalls, 1);
+  });
+
+  testWidgets('N01 follows the canonical Thai board at 393px', (tester) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(393, 852);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    final gateway = _FakeLocationGateway(
+      state: DriverLocationAccessState.denied,
+      requestedState: DriverLocationAccessState.whileInUse,
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: DriverPermissionsScreen(
+          gateway: gateway,
+          locale: HarnessLocale.thai,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('1 จาก 1'), findsOneWidget);
+    expect(find.text('สิทธิ์การใช้งาน'), findsOneWidget);
+    expect(find.text('ใช้ตำแหน่งกับ Rounds'), findsOneWidget);
+    expect(
+      find.text('เพื่อการนำทาง การยืนยันว่าถึงจุด และเวลาถึงที่แม่นยำ'),
+      findsOneWidget,
+    );
+    expect(find.text('เส้นทางและสถานะเมื่อถึงจุดแม่นยำ'), findsOneWidget);
+    expect(find.text('ใช้เฉพาะตอนทำงานหรือเปิดรับงาน'), findsOneWidget);
+    expect(find.text('อนุญาตตำแหน่ง'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+
+    await tester.tap(find.byKey(const Key('n01-primary')));
+    await tester.pumpAndSettle();
+
+    expect(gateway.requestCalls, 1);
+    expect(find.text('เสร็จ'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('N01 Thai compact board does not overflow at 320px', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(320, 700);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: DriverPermissionsScreen(
+          gateway: _FakeLocationGateway(
+            state: DriverLocationAccessState.denied,
+          ),
+          locale: HarnessLocale.thai,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('ใช้ตำแหน่งกับ Rounds'), findsOneWidget);
+    expect(find.text('อนุญาตตำแหน่ง'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 
   test(
@@ -120,6 +189,34 @@ void main() {
     await tester.tap(find.text('Not now'));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('n01-camera-sheet')), findsNothing);
+  });
+
+  testWidgets('camera recovery drawer uses the active Thai locale', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Builder(
+          builder: (context) => Scaffold(
+            body: TextButton(
+              onPressed: () => showCameraPermissionRecovery(
+                context,
+                locale: HarnessLocale.thai,
+              ),
+              child: const Text('Recover camera'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('Recover camera'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('สิทธิ์การใช้กล้อง'), findsOneWidget);
+    expect(find.text('ต้องอนุญาตให้ใช้กล้อง'), findsOneWidget);
+    expect(find.text('เปิดการตั้งค่าแอป'), findsOneWidget);
+    expect(find.text('ไว้ทีหลัง'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 }
 
