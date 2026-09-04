@@ -1,11 +1,14 @@
 import 'dart:async';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../app/driver_design_system.dart';
 import '../app/generated/driver_ui_metrics.g.dart';
 import '../app/harness_app_controller.dart';
+import '../driver/driver_message_links.dart';
 import '../driver/driver_operations_thread.dart';
 import '../driver/driver_session.dart';
 import '../storage/operations_message_draft_store.dart';
@@ -638,34 +641,45 @@ class _MessageBubble extends StatelessWidget {
                     DriverH01Metrics.bubbleRadius,
                   ),
                 ),
-                child: Column(
-                  crossAxisAlignment: mine
-                      ? CrossAxisAlignment.end
-                      : CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      message.body,
-                      style: TextStyle(
-                        color: mine ? Colors.white : RoundsColors.ink,
-                        fontSize: DriverH01Metrics.bubbleSize,
-                        height: DriverH01Metrics.bubbleHeight,
-                        fontWeight: FontWeight.w500,
+                child: GestureDetector(
+                  key: Key('h01-message-${message.id}'),
+                  behavior: HitTestBehavior.opaque,
+                  onLongPress: () async {
+                    await Clipboard.setData(ClipboardData(text: message.body));
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Message copied')),
+                    );
+                  },
+                  child: Column(
+                    crossAxisAlignment: mine
+                        ? CrossAxisAlignment.end
+                        : CrossAxisAlignment.start,
+                    children: [
+                      _MessageBody(
+                        body: message.body,
+                        style: TextStyle(
+                          color: mine ? Colors.white : RoundsColors.ink,
+                          fontSize: DriverH01Metrics.bubbleSize,
+                          height: DriverH01Metrics.bubbleHeight,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: DriverH01Metrics.metaTop),
-                    Text(
-                      mine
-                          ? '$time · ${message.savedLocally ? 'Saved locally' : 'Sent'}'
-                          : time,
-                      style: TextStyle(
-                        color: mine
-                            ? Colors.white.withValues(alpha: .62)
-                            : RoundsColors.muted,
-                        fontSize: DriverH01Metrics.metaSize,
-                        fontWeight: FontWeight.w700,
+                      const SizedBox(height: DriverH01Metrics.metaTop),
+                      Text(
+                        mine
+                            ? '$time · ${message.savedLocally ? 'Saved locally' : 'Sent'}'
+                            : time,
+                        style: TextStyle(
+                          color: mine
+                              ? Colors.white.withValues(alpha: .62)
+                              : RoundsColors.muted,
+                          fontSize: DriverH01Metrics.metaSize,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -673,6 +687,62 @@ class _MessageBubble extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _MessageBody extends StatefulWidget {
+  const _MessageBody({required this.body, required this.style});
+
+  final String body;
+  final TextStyle style;
+
+  @override
+  State<_MessageBody> createState() => _MessageBodyState();
+}
+
+class _MessageBodyState extends State<_MessageBody> {
+  final _recognizers = <TapGestureRecognizer>[];
+
+  @override
+  void dispose() {
+    for (final recognizer in _recognizers) {
+      recognizer.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    for (final recognizer in _recognizers) {
+      recognizer.dispose();
+    }
+    _recognizers.clear();
+    final spans = parseDriverMessageText(widget.body)
+        .map((segment) {
+          if (segment.uri == null) return TextSpan(text: segment.text);
+          final recognizer = TapGestureRecognizer()
+            ..onTap = () => _openLink(segment.uri!);
+          _recognizers.add(recognizer);
+          return TextSpan(
+            text: segment.text,
+            style: const TextStyle(
+              decoration: TextDecoration.underline,
+              decorationThickness: 1,
+            ),
+            recognizer: recognizer,
+          );
+        })
+        .toList(growable: false);
+    return Text.rich(TextSpan(style: widget.style, children: spans));
+  }
+
+  Future<void> _openLink(Uri uri) async {
+    final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!opened && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('The link could not be opened.')),
+      );
+    }
   }
 }
 
