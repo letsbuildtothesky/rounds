@@ -201,6 +201,16 @@ export interface OperationsCommunicationsGateway {
     command: SendOperationsMessageCommand,
     actor: ActorContext,
   ): Promise<SendOperationsMessageResult>;
+  prepareOperationsMessageMedia(
+    threadId: string,
+    actor: ActorContext,
+    assetId: string,
+    payload: PrepareMessageMediaPayload,
+  ): Promise<Record<string, unknown>>;
+  verifyOperationsMessageMedia(
+    assetId: string,
+    actor: ActorContext,
+  ): Promise<Record<string, unknown>>;
 }
 
 export interface PodGateway {

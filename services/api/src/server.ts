@@ -11,6 +11,7 @@ import { operationsPlanningHandler } from "./operations-planning-handler.js";
 import { operationsHistoryHandler } from "./operations-history-handler.js";
 import { operationsCommunicationsHandler } from "./operations-communications-handler.js";
 import { sendOperationsMessageHandler } from "./send-operations-message-handler.js";
+import { prepareOperationsMessageMediaHandler, verifyOperationsMessageMediaHandler } from "./prepare-operations-message-media-handler.js";
 import { readConfig } from "./config.js";
 import { operationsSessionHandler } from "./operations-session-handler.js";
 import { operationsActionHandler } from "./operations-action-handler.js";
@@ -306,6 +307,30 @@ const server = createServer(async (request, response) => {
         now: () => new Date(),
       });
       sendNode(response, addOperationsCors(messageResponse, request.headers.origin));
+      return;
+    }
+    const operationsMessageMediaMatch = request.url?.match(/^\/v1\/operations\/communications\/([0-9a-f-]+)\/message-media$/i);
+    if (request.method === "POST" && operationsMessageMediaMatch) {
+      const webRequest = await toWebRequest(request);
+      const mediaResponse = await prepareOperationsMessageMediaHandler(webRequest, operationsMessageMediaMatch[1]!, {
+        identity: gateway,
+        communications: gateway,
+        uuid: () => crypto.randomUUID(),
+        now: () => new Date(),
+      });
+      sendNode(response, addOperationsCors(mediaResponse, request.headers.origin));
+      return;
+    }
+    const operationsMessageMediaVerifyMatch = request.url?.match(/^\/v1\/operations\/message-media\/([0-9a-f-]+)\/verify$/i);
+    if (request.method === "POST" && operationsMessageMediaVerifyMatch) {
+      const webRequest = await toWebRequest(request);
+      const mediaResponse = await verifyOperationsMessageMediaHandler(webRequest, operationsMessageMediaVerifyMatch[1]!, {
+        identity: gateway,
+        communications: gateway,
+        uuid: () => crypto.randomUUID(),
+        now: () => new Date(),
+      });
+      sendNode(response, addOperationsCors(mediaResponse, request.headers.origin));
       return;
     }
     if (request.method === "POST" && request.url === "/v1/rounds") {

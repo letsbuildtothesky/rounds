@@ -7,8 +7,10 @@ import type {
   OperationsSession,
   SendOperationsMessageCommand,
   SendOperationsMessageResult,
+  PrepareMessageMediaPayload,
 } from "@rounds/contracts";
 import { operationsCommunicationsHandler } from "../src/operations-communications-handler.js";
+import { prepareOperationsMessageMediaHandler, verifyOperationsMessageMediaHandler } from "../src/prepare-operations-message-media-handler.js";
 import { sendOperationsMessageHandler } from "../src/send-operations-message-handler.js";
 import type {
   ActorContext,
@@ -36,6 +38,7 @@ const thread: OperationsCommunicationThread = {
   deliveryReference: "UF-001",
   recipientName: "Siriporn",
   rawAddress: "Bangkok",
+  destinationPosition: { latitude: 13.744, longitude: 100.54 },
   driverId: "10000000-0000-4000-8000-000000000014",
   driverName: "Driver Demo",
   version: 3,
@@ -73,6 +76,17 @@ class FakeGateway implements IdentityGateway, OperationsCommunicationsGateway {
       events: [],
     };
   }
+  async prepareOperationsMessageMedia(
+    id: string,
+    _actor: ActorContext,
+    assetId: string,
+    payload: PrepareMessageMediaPayload,
+  ): Promise<Record<string, unknown>> {
+    return { status: "prepared", mediaAssetId: assetId, threadId: id, kind: payload.kind };
+  }
+  async verifyOperationsMessageMedia(assetId: string): Promise<Record<string, unknown>> {
+    return { status: "verified", mediaAssetId: assetId, assetState: "uploaded_uncommitted" };
+  }
 }
 
 const dependencies = (gateway: FakeGateway) => ({
@@ -107,6 +121,56 @@ test("dispatcher sends a trimmed versioned Operations reply", async () => {
   assert.equal(gateway.command?.aggregateId, threadId);
   assert.equal(gateway.command?.expectedVersion, 3);
   assert.equal(gateway.command?.payload.body, "Continue to the recipient");
+});
+
+test("dispatcher can prepare and verify private message media", async () => {
+  const gateway = new FakeGateway();
+  const prepare = await prepareOperationsMessageMediaHandler(new Request("http://test/message-media", {
+    method: "POST",
+    headers: {
+      authorization: "Bearer token",
+      "content-type": "application/json",
+      "x-rounds-tenant-id": tenantId,
+    },
+    body: JSON.stringify({
+      kind: "voice",
+      fileName: "dispatch-note.webm",
+      contentType: "audio/webm",
+      byteSize: 512,
+      sha256: "a".repeat(64),
+      durationMilliseconds: 1200,
+    }),
+  }), threadId, dependencies(gateway));
+  assert.equal(prepare.status, 201);
+  const prepared = await prepare.json() as { mediaAssetId: string };
+  const verify = await verifyOperationsMessageMediaHandler(new Request("http://test/verify", {
+    method: "POST",
+    headers: { authorization: "Bearer token", "x-rounds-tenant-id": tenantId },
+  }), prepared.mediaAssetId, dependencies(gateway));
+  assert.equal(verify.status, 200);
+});
+
+test("Operations reply preserves staged attachments in the versioned command", async () => {
+  const gateway = new FakeGateway();
+  const attachment = {
+    kind: "location" as const,
+    label: "Dispatcher location",
+    latitude: 13.744,
+    longitude: 100.54,
+    capturedAt: "2026-09-02T03:01:00.000Z",
+  };
+  const response = await sendOperationsMessageHandler(new Request("http://test/messages", {
+    method: "POST",
+    headers: {
+      authorization: "Bearer token",
+      "content-type": "application/json",
+      "idempotency-key": "operations:location",
+      "x-rounds-tenant-id": tenantId,
+    },
+    body: JSON.stringify({ body: "", attachments: [attachment] }),
+  }), threadId, dependencies(gateway));
+  assert.equal(response.status, 201);
+  assert.deepEqual(gateway.command?.payload.attachments, [attachment]);
 });
 
 test("viewer cannot reply to a driver", async () => {

@@ -7,6 +7,15 @@
 
 ## Changelog
 
+- **2026-09-04 · Checkpoint 35:** Replaces the Dispatch text-only composer
+  with the canonical v45 Photo, File, Location and Map context menu, visible
+  microphone, staged-review area, image paste, file drop and ordinary-text URL
+  handling. Text plus staged blobs survive browser refresh locally; offline
+  Send is blocked without losing the draft. Operations-authored media now uses
+  the existing private resumable Storage boundary, exact server SHA-256/length
+  verification and atomic shared-thread commit. The remote migration is
+  applied and the localhost menu/map-context refresh path is browser-verified;
+  the wider floating/tray/unread/call/history behavior remains open.
 - **2026-09-04 · Checkpoint 34:** Completes the real Driver H01 rich-message
   path for Camera, Photo, File and Voice. Media drafts survive restart,
   uploads resume through private Supabase Storage, server verification checks
@@ -191,7 +200,7 @@ Canonical visual source: `ux/operations/rounds-operations-current-v45.html`. The
 | Post-pickup live delivery change | Slice 2 P0 | `IMPLEMENTED` | The v45 Round detail opens a custody-locked live-change drawer, accepts only the authorized own-team fields, calls a real consequence preview, applies one versioned/idempotent database command and projects pending or acknowledged Driver state. Route order, destination version, audit, system ledger and Driver notification state commit atomically. | Complete signed-in browser/device acceptance with an active multi-Stop Round and connect the canonical map-based pin selector plus risk-override acknowledgement when that authority is configured. |
 | Pickup exception resolution | Pilot P0 | `VERIFIED` | Audited correction returns Stop to assigned and requires manifest recheck. | Broader pickup outcomes/evidence views. |
 | Delivery exception resolution | Pilot/Slice 2 P0 | `PARTIAL` | Damaged-item hold, return confirmation and reconciliation exist. Typed G02 location holds show authoritative-versus-observed coordinates in v45, while both UI and database deliberately block generic resolution. Post-pickup destination-change authority and Driver acknowledgement now exist as a separate versioned flow. | Approve and implement the recipient/address/cannot-complete/emergency exception outcomes and connect approved address corrections through the live-change boundary. |
-| Communications | Pilot/Slice 2 P1 | `PARTIAL` | Persistent two-way server-backed text thread is verified, but the canonical capability is wider. | Attachments, offline drafts, call events, rich system ledger and live context behavior. |
+| Communications | Pilot/Slice 2 P1 | `PARTIAL` | Persistent two-way shared threads now support Driver and Operations text, location, photo, file and voice. The v45 Dispatch composer exposes its canonical attachment menu and visible mic; selected blobs/text persist locally across refresh, offline Send preserves the draft, private media is integrity-verified, and message/media commit atomically. Localhost browser verification covers menu, authoritative Stop map-context staging and refresh restoration; migration `202609040006` is applied. | Complete physical browser Photo/File/Location/voice sends to the Samsung Driver, then implement the canonical floating window/tray/marker synchronized unread state, call events and full filtered contact-history ledger. |
 | Own Drivers capacity view | Slice 2 P0 | `VERIFIED` | Own-team availability, live/stale/unknown presence, current Round and effective shift projection exist. | Route-completion availability estimate and complete vehicle/cargo truth. |
 | Recurring schedules/date exceptions | Slice 2 P0 | `VERIFIED` | Versioned/idempotent drawers and server commands exist. | Driver-side shift lifecycle and overnight/date-policy acceptance. |
 | Vehicle profiles and cargo limits | Slice 2 P0 | `VERIFIED` | Versioned cargo classes/limits are projected and enforced with max Stops/departure pattern by the common planner validator and database approval guard; unknown cargo is `review_required`. | UrbanFlowers must approve production taxonomy/limits; connect the canonical Settings controls for managed edits. |

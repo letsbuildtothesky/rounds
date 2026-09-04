@@ -82,6 +82,7 @@ export type OperationsCommunicationThread = DriverOperationsThread & {
   deliveryReference: string;
   recipientName: string;
   rawAddress: string;
+  destinationPosition?: { latitude: number; longitude: number };
   driverId: string;
   driverName: string;
   updatedAt: string;
@@ -94,6 +95,7 @@ export type OperationsCommunicationsProjection = {
 
 export type SendOperationsMessagePayload = {
   body: string;
+  attachments?: ThreadMessageAttachment[];
 };
 
 export type SendOperationsMessageCommand = CommandEnvelope<

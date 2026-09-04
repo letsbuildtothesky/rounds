@@ -1364,9 +1364,9 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     const deliveryIds = (stopResult.data ?? []).map((stop) => stop.delivery_id);
     const personIds = (driverResult.data ?? []).map((driver) => driver.person_id);
     const [deliveryResult, peopleResult] = await Promise.all([
-      this.admin.from("deliveries").select("id, reference, recipient_name, destination_raw_address")
+      this.admin.from("deliveries").select("id, reference, recipient_name, destination_raw_address, destination_position")
         .eq("tenant_id", actor.tenantId).in("id", deliveryIds)
-        .returns<{ id: string; reference: string; recipient_name: string; destination_raw_address: string }[]>(),
+        .returns<{ id: string; reference: string; recipient_name: string; destination_raw_address: string; destination_position: unknown }[]>(),
       this.admin.from("persons").select("id, display_name").in("id", personIds)
         .returns<{ id: string; display_name: string }[]>(),
     ]);
@@ -1400,6 +1400,9 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
           deliveryReference: delivery.reference,
           recipientName: delivery.recipient_name,
           rawAddress: delivery.destination_raw_address,
+          ...(parseDatabasePoint(delivery.destination_position) == null
+            ? {}
+            : { destinationPosition: parseDatabasePoint(delivery.destination_position)! }),
           driverId: thread.driver_id,
           driverName: personById.get(driver.person_id)?.display_name ?? "Team driver",
           version: thread.version,
@@ -1441,6 +1444,67 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     });
     if (error) throw error;
     return data as SendOperationsMessageResult;
+  }
+
+  async prepareOperationsMessageMedia(
+    threadId: string,
+    actor: ActorContext,
+    assetId: string,
+    payload: PrepareMessageMediaPayload,
+  ): Promise<Record<string, unknown>> {
+    const { data, error } = await this.admin.rpc("prepare_operations_message_media_asset", {
+      p_thread_id: threadId,
+      p_actor_person_id: actor.personId,
+      p_asset_id: assetId,
+      p_kind: payload.kind,
+      p_file_name: payload.fileName,
+      p_content_type: payload.contentType,
+      p_size: payload.byteSize,
+      p_sha256: payload.sha256,
+      p_duration_milliseconds: payload.durationMilliseconds ?? null,
+    });
+    if (error) throw error;
+    const prepared = data as Record<string, unknown>;
+    if (prepared.status !== "prepared") return prepared;
+    const projectRef = new URL(this.url).hostname.split(".")[0];
+    return {
+      ...prepared,
+      tusEndpoint: `https://${projectRef}.storage.supabase.co/storage/v1/upload/resumable`,
+      uploadAuthorization: "operations_session",
+    };
+  }
+
+  async verifyOperationsMessageMedia(
+    assetId: string,
+    actor: ActorContext,
+  ): Promise<Record<string, unknown>> {
+    const { data: asset, error: assetError } = await this.admin.from("communication_media_assets")
+      .select("id, tenant_id, storage_bucket, storage_path, state, uploader_person_id, expected_sha256, expected_size")
+      .eq("id", assetId).maybeSingle<{
+        id: string; tenant_id: string; storage_bucket: string; storage_path: string; state: string;
+        uploader_person_id: string; expected_sha256: string; expected_size: number;
+      }>();
+    if (assetError) throw assetError;
+    if (!asset || asset.tenant_id !== actor.tenantId || asset.uploader_person_id !== actor.personId) return {
+      status: "rejected", error: { code: "NOT_AUTHORIZED", message: "Message attachment is not owned by this Operations user" },
+    };
+    if (asset.state === "committed" || asset.state === "uploaded_uncommitted") {
+      return { status: "verified", mediaAssetId: asset.id, assetState: asset.state };
+    }
+    const downloaded = await this.admin.storage.from(asset.storage_bucket).download(asset.storage_path);
+    if (downloaded.error || !downloaded.data) return {
+      status: "rejected", error: { code: "EVIDENCE_REQUIRED", message: "Message attachment upload is not complete yet" },
+    };
+    const bytes = Buffer.from(await downloaded.data.arrayBuffer());
+    const verifiedSha256 = createHash("sha256").update(bytes).digest("hex");
+    const { data, error } = await this.admin.rpc("mark_operations_message_media_uploaded", {
+      p_asset_id: assetId,
+      p_actor_person_id: actor.personId,
+      p_verified_sha256: verifiedSha256,
+      p_verified_size: bytes.byteLength,
+    });
+    if (error) throw error;
+    return data as Record<string, unknown>;
   }
 
   async preparePodMedia(

@@ -1,7 +1,7 @@
 begin;
 
 create extension if not exists pgtap with schema extensions;
-select plan(54);
+select plan(67);
 
 select has_function('public', 'ensure_driver_operations_thread', array['uuid', 'uuid', 'uuid'], 'driver thread projection exists');
 select has_function('public', 'send_driver_message_command', array['jsonb', 'uuid'], 'driver message command exists');
@@ -231,6 +231,57 @@ select is((public.ensure_driver_operations_thread(
   '70000000-0000-4000-8000-000000000007'
 ) -> 'messages' -> 3 -> 'attachments' -> 0 ->> 'kind'), 'image', 'driver thread projection returns verified media metadata');
 
+select has_function('public', 'prepare_operations_message_media_asset', array['uuid', 'uuid', 'uuid', 'text', 'text', 'text', 'bigint', 'text', 'integer'], 'Operations can prepare private message media through the API');
+select has_function('public', 'mark_operations_message_media_uploaded', array['uuid', 'uuid', 'text', 'bigint'], 'Operations message media can be integrity verified');
+select ok(has_function_privilege('service_role', 'public.prepare_operations_message_media_asset(uuid,uuid,uuid,text,text,text,bigint,text,integer)', 'EXECUTE'), 'API service can prepare Operations message media');
+select ok(has_function_privilege('service_role', 'public.mark_operations_message_media_uploaded(uuid,uuid,text,bigint)', 'EXECUTE'), 'API service can verify Operations message media');
+
+create temporary table prepared_operations_media (body jsonb not null) on commit drop;
+insert into prepared_operations_media values (public.prepare_operations_message_media_asset(
+  (select body ->> 'id' from thread_projection),
+  '70000000-0000-4000-8000-000000000009',
+  '70000000-0000-4000-8000-000000000261',
+  'voice', 'dispatch-note.webm', 'audio/webm', 2048, repeat('e', 64), 1200
+));
+select is((select body ->> 'status' from prepared_operations_media), 'prepared', 'dispatcher prepares browser voice media');
+select is((select state::text from public.communication_media_assets where id = '70000000-0000-4000-8000-000000000261'), 'staged', 'Operations media starts staged');
+select is((public.prepare_operations_message_media_asset(
+  (select body ->> 'id' from thread_projection),
+  '70000000-0000-4000-8000-000000000010',
+  '70000000-0000-4000-8000-000000000262',
+  'image', 'viewer.jpg', 'image/jpeg', 128, repeat('a', 64), null
+) -> 'error' ->> 'code'), 'NOT_AUTHORIZED', 'viewer cannot prepare Operations message media');
+select is((public.mark_operations_message_media_uploaded(
+  '70000000-0000-4000-8000-000000000261',
+  '70000000-0000-4000-8000-000000000009', repeat('e', 64), 2048
+) ->> 'status'), 'verified', 'matching Operations media passes integrity verification');
+
+create temporary table operations_media_message_command (body jsonb not null) on commit drop;
+insert into operations_media_message_command values (jsonb_build_object(
+  'schemaVersion', 1, 'commandType', 'thread.send_operations_message',
+  'commandId', '70000000-0000-4000-8000-000000000271',
+  'traceId', '70000000-0000-4000-8000-000000000272',
+  'idempotencyKey', 'operations-message:THREAD-001:voice',
+  'tenantId', '70000000-0000-4000-8000-000000000001',
+  'aggregateId', (select body ->> 'id' from thread_projection),
+  'expectedVersion', 5,
+  'occurredFromDeviceAt', '2026-09-02T03:04:00Z',
+  'payload', jsonb_build_object(
+    'body', 'Voice context attached',
+    'attachments', jsonb_build_array(jsonb_build_object(
+      'kind', 'voice',
+      'mediaAssetId', '70000000-0000-4000-8000-000000000261',
+      'fileName', 'dispatch-note.webm',
+      'contentType', 'audio/webm',
+      'byteSize', 2048,
+      'durationMilliseconds', 1200
+    ))
+  )
+));
+select is((public.send_operations_message_command((select body from operations_media_message_command), '70000000-0000-4000-8000-000000000009') ->> 'status'), 'committed', 'Operations rich message commits atomically');
+select is((select state::text from public.communication_media_assets where id = '70000000-0000-4000-8000-000000000261'), 'committed', 'Operations message commit also commits private media');
+select is((select attachments -> 0 ->> 'kind' from public.operations_messages where command_id = '70000000-0000-4000-8000-000000000271'), 'voice', 'Operations rich attachment is durable in the shared thread');
+
 set local role authenticated;
 select throws_ok(
   $$select public.ensure_driver_operations_thread('70000000-0000-4000-8000-000000000130', '70000000-0000-4000-8000-000000000110', '70000000-0000-4000-8000-000000000007')$$,
@@ -251,6 +302,16 @@ select throws_ok(
   $$select public.prepare_driver_message_media_asset('70000000-0000-4000-8000-000000000130', '70000000-0000-4000-8000-000000000110', '70000000-0000-4000-8000-000000000007', '70000000-0000-4000-8000-000000000251', 'image', 'x.jpg', 'image/jpeg', 1, repeat('d', 64), null)$$,
   '42501', 'permission denied for function prepare_driver_message_media_asset',
   'authenticated clients cannot prepare message media directly'
+);
+select throws_ok(
+  $$select public.prepare_operations_message_media_asset('70000000-0000-4000-8000-000000000200', '70000000-0000-4000-8000-000000000009', '70000000-0000-4000-8000-000000000281', 'image', 'x.jpg', 'image/jpeg', 1, repeat('d', 64), null)$$,
+  '42501', 'permission denied for function prepare_operations_message_media_asset',
+  'authenticated clients cannot prepare Operations message media directly'
+);
+select throws_ok(
+  $$select public.mark_operations_message_media_uploaded('70000000-0000-4000-8000-000000000281', '70000000-0000-4000-8000-000000000009', repeat('d', 64), 1)$$,
+  '42501', 'permission denied for function mark_operations_message_media_uploaded',
+  'authenticated clients cannot verify Operations message media directly'
 );
 reset role;
 
