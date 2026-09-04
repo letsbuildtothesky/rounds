@@ -1,7 +1,7 @@
 begin;
 
 create extension if not exists pgtap with schema extensions;
-select plan(42);
+select plan(54);
 
 select has_function('public', 'ensure_driver_operations_thread', array['uuid', 'uuid', 'uuid'], 'driver thread projection exists');
 select has_function('public', 'send_driver_message_command', array['jsonb', 'uuid'], 'driver message command exists');
@@ -181,6 +181,56 @@ select is((public.send_driver_message_command(
   '70000000-0000-4000-8000-000000000007'
 ) -> 'error' ->> 'code'), 'VALIDATION_FAILED', 'invalid location coordinates are rejected');
 
+select has_table('public', 'communication_media_assets', 'private communication media registry exists');
+select has_function('public', 'prepare_driver_message_media_asset', array['uuid', 'uuid', 'uuid', 'uuid', 'text', 'text', 'text', 'bigint', 'text', 'integer'], 'driver can prepare private message media through the API');
+select has_function('public', 'mark_driver_message_media_uploaded', array['uuid', 'uuid', 'text', 'bigint'], 'uploaded message media can be integrity verified');
+select ok(has_function_privilege('service_role', 'public.prepare_driver_message_media_asset(uuid,uuid,uuid,uuid,text,text,text,bigint,text,integer)', 'EXECUTE'), 'API service can prepare message media');
+select ok(not has_table_privilege('authenticated', 'public.communication_media_assets', 'SELECT'), 'driver cannot enumerate message media records directly');
+
+create temporary table prepared_message_media (body jsonb not null) on commit drop;
+insert into prepared_message_media values (public.prepare_driver_message_media_asset(
+  '70000000-0000-4000-8000-000000000130',
+  '70000000-0000-4000-8000-000000000110',
+  '70000000-0000-4000-8000-000000000007',
+  '70000000-0000-4000-8000-000000000231',
+  'image', 'package.jpg', 'image/jpeg', 4096, repeat('c', 64), null
+));
+select is((select body ->> 'status' from prepared_message_media), 'prepared', 'assigned driver prepares message media');
+select is((select state::text from public.communication_media_assets where id = '70000000-0000-4000-8000-000000000231'), 'staged', 'prepared media starts staged');
+select is((public.mark_driver_message_media_uploaded(
+  '70000000-0000-4000-8000-000000000231',
+  '70000000-0000-4000-8000-000000000007', repeat('c', 64), 4096
+) ->> 'status'), 'verified', 'matching uploaded media passes integrity verification');
+
+create temporary table media_message_command (body jsonb not null) on commit drop;
+insert into media_message_command values (jsonb_build_object(
+  'schemaVersion', 1, 'commandType', 'thread.send_message',
+  'commandId', '70000000-0000-4000-8000-000000000241',
+  'traceId', '70000000-0000-4000-8000-000000000242',
+  'idempotencyKey', 'message:THREAD-001:image',
+  'tenantId', '70000000-0000-4000-8000-000000000001',
+  'aggregateId', (select body ->> 'id' from thread_projection),
+  'expectedVersion', 4,
+  'occurredFromDeviceAt', '2026-09-02T03:03:00Z',
+  'payload', jsonb_build_object(
+    'body', '',
+    'attachments', jsonb_build_array(jsonb_build_object(
+      'kind', 'image',
+      'mediaAssetId', '70000000-0000-4000-8000-000000000231',
+      'fileName', 'package.jpg',
+      'contentType', 'image/jpeg',
+      'byteSize', 4096
+    ))
+  )
+));
+select is((public.send_driver_message_command((select body from media_message_command), '70000000-0000-4000-8000-000000000007') ->> 'status'), 'committed', 'verified rich media message commits atomically');
+select is((select state::text from public.communication_media_assets where id = '70000000-0000-4000-8000-000000000231'), 'committed', 'message commit also commits its private media');
+select is((public.ensure_driver_operations_thread(
+  '70000000-0000-4000-8000-000000000130',
+  '70000000-0000-4000-8000-000000000110',
+  '70000000-0000-4000-8000-000000000007'
+) -> 'messages' -> 3 -> 'attachments' -> 0 ->> 'kind'), 'image', 'driver thread projection returns verified media metadata');
+
 set local role authenticated;
 select throws_ok(
   $$select public.ensure_driver_operations_thread('70000000-0000-4000-8000-000000000130', '70000000-0000-4000-8000-000000000110', '70000000-0000-4000-8000-000000000007')$$,
@@ -196,6 +246,11 @@ select throws_ok(
   $$select public.send_operations_message_command('{}'::jsonb, '70000000-0000-4000-8000-000000000009')$$,
   '42501', 'permission denied for function send_operations_message_command',
   'authenticated clients cannot execute Operations message commands directly'
+);
+select throws_ok(
+  $$select public.prepare_driver_message_media_asset('70000000-0000-4000-8000-000000000130', '70000000-0000-4000-8000-000000000110', '70000000-0000-4000-8000-000000000007', '70000000-0000-4000-8000-000000000251', 'image', 'x.jpg', 'image/jpeg', 1, repeat('d', 64), null)$$,
+  '42501', 'permission denied for function prepare_driver_message_media_asset',
+  'authenticated clients cannot prepare message media directly'
 );
 reset role;
 

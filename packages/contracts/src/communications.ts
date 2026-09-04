@@ -11,7 +11,27 @@ export type MessageLocationAttachment = {
   capturedAt: string;
 };
 
-export type ThreadMessageAttachment = MessageLocationAttachment;
+export type MessageMediaAttachment = {
+  kind: "image" | "file" | "voice";
+  mediaAssetId: string;
+  fileName: string;
+  contentType: string;
+  byteSize: number;
+  durationMilliseconds?: number;
+  /** Short-lived and returned only by an authorized read projection. */
+  downloadUrl?: string;
+};
+
+export type ThreadMessageAttachment = MessageLocationAttachment | MessageMediaAttachment;
+
+export type PrepareMessageMediaPayload = {
+  kind: MessageMediaAttachment["kind"];
+  fileName: string;
+  contentType: string;
+  byteSize: number;
+  sha256: string;
+  durationMilliseconds?: number;
+};
 
 export type DriverThreadMessage = {
   id: string;

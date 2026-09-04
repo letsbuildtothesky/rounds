@@ -53,7 +53,43 @@ class OperationsMessageDraftStore {
   Future<void> clearLocation(String stopId) =>
       _preferences.remove(_locationKey(stopId));
 
+  List<DriverMessageAttachmentModel> restoreMedia(String stopId) {
+    final value = _preferences.getString(_mediaKey(stopId));
+    if (value == null) return const [];
+    try {
+      return (jsonDecode(value) as List)
+          .map(
+            (item) => DriverMessageAttachmentModel.fromJson(
+              item as Map<String, dynamic>,
+              local: true,
+            ),
+          )
+          .toList(growable: false);
+    } on Object {
+      return const [];
+    }
+  }
+
+  Future<void> saveMedia(
+    String stopId,
+    List<DriverMessageAttachmentModel> attachments,
+  ) async {
+    if (attachments.isEmpty) {
+      await clearMedia(stopId);
+      return;
+    }
+    await _preferences.setString(
+      _mediaKey(stopId),
+      jsonEncode(attachments.map((item) => item.toLocalJson()).toList()),
+    );
+  }
+
+  Future<void> clearMedia(String stopId) =>
+      _preferences.remove(_mediaKey(stopId));
+
   String _key(String stopId) => 'operations_message_draft_v1_$stopId';
   String _locationKey(String stopId) =>
       'operations_message_location_draft_v1_$stopId';
+  String _mediaKey(String stopId) =>
+      'operations_message_media_draft_v1_$stopId';
 }

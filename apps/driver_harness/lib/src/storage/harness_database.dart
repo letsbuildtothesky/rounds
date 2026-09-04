@@ -10,7 +10,7 @@ class HarnessDatabase {
     final databaseRoot = await getDatabasesPath();
     final database = await openDatabase(
       path.join(databaseRoot, 'rounds_phase_zero.db'),
-      version: 4,
+      version: 5,
       onCreate: (database, _) async {
         await database.execute('''
           create table navigation_intents (
@@ -48,6 +48,7 @@ class HarnessDatabase {
         await createCommandOutboxSchema(database);
         await createPodEvidenceSchema(database);
         await createDeliveryExceptionEvidenceSchema(database);
+        await createMessageMediaOutboxSchema(database);
       },
       onUpgrade: (database, oldVersion, _) async {
         if (oldVersion < 2) await createCommandOutboxSchema(database);
@@ -55,6 +56,7 @@ class HarnessDatabase {
         if (oldVersion < 4) {
           await createDeliveryExceptionEvidenceSchema(database);
         }
+        if (oldVersion < 5) await createMessageMediaOutboxSchema(database);
       },
     );
     return HarnessDatabase._(database);
@@ -157,6 +159,28 @@ class HarnessDatabase {
     await database.execute('''
       create index delivery_exception_evidence_flush_idx
       on delivery_exception_evidence_outbox (status, created_at)
+    ''');
+  }
+
+  static Future<void> createMessageMediaOutboxSchema(Database database) async {
+    await database.execute('''
+      create table message_media_outbox (
+        id text primary key,
+        round_id text not null,
+        stop_id text not null,
+        body text not null,
+        attachments_json text not null,
+        idempotency_key text not null unique,
+        status text not null,
+        attempts integer not null default 0,
+        last_error text,
+        created_at text not null,
+        updated_at text not null
+      )
+    ''');
+    await database.execute('''
+      create index message_media_outbox_flush_idx
+      on message_media_outbox (status, created_at)
     ''');
   }
 }

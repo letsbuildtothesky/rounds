@@ -88,13 +88,22 @@ DriverContactHistoryEventModel _messageEvent(
     if (message.body.trim().isNotEmpty) message.body.trim(),
     ...attachmentReferences,
   ].join('\n');
-  final locationOnly =
+  final attachmentOnly =
       message.body.trim().isEmpty && message.attachments.isNotEmpty;
+  final attachmentTitle = message.attachments.length == 1
+      ? switch (message.attachments.single.kind) {
+          'location' => 'Location shared',
+          'image' => 'Photo shared',
+          'file' => 'File shared',
+          'voice' => 'Voice note shared',
+          _ => 'Attachment shared',
+        }
+      : 'Attachments shared';
   if (message.sender == 'driver') {
     return DriverContactHistoryEventModel(
       id: 'message:${message.id}',
       kind: DriverContactHistoryEventKind.driverMessage,
-      title: locationOnly ? 'Location shared' : 'Message to Operations',
+      title: attachmentOnly ? attachmentTitle : 'Message to Operations',
       detail: humanDetail,
       occurredAt: message.sentAt,
       savedLocally: message.savedLocally,
@@ -104,7 +113,9 @@ DriverContactHistoryEventModel _messageEvent(
     return DriverContactHistoryEventModel(
       id: 'message:${message.id}',
       kind: DriverContactHistoryEventKind.operationsMessage,
-      title: locationOnly ? 'Operations location' : 'Operations message',
+      title: attachmentOnly
+          ? 'Operations $attachmentTitle'
+          : 'Operations message',
       detail: humanDetail,
       occurredAt: message.sentAt,
       savedLocally: message.savedLocally,

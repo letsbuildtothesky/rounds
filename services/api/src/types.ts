@@ -61,6 +61,7 @@ import type {
   SendDriverMessageResult,
   SendOperationsMessageCommand,
   SendOperationsMessageResult,
+  PrepareMessageMediaPayload,
   SetDriverRecurringScheduleCommand,
   SetDriverRecurringSchedulePayload,
   SetDriverRecurringScheduleResult,
@@ -161,6 +162,14 @@ export interface DriverCommunicationsGateway {
     command: SendDriverMessageCommand,
     identity: AuthenticatedIdentity,
   ): Promise<SendDriverMessageResult>;
+  prepareMessageMedia(
+    roundId: string,
+    stopId: string,
+    identity: AuthenticatedIdentity,
+    assetId: string,
+    payload: PrepareMessageMediaPayload,
+  ): Promise<Record<string, unknown>>;
+  verifyMessageMedia(assetId: string, identity: AuthenticatedIdentity): Promise<Record<string, unknown>>;
   logContactAttempt(
     command: LogContactAttemptCommand,
     identity: AuthenticatedIdentity,

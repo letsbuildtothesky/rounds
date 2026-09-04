@@ -27,23 +27,38 @@ function messageFrom(body: ApiError, fallback: string): string {
 function messageSummary(message: DriverThreadMessage | undefined): string {
   if (!message) return "No messages yet";
   if (message.body.trim()) return message.body;
-  return message.attachments?.[0]?.kind === "location" ? "Location shared" : "Attachment";
+  const attachment = message.attachments?.[0];
+  if (!attachment) return "Attachment";
+  if (attachment.kind === "location") return "Location shared";
+  if (attachment.kind === "voice") return "Voice note";
+  return attachment.fileName;
 }
 
 function MessageAttachments({ message }: { message: DriverThreadMessage }) {
   return <>{message.attachments?.map((attachment, index) => {
-    if (attachment.kind !== "location") return null;
-    const coordinates = `${attachment.latitude},${attachment.longitude}`;
-    const href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(coordinates)}`;
+    if (attachment.kind === "location") {
+      const coordinates = `${attachment.latitude},${attachment.longitude}`;
+      const href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(coordinates)}`;
+      return <a className="message-location" href={href} target="_blank" rel="noreferrer" key={`${attachment.kind}:${attachment.capturedAt}:${index}`}>
+        <span aria-hidden="true">⌖</span>
+        <span><strong>{attachment.label}</strong><small>{attachment.latitude.toFixed(4)}, {attachment.longitude.toFixed(4)}</small></span>
+        <i aria-hidden="true">›</i>
+      </a>;
+    }
+    const size = attachment.byteSize >= 1048576
+      ? `${(attachment.byteSize / 1048576).toFixed(1)} MB`
+      : `${Math.ceil(attachment.byteSize / 1024)} KB`;
+    const duration = attachment.durationMilliseconds == null ? "" : `${Math.floor(attachment.durationMilliseconds / 60000)}:${String(Math.ceil(attachment.durationMilliseconds / 1000) % 60).padStart(2, "0")}`;
     return <a
-      className="message-location"
-      href={href}
+      className="message-location message-media"
+      href={attachment.downloadUrl}
       target="_blank"
       rel="noreferrer"
-      key={`${attachment.kind}:${attachment.capturedAt}:${index}`}
+      key={`${attachment.kind}:${attachment.mediaAssetId}:${index}`}
+      aria-disabled={!attachment.downloadUrl}
     >
-      <span aria-hidden="true">⌖</span>
-      <span><strong>{attachment.label}</strong><small>{attachment.latitude.toFixed(4)}, {attachment.longitude.toFixed(4)}</small></span>
+      <span aria-hidden="true">{attachment.kind === "voice" ? "▶" : attachment.kind === "image" ? "▧" : "▤"}</span>
+      <span><strong>{attachment.kind === "voice" ? "Voice note" : attachment.fileName}</strong><small>{attachment.kind === "voice" ? duration : size}</small></span>
       <i aria-hidden="true">›</i>
     </a>;
   })}</>;

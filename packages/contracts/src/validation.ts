@@ -278,20 +278,40 @@ export function validateSendDriverMessagePayload(payload: SendDriverMessagePaylo
   if (payload.body.trim().length > 2000) throw new ContractError("body exceeds 2000 characters");
   if (attachments.length > 8) throw new ContractError("attachments exceeds 8 items");
   for (const attachment of attachments) {
-    if (attachment.kind !== "location") throw new ContractError("attachment kind is not supported");
-    assertNonEmpty(attachment.label, "attachment.label");
-    if (attachment.label.trim().length > 120) throw new ContractError("attachment.label exceeds 120 characters");
-    if (!Number.isFinite(attachment.latitude) || attachment.latitude < -90 || attachment.latitude > 90) {
-      throw new ContractError("attachment.latitude is invalid");
+    if (attachment.kind === "location") {
+      assertNonEmpty(attachment.label, "attachment.label");
+      if (attachment.label.trim().length > 120) throw new ContractError("attachment.label exceeds 120 characters");
+      if (!Number.isFinite(attachment.latitude) || attachment.latitude < -90 || attachment.latitude > 90) {
+        throw new ContractError("attachment.latitude is invalid");
+      }
+      if (!Number.isFinite(attachment.longitude) || attachment.longitude < -180 || attachment.longitude > 180) {
+        throw new ContractError("attachment.longitude is invalid");
+      }
+      if (attachment.accuracyMeters !== undefined &&
+        (!Number.isFinite(attachment.accuracyMeters) || attachment.accuracyMeters < 0)) {
+        throw new ContractError("attachment.accuracyMeters is invalid");
+      }
+      if (Number.isNaN(Date.parse(attachment.capturedAt))) throw new ContractError("attachment.capturedAt is invalid");
+      continue;
     }
-    if (!Number.isFinite(attachment.longitude) || attachment.longitude < -180 || attachment.longitude > 180) {
-      throw new ContractError("attachment.longitude is invalid");
+    if (!(["image", "file", "voice"] as const).includes(attachment.kind)) {
+      throw new ContractError("attachment kind is not supported");
     }
-    if (attachment.accuracyMeters !== undefined &&
-      (!Number.isFinite(attachment.accuracyMeters) || attachment.accuracyMeters < 0)) {
-      throw new ContractError("attachment.accuracyMeters is invalid");
+    assertUuid(attachment.mediaAssetId, "attachment.mediaAssetId");
+    assertNonEmpty(attachment.fileName, "attachment.fileName");
+    assertNonEmpty(attachment.contentType, "attachment.contentType");
+    if (attachment.fileName.trim().length > 240) throw new ContractError("attachment.fileName exceeds 240 characters");
+    if (attachment.contentType.trim().length > 120) throw new ContractError("attachment.contentType exceeds 120 characters");
+    if (!Number.isInteger(attachment.byteSize) || attachment.byteSize < 1 || attachment.byteSize > 15728640) {
+      throw new ContractError("attachment.byteSize is invalid");
     }
-    if (Number.isNaN(Date.parse(attachment.capturedAt))) throw new ContractError("attachment.capturedAt is invalid");
+    if (attachment.kind === "voice") {
+      if (!Number.isInteger(attachment.durationMilliseconds) || attachment.durationMilliseconds! < 250 || attachment.durationMilliseconds! > 600000) {
+        throw new ContractError("voice attachment durationMilliseconds is invalid");
+      }
+    } else if (attachment.durationMilliseconds !== undefined) {
+      throw new ContractError("durationMilliseconds is only valid for voice attachments");
+    }
   }
 }
 

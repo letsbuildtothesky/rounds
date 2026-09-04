@@ -85,6 +85,27 @@ test("rejects invalid location coordinates", () => {
   }), ContractError);
 });
 
+test("accepts verified image, file and voice message attachments", () => {
+  assert.doesNotThrow(() => validateSendDriverMessageCommand({
+    ...base,
+    payload: {
+      body: "Evidence attached",
+      attachments: [
+        { kind: "image", mediaAssetId: "10000000-0000-4000-8000-000000000201", fileName: "gate.jpg", contentType: "image/jpeg", byteSize: 1024 },
+        { kind: "file", mediaAssetId: "10000000-0000-4000-8000-000000000202", fileName: "note.pdf", contentType: "application/pdf", byteSize: 2048 },
+        { kind: "voice", mediaAssetId: "10000000-0000-4000-8000-000000000203", fileName: "voice.m4a", contentType: "audio/mp4", byteSize: 4096, durationMilliseconds: 1200 },
+      ],
+    },
+  }));
+});
+
+test("rejects unverified or malformed media attachment metadata", () => {
+  assert.throws(() => validateSendDriverMessageCommand({
+    ...base,
+    payload: { body: "", attachments: [{ kind: "voice", mediaAssetId: "bad", fileName: "voice.m4a", contentType: "audio/mp4", byteSize: 10, durationMilliseconds: 0 }] },
+  }), ContractError);
+});
+
 test("rejects empty and oversized message bodies", () => {
   assert.throws(() => validateSendDriverMessageCommand({
     ...base,

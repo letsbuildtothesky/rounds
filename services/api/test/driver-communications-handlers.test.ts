@@ -6,11 +6,13 @@ import type {
   LogContactAttemptCommand,
   LogContactAttemptResult,
   OperationsSession,
+  PrepareMessageMediaPayload,
   SendDriverMessageCommand,
   SendDriverMessageResult,
 } from "@rounds/contracts";
 import { driverOperationsThreadHandler } from "../src/driver-operations-thread-handler.js";
 import { logContactAttemptHandler } from "../src/log-contact-attempt-handler.js";
+import { prepareMessageMediaHandler, verifyMessageMediaHandler } from "../src/prepare-message-media-handler.js";
 import { sendDriverMessageHandler } from "../src/send-driver-message-handler.js";
 import type {
   ActorContext,
@@ -69,12 +71,28 @@ class FakeCommunicationsGateway implements IdentityGateway, DriverCommunications
   driverSession: DriverSession | null = session;
   command: SendDriverMessageCommand | null = null;
   contactCommand: LogContactAttemptCommand | null = null;
+  preparedMedia: { roundId: string; stopId: string; assetId: string; payload: PrepareMessageMediaPayload } | null = null;
+  verifiedMediaAssetId: string | null = null;
   readonly thread: DriverOperationsThread = { id: threadId, roundId, stopId, version: 3, messages: [] };
   async authenticate(): Promise<AuthenticatedIdentity | null> { return { authUserId: "auth-user" }; }
   async authorizeTenant(): Promise<ActorContext | null> { return null; }
   async getOperationsSession(): Promise<OperationsSession | null> { return null; }
   async getDriverSession(): Promise<DriverSession | null> { return this.driverSession; }
   async getDriverOperationsThread(): Promise<DriverOperationsThread | null> { return this.thread; }
+  async prepareMessageMedia(
+    requestedRoundId: string,
+    requestedStopId: string,
+    _identity: AuthenticatedIdentity,
+    assetId: string,
+    payload: PrepareMessageMediaPayload,
+  ): Promise<Record<string, unknown>> {
+    this.preparedMedia = { roundId: requestedRoundId, stopId: requestedStopId, assetId, payload };
+    return { status: "prepared", mediaAssetId: assetId, bucket: "communication-media", path: `private/${assetId}` };
+  }
+  async verifyMessageMedia(assetId: string): Promise<Record<string, unknown>> {
+    this.verifiedMediaAssetId = assetId;
+    return { status: "verified", mediaAssetId: assetId };
+  }
   async sendDriverMessage(command: SendDriverMessageCommand): Promise<SendDriverMessageResult> {
     this.command = command;
     return {
@@ -170,6 +188,53 @@ test("assigned driver sends a structured location attachment", async () => {
   }), roundId, stopId, dependencies(gateway));
   assert.equal(response.status, 201);
   assert.deepEqual(gateway.command?.payload.attachments, [attachment]);
+});
+
+test("assigned driver prepares and verifies private message media", async () => {
+  const gateway = new FakeCommunicationsGateway();
+  const payload: PrepareMessageMediaPayload = {
+    kind: "voice",
+    fileName: "voice-note.m4a",
+    contentType: "audio/mp4",
+    byteSize: 8192,
+    sha256: "a".repeat(64),
+    durationMilliseconds: 4200,
+  };
+  const prepared = await prepareMessageMediaHandler(new Request("http://test/message-media", {
+    method: "POST",
+    headers: { authorization: "Bearer token", "content-type": "application/json" },
+    body: JSON.stringify(payload),
+  }), roundId, stopId, dependencies(gateway));
+  assert.equal(prepared.status, 201);
+  assert.equal(gateway.preparedMedia?.roundId, roundId);
+  assert.equal(gateway.preparedMedia?.stopId, stopId);
+  assert.deepEqual(gateway.preparedMedia?.payload, payload);
+
+  const assetId = gateway.preparedMedia!.assetId;
+  const verified = await verifyMessageMediaHandler(new Request("http://test/verify", {
+    method: "POST",
+    headers: { authorization: "Bearer token" },
+  }), assetId, dependencies(gateway));
+  assert.equal(verified.status, 200);
+  assert.equal(gateway.verifiedMediaAssetId, assetId);
+});
+
+test("message media rejects malformed metadata before storage", async () => {
+  const gateway = new FakeCommunicationsGateway();
+  const response = await prepareMessageMediaHandler(new Request("http://test/message-media", {
+    method: "POST",
+    headers: { authorization: "Bearer token", "content-type": "application/json" },
+    body: JSON.stringify({
+      kind: "voice",
+      fileName: "voice-note.m4a",
+      contentType: "audio/mp4",
+      byteSize: 0,
+      sha256: "not-a-hash",
+      durationMilliseconds: 10,
+    }),
+  }), roundId, stopId, dependencies(gateway));
+  assert.equal(response.status, 422);
+  assert.equal(gateway.preparedMedia, null);
 });
 
 test("driver cannot read a thread outside the current assignment", async () => {

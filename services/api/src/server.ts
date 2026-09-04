@@ -6,6 +6,7 @@ import { completeStopPodHandler } from "./complete-stop-pod-handler.js";
 import { driverSessionHandler } from "./driver-session-handler.js";
 import { driverOperationsThreadHandler } from "./driver-operations-thread-handler.js";
 import { sendDriverMessageHandler } from "./send-driver-message-handler.js";
+import { prepareMessageMediaHandler, verifyMessageMediaHandler } from "./prepare-message-media-handler.js";
 import { operationsPlanningHandler } from "./operations-planning-handler.js";
 import { operationsHistoryHandler } from "./operations-history-handler.js";
 import { operationsCommunicationsHandler } from "./operations-communications-handler.js";
@@ -392,6 +393,24 @@ const server = createServer(async (request, response) => {
         now: () => new Date(),
       });
       sendNode(response, messageResponse);
+      return;
+    }
+    const driverMessageMediaMatch = request.url?.match(/^\/v1\/driver\/rounds\/([0-9a-f-]+)\/stops\/([0-9a-f-]+)\/message-media$/i);
+    if (request.method === "POST" && driverMessageMediaMatch) {
+      const webRequest = await toWebRequest(request);
+      const mediaResponse = await prepareMessageMediaHandler(webRequest, driverMessageMediaMatch[1]!, driverMessageMediaMatch[2]!, {
+        identity: gateway, communications: gateway, uuid: () => crypto.randomUUID(), now: () => new Date(),
+      });
+      sendNode(response, mediaResponse);
+      return;
+    }
+    const verifyDriverMessageMediaMatch = request.url?.match(/^\/v1\/driver\/message-media\/([0-9a-f-]+)\/verify$/i);
+    if (request.method === "POST" && verifyDriverMessageMediaMatch) {
+      const webRequest = await toWebRequest(request);
+      const mediaResponse = await verifyMessageMediaHandler(webRequest, verifyDriverMessageMediaMatch[1]!, {
+        identity: gateway, communications: gateway, uuid: () => crypto.randomUUID(), now: () => new Date(),
+      });
+      sendNode(response, mediaResponse);
       return;
     }
     const pickupMatch = request.url?.match(/^\/v1\/driver\/rounds\/([0-9a-f-]+)\/pickup$/i);

@@ -3,12 +3,14 @@ import 'dart:async';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../app/driver_design_system.dart';
 import '../app/generated/driver_ui_metrics.g.dart';
 import '../app/harness_app_controller.dart';
 import '../driver/driver_chat_location.dart';
+import '../driver/driver_chat_media.dart';
 import '../driver/driver_message_links.dart';
 import '../driver/driver_operations_thread.dart';
 import '../driver/driver_session.dart';
@@ -21,6 +23,7 @@ class OperationsChatScreen extends StatefulWidget {
     required this.stop,
     this.draftStore,
     this.locationGateway = const GeolocatorDriverChatLocationGateway(),
+    this.mediaGateway,
     super.key,
   });
 
@@ -29,6 +32,7 @@ class OperationsChatScreen extends StatefulWidget {
   final DriverRoundStopModel stop;
   final OperationsMessageDraftStore? draftStore;
   final DriverChatLocationGateway locationGateway;
+  final DriverChatMediaGateway? mediaGateway;
 
   @override
   State<OperationsChatScreen> createState() => _OperationsChatScreenState();
@@ -41,10 +45,14 @@ class _OperationsChatScreenState extends State<OperationsChatScreen> {
   bool _loading = true;
   bool _sending = false;
   bool _capturingLocation = false;
+  bool _capturingMedia = false;
   DriverMessageAttachmentModel? _stagedLocation;
+  List<DriverMessageAttachmentModel> _stagedMedia = const [];
   String? _loadError;
   OperationsMessageDraftStore? _draftStore;
   Timer? _draftTimer;
+  late final DriverChatMediaGateway _mediaGateway =
+      widget.mediaGateway ?? DriverChatMediaGateway();
 
   @override
   void initState() {
@@ -64,6 +72,7 @@ class _OperationsChatScreenState extends State<OperationsChatScreen> {
     _composer.removeListener(_composerChanged);
     _composer.dispose();
     _scrollController.dispose();
+    if (widget.mediaGateway == null) unawaited(_mediaGateway.dispose());
     super.dispose();
   }
 
@@ -80,8 +89,12 @@ class _OperationsChatScreenState extends State<OperationsChatScreen> {
       );
     }
     final location = store.restoreLocation(widget.stop.id);
-    if (location != null) {
-      setState(() => _stagedLocation = location);
+    final media = store.restoreMedia(widget.stop.id);
+    if (location != null || media.isNotEmpty) {
+      setState(() {
+        _stagedLocation = location;
+        _stagedMedia = media;
+      });
     }
   }
 
@@ -126,13 +139,14 @@ class _OperationsChatScreenState extends State<OperationsChatScreen> {
   Future<void> _send() async {
     final body = _composer.text.trim();
     final location = _stagedLocation;
-    if ((body.isEmpty && location == null) || _sending) return;
+    final media = _stagedMedia;
+    if ((body.isEmpty && location == null && media.isEmpty) || _sending) return;
     setState(() => _sending = true);
     final outcome = await widget.controller.sendOperationsMessage(
       round: widget.round,
       stop: widget.stop,
       body: body,
-      attachments: [?location],
+      attachments: [?location, ...media],
     );
     if (!mounted) return;
     if (outcome == null) {
@@ -151,10 +165,12 @@ class _OperationsChatScreenState extends State<OperationsChatScreen> {
     _composer.clear();
     await _draftStore?.clear(widget.stop.id);
     await _draftStore?.clearLocation(widget.stop.id);
+    await _draftStore?.clearMedia(widget.stop.id);
     if (!mounted) return;
     setState(() {
       _sending = false;
       _stagedLocation = null;
+      _stagedMedia = const [];
     });
     await _load();
     if (!mounted) return;
@@ -170,7 +186,7 @@ class _OperationsChatScreenState extends State<OperationsChatScreen> {
   }
 
   Future<void> _showAttachmentSheet() async {
-    if (_sending || _capturingLocation) return;
+    if (_sending || _capturingLocation || _capturingMedia) return;
     await showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.white,
@@ -195,6 +211,33 @@ class _OperationsChatScreenState extends State<OperationsChatScreen> {
                 ),
               ),
               const SizedBox(height: 12),
+              _AttachmentChoice(
+                icon: Icons.camera_alt_outlined,
+                label: 'Camera',
+                keyValue: 'h01-add-camera',
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  unawaited(_pickMedia(_mediaGateway.captureCamera));
+                },
+              ),
+              _AttachmentChoice(
+                icon: Icons.photo_outlined,
+                label: 'Photo',
+                keyValue: 'h01-add-photo',
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  unawaited(_pickMedia(_mediaGateway.pickPhoto));
+                },
+              ),
+              _AttachmentChoice(
+                icon: Icons.insert_drive_file_outlined,
+                label: 'File',
+                keyValue: 'h01-add-file',
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  unawaited(_pickMedia(_mediaGateway.pickFile));
+                },
+              ),
               ListTile(
                 key: const Key('h01-add-location'),
                 contentPadding: EdgeInsets.zero,
@@ -217,6 +260,52 @@ class _OperationsChatScreenState extends State<OperationsChatScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _pickMedia(
+    Future<DriverMessageAttachmentModel?> Function() picker,
+  ) async {
+    if (_capturingMedia || _stagedMedia.length >= 7) return;
+    setState(() => _capturingMedia = true);
+    try {
+      final attachment = await picker();
+      if (attachment == null || !mounted) return;
+      final next = [..._stagedMedia, attachment];
+      await _draftStore?.saveMedia(widget.stop.id, next);
+      if (mounted) setState(() => _stagedMedia = next);
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(error.toString())));
+      }
+    } finally {
+      if (mounted) setState(() => _capturingMedia = false);
+    }
+  }
+
+  Future<void> _recordVoice() async {
+    if (_sending || _capturingMedia) return;
+    final attachment = await showModalBottomSheet<DriverMessageAttachmentModel>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      showDragHandle: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+      ),
+      builder: (_) => _VoiceNoteSheet(gateway: _mediaGateway),
+    );
+    if (attachment == null || !mounted) return;
+    final next = [..._stagedMedia, attachment];
+    await _draftStore?.saveMedia(widget.stop.id, next);
+    if (mounted) setState(() => _stagedMedia = next);
+  }
+
+  Future<void> _removeStagedMedia(int index) async {
+    final next = [..._stagedMedia]..removeAt(index);
+    await _draftStore?.saveMedia(widget.stop.id, next);
+    if (mounted) setState(() => _stagedMedia = next);
   }
 
   Future<void> _captureLocation() async {
@@ -350,11 +439,16 @@ class _OperationsChatScreenState extends State<OperationsChatScreen> {
                 sending: _sending,
                 capturingLocation: _capturingLocation,
                 stagedLocation: _stagedLocation,
+                stagedMedia: _stagedMedia,
                 canSend:
-                    _composer.text.trim().isNotEmpty || _stagedLocation != null,
+                    _composer.text.trim().isNotEmpty ||
+                    _stagedLocation != null ||
+                    _stagedMedia.isNotEmpty,
                 compact: compact,
                 onAdd: _showAttachmentSheet,
                 onRemoveLocation: _removeStagedLocation,
+                onRemoveMedia: _removeStagedMedia,
+                onRecordVoice: _recordVoice,
                 onSend: _send,
               ),
             ],
@@ -677,6 +771,29 @@ class _EmptyThread extends StatelessWidget {
   );
 }
 
+class _AttachmentChoice extends StatelessWidget {
+  const _AttachmentChoice({
+    required this.icon,
+    required this.label,
+    required this.keyValue,
+    required this.onTap,
+  });
+  final IconData icon;
+  final String label;
+  final String keyValue;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => ListTile(
+    key: Key(keyValue),
+    contentPadding: EdgeInsets.zero,
+    leading: Icon(icon, color: RoundsColors.ink),
+    title: Text(label, style: const TextStyle(fontWeight: FontWeight.w800)),
+    trailing: const Icon(Icons.chevron_right),
+    onTap: onTap,
+  );
+}
+
 class _MessageBubble extends StatelessWidget {
   const _MessageBubble({required this.message, required this.compact});
   final DriverOperationsMessageModel message;
@@ -767,10 +884,16 @@ class _MessageBubble extends StatelessWidget {
                           ),
                         ),
                       for (final attachment in message.attachments)
-                        _LocationAttachmentCard(
-                          attachment: attachment,
-                          mine: mine,
-                        ),
+                        if (attachment.kind == 'location')
+                          _LocationAttachmentCard(
+                            attachment: attachment,
+                            mine: mine,
+                          )
+                        else
+                          _MediaAttachmentCard(
+                            attachment: attachment,
+                            mine: mine,
+                          ),
                       const SizedBox(height: DriverH01Metrics.metaTop),
                       Text(
                         mine
@@ -893,6 +1016,151 @@ class _LocationAttachmentCard extends StatelessWidget {
   }
 }
 
+class _MediaAttachmentCard extends StatefulWidget {
+  const _MediaAttachmentCard({required this.attachment, required this.mine});
+  final DriverMessageAttachmentModel attachment;
+  final bool mine;
+
+  @override
+  State<_MediaAttachmentCard> createState() => _MediaAttachmentCardState();
+}
+
+class _MediaAttachmentCardState extends State<_MediaAttachmentCard> {
+  AudioPlayer? _player;
+
+  @override
+  void dispose() {
+    unawaited(_player?.dispose());
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final attachment = widget.attachment;
+    final mine = widget.mine;
+    final isVoice = attachment.kind == 'voice';
+    return Container(
+      key: Key('h01-media-${attachment.mediaAssetId ?? attachment.sha256}'),
+      margin: const EdgeInsets.only(top: 9),
+      decoration: BoxDecoration(
+        color: mine ? Colors.white.withValues(alpha: .08) : Colors.white,
+        border: Border.all(
+          color: mine
+              ? Colors.white.withValues(alpha: .18)
+              : const Color(0xFFDCE3E8),
+        ),
+        borderRadius: BorderRadius.circular(7),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(7),
+        onTap: isVoice ? _playVoice : _open,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
+          child: Row(
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: mine
+                      ? Colors.white.withValues(alpha: .12)
+                      : const Color(0xFFF3F5F7),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Icon(
+                  isVoice
+                      ? Icons.play_arrow
+                      : attachment.kind == 'image'
+                      ? Icons.photo_outlined
+                      : Icons.insert_drive_file_outlined,
+                  size: 19,
+                  color: mine ? Colors.white : RoundsColors.warning,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      isVoice ? 'Voice note' : attachment.fileName!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: mine ? Colors.white : RoundsColors.ink,
+                        fontSize: 12.8,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      isVoice
+                          ? _durationLabel(attachment.durationMilliseconds ?? 0)
+                          : _sizeLabel(attachment.byteSize ?? 0),
+                      style: TextStyle(
+                        color: mine
+                            ? Colors.white.withValues(alpha: .65)
+                            : RoundsColors.muted,
+                        fontSize: 11.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.chevron_right,
+                size: 18,
+                color: mine
+                    ? Colors.white.withValues(alpha: .55)
+                    : RoundsColors.muted,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _playVoice() async {
+    final source = widget.attachment.localPath;
+    final remote = widget.attachment.downloadUrl;
+    if (source == null && remote == null) return;
+    final player = _player ??= AudioPlayer();
+    if (source != null) {
+      await player.setFilePath(source);
+    } else {
+      await player.setUrl(remote!);
+    }
+    await player.play();
+  }
+
+  Future<void> _open() async {
+    final remote = widget.attachment.downloadUrl;
+    final local = widget.attachment.localPath;
+    final uri = remote != null
+        ? Uri.parse(remote)
+        : local != null
+        ? Uri.file(local)
+        : null;
+    if (uri == null) return;
+    final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!opened && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('The attachment could not be opened.')),
+      );
+    }
+  }
+}
+
+String _sizeLabel(int bytes) => bytes >= 1048576
+    ? '${(bytes / 1048576).toStringAsFixed(1)} MB'
+    : '${(bytes / 1024).ceil()} KB';
+
+String _durationLabel(int milliseconds) {
+  final seconds = (milliseconds / 1000).ceil();
+  return '${seconds ~/ 60}:${(seconds % 60).toString().padLeft(2, '0')}';
+}
+
 class _MessageBody extends StatefulWidget {
   const _MessageBody({required this.body, required this.style});
 
@@ -955,20 +1223,26 @@ class _Composer extends StatelessWidget {
     required this.sending,
     required this.capturingLocation,
     required this.stagedLocation,
+    required this.stagedMedia,
     required this.canSend,
     required this.compact,
     required this.onAdd,
     required this.onRemoveLocation,
+    required this.onRemoveMedia,
+    required this.onRecordVoice,
     required this.onSend,
   });
   final TextEditingController controller;
   final bool sending;
   final bool capturingLocation;
   final DriverMessageAttachmentModel? stagedLocation;
+  final List<DriverMessageAttachmentModel> stagedMedia;
   final bool canSend;
   final bool compact;
   final VoidCallback onAdd;
   final VoidCallback onRemoveLocation;
+  final ValueChanged<int> onRemoveMedia;
+  final VoidCallback onRecordVoice;
   final VoidCallback onSend;
 
   @override
@@ -991,10 +1265,24 @@ class _Composer extends StatelessWidget {
     child: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (stagedLocation != null)
-          _StagedLocation(
-            attachment: stagedLocation!,
-            onRemove: onRemoveLocation,
+        if (stagedLocation != null || stagedMedia.isNotEmpty)
+          SizedBox(
+            height: 64,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              children: [
+                if (stagedLocation != null)
+                  _StagedAttachment(
+                    attachment: stagedLocation!,
+                    onRemove: onRemoveLocation,
+                  ),
+                for (var index = 0; index < stagedMedia.length; index++)
+                  _StagedAttachment(
+                    attachment: stagedMedia[index],
+                    onRemove: () => onRemoveMedia(index),
+                  ),
+              ],
+            ),
           ),
         Row(
           crossAxisAlignment: CrossAxisAlignment.end,
@@ -1080,8 +1368,14 @@ class _Composer extends StatelessWidget {
                   ? DriverH01Metrics.compactComposerControlSize
                   : DriverH01Metrics.composerControlSize,
               child: IconButton.filled(
-                key: const Key('operations-chat-send'),
-                onPressed: sending || !canSend ? null : onSend,
+                key: Key(
+                  canSend ? 'operations-chat-send' : 'operations-chat-mic',
+                ),
+                onPressed: sending
+                    ? null
+                    : canSend
+                    ? onSend
+                    : onRecordVoice,
                 style: IconButton.styleFrom(
                   backgroundColor: RoundsColors.ink,
                   disabledBackgroundColor: RoundsColors.line,
@@ -1099,7 +1393,10 @@ class _Composer extends StatelessWidget {
                           color: Colors.white,
                         ),
                       )
-                    : const Icon(Icons.arrow_upward, color: Colors.white),
+                    : Icon(
+                        canSend ? Icons.arrow_upward : Icons.mic_outlined,
+                        color: Colors.white,
+                      ),
               ),
             ),
           ],
@@ -1109,8 +1406,8 @@ class _Composer extends StatelessWidget {
   );
 }
 
-class _StagedLocation extends StatelessWidget {
-  const _StagedLocation({required this.attachment, required this.onRemove});
+class _StagedAttachment extends StatelessWidget {
+  const _StagedAttachment({required this.attachment, required this.onRemove});
 
   final DriverMessageAttachmentModel attachment;
   final VoidCallback onRemove;
@@ -1121,7 +1418,11 @@ class _StagedLocation extends StatelessWidget {
     child: Align(
       alignment: Alignment.centerLeft,
       child: Container(
-        key: const Key('h01-staged-location'),
+        key: Key(
+          attachment.kind == 'location'
+              ? 'h01-staged-location'
+              : 'h01-staged-${attachment.kind}',
+        ),
         width: 168,
         height: 56,
         padding: const EdgeInsets.all(6),
@@ -1139,8 +1440,14 @@ class _StagedLocation extends StatelessWidget {
                 color: const Color(0xFFFFF2EB),
                 borderRadius: BorderRadius.circular(6),
               ),
-              child: const Icon(
-                Icons.location_on_outlined,
+              child: Icon(
+                attachment.kind == 'location'
+                    ? Icons.location_on_outlined
+                    : attachment.kind == 'voice'
+                    ? Icons.mic_outlined
+                    : attachment.kind == 'image'
+                    ? Icons.photo_outlined
+                    : Icons.insert_drive_file_outlined,
                 size: 17,
                 color: RoundsColors.warning,
               ),
@@ -1151,8 +1458,14 @@ class _StagedLocation extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Location',
+                  Text(
+                    attachment.kind == 'location'
+                        ? 'Location'
+                        : attachment.kind == 'voice'
+                        ? 'Voice note'
+                        : attachment.kind == 'image'
+                        ? 'Photo'
+                        : 'File',
                     style: TextStyle(
                       fontSize: 11.5,
                       fontWeight: FontWeight.w800,
@@ -1160,7 +1473,9 @@ class _StagedLocation extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    attachment.label,
+                    attachment.kind == 'location'
+                        ? attachment.label
+                        : attachment.fileName!,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
@@ -1172,7 +1487,11 @@ class _StagedLocation extends StatelessWidget {
               ),
             ),
             IconButton(
-              key: const Key('h01-remove-location'),
+              key: Key(
+                attachment.kind == 'location'
+                    ? 'h01-remove-location'
+                    : 'h01-remove-${attachment.kind}',
+              ),
               onPressed: onRemove,
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints.tightFor(width: 24, height: 24),
@@ -1183,4 +1502,182 @@ class _StagedLocation extends StatelessWidget {
       ),
     ),
   );
+}
+
+class _VoiceNoteSheet extends StatefulWidget {
+  const _VoiceNoteSheet({required this.gateway});
+  final DriverChatMediaGateway gateway;
+
+  @override
+  State<_VoiceNoteSheet> createState() => _VoiceNoteSheetState();
+}
+
+class _VoiceNoteSheetState extends State<_VoiceNoteSheet> {
+  final _player = AudioPlayer();
+  Timer? _timer;
+  int _seconds = 0;
+  bool _starting = true;
+  bool _recording = false;
+  DriverMessageAttachmentModel? _preview;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_start());
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    unawaited(_player.dispose());
+    super.dispose();
+  }
+
+  Future<void> _start() async {
+    try {
+      await widget.gateway.startVoice();
+      if (!mounted) return;
+      setState(() {
+        _starting = false;
+        _recording = true;
+        _seconds = 0;
+        _preview = null;
+      });
+      _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+        if (mounted) setState(() => _seconds++);
+      });
+    } catch (error) {
+      if (mounted) {
+        setState(() {
+          _starting = false;
+          _error = error.toString();
+        });
+      }
+    }
+  }
+
+  Future<void> _stop() async {
+    _timer?.cancel();
+    final preview = await widget.gateway.stopVoice();
+    if (!mounted) return;
+    setState(() {
+      _recording = false;
+      _preview = preview;
+    });
+  }
+
+  Future<void> _cancel() async {
+    _timer?.cancel();
+    if (_recording) await widget.gateway.cancelVoice();
+    if (mounted) Navigator.of(context).pop();
+  }
+
+  Future<void> _play() async {
+    final path = _preview?.localPath;
+    if (path == null) return;
+    await _player.setFilePath(path);
+    await _player.play();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final preview = _preview;
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(18, 4, 18, 18),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              preview == null ? 'VOICE NOTE' : 'VOICE READY',
+              style: TextStyle(
+                color: preview == null
+                    ? RoundsColors.warning
+                    : RoundsColors.green,
+                fontSize: 11,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 1.1,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              preview == null ? 'Recording' : 'Preview before send',
+              style: const TextStyle(
+                color: RoundsColors.ink,
+                fontSize: 30,
+                height: 1,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -1.2,
+              ),
+            ),
+            const SizedBox(height: 14),
+            if (_starting)
+              const Center(child: CircularProgressIndicator())
+            else if (_error != null)
+              Text(_error!, style: const TextStyle(color: RoundsColors.red))
+            else if (preview == null)
+              Text(
+                _durationLabel(_seconds * 1000),
+                key: const Key('h01-voice-timer'),
+                style: const TextStyle(
+                  color: RoundsColors.ink,
+                  fontSize: 48,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -2,
+                ),
+              )
+            else
+              ListTile(
+                key: const Key('h01-voice-preview'),
+                contentPadding: EdgeInsets.zero,
+                leading: IconButton.filled(
+                  onPressed: _play,
+                  icon: const Icon(Icons.play_arrow),
+                ),
+                title: const Text(
+                  'Voice note',
+                  style: TextStyle(fontWeight: FontWeight.w800),
+                ),
+                subtitle: Text(
+                  _durationLabel(preview.durationMilliseconds ?? 0),
+                ),
+              ),
+            const SizedBox(height: 16),
+            if (_recording)
+              FilledButton(
+                key: const Key('h01-stop-voice'),
+                onPressed: _stop,
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size.fromHeight(60),
+                  backgroundColor: RoundsColors.ink,
+                ),
+                child: const Text('Stop recording'),
+              )
+            else if (preview != null) ...[
+              FilledButton(
+                key: const Key('h01-stage-voice'),
+                onPressed: () => Navigator.of(context).pop(preview),
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size.fromHeight(60),
+                  backgroundColor: RoundsColors.ink,
+                ),
+                child: const Text('Add voice to message'),
+              ),
+              TextButton(onPressed: _start, child: const Text('Record again')),
+            ],
+            TextButton(
+              onPressed: _cancel,
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: RoundsColors.red),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

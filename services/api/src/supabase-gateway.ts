@@ -40,6 +40,7 @@ import type {
   DriverRoundStop,
   DriverSession,
   DriverOperationsThread,
+  DriverThreadMessage,
   LogContactAttemptCommand,
   LogContactAttemptResult,
   OperationsLocation,
@@ -73,6 +74,7 @@ import type {
   SendDriverMessageResult,
   SendOperationsMessageCommand,
   SendOperationsMessageResult,
+  PrepareMessageMediaPayload,
   SetDriverRecurringScheduleCommand,
   SetDriverRecurringScheduleResult,
   SetDriverShiftExceptionCommand,
@@ -1198,7 +1200,9 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
       p_actor_person_id: actorPersonId,
     });
     if (error) throw error;
-    return data as DriverOperationsThread | null;
+    const thread = data as DriverOperationsThread | null;
+    if (!thread) return null;
+    return { ...thread, messages: await this.withCommunicationMediaUrls(thread.messages) };
   }
 
   async sendDriverMessage(
@@ -1216,6 +1220,92 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     });
     if (error) throw error;
     return data as SendDriverMessageResult;
+  }
+
+  async prepareMessageMedia(
+    roundId: string,
+    stopId: string,
+    identity: AuthenticatedIdentity,
+    assetId: string,
+    payload: PrepareMessageMediaPayload,
+  ): Promise<Record<string, unknown>> {
+    const actorPersonId = await this.driverActorPersonId(identity);
+    if (!actorPersonId) return { status: "rejected", error: { code: "NOT_AUTHORIZED", message: "Driver identity is not linked" } };
+    const { data, error } = await this.admin.rpc("prepare_driver_message_media_asset", {
+      p_round_id: roundId,
+      p_stop_id: stopId,
+      p_actor_person_id: actorPersonId,
+      p_asset_id: assetId,
+      p_kind: payload.kind,
+      p_file_name: payload.fileName,
+      p_content_type: payload.contentType,
+      p_size: payload.byteSize,
+      p_sha256: payload.sha256,
+      p_duration_milliseconds: payload.durationMilliseconds ?? null,
+    });
+    if (error) throw error;
+    const prepared = data as Record<string, unknown>;
+    if (prepared.status !== "prepared") return prepared;
+    const projectRef = new URL(this.url).hostname.split(".")[0];
+    return {
+      ...prepared,
+      tusEndpoint: `https://${projectRef}.storage.supabase.co/storage/v1/upload/resumable`,
+      uploadAuthorization: "driver_session",
+    };
+  }
+
+  private async withCommunicationMediaUrls(messages: DriverThreadMessage[]): Promise<DriverThreadMessage[]> {
+    const assetIds = [...new Set(messages.flatMap((message) =>
+      (message.attachments ?? []).flatMap((attachment) => attachment.kind === "location" ? [] : [attachment.mediaAssetId]),
+    ))];
+    if (!assetIds.length) return messages;
+    const { data: assets, error } = await this.admin.from("communication_media_assets")
+      .select("id, storage_path").in("id", assetIds)
+      .returns<{ id: string; storage_path: string }[]>();
+    if (error) throw error;
+    const paths = new Map((assets ?? []).map((asset) => [asset.id, asset.storage_path]));
+    return Promise.all(messages.map(async (message) => ({
+      ...message,
+      attachments: message.attachments ? await Promise.all(message.attachments.map(async (attachment) => {
+        if (attachment.kind === "location") return attachment;
+        const storagePath = paths.get(attachment.mediaAssetId);
+        if (!storagePath) return attachment;
+        const signed = await this.admin.storage.from("communication-media").createSignedUrl(storagePath, 300);
+        return signed.data?.signedUrl ? { ...attachment, downloadUrl: signed.data.signedUrl } : attachment;
+      })) : [],
+    })));
+  }
+
+  async verifyMessageMedia(assetId: string, identity: AuthenticatedIdentity): Promise<Record<string, unknown>> {
+    const actorPersonId = await this.driverActorPersonId(identity);
+    if (!actorPersonId) return { status: "rejected", error: { code: "NOT_AUTHORIZED", message: "Driver identity is not linked" } };
+    const { data: asset, error: assetError } = await this.admin.from("communication_media_assets")
+      .select("id, storage_bucket, storage_path, state, uploader_person_id, expected_sha256, expected_size")
+      .eq("id", assetId).maybeSingle<{
+        id: string; storage_bucket: string; storage_path: string; state: string;
+        uploader_person_id: string; expected_sha256: string; expected_size: number;
+      }>();
+    if (assetError) throw assetError;
+    if (!asset || asset.uploader_person_id !== actorPersonId) return {
+      status: "rejected", error: { code: "NOT_AUTHORIZED", message: "Message attachment is not owned by this driver" },
+    };
+    if (asset.state === "committed" || asset.state === "uploaded_uncommitted") {
+      return { status: "verified", mediaAssetId: asset.id, assetState: asset.state };
+    }
+    const downloaded = await this.admin.storage.from(asset.storage_bucket).download(asset.storage_path);
+    if (downloaded.error || !downloaded.data) return {
+      status: "rejected", error: { code: "EVIDENCE_REQUIRED", message: "Message attachment upload is not complete yet" },
+    };
+    const bytes = Buffer.from(await downloaded.data.arrayBuffer());
+    const verifiedSha256 = createHash("sha256").update(bytes).digest("hex");
+    const { data, error } = await this.admin.rpc("mark_driver_message_media_uploaded", {
+      p_asset_id: assetId,
+      p_actor_person_id: actorPersonId,
+      p_verified_sha256: verifiedSha256,
+      p_verified_size: bytes.byteLength,
+    });
+    if (error) throw error;
+    return data as Record<string, unknown>;
   }
 
   async logContactAttempt(
@@ -1291,7 +1381,7 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     const driverById = new Map((driverResult.data ?? []).map((driver) => [driver.id, driver]));
     const messages = messageResult.data ?? [];
 
-    return {
+    const projection: OperationsCommunicationsProjection = {
       tenantId: actor.tenantId,
       threads: threads.flatMap((thread): OperationsCommunicationThread[] => {
         const round = roundById.get(thread.round_id);
@@ -1323,6 +1413,13 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
           })),
         }];
       }),
+    };
+    return {
+      ...projection,
+      threads: await Promise.all(projection.threads.map(async (thread) => ({
+        ...thread,
+        messages: await this.withCommunicationMediaUrls(thread.messages),
+      }))),
     };
   }
 

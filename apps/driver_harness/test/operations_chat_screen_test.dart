@@ -93,4 +93,39 @@ void main() {
 
     controller.dispose();
   });
+
+  testWidgets('H01 exposes the canonical attachment drawer and voice action', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    SharedPreferences.setMockInitialValues({});
+    final preferences = await SharedPreferences.getInstance();
+    final controller = await HarnessAppController.create();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildRoundsDriverTheme(),
+        home: OperationsChatScreen(
+          controller: controller,
+          round: AssignedRoundScreen.demoRound,
+          stop: AssignedRoundScreen.demoRound.stops.first,
+          draftStore: OperationsMessageDraftStore(preferences: preferences),
+        ),
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 500));
+
+    expect(find.byKey(const Key('operations-chat-mic')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('h01-add-attachment')));
+    await tester.pump(const Duration(milliseconds: 350));
+    expect(find.byKey(const Key('h01-add-camera')), findsOneWidget);
+    expect(find.byKey(const Key('h01-add-photo')), findsOneWidget);
+    expect(find.byKey(const Key('h01-add-file')), findsOneWidget);
+    expect(find.byKey(const Key('h01-add-location')), findsOneWidget);
+
+    controller.dispose();
+  });
 }

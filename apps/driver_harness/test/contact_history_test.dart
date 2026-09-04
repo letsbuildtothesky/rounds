@@ -113,6 +113,34 @@ void main() {
     expect(history.events.single.detail, contains('13.730600, 100.569700'));
   });
 
+  test('rich media appears with truthful contact-history labels', () {
+    final history = composeDriverContactHistory(
+      messages: [
+        DriverOperationsMessageModel(
+          id: 'voice-message',
+          sender: 'driver',
+          body: '',
+          attachments: const [
+            DriverMessageAttachmentModel.media(
+              kind: 'voice',
+              fileName: 'Voice note.m4a',
+              contentType: 'audio/mp4',
+              byteSize: 4096,
+              durationMilliseconds: 3500,
+              mediaAssetId: 'asset-1',
+            ),
+          ],
+          sentAt: DateTime.utc(2026, 9, 4, 3),
+        ),
+      ],
+      contactAttempts: const [],
+      threadUnavailable: false,
+    );
+
+    expect(history.events.single.title, 'Voice note shared');
+    expect(history.events.single.detail, 'Voice note');
+  });
+
   testWidgets('H03 uses canonical regions and only renders real evidence', (
     tester,
   ) async {

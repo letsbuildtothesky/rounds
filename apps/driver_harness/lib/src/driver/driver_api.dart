@@ -9,6 +9,7 @@ import 'package:path_provider/path_provider.dart';
 
 import '../storage/driver_command_outbox.dart';
 import '../storage/delivery_exception_evidence_outbox.dart';
+import '../storage/message_media_outbox.dart';
 import '../storage/pod_evidence_outbox.dart';
 import 'driver_session.dart';
 import 'driver_operations_thread.dart';
@@ -42,12 +43,15 @@ class DriverApi {
     Future<DriverCommandOutbox> Function()? outboxFactory,
     Future<PodEvidenceOutbox> Function()? podOutboxFactory,
     Future<DeliveryExceptionEvidenceOutbox> Function()? exceptionOutboxFactory,
+    Future<MessageMediaOutbox> Function()? messageMediaOutboxFactory,
   }) : _storage = storage ?? const FlutterSecureStorage(),
        _client = client ?? http.Client(),
        _outboxFactory = outboxFactory ?? DriverCommandOutbox.open,
        _podOutboxFactory = podOutboxFactory ?? PodEvidenceOutbox.open,
        _exceptionOutboxFactory =
-           exceptionOutboxFactory ?? DeliveryExceptionEvidenceOutbox.open;
+           exceptionOutboxFactory ?? DeliveryExceptionEvidenceOutbox.open,
+       _messageMediaOutboxFactory =
+           messageMediaOutboxFactory ?? MessageMediaOutbox.open;
 
   static const _accessTokenKey = 'rounds_driver_access_token';
   static const _refreshTokenKey = 'rounds_driver_refresh_token';
@@ -61,9 +65,11 @@ class DriverApi {
   final Future<PodEvidenceOutbox> Function() _podOutboxFactory;
   final Future<DeliveryExceptionEvidenceOutbox> Function()
   _exceptionOutboxFactory;
+  final Future<MessageMediaOutbox> Function() _messageMediaOutboxFactory;
   DriverCommandOutbox? _outbox;
   PodEvidenceOutbox? _podOutbox;
   DeliveryExceptionEvidenceOutbox? _exceptionOutbox;
+  MessageMediaOutbox? _messageMediaQueue;
 
   bool get isConfigured =>
       supabaseUrl.isNotEmpty &&
@@ -79,7 +85,8 @@ class DriverApi {
       final podFlush = await _flushPendingPodEvidence(
         exceptionFlush.accessToken,
       );
-      final flush = await _flushPending(podFlush.accessToken);
+      final mediaFlush = await _flushPendingMessageMedia(podFlush.accessToken);
+      final flush = await _flushPending(mediaFlush.accessToken);
       if (flush.committedAny) session = await _driverSession(flush.accessToken);
       return session;
     } on _Unauthorized {
@@ -93,7 +100,8 @@ class DriverApi {
       final podFlush = await _flushPendingPodEvidence(
         exceptionFlush.accessToken,
       );
-      final flush = await _flushPending(podFlush.accessToken);
+      final mediaFlush = await _flushPendingMessageMedia(podFlush.accessToken);
+      final flush = await _flushPending(mediaFlush.accessToken);
       if (flush.committedAny) session = await _driverSession(flush.accessToken);
       return session;
     }
@@ -118,7 +126,8 @@ class DriverApi {
       final podFlush = await _flushPendingPodEvidence(
         exceptionFlush.accessToken,
       );
-      final flush = await _flushPending(podFlush.accessToken);
+      final mediaFlush = await _flushPendingMessageMedia(podFlush.accessToken);
+      final flush = await _flushPending(mediaFlush.accessToken);
       if (flush.committedAny) session = await _driverSession(flush.accessToken);
       return session;
     } catch (_) {
@@ -262,7 +271,7 @@ class DriverApi {
     final records = await (await _commandOutbox()).pendingByType(
       'thread.send_message',
     );
-    return records
+    final commandMessages = records
         .where((record) => record.endpoint == endpoint)
         .map((record) {
           final payload =
@@ -284,6 +293,24 @@ class DriverApi {
           );
         })
         .toList(growable: false);
+    final richRecords = await (await _messageMediaOutbox()).pending(
+      stopId: stop.id,
+    );
+    return [
+      ...commandMessages,
+      ...richRecords
+          .where((record) => record.roundId == round.id)
+          .map(
+            (record) => DriverOperationsMessageModel(
+              id: record.id,
+              sender: 'driver',
+              body: record.body,
+              attachments: record.attachments,
+              sentAt: record.createdAt,
+              savedLocally: true,
+            ),
+          ),
+    ];
   }
 
   Future<DriverCommandOutcome> sendOperationsMessage({
@@ -291,8 +318,25 @@ class DriverApi {
     required DriverRoundStopModel stop,
     required String body,
     List<DriverMessageAttachmentModel> attachments = const [],
-  }) {
+  }) async {
     final trimmed = body.trim();
+    final hasLocalMedia = attachments.any(
+      (attachment) =>
+          attachment.kind != 'location' && attachment.localPath != null,
+    );
+    if (hasLocalMedia) {
+      final record = await (await _messageMediaOutbox()).save(
+        roundId: round.id,
+        stopId: stop.id,
+        body: trimmed,
+        attachments: attachments,
+      );
+      final accessToken = await _storage.read(key: _accessTokenKey);
+      if (accessToken == null) {
+        return const DriverCommandOutcome(DriverCommandDisposition.pendingSync);
+      }
+      return _syncMessageMedia(record, accessToken);
+    }
     final nonce = DateTime.now().toUtc().microsecondsSinceEpoch;
     final attachmentJson = attachments.map((item) => item.toJson()).toList();
     final fingerprint = sha256.convert(
@@ -726,6 +770,222 @@ class DriverApi {
     return _FlushResult(accessToken, committedAny);
   }
 
+  Future<_FlushResult> _flushPendingMessageMedia(String accessToken) async {
+    var committedAny = false;
+    for (final record in await (await _messageMediaOutbox()).pending()) {
+      final outcome = await _syncMessageMedia(record, accessToken);
+      if (outcome.pendingSync) break;
+      committedAny = true;
+    }
+    return _FlushResult(accessToken, committedAny);
+  }
+
+  Future<DriverCommandOutcome> _syncMessageMedia(
+    MessageMediaOutboxRecord original,
+    String accessToken,
+  ) async {
+    final outbox = await _messageMediaOutbox();
+    var record = original;
+    try {
+      final next = <DriverMessageAttachmentModel>[];
+      for (var attachment in record.attachments) {
+        if (attachment.kind == 'location') {
+          next.add(attachment);
+          continue;
+        }
+        if (attachment.mediaAssetId == null || attachment.tusEndpoint == null) {
+          final response = await _client.post(
+            Uri.parse(
+              '$roundsApiUrl/v1/driver/rounds/${record.roundId}/stops/${record.stopId}/message-media',
+            ),
+            headers: {
+              'authorization': 'Bearer $accessToken',
+              'content-type': 'application/json',
+              'x-trace-id': record.id,
+            },
+            body: jsonEncode({
+              'kind': attachment.kind,
+              'fileName': attachment.fileName,
+              'contentType': attachment.contentType,
+              'byteSize': attachment.byteSize,
+              'sha256': attachment.sha256,
+              if (attachment.durationMilliseconds != null)
+                'durationMilliseconds': attachment.durationMilliseconds,
+            }),
+          );
+          if (response.statusCode != 200 && response.statusCode != 201) {
+            throw DriverApiException(
+              _message(response, 'Message attachment could not be prepared'),
+            );
+          }
+          final prepared = jsonDecode(response.body) as Map<String, dynamic>;
+          attachment = attachment.copyWithUpload(
+            mediaAssetId: prepared['mediaAssetId'] as String,
+            storageBucket: prepared['bucket'] as String,
+            storagePath: prepared['path'] as String,
+            tusEndpoint: prepared['tusEndpoint'] as String,
+          );
+          next.add(attachment);
+          record = await outbox.updateAttachments(record.id, [
+            ...next,
+            ...record.attachments.skip(next.length),
+          ]);
+          attachment = record.attachments[next.length - 1];
+        } else {
+          next.add(attachment);
+        }
+        attachment = await _uploadMessageMediaTus(
+          record,
+          next.length - 1,
+          attachment,
+          accessToken,
+        );
+        next[next.length - 1] = attachment;
+        record = await outbox.updateAttachments(record.id, [
+          ...next,
+          ...record.attachments.skip(next.length),
+        ]);
+        final verify = await _client.post(
+          Uri.parse(
+            '$roundsApiUrl/v1/driver/message-media/${attachment.mediaAssetId}/verify',
+          ),
+          headers: {
+            'authorization': 'Bearer $accessToken',
+            'x-trace-id': record.id,
+          },
+        );
+        if (verify.statusCode != 200) {
+          throw DriverApiException(
+            _message(verify, 'Message attachment upload could not be verified'),
+          );
+        }
+      }
+      final outcome = await _queueAndSend(
+        commandType: 'thread.send_message',
+        aggregateId: record.stopId,
+        expectedVersion: 1,
+        idempotencyKey: record.idempotencyKey,
+        endpoint:
+            '/v1/driver/rounds/${record.roundId}/stops/${record.stopId}/messages',
+        payload: {
+          'body': record.body,
+          'attachments': record.attachments.map((item) {
+            final json = item.toJson();
+            json.remove('downloadUrl');
+            return json;
+          }).toList(),
+        },
+      );
+      await outbox.remove(record.id);
+      return outcome;
+    } catch (error) {
+      await outbox.markPending(record.id, error);
+      return const DriverCommandOutcome(DriverCommandDisposition.pendingSync);
+    }
+  }
+
+  Future<DriverMessageAttachmentModel> _uploadMessageMediaTus(
+    MessageMediaOutboxRecord record,
+    int index,
+    DriverMessageAttachmentModel attachment,
+    String accessToken,
+  ) async {
+    var current = attachment;
+    var uploadUrl = current.uploadUrl;
+    if (uploadUrl != null) {
+      final head = http.Request('HEAD', Uri.parse(uploadUrl));
+      head.headers.addAll({
+        'tus-resumable': '1.0.0',
+        'authorization': 'Bearer $accessToken',
+      });
+      final response = await http.Response.fromStream(await _client.send(head));
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        final offset = int.tryParse(response.headers['upload-offset'] ?? '');
+        if (offset == null || offset < 0 || offset > current.byteSize!) {
+          throw DriverApiException(
+            'Message attachment upload returned an invalid resume offset',
+          );
+        }
+        current = current.copyWithUpload(uploadOffset: offset);
+      } else if (response.statusCode == 404 || response.statusCode == 410) {
+        current = current.copyWithUpload(clearUpload: true);
+        final attachments = [...record.attachments]..[index] = current;
+        final resetRecord = await (await _messageMediaOutbox())
+            .updateAttachments(record.id, attachments);
+        return _uploadMessageMediaTus(resetRecord, index, current, accessToken);
+      } else {
+        throw DriverApiException(
+          'Message attachment resume check failed (HTTP ${response.statusCode})',
+        );
+      }
+    }
+    if (uploadUrl == null) {
+      final metadata =
+          {
+                'bucketName': current.storageBucket!,
+                'objectName': current.storagePath!,
+                'contentType': current.contentType!,
+                'cacheControl': '3600',
+              }.entries
+              .map(
+                (entry) =>
+                    '${entry.key} ${base64Encode(utf8.encode(entry.value))}',
+              )
+              .join(',');
+      final request = http.Request('POST', Uri.parse(current.tusEndpoint!));
+      request.headers.addAll({
+        'tus-resumable': '1.0.0',
+        'upload-length': current.byteSize.toString(),
+        'upload-metadata': metadata,
+        'authorization': 'Bearer $accessToken',
+      });
+      final response = await http.Response.fromStream(
+        await _client.send(request),
+      );
+      if (response.statusCode != 201 || response.headers['location'] == null) {
+        throw DriverApiException(
+          'Message attachment upload could not start (HTTP ${response.statusCode})',
+        );
+      }
+      uploadUrl = Uri.parse(
+        current.tusEndpoint!,
+      ).resolve(response.headers['location']!).toString();
+      current = current.copyWithUpload(uploadUrl: uploadUrl);
+      final attachments = [...record.attachments]..[index] = current;
+      await (await _messageMediaOutbox()).updateAttachments(
+        record.id,
+        attachments,
+      );
+    }
+    if (current.uploadOffset < current.byteSize!) {
+      final bytes = await File(current.localPath!).readAsBytes();
+      final request = http.Request('PATCH', Uri.parse(uploadUrl));
+      request.headers.addAll({
+        'tus-resumable': '1.0.0',
+        'upload-offset': current.uploadOffset.toString(),
+        'content-type': 'application/offset+octet-stream',
+        'authorization': 'Bearer $accessToken',
+      });
+      request.bodyBytes = bytes.sublist(current.uploadOffset);
+      final response = await http.Response.fromStream(
+        await _client.send(request),
+      );
+      if (response.statusCode != 204) {
+        throw DriverApiException(
+          'Message attachment upload paused (HTTP ${response.statusCode})',
+        );
+      }
+      final offset =
+          int.tryParse(response.headers['upload-offset'] ?? '') ??
+          current.byteSize!;
+      current = current.copyWithUpload(
+        uploadUrl: uploadUrl,
+        uploadOffset: offset,
+      );
+    }
+    return current;
+  }
+
   Future<DriverCommandOutcome> _syncExceptionEvidence(
     DeliveryExceptionEvidenceRecord original,
     String accessToken,
@@ -1079,6 +1339,9 @@ class DriverApi {
 
   Future<DeliveryExceptionEvidenceOutbox> _deliveryExceptionOutbox() async =>
       _exceptionOutbox ??= await _exceptionOutboxFactory();
+
+  Future<MessageMediaOutbox> _messageMediaOutbox() async =>
+      _messageMediaQueue ??= await _messageMediaOutboxFactory();
 
   Future<DriverSessionModel> _driverSession(String accessToken) async {
     final response = await _client.get(
