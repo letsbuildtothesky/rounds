@@ -2,6 +2,26 @@
 
 This repository is the complete implementation handoff for Rounds.
 
+## 0. Specification maintenance rule
+
+Treat the canonical specification set as maintained source, not an append-only
+conversation log.
+
+- Do not add a new `ADDENDUM`, "supersedes earlier wording" block or duplicate
+  decision summary to a canonical specification or index.
+- Edit the owning section in place and remove or reconcile the superseded text
+  in the same change.
+- Record each substantive specification change in a short changelog near the
+  top of the owning file. A version bump is valid only with a matching
+  changelog entry, and the version header must match the filename.
+- When one decision closes or changes an item in another active control or
+  specification, update that file in the same checkpoint.
+- Indexes list authoritative sources and precedence only. They must not become
+  an additional product specification or changelog.
+- Existing appended material is technical debt to consolidate deliberately.
+  Do not delete it until the owning sections have been checked for equivalent
+  authoritative coverage.
+
 ## 1. Authority and read order
 Before changing code, read:
 1. `AGENTS.md`
@@ -30,8 +50,15 @@ If current sources conflict, STOP and report exact filenames/sections. Do not gu
 
 Their existence is not permission to implement all of them. Follow `CODEX-BUILD-ORDER.md` strictly.
 
-## 4. Current first task
-Phase 0 field harness only, per `CODEX-FIRST-TASK.md` and Phase 0 spec. Do not start Pilot/Slice 1 without human authorization.
+## 4. Current authorized execution
+
+Human authorization has advanced implementation through **Pilot / Slice 1
+closure and Slice 2 own-fleet depth**. Work only on capabilities marked current
+in `specs/engineering/ROUNDS-IMPLEMENTATION-COVERAGE-AND-GAP-CONTROL-v1.0.md`.
+Phase 0 motorcycle/background/battery/degraded-network evidence remains an open
+release gate; implementation progress does not convert that missing evidence
+into a PASS. Do not self-promote to Slice 3 or any Network/external-courier
+slice.
 
 ## 5. Locked architecture
 - Supabase PostgreSQL + PostGIS system of record.

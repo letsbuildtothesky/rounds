@@ -1,6 +1,23 @@
 # Rounds · Codex Build Order
 
-**Version:** 1.0
+**Version:** 1.1
+
+## Changelog
+
+- **v1.1 — 2026-09-04:** Records the human-authorized Pilot / Slice 1 closure
+  and Slice 2 own-fleet execution boundary while retaining incomplete Phase 0
+  field evidence as a release gate.
+
+## Currently authorized
+
+Implementation is authorized through **Pilot / Slice 1 closure and Slice 2
+own-fleet depth**, constrained by
+`specs/engineering/ROUNDS-IMPLEMENTATION-COVERAGE-AND-GAP-CONTROL-v1.0.md`.
+This is not authorization for Slice 3, Lalamove or either Network slice.
+
+Phase 0 motorcycle, background, battery and degraded-network evidence remains
+open. Continuing authorized implementation must not be described as a Phase 0
+field PASS or production readiness.
 
 This file controls implementation sequence. The complete Build Spec set exists, but Codex must not build everything in parallel.
 

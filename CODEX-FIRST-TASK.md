@@ -1,29 +1,32 @@
-# Codex First Task — Rounds Phase 0
+# Codex Execution Status — Rounds
 
 Read `AGENTS.md` and `CODEX-BUILD-ORDER.md` first.
 
-Your first implementation is **Phase 0 only**. Do not build product-complete V1 or Pilot/Slice 1 yet.
+## Status
 
-Read:
-- `specs/engineering/ROUNDS-PHASE-0-FIELD-VALIDATION-SPEC-v1.2.md`
-- `specs/build/BS-03.md`
-- `specs/build/BS-04.md`
-- `specs/build/BS-06.md`
-- `specs/build/BS-07.md`
+The original Phase 0 harness implementation is complete. Human authorization
+has advanced current implementation through **Pilot / Slice 1 closure and
+Slice 2 own-fleet depth**.
 
-Before coding, report:
-1. Phase 0 acceptance criteria in your own words.
-2. Proposed minimal repo changes.
-3. SDKs/credentials/hardware required.
-4. Anything that cannot be validated without real devices/riding.
-5. Any conflict in current sources.
+The authoritative current checkpoint, evidence, gaps and remaining sequence are
+maintained in:
 
-Then implement the combined Flutter + Google Navigation `TWO_WHEELER` + Rounds telemetry harness needed by Phase 0.
+- `specs/engineering/ROUNDS-IMPLEMENTATION-COVERAGE-AND-GAP-CONTROL-v1.0.md`
 
-Stop after implementation/test preparation. Field validation must be reported as one of:
-- PASS
-- BRIDGE REQUIRED
-- NAV FAILURE
-- LOCATION FAILURE
+## Current boundary
 
-Do not claim a field result without the required physical tests.
+- Continue only the authorized English/Thai own-fleet Driver and Operations
+  work described by the coverage-and-gap control.
+- Do not start Slice 3 commerce integration, Lalamove or either Network slice
+  without a new human promotion decision.
+- Phase 0 field evidence is still incomplete. Motorcycle route quality,
+  background behavior, battery and degraded-network gates remain open and must
+  not be represented as PASS from bench evidence.
+- Preserve the original Phase 0 acceptance vocabulary: `PASS`,
+  `BRIDGE REQUIRED`, `NAV FAILURE` or `LOCATION FAILURE`.
+
+## Specification changes
+
+Follow the in-place maintenance rule in `AGENTS.md`: no new superseding
+addenda, update the owning section and related controls together, and pair every
+version bump with a changelog entry.
