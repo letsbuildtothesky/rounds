@@ -6,7 +6,7 @@ import type { ActorContext, AuthenticatedIdentity, IdentityGateway } from "../sr
 
 const session: DriverSession = {
   user: { id: "auth-user", displayName: "Johannes" },
-  driver: { id: "driver-1", preferredLocale: "en" },
+  driver: { id: "driver-1", version: 1, preferredLocale: "en" },
   team: { tenantId: "tenant-1", displayName: "UrbanFlowers", status: "active" },
   completedRounds: [{
     id: "round-complete-1",

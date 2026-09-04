@@ -17,6 +17,7 @@ import {
   validateReportDeliveryProblemCommand,
   validateReportLocationProblemCommand,
   validateReportDriverEmergencyCommand,
+  validateUpdateDriverPreferredLocaleCommand,
 } from "../src/index.js";
 
 const payload = () => ({
@@ -51,6 +52,35 @@ test("rejects duplicate Stops", () => {
   const input = payload();
   input.stopIds.push(input.stopIds[0]!);
   assert.throws(() => validatePlanRoundPayload(input), ContractError);
+});
+
+test("accepts only canonical versioned Driver locale updates", () => {
+  const command = {
+    schemaVersion: 1 as const,
+    commandType: "driver.update_preferred_locale" as const,
+    commandId: "10000000-0000-4000-8000-000000000101",
+    traceId: "10000000-0000-4000-8000-000000000102",
+    idempotencyKey: "driver-locale:v1:th-TH",
+    tenantId: "10000000-0000-4000-8000-000000000001",
+    aggregateId: "10000000-0000-4000-8000-000000000002",
+    expectedVersion: 1,
+    payload: { preferredLocale: "th-TH" as const },
+  };
+  assert.doesNotThrow(() => validateUpdateDriverPreferredLocaleCommand(command));
+  assert.throws(
+    () => validateUpdateDriverPreferredLocaleCommand({
+      ...command,
+      expectedVersion: 0,
+    }),
+    /positive integer/,
+  );
+  assert.throws(
+    () => validateUpdateDriverPreferredLocaleCommand({
+      ...command,
+      payload: { preferredLocale: "fr" as "th-TH" },
+    }),
+    /th-TH or en/,
+  );
 });
 
 test("requires the requested departure to match the routed departure", () => {

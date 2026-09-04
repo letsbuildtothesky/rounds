@@ -42,6 +42,8 @@ class HarnessAppController extends ChangeNotifier {
   StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
   Timer? _sessionRefreshTimer;
   bool _silentRefreshRunning = false;
+  bool _localeSyncRunning = false;
+  bool _localeSyncRequested = false;
 
   HarnessLocale get locale => _locale;
   bool get hasSelectedLanguage => _hasSelectedLanguage;
@@ -100,11 +102,13 @@ class HarnessAppController extends ChangeNotifier {
       final restored = await _driverApi.restore().timeout(
         const Duration(seconds: 15),
       );
-      _driverSession = restored;
       if (restored == null) {
+        _driverSession = null;
         await _clearCachedSession();
       } else {
+        await _acceptAuthenticatedSession(restored);
         await _saveSession(restored);
+        _requestLocaleSync();
         await _flushPendingTelemetry();
       }
       await _refreshSyncSnapshot(
@@ -130,8 +134,10 @@ class HarnessAppController extends ChangeNotifier {
     _driverError = null;
     notifyListeners();
     try {
-      _driverSession = await _driverApi.signIn(email, password);
-      await _saveSession(_driverSession!);
+      final signedIn = await _driverApi.signIn(email, password);
+      await _acceptAuthenticatedSession(signedIn);
+      await _saveSession(signedIn);
+      _requestLocaleSync();
       await _flushPendingTelemetry();
       await _refreshSyncSnapshot(
         phase: DriverConnectionPhase.online,
@@ -192,8 +198,9 @@ class HarnessAppController extends ChangeNotifier {
       final changed =
           jsonEncode(refreshed.toJson()) !=
           jsonEncode(_driverSession!.toJson());
-      _driverSession = refreshed;
+      await _acceptAuthenticatedSession(refreshed);
       await _saveSession(refreshed);
+      _requestLocaleSync();
       if (changed) notifyListeners();
     } catch (_) {
       // Connectivity monitoring owns the visible offline/reconnecting state.
@@ -203,8 +210,9 @@ class HarnessAppController extends ChangeNotifier {
   }
 
   Future<void> signOutDriver() async {
-    await _driverApi.signOut();
     _driverSession = null;
+    _localeSyncRequested = false;
+    await _driverApi.signOut();
     _driverError = null;
     _showConnectionSurface = false;
     _syncSnapshot = const DriverSyncSnapshot.online();
@@ -379,6 +387,53 @@ class HarnessAppController extends ChangeNotifier {
       _preferences.setBool(_selectedKey, true),
     ]);
     notifyListeners();
+    _requestLocaleSync();
+  }
+
+  Future<void> _acceptAuthenticatedSession(DriverSessionModel session) async {
+    _driverSession = session;
+    if (!_hasSelectedLanguage) {
+      _locale = HarnessLocaleValue.fromStorage(session.preferredLocale);
+      _hasSelectedLanguage = true;
+      await Future.wait([
+        _preferences.setString(_localeKey, _locale.storageValue),
+        _preferences.setBool(_selectedKey, true),
+      ]);
+      return;
+    }
+  }
+
+  void _requestLocaleSync() {
+    if (_driverSession == null || !_hasSelectedLanguage) return;
+    _localeSyncRequested = true;
+    if (!_localeSyncRunning) unawaited(_syncPreferredLocale());
+  }
+
+  Future<void> _syncPreferredLocale() async {
+    if (_localeSyncRunning) return;
+    _localeSyncRunning = true;
+    try {
+      while (_localeSyncRequested) {
+        _localeSyncRequested = false;
+        final session = _driverSession;
+        final desired = _locale;
+        if (session == null ||
+            session.preferredLocale == desired.storageValue) {
+          continue;
+        }
+        final synced = await _driverApi.syncPreferredLocale(
+          session: session,
+          preferredLocale: desired.storageValue,
+        );
+        if (synced == null || !identical(_driverSession, session)) continue;
+        _driverSession = synced;
+        await _saveSession(synced);
+        if (_locale != desired) _localeSyncRequested = true;
+        notifyListeners();
+      }
+    } finally {
+      _localeSyncRunning = false;
+    }
   }
 
   void showConnectionStatus() {

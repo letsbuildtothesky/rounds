@@ -13,6 +13,7 @@ Implemented now:
 - `GET /v1/operations/planning` purpose-limited unplanned delivery and Team-driver projection;
 - `POST /v1/rounds` manual ordered Team Round approval;
 - `GET /v1/driver/session` authenticated assigned/current Round plus the Driver's tenant-scoped completed Team Round history;
+- `POST /v1/driver/preferences/locale` versioned, idempotent authenticated `th-TH`/`en` profile preference sync;
 - `POST /v1/driver/shifts/start` explicit, idempotent Team shift attendance start against the server-resolved effective schedule;
 - `POST /v1/driver/rounds/:roundId/pickup` exact manifest verification and custody commit;
 - `POST /v1/driver/stops/:stopId/contact-attempts` audited native-phone outcome selected by the assigned Driver;

@@ -3,6 +3,7 @@ class DriverSessionModel {
     required this.userName,
     required this.driverId,
     required this.preferredLocale,
+    this.version = 1,
     this.teamName,
     this.vehicleLabel,
     this.vehiclePlate,
@@ -14,6 +15,7 @@ class DriverSessionModel {
 
   final String userName;
   final String driverId;
+  final int version;
   final String preferredLocale;
   final String? teamName;
   final String? vehicleLabel;
@@ -31,6 +33,7 @@ class DriverSessionModel {
     return DriverSessionModel(
       userName: user['displayName'] as String,
       driverId: driver['id'] as String,
+      version: driver['version'] as int? ?? 1,
       preferredLocale: driver['preferredLocale'] as String,
       teamName: team?['displayName'] as String?,
       vehicleLabel: driver['vehicleLabel'] as String?,
@@ -60,6 +63,7 @@ class DriverSessionModel {
     'user': {'displayName': userName},
     'driver': {
       'id': driverId,
+      'version': version,
       'preferredLocale': preferredLocale,
       if (vehicleLabel != null) 'vehicleLabel': vehicleLabel,
       if (vehiclePlate != null) 'vehiclePlate': vehiclePlate,

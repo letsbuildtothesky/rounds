@@ -18,7 +18,7 @@ const stopId = "10000000-0000-4000-8000-000000000011";
 const mediaAssetId = "10000000-0000-4000-8000-000000000013";
 const session: DriverSession = {
   user: { id: "auth-user", displayName: "Driver" },
-  driver: { id: "10000000-0000-4000-8000-000000000002", preferredLocale: "en" },
+  driver: { id: "10000000-0000-4000-8000-000000000002", version: 1, preferredLocale: "en" },
   currentRound: {
     id: "10000000-0000-4000-8000-000000000010",
     reference: "ROUND-001", serviceDate: "2026-09-02", state: "active", version: 2,

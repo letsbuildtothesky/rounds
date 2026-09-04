@@ -7,7 +7,7 @@ void main() {
     () {
       final session = DriverSessionModel.fromJson({
         'user': {'id': 'auth-user', 'displayName': 'Demo Driver'},
-        'driver': {'id': 'driver-1', 'preferredLocale': 'en'},
+        'driver': {'id': 'driver-1', 'version': 7, 'preferredLocale': 'en'},
         'currentRound': {
           'id': 'round-1',
           'reference': 'ROUND-001',
@@ -89,6 +89,7 @@ void main() {
       });
 
       expect(session.currentRound?.reference, 'ROUND-001');
+      expect(session.version, 7);
       expect(session.currentRound?.pickup.id, 'pickup-1');
       expect(session.currentRound?.pickup.latitude, 13.7338);
       expect(session.currentRound?.pickup.longitude, 100.5766);
@@ -104,6 +105,7 @@ void main() {
       final cached = DriverSessionModel.fromJson(session.toJson());
       expect(cached.userName, session.userName);
       expect(cached.driverId, session.driverId);
+      expect(cached.version, 7);
       expect(cached.currentRound?.reference, 'ROUND-001');
       expect(cached.currentRound?.stops.single.recipientName, 'Siriporn');
       expect(cached.currentRound?.pickup.latitude, 13.7338);

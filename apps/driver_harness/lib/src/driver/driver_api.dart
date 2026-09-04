@@ -132,6 +132,79 @@ class DriverApi {
     _storage.delete(key: _refreshTokenKey),
   ]);
 
+  Future<DriverSessionModel?> syncPreferredLocale({
+    required DriverSessionModel session,
+    required String preferredLocale,
+  }) async {
+    if (!isConfigured || session.preferredLocale == preferredLocale) {
+      return session;
+    }
+    final storedToken = await _storage.read(key: _accessTokenKey);
+    if (storedToken == null) return null;
+    var accessToken = storedToken;
+    var candidate = session;
+    for (var conflictAttempt = 0; conflictAttempt < 2; conflictAttempt += 1) {
+      http.Response response;
+      try {
+        response = await _sendPreferredLocale(
+          candidate,
+          preferredLocale,
+          accessToken,
+        );
+      } catch (_) {
+        return null;
+      }
+      if (response.statusCode == 401) {
+        final refreshedToken = await _refresh();
+        if (refreshedToken == null) return null;
+        accessToken = refreshedToken;
+        try {
+          response = await _sendPreferredLocale(
+            candidate,
+            preferredLocale,
+            accessToken,
+          );
+        } catch (_) {
+          return null;
+        }
+      }
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        try {
+          return await _driverSession(accessToken);
+        } catch (_) {
+          return null;
+        }
+      }
+      if (response.statusCode != 409) return null;
+      try {
+        candidate = await _driverSession(accessToken);
+      } catch (_) {
+        return null;
+      }
+      if (candidate.preferredLocale == preferredLocale) return candidate;
+    }
+    return null;
+  }
+
+  Future<http.Response> _sendPreferredLocale(
+    DriverSessionModel session,
+    String preferredLocale,
+    String accessToken,
+  ) => _client.post(
+    Uri.parse('$roundsApiUrl/v1/driver/preferences/locale'),
+    headers: {
+      'authorization': 'Bearer $accessToken',
+      'content-type': 'application/json',
+      'idempotency-key':
+          'driver-locale:${session.driverId}:v${session.version}:$preferredLocale',
+      'x-trace-id': DateTime.now().microsecondsSinceEpoch.toString(),
+    },
+    body: jsonEncode({
+      'expectedVersion': session.version,
+      'preferredLocale': preferredLocale,
+    }),
+  );
+
   Future<DriverCommandOutcome> startShift(DriverSessionModel session) {
     final shift = session.shift;
     if (shift == null) {

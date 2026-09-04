@@ -12,6 +12,7 @@ import {
 import type { LocationBatch, PositionSample } from "./location.js";
 import {
   deliveryProblemCategories,
+  driverPreferredLocales,
   locationProblemCategories,
   locationProblemStages,
   pickupProblemCategories,
@@ -46,6 +47,8 @@ import type {
   EndDriverShiftPayload,
   StartDriverShiftCommand,
   StartDriverShiftPayload,
+  UpdateDriverPreferredLocaleCommand,
+  UpdateDriverPreferredLocalePayload,
 } from "./round.js";
 import { driverEmergencySafetyStatuses } from "./round.js";
 import {
@@ -111,6 +114,41 @@ export function validateEndDriverShiftCommand(command: EndDriverShiftCommand): v
   if (command.aggregateId !== command.payload.attendanceId) {
     throw new ContractError("EndDriverShift aggregateId must equal attendanceId");
   }
+}
+
+export function validateUpdateDriverPreferredLocalePayload(
+  payload: UpdateDriverPreferredLocalePayload,
+): void {
+  if (!driverPreferredLocales.includes(payload.preferredLocale)) {
+    throw new ContractError("preferredLocale must be th-TH or en");
+  }
+}
+
+export function validateUpdateDriverPreferredLocaleCommand(
+  command: UpdateDriverPreferredLocaleCommand,
+): void {
+  if (
+    command.schemaVersion !== 1 ||
+    command.commandType !== "driver.update_preferred_locale"
+  ) {
+    throw new ContractError(
+      "unsupported UpdateDriverPreferredLocale command envelope",
+    );
+  }
+  assertUuid(command.commandId, "commandId");
+  assertUuid(command.traceId, "traceId");
+  assertUuid(command.tenantId, "tenantId");
+  assertUuid(command.aggregateId, "aggregateId");
+  assertNonEmpty(command.idempotencyKey, "idempotencyKey");
+  if (command.idempotencyKey.length > 200) {
+    throw new ContractError("idempotencyKey exceeds 200 characters");
+  }
+  if (!Number.isInteger(command.expectedVersion) || command.expectedVersion < 1) {
+    throw new ContractError(
+      "UpdateDriverPreferredLocale expectedVersion must be a positive integer",
+    );
+  }
+  validateUpdateDriverPreferredLocalePayload(command.payload);
 }
 
 export function validateSetDriverRecurringSchedulePayload(payload: SetDriverRecurringSchedulePayload): void {

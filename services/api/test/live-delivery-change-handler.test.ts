@@ -45,7 +45,7 @@ class Gateway implements IdentityGateway, OperationsRoundDetailGateway, LiveDeli
   async authenticate(): Promise<AuthenticatedIdentity | null> { return { authUserId: "auth" }; }
   async authorizeTenant(): Promise<ActorContext | null> { return actor; }
   async getOperationsSession(): Promise<OperationsSession | null> { return null; }
-  async getDriverSession(): Promise<DriverSession | null> { return { user: { id: "auth", displayName: "Johannes" }, driver: { id: driverId, preferredLocale: "en" }, team: { tenantId, displayName: "UrbanFlowers", status: "active" } }; }
+  async getDriverSession(): Promise<DriverSession | null> { return { user: { id: "auth", displayName: "Johannes" }, driver: { id: driverId, version: 1, preferredLocale: "en" }, team: { tenantId, displayName: "UrbanFlowers", status: "active" } }; }
   async getOperationsRoundDetail(): Promise<OperationsRoundDetail | null> { return this.round; }
   async applyLiveDeliveryChange(command: ApplyLiveDeliveryChangeCommand): Promise<ApplyLiveDeliveryChangeResult> { this.applied = command; return { status: "committed", aggregateVersion: 5, state: { changeId, changeVersion: 1, roundId, roundVersion: 8, stopId, stopVersion: 5, destinationVersion: 3, driverAckStatus: "pending" }, events: [] }; }
   async acknowledgeLiveDeliveryChange(command: AcknowledgeLiveDeliveryChangeCommand): Promise<AcknowledgeLiveDeliveryChangeResult> { this.acknowledged = command; return { status: "committed", aggregateVersion: 2, state: { changeId, changeVersion: 1, roundId, stopId, driverAckStatus: "acknowledged", acknowledgedAt: now.toISOString() }, events: [] }; }

@@ -1,9 +1,16 @@
 # Rounds · Driver Localization & Language Specification
 
-**Version:** 1.0  
-**Date:** 2026-09-01  
+**Version:** 1.1
+**Date:** 2026-09-04
 **Status:** Canonical product specification  
 **Scope:** Driver App localization, Thailand launch, language selection, notification/navigation locale behavior
+
+## Changelog
+
+- **1.1 · 2026-09-04:** Defines the authoritative local-first,
+  expected-version profile synchronization rule for authenticated language
+  preference without changing operational state.
+- **1.0 · 2026-09-01:** Initial canonical localization and language contract.
 
 ## 1. Product decision
 
@@ -53,7 +60,19 @@ Product requirement:
 - local preference exists before login for first-run/onboarding;
 - authenticated driver profile stores `preferred_locale` for cross-device persistence;
 - local preference remains available offline;
-- profile sync is conflict-safe and never blocks active work.
+- the device adopts `preferred_locale` after authentication only when that
+  device has no explicit local choice;
+- an explicit local choice applies immediately and becomes the desired value
+  for profile synchronization;
+- profile writes use the current Driver profile version and an idempotency key;
+- on a stale-version response, the client refreshes the authoritative profile
+  and retries the still-current explicit local choice once;
+- loss of connectivity or a failed profile write leaves the explicit local
+  choice intact and eligible for a later retry;
+- a newer explicit choice made while synchronization is in flight is the next
+  desired value; an older response must not switch the visible locale back;
+- profile synchronization never opens a global loading state and never clears,
+  rewinds or blocks the active Round, navigation, command outbox or drafts.
 
 Exact storage implementation belongs to Build Specs.
 

@@ -73,6 +73,8 @@ import type {
   EndDriverShiftCommand,
   EndDriverShiftPayload,
   EndDriverShiftResult,
+  UpdateDriverPreferredLocaleCommand,
+  UpdateDriverPreferredLocaleResult,
 } from "@rounds/contracts";
 import type { PlanningRouteContext, PlanningRouteService } from "./planning-route-service.js";
 
@@ -174,6 +176,13 @@ export interface DriverShiftGateway {
     command: EndDriverShiftCommand,
     identity: AuthenticatedIdentity,
   ): Promise<EndDriverShiftResult>;
+}
+
+export interface DriverProfileGateway {
+  updateDriverPreferredLocale(
+    command: UpdateDriverPreferredLocaleCommand,
+    identity: AuthenticatedIdentity,
+  ): Promise<UpdateDriverPreferredLocaleResult>;
 }
 
 export interface OperationsCommunicationsGateway {
@@ -377,6 +386,16 @@ export type DriverLiveDeliveryChangeDependencies = {
 export type DriverSessionDependencies = {
   identity: IdentityGateway;
   uuid: () => string;
+};
+
+export type DriverPreferredLocaleDependencies = DriverSessionDependencies & {
+  profiles: DriverProfileGateway;
+  now: () => Date;
+};
+
+export type UpdateDriverPreferredLocaleRequestBody = {
+  expectedVersion: number;
+  preferredLocale: "th-TH" | "en";
 };
 
 export type DriverShiftDependencies = DriverSessionDependencies & {

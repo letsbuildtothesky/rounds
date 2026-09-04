@@ -21,7 +21,7 @@ const driverId = "98000000-0000-4000-8000-000000000002";
 const attendanceId = "98000000-0000-4000-8000-000000000003";
 const session: DriverSession = {
   user: { id: "auth-user", displayName: "Johannes" },
-  driver: { id: driverId, preferredLocale: "en" },
+  driver: { id: driverId, version: 1, preferredLocale: "en" },
   team: { tenantId, displayName: "UrbanFlowers", status: "active" },
   shift: {
     effective: {

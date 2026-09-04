@@ -752,13 +752,42 @@ export type DriverCompletedRound = {
 
 export type DriverSession = {
   user: { id: string; displayName: string };
-  driver: { id: string; preferredLocale: string; vehicleLabel?: string; vehiclePlate?: string };
+  driver: {
+    id: string;
+    version: number;
+    preferredLocale: string;
+    vehicleLabel?: string;
+    vehiclePlate?: string;
+  };
   team?: { tenantId: string; displayName: string; status: "active" };
   shift?: DriverShiftProjection;
   currentRound?: DriverRound;
   pendingLiveChange?: DriverLiveDeliveryChange;
   completedRounds?: DriverCompletedRound[];
 };
+
+export const driverPreferredLocales = ["th-TH", "en"] as const;
+export type DriverPreferredLocale = (typeof driverPreferredLocales)[number];
+export type UpdateDriverPreferredLocalePayload = {
+  preferredLocale: DriverPreferredLocale;
+};
+export type UpdateDriverPreferredLocaleCommand = CommandEnvelope<
+  "driver.update_preferred_locale",
+  UpdateDriverPreferredLocalePayload
+>;
+export type DriverPreferredLocaleUpdatedPayload = {
+  driverId: string;
+  preferredLocale: DriverPreferredLocale;
+  previousLocale: string;
+};
+export type DriverPreferredLocaleUpdatedEvent = DomainEventEnvelope<
+  "driver.preferred_locale_updated",
+  DriverPreferredLocaleUpdatedPayload
+>;
+export type UpdateDriverPreferredLocaleResult = CommandResult<
+  DriverPreferredLocaleUpdatedPayload,
+  DriverPreferredLocaleUpdatedEvent
+>;
 
 export type DriverEffectiveShift = {
   serviceDate: string;

@@ -10,6 +10,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  test('legacy en-US profile locale remains English', () {
+    expect(HarnessLocaleValue.fromStorage('en-US'), HarnessLocale.english);
+  });
+
   testWidgets('A01 uses the canonical timing and proceeds to Thai-first A01B', (
     tester,
   ) async {

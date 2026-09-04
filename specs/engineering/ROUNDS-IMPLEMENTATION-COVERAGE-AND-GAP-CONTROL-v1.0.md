@@ -7,6 +7,10 @@
 
 ## Changelog
 
+- **2026-09-04 · Checkpoint 28:** Adds authenticated, versioned and
+  conflict-safe Driver language preference synchronization while preserving
+  the immediate local/offline choice. A01B remains `PARTIAL` until complete
+  active-flow translation coverage and physical bilingual acceptance pass.
 - **2026-09-04 · Checkpoint 27:** Completes the canonical English/Thai G03
   package-problem subtype surface, exact generated geometry, durable category
   handling and database/API acceptance rules. Functional status remains
@@ -95,7 +99,7 @@ Canonical inventory: `specs/product/ROUNDS-DRIVER-CANONICAL-MANIFEST-v6.md` and 
 | Board | Current scope | Status | Evidence now | Required closure |
 |---|---|---|---|---|
 | A01 Splash | Pilot P2 | `IMPLEMENTED` | The shared canonical A01 now renders from generated board measurements, runs the specified word/dot entrance and advances after 1.25 seconds or an explicit full-screen tap. Session restoration still starts independently at process boot, so the visual launch state does not defer recovery work. Timing, centered geometry and returning-Driver routing have automated coverage. | Complete physical-device visual/timing acceptance on the supported Android/iOS matrix. |
-| A01B Choose Language | Pilot P0 | `PARTIAL` | The original generic selector is replaced by one Thai-first localized Flutter surface generated from both canonical EN/TH board measurements. Thai is the first-run default, English is first-class, selection changes the complete screen presentation, and the local pre-auth preference survives relaunch/offline. Reference-width geometry and 320 px Thai layout have automated coverage. | Sync the local selection conflict-safely to authenticated `driver.preferred_locale`, complete localization-key coverage for every active flow and pass physical Thai/English layout acceptance. |
+| A01B Choose Language | Pilot P0 | `PARTIAL` | The original generic selector is replaced by one Thai-first localized Flutter surface generated from both canonical EN/TH board measurements. Thai is the first-run default, English is first-class, selection changes the complete screen presentation, and the local pre-auth preference survives relaunch/offline. Authenticated sessions now adopt the profile only when no explicit device choice exists; explicit local choices synchronize through a tenant-authorized, expected-version, idempotent profile command with one stale-version refresh/retry and non-blocking offline behavior. Reference-width geometry, 320 px Thai layout, conflict and offline behavior have automated coverage, and migration `202609040003` is applied remotely. | Complete localization-key coverage for every active flow, physically accept Thai/English layout and run a signed-in cross-device preference acceptance. |
 | A02–A05 Entry / Team invite | Pilot P0 | `PARTIAL` | Protected Team email login and pilot one-tap login exist. | Replace pilot shortcut for release; implement canonical phone/OTP/invite path or record an approved product amendment. |
 | A06 Team About You | Later onboarding depth | `DEFERRED` | No production onboarding form. | Promote with self-service Team onboarding. |
 | A06B–A12 Independent identity/payment | Network | `DEFERRED` | Intentionally absent. | Build only with Network promotion and trust/payment policies. |
@@ -230,7 +234,7 @@ This sequence does not promote later slices; it orders the already authorized En
 
 ### Checkpoint D — offline, field and visual closure
 
-- **D1 launch/language surface implemented 2026-09-03:** canonical A01 timing/animation and Thai-first A01B English/Thai geometry now use generated board measurements. Local pre-auth locale persistence, returning-Driver bypass and 320 px Thai layout are covered automatically; authenticated profile sync, all-active-screen string coverage and physical acceptance remain open.
+- **D1 launch/language surface implemented 2026-09-03:** canonical A01 timing/animation and Thai-first A01B English/Thai geometry now use generated board measurements. Local pre-auth locale persistence, returning-Driver bypass and 320 px Thai layout are covered automatically.
 - **D4 POD canonical parity implemented 2026-09-04:** F03/F04 now uses generated measurements from the supplied English/Thai boards, transmits only explicitly confirmed delivery-manifest lines and preserves the already accepted retained/resumable photo and atomic completion path. Unsupported conditional signature/GPS claims remain isolated under GAP-014. The next authorized closure is physical F03/F04 English/Thai and degraded-network acceptance, followed by the remaining active-screen localization pass.
 - **D5 D03/D04 localization completed 2026-09-04:** pickup confirmation, manifest handling, problem reporting and sync/error states now resolve through one English/Thai copy authority based on the supplied boards. A Thai reference-width interaction test exposed and closed two real narrow-layout overflows. All 123 Driver tests, Flutter analysis and the Android build pass; the APK is installed on the connected Samsung, with unlocked physical comparison still open.
 - **D6 G03 subtype parity completed 2026-09-04:** G03 now implements the
@@ -241,6 +245,13 @@ This sequence does not promote later slices; it orders the already authorized En
   automated geometry/localization tests and Android install pass. Physical
   screen comparison and live arrived-Stop acceptance remain open, and no
   unsupported GAP-006 decision state is exposed.
+- **D7 authenticated locale persistence completed 2026-09-04:** the explicit
+  local language remains immediate and offline-safe while authenticated profile
+  synchronization is tenant-authorized, versioned and idempotent. A stale
+  profile version refreshes and retries once without reverting a newer local
+  choice or blocking active operational state. Migration `202609040003`, API,
+  contract and Flutter regression coverage pass. Signed-in cross-device and
+  full active-screen bilingual acceptance remain open.
 - Complete assigned-Round offline read cache and consolidated sync truth.
 - Finish N01/N02/N03 recovery states.
 - Run golden/reference-viewport comparisons for every in-scope board.

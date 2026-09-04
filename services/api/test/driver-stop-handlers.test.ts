@@ -32,7 +32,7 @@ const driverId = "10000000-0000-4000-8000-000000000002";
 
 const session: DriverSession = {
   user: { id: "auth-user", displayName: "Driver" },
-  driver: { id: driverId, preferredLocale: "en" },
+  driver: { id: driverId, version: 1, preferredLocale: "en" },
   currentRound: {
     id: roundId,
     reference: "ROUND-001",

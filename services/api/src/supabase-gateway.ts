@@ -5,6 +5,7 @@ import type {
   ActorContext,
   DeliveryCommandGateway,
   DriverCommunicationsGateway,
+  DriverProfileGateway,
   DriverShiftGateway,
   DriverStopGateway,
   IdentityGateway,
@@ -85,6 +86,8 @@ import type {
   StartDriverShiftResult,
   EndDriverShiftCommand,
   EndDriverShiftResult,
+  UpdateDriverPreferredLocaleCommand,
+  UpdateDriverPreferredLocaleResult,
 } from "@rounds/contracts";
 
 type MembershipRow = {
@@ -116,7 +119,7 @@ const rolePriority: Record<OperationsRole, number> = {
   viewer: 4,
 };
 
-type DriverProfileRow = { id: string; person_id: string; preferred_locale: string; vehicle_label: string | null; vehicle_plate: string | null };
+type DriverProfileRow = { id: string; person_id: string; version: number; preferred_locale: string; vehicle_label: string | null; vehicle_plate: string | null };
 type DriverRelationshipRow = { tenant_id: string; driver_id: string };
 type PersonRow = { id: string; display_name: string };
 type DeliveryRow = {
@@ -241,7 +244,7 @@ function initials(displayName: string): string {
   return displayName.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]!.toUpperCase()).join("") || "DR";
 }
 
-export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway, RoundGateway, PickupGateway, DriverStopGateway, DriverCommunicationsGateway, DriverShiftGateway, OperationsCommunicationsGateway, PodGateway, OperationsHistoryGateway, OperationsActionGateway, OperationsDeliveriesGateway, OperationsDriversGateway, OperationsRoundDetailGateway, PlanningRouteContextGateway, RoundMoveGateway, LiveDeliveryChangeGateway {
+export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway, RoundGateway, PickupGateway, DriverStopGateway, DriverCommunicationsGateway, DriverShiftGateway, DriverProfileGateway, OperationsCommunicationsGateway, PodGateway, OperationsHistoryGateway, OperationsActionGateway, OperationsDeliveriesGateway, OperationsDriversGateway, OperationsRoundDetailGateway, PlanningRouteContextGateway, RoundMoveGateway, LiveDeliveryChangeGateway {
   private readonly admin: SupabaseClient;
 
   constructor(
@@ -734,7 +737,7 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     if (driverIds.length) {
       const { data, error } = await this.admin
         .from("driver_profiles")
-        .select("id, person_id, preferred_locale, vehicle_label, vehicle_plate")
+        .select("id, person_id, version, preferred_locale, vehicle_label, vehicle_plate")
         .in("id", driverIds)
         .eq("active", true)
         .is("deleted_at", null)
@@ -1095,6 +1098,23 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     });
     if (error) throw error;
     return data as EndDriverShiftResult;
+  }
+
+  async updateDriverPreferredLocale(
+    command: UpdateDriverPreferredLocaleCommand,
+    identity: AuthenticatedIdentity,
+  ): Promise<UpdateDriverPreferredLocaleResult> {
+    const actorPersonId = await this.driverActorPersonId(identity);
+    if (!actorPersonId) return {
+      status: "rejected",
+      error: { code: "NOT_AUTHORIZED", message: "Driver identity is not linked" },
+    };
+    const { data, error } = await this.admin.rpc("update_driver_preferred_locale_command", {
+      p_command: command,
+      p_actor_person_id: actorPersonId,
+    });
+    if (error) throw error;
+    return data as UpdateDriverPreferredLocaleResult;
   }
 
   async reportPickupProblem(
@@ -2027,7 +2047,7 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
 
     const [{ data: person, error: personError }, { data: driver, error: driverError }] = await Promise.all([
       this.admin.from("persons").select("id, display_name").eq("id", linked.person_id).maybeSingle<PersonRow>(),
-      this.admin.from("driver_profiles").select("id, person_id, preferred_locale, vehicle_label, vehicle_plate")
+      this.admin.from("driver_profiles").select("id, person_id, version, preferred_locale, vehicle_label, vehicle_plate")
         .eq("person_id", linked.person_id).eq("active", true).is("deleted_at", null).maybeSingle<DriverProfileRow>(),
     ]);
     if (personError) throw personError;
@@ -2156,6 +2176,7 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
       user: { id: identity.authUserId, displayName: person.display_name },
       driver: {
         id: driver.id,
+        version: driver.version,
         preferredLocale: driver.preferred_locale,
         ...(driver.vehicle_label ? { vehicleLabel: driver.vehicle_label } : {}),
         ...(driver.vehicle_plate ? { vehiclePlate: driver.vehicle_plate } : {}),

@@ -16,7 +16,7 @@ const manifestId = "10000000-0000-4000-8000-000000000012";
 
 const session: DriverSession = {
   user: { id: "auth-user", displayName: "Driver" },
-  driver: { id: "10000000-0000-4000-8000-000000000002", preferredLocale: "en" },
+  driver: { id: "10000000-0000-4000-8000-000000000002", version: 1, preferredLocale: "en" },
   currentRound: {
     id: roundId,
     reference: "ROUND-001",

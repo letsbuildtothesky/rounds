@@ -34,6 +34,7 @@ import { reportLocationProblemHandler } from "./report-location-problem-handler.
 import { reportDriverEmergencyHandler } from "./report-driver-emergency-handler.js";
 import { startDriverShiftHandler } from "./start-driver-shift-handler.js";
 import { endDriverShiftHandler } from "./end-driver-shift-handler.js";
+import { updateDriverPreferredLocaleHandler } from "./update-driver-preferred-locale-handler.js";
 import { logContactAttemptHandler } from "./log-contact-attempt-handler.js";
 import { SupabaseGateway } from "./supabase-gateway.js";
 
@@ -325,6 +326,17 @@ const server = createServer(async (request, response) => {
         uuid: () => crypto.randomUUID(),
       });
       sendNode(response, driverResponse);
+      return;
+    }
+    if (request.method === "POST" && request.url === "/v1/driver/preferences/locale") {
+      const webRequest = await toWebRequest(request);
+      const localeResponse = await updateDriverPreferredLocaleHandler(webRequest, {
+        identity: gateway,
+        profiles: gateway,
+        uuid: () => crypto.randomUUID(),
+        now: () => new Date(),
+      });
+      sendNode(response, localeResponse);
       return;
     }
     if (request.method === "POST" && request.url === "/v1/driver/shifts/start") {

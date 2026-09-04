@@ -14,7 +14,7 @@ extension HarnessLocaleValue on HarnessLocale {
   };
 
   static HarnessLocale fromStorage(String? value) =>
-      value == HarnessLocale.english.storageValue
+      value == HarnessLocale.english.storageValue || value == 'en-US'
       ? HarnessLocale.english
       : HarnessLocale.thai;
 }

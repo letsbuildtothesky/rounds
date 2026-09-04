@@ -40,7 +40,7 @@ const projection: OperationsPlanningProjection = {
 };
 const driverSession: DriverSession = {
   user: { id: "auth-user", displayName: "Demo Driver" },
-  driver: { id: projection.drivers[0]!.id, preferredLocale: "en" },
+  driver: { id: projection.drivers[0]!.id, version: 1, preferredLocale: "en" },
 };
 const routePreview: PlanningRoutePreview = {
   tenantId,
