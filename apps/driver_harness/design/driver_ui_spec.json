@@ -1594,7 +1594,8 @@
       }
     },
     "L01": {
-      "source": "ux/driver/en/screens/ROUNDS-L01-DRIVER-PROFILE-v3-10OF10.html",
+      "sourceEnglish": "ux/driver/en/screens/ROUNDS-L01-DRIVER-PROFILE-v3-10OF10.html",
+      "sourceThai": "ux/driver/th/ROUNDS-L01-DRIVER-PROFILE-TH-v1-10OF10.html",
       "topBar": {
         "height": 58,
         "paddingHorizontal": 20,
@@ -1611,7 +1612,14 @@
         "paddingBottom": 20,
         "eyebrowSize": 11.5,
         "eyebrowBottom": 11,
-        "titleSize": 34
+        "titleSize": 34,
+        "thaiPaddingTop": 22,
+        "thaiPaddingBottom": 19,
+        "thaiEyebrowSize": 12.5,
+        "thaiEyebrowHeight": 1.4,
+        "thaiEyebrowBottom": 7,
+        "thaiTitleSize": 36,
+        "thaiTitleHeight": 1.14
       },
       "identity": {
         "paddingTop": 24,
@@ -1626,7 +1634,20 @@
         "subSize": 13,
         "statusTop": 9,
         "statusSize": 12.5,
-        "statusDotSize": 8
+        "statusDotSize": 8,
+        "thaiPaddingTop": 21,
+        "thaiPaddingBottom": 20,
+        "thaiAvatarSize": 68,
+        "thaiAvatarTextSize": 22,
+        "thaiColumnGap": 14,
+        "thaiNameSize": 23,
+        "thaiNameHeight": 1.2,
+        "thaiSubTop": 5,
+        "thaiSubSize": 12.5,
+        "thaiSubHeight": 1.4,
+        "thaiStatusTop": 7,
+        "thaiStatusSize": 12.5,
+        "thaiStatusHeight": 1.35
       },
       "work": {
         "paddingVertical": 17,
@@ -1634,7 +1655,13 @@
         "nameSize": 16,
         "subTop": 6,
         "subSize": 12.5,
-        "stateSize": 12.5
+        "stateSize": 12.5,
+        "thaiPaddingVertical": 15,
+        "thaiMinHeight": 66,
+        "thaiNameSize": 15.5,
+        "thaiNameHeight": 1.35,
+        "thaiSubTop": 3,
+        "thaiSubHeight": 1.4
       },
       "section": {
         "paddingTop": 21,
@@ -1647,7 +1674,19 @@
         "rowSubTop": 6,
         "rowSubSize": 12.5,
         "rowValueSize": 12.5,
-        "chevronSize": 17
+        "chevronSize": 17,
+        "thaiPaddingTop": 18,
+        "thaiPaddingBottom": 3,
+        "thaiTitleSize": 14.5,
+        "thaiTitleHeight": 1.35,
+        "thaiTitleBottom": 7,
+        "thaiRowMinHeight": 62,
+        "thaiRowTitleSize": 14.5,
+        "thaiRowTitleHeight": 1.35,
+        "thaiRowSubTop": 3,
+        "thaiRowSubSize": 12,
+        "thaiRowSubHeight": 1.4,
+        "thaiRowValueHeight": 1.35
       },
       "bottomNav": {
         "paddingTop": 7,
@@ -1655,6 +1694,8 @@
         "paddingBottom": 9,
         "iconSize": 20,
         "labelSize": 11.5,
+        "thaiLabelSize": 12,
+        "thaiLabelHeight": 1.3,
         "gap": 5
       },
       "sheet": {
@@ -1676,7 +1717,55 @@
         "buttonTop": 18,
         "buttonRadius": 7,
         "primarySize": 16,
-        "secondarySize": 15
+        "secondarySize": 15,
+        "thaiKickerSize": 12,
+        "thaiKickerHeight": 1.4,
+        "thaiKickerBottom": 7,
+        "thaiTitleSize": 29,
+        "thaiTitleHeight": 1.18,
+        "thaiSubHeight": 1.5,
+        "thaiChoiceMinHeight": 60,
+        "thaiButtonSize": 15.5,
+        "thaiButtonHeight": 1.35
+      },
+      "compact": {
+        "englishHeaderPaddingTop": 20,
+        "englishHeaderPaddingBottom": 18,
+        "englishHeaderTitleSize": 31,
+        "thaiHeaderPaddingTop": 18,
+        "thaiHeaderPaddingBottom": 16,
+        "thaiHeaderTitleSize": 32,
+        "horizontalPadding": 16,
+        "englishIdentityPaddingTop": 19,
+        "englishIdentityPaddingBottom": 18,
+        "englishAvatarSize": 62,
+        "englishAvatarTextSize": 21,
+        "englishIdentityColumnGap": 12,
+        "englishIdentityNameSize": 22,
+        "englishIdentitySubSize": 12,
+        "englishIdentityStatusSize": 12,
+        "thaiIdentityPaddingTop": 17,
+        "thaiIdentityPaddingBottom": 16,
+        "thaiAvatarSize": 58,
+        "thaiAvatarTextSize": 20,
+        "thaiIdentityColumnGap": 10,
+        "thaiIdentityNameSize": 20,
+        "thaiIdentitySubSize": 11.7,
+        "thaiIdentityStatusSize": 11.7,
+        "englishWorkPaddingVertical": 15,
+        "thaiWorkPaddingVertical": 13,
+        "thaiWorkMinHeight": 60,
+        "englishSectionPaddingTop": 18,
+        "thaiSectionPaddingTop": 15,
+        "sectionPaddingBottom": 3,
+        "englishRowMinHeight": 61,
+        "thaiRowMinHeight": 58,
+        "englishRowTitleSize": 14.5,
+        "thaiRowTitleSize": 14,
+        "englishRowSubSize": 12,
+        "thaiRowSubSize": 11.5,
+        "englishSheetTitleSize": 25,
+        "thaiSheetTitleSize": 26
       }
     },
     "N01": {

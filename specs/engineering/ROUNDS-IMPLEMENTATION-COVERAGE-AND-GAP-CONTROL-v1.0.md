@@ -7,6 +7,11 @@
 
 ## Changelog
 
+- **2026-09-04 · Checkpoint 29:** Localizes the active L01 Team Driver Profile
+  and its language/sign-out drawers from both supplied boards, adds generated
+  Thai and 320 px geometry, and makes the selected locale rerender L01
+  immediately. Functional status remains `IMPLEMENTED`; physical visual
+  acceptance remains open.
 - **2026-09-04 · Checkpoint 28:** Adds authenticated, versioned and
   conflict-safe Driver language preference synchronization while preserving
   the immediate local/offline choice. A01B remains `PARTIAL` until complete
@@ -129,7 +134,7 @@ Canonical inventory: `specs/product/ROUNDS-DRIVER-CANONICAL-MANIFEST-v6.md` and 
 | J01 My Rounds | Slice 2 P1 | `IMPLEMENTED` | The canonical measured Driver workspace shows the real current Round and up to 30 tenant-scoped completed Team Rounds from the authenticated session. Completed rows use authoritative terminal Stop/POD/return evidence; saved route distance/duration are explicitly labelled planned. Completed detail opens in the canonical bottom sheet. Network jobs, fares and actual-route claims are absent. | Complete physical-device visual acceptance and add actual duration/distance only when durable execution telemetry defines those metrics. |
 | K00 Team Hours | Slice 2 P1 | `SPECIFIED` | Recurring schedules/date exceptions exist only in Operations. | Driver clock/shift history and correction request policy. |
 | K01 Network earnings | Network | `DEFERRED` | Intentionally absent. | Slice 5+ payment/settlement scope. |
-| L01 Profile + Language | Pilot/Slice 2 P1 | `IMPLEMENTED` | The measured canonical Team subset shows authenticated Driver identity, active merchant relationship and assigned vehicle truth. Language changes through the real persisted English/Thai control; support opens the existing Round-scoped H01 thread; sign-out requires explicit confirmation. Prototype-only verification, identity editing, Network, payout and notification controls are absent. | Complete physical-device visual acceptance and add account mutation or verification states only after authoritative workflows define them. |
+| L01 Profile + Language | Pilot/Slice 2 P1 | `IMPLEMENTED` | The measured canonical Team subset shows authenticated Driver identity, active merchant relationship and vehicle truth. Every visible L01 label, the language drawer, sign-out drawer and bottom navigation now use the supplied English/Thai copy; locale changes rerender the open profile immediately. Generated metrics reference both supplied boards and include their distinct Thai and 320 px composition rules. Support opens the existing Round-scoped H01 thread; sign-out requires explicit confirmation. Unsupported verification, identity editing, Network, payout and notification controls remain absent, and the former unsupported `Assigned` vehicle claim is removed. | Complete physical English/Thai visual acceptance. Localize and accept the child N01/H01 surfaces separately; add account mutation or verification states only after authoritative workflows define them. |
 | M01 Notifications | Slice 2 P2 | `SPECIFIED` | No notification preference surface. | Define channel authority and implement preferences when notifications are promoted. |
 | N01 Permissions | Pilot P1 | `PARTIAL` | The measured canonical Team permission surface reads the real location-service and app-permission state, requests only in-use location, distinguishes denied/permanently blocked/service-disabled states and opens the correct OS settings. Navigation no longer spins indefinitely when location is blocked. Camera remains contextual and all real photo paths show a recovery drawer on native denial without claiming evidence. | Validate background-navigation permission policy on Android/iOS before requesting it. Add notification permission only with a real promoted push channel, then complete physical denied/settings acceptance. |
 | N02 Offline/reconnecting | Pilot P0 | `VERIFIED` | The measured canonical N02 surface uses real Android connectivity transitions plus authenticated API reachability, an encrypted assigned-Round cache and live counts from the command, message, proof/media and telemetry outboxes. Startup renders the cached Round without waiting for the network. `Back online` appears only after the API responds and every measured retryable queue is empty. Offline and reconnecting states were exercised on the Samsung device with Wi-Fi and mobile data disabled, then restored. | Complete a physical queued-message/photo/status recovery run, background/process-death recovery and degraded-network road acceptance; iOS device acceptance remains open. |
@@ -252,6 +257,12 @@ This sequence does not promote later slices; it orders the already authorized En
   choice or blocking active operational state. Migration `202609040003`, API,
   contract and Flutter regression coverage pass. Signed-in cross-device and
   full active-screen bilingual acceptance remain open.
+- **D8 L01 bilingual parity completed 2026-09-04:** the active Team profile,
+  language drawer, sign-out drawer and navigation labels resolve from one
+  English/Thai copy authority. Generated measurements reference both supplied
+  L01 boards, including the Thai composition lock and 320 px overrides. All
+  133 Driver tests and Flutter analysis pass. Physical comparison and the
+  separately owned N01/H01 child screens remain open.
 - Complete assigned-Round offline read cache and consolidated sync truth.
 - Finish N01/N02/N03 recovery states.
 - Run golden/reference-viewport comparisons for every in-scope board.

@@ -81,6 +81,60 @@ void main() {
     await tester.tap(find.text('ไทย'));
     await tester.pumpAndSettle();
     expect(controller.locale.storageValue, 'th-TH');
+    expect(find.text('โปรไฟล์'), findsNWidgets(2));
+    expect(find.text('คนขับ'), findsOneWidget);
+    expect(find.text('ยานพาหนะ'), findsOneWidget);
+    expect(find.text('การอนุญาต'), findsOneWidget);
+    expect(find.text('ออกจากระบบ'), findsOneWidget);
+    expect(find.text('Profile'), findsNothing);
+  });
+
+  testWidgets('L01 Thai board stays usable at the canonical compact width', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    SharedPreferences.setMockInitialValues({
+      'driver_locale': 'th-TH',
+      'driver_locale_selected': true,
+    });
+    final controller = await HarnessAppController.create();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildRoundsDriverTheme(),
+        home: DriverProfileScreen(
+          controller: controller,
+          session: _session,
+          onHome: () {},
+          onJobs: () {},
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(DriverL01Metrics.sourceThai, contains('DRIVER-PROFILE-TH'));
+    expect(
+      tester.getRect(find.byKey(const Key('l01-topbar'))),
+      const Rect.fromLTWH(0, 0, 320, DriverL01Metrics.topBarHeight),
+    );
+    expect(find.text('โปรไฟล์'), findsNWidgets(2));
+    expect(find.text('UrbanFlowers'), findsOneWidget);
+    expect(find.text('คนขับทีม · ใช้งานอยู่'), findsOneWidget);
+    expect(find.text('หน้าแรก'), findsOneWidget);
+    expect(find.text('งาน'), findsOneWidget);
+    expect(find.text('ชั่วโมง'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+
+    await tester.drag(find.byKey(const Key('l01-body')), const Offset(0, -520));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('l01-sign-out')));
+    await tester.pumpAndSettle();
+    expect(find.text('ออกจากระบบ?'), findsOneWidget);
+    expect(find.text('ยกเลิก'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('L01 sign-out requires explicit confirmation', (tester) async {

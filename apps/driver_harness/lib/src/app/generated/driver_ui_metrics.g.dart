@@ -1663,7 +1663,8 @@ abstract final class DriverJ01Metrics {
 }
 
 abstract final class DriverL01Metrics {
-  static const String source = 'ux/driver/en/screens/ROUNDS-L01-DRIVER-PROFILE-v3-10OF10.html';
+  static const String sourceEnglish = 'ux/driver/en/screens/ROUNDS-L01-DRIVER-PROFILE-v3-10OF10.html';
+  static const String sourceThai = 'ux/driver/th/ROUNDS-L01-DRIVER-PROFILE-TH-v1-10OF10.html';
 
   static const double topBarHeight = 58.0;
   static const double topBarPaddingHorizontal = 20.0;
@@ -1677,6 +1678,13 @@ abstract final class DriverL01Metrics {
   static const double eyebrowSize = 11.5;
   static const double eyebrowBottom = 11.0;
   static const double titleSize = 34.0;
+  static const double thaiHeaderPaddingTop = 22.0;
+  static const double thaiHeaderPaddingBottom = 19.0;
+  static const double thaiEyebrowSize = 12.5;
+  static const double thaiEyebrowHeight = 1.4;
+  static const double thaiEyebrowBottom = 7.0;
+  static const double thaiTitleSize = 36.0;
+  static const double thaiTitleHeight = 1.14;
   static const double identityPaddingTop = 24.0;
   static const double identityPaddingHorizontal = 20.0;
   static const double identityPaddingBottom = 23.0;
@@ -1690,12 +1698,31 @@ abstract final class DriverL01Metrics {
   static const double identityStatusTop = 9.0;
   static const double identityStatusSize = 12.5;
   static const double identityStatusDotSize = 8.0;
+  static const double thaiIdentityPaddingTop = 21.0;
+  static const double thaiIdentityPaddingBottom = 20.0;
+  static const double thaiAvatarSize = 68.0;
+  static const double thaiAvatarTextSize = 22.0;
+  static const double thaiIdentityColumnGap = 14.0;
+  static const double thaiIdentityNameSize = 23.0;
+  static const double thaiIdentityNameHeight = 1.2;
+  static const double thaiIdentitySubTop = 5.0;
+  static const double thaiIdentitySubSize = 12.5;
+  static const double thaiIdentitySubHeight = 1.4;
+  static const double thaiIdentityStatusTop = 7.0;
+  static const double thaiIdentityStatusSize = 12.5;
+  static const double thaiIdentityStatusHeight = 1.35;
   static const double workPaddingVertical = 17.0;
   static const double workPaddingHorizontal = 20.0;
   static const double workNameSize = 16.0;
   static const double workSubTop = 6.0;
   static const double workSubSize = 12.5;
   static const double workStateSize = 12.5;
+  static const double thaiWorkPaddingVertical = 15.0;
+  static const double thaiWorkMinHeight = 66.0;
+  static const double thaiWorkNameSize = 15.5;
+  static const double thaiWorkNameHeight = 1.35;
+  static const double thaiWorkSubTop = 3.0;
+  static const double thaiWorkSubHeight = 1.4;
   static const double sectionPaddingTop = 21.0;
   static const double sectionPaddingHorizontal = 20.0;
   static const double sectionPaddingBottom = 4.0;
@@ -1707,11 +1734,25 @@ abstract final class DriverL01Metrics {
   static const double rowSubSize = 12.5;
   static const double rowValueSize = 12.5;
   static const double chevronSize = 17.0;
+  static const double thaiSectionPaddingTop = 18.0;
+  static const double thaiSectionPaddingBottom = 3.0;
+  static const double thaiSectionTitleSize = 14.5;
+  static const double thaiSectionTitleHeight = 1.35;
+  static const double thaiSectionTitleBottom = 7.0;
+  static const double thaiRowMinHeight = 62.0;
+  static const double thaiRowTitleSize = 14.5;
+  static const double thaiRowTitleHeight = 1.35;
+  static const double thaiRowSubTop = 3.0;
+  static const double thaiRowSubSize = 12.0;
+  static const double thaiRowSubHeight = 1.4;
+  static const double thaiRowValueHeight = 1.35;
   static const double bottomNavPaddingTop = 7.0;
   static const double bottomNavPaddingHorizontal = 4.0;
   static const double bottomNavPaddingBottom = 9.0;
   static const double bottomNavIconSize = 20.0;
   static const double bottomNavLabelSize = 11.5;
+  static const double thaiBottomNavLabelSize = 12.0;
+  static const double thaiBottomNavLabelHeight = 1.3;
   static const double bottomNavGap = 5.0;
   static const double sheetPaddingTop = 10.0;
   static const double sheetPaddingHorizontal = 20.0;
@@ -1732,6 +1773,53 @@ abstract final class DriverL01Metrics {
   static const double sheetButtonRadius = 7.0;
   static const double sheetPrimarySize = 16.0;
   static const double sheetSecondarySize = 15.0;
+  static const double thaiSheetKickerSize = 12.0;
+  static const double thaiSheetKickerHeight = 1.4;
+  static const double thaiSheetKickerBottom = 7.0;
+  static const double thaiSheetTitleSize = 29.0;
+  static const double thaiSheetTitleHeight = 1.18;
+  static const double thaiSheetSubHeight = 1.5;
+  static const double thaiSheetChoiceMinHeight = 60.0;
+  static const double thaiSheetButtonSize = 15.5;
+  static const double thaiSheetButtonHeight = 1.35;
+
+  static const double compactEnglishHeaderPaddingTop = 20.0;
+  static const double compactEnglishHeaderPaddingBottom = 18.0;
+  static const double compactEnglishHeaderTitleSize = 31.0;
+  static const double compactThaiHeaderPaddingTop = 18.0;
+  static const double compactThaiHeaderPaddingBottom = 16.0;
+  static const double compactThaiHeaderTitleSize = 32.0;
+  static const double compactHorizontalPadding = 16.0;
+  static const double compactEnglishIdentityPaddingTop = 19.0;
+  static const double compactEnglishIdentityPaddingBottom = 18.0;
+  static const double compactEnglishAvatarSize = 62.0;
+  static const double compactEnglishAvatarTextSize = 21.0;
+  static const double compactEnglishIdentityColumnGap = 12.0;
+  static const double compactEnglishIdentityNameSize = 22.0;
+  static const double compactEnglishIdentitySubSize = 12.0;
+  static const double compactEnglishIdentityStatusSize = 12.0;
+  static const double compactThaiIdentityPaddingTop = 17.0;
+  static const double compactThaiIdentityPaddingBottom = 16.0;
+  static const double compactThaiAvatarSize = 58.0;
+  static const double compactThaiAvatarTextSize = 20.0;
+  static const double compactThaiIdentityColumnGap = 10.0;
+  static const double compactThaiIdentityNameSize = 20.0;
+  static const double compactThaiIdentitySubSize = 11.7;
+  static const double compactThaiIdentityStatusSize = 11.7;
+  static const double compactEnglishWorkPaddingVertical = 15.0;
+  static const double compactThaiWorkPaddingVertical = 13.0;
+  static const double compactThaiWorkMinHeight = 60.0;
+  static const double compactEnglishSectionPaddingTop = 18.0;
+  static const double compactThaiSectionPaddingTop = 15.0;
+  static const double compactSectionPaddingBottom = 3.0;
+  static const double compactEnglishRowMinHeight = 61.0;
+  static const double compactThaiRowMinHeight = 58.0;
+  static const double compactEnglishRowTitleSize = 14.5;
+  static const double compactThaiRowTitleSize = 14.0;
+  static const double compactEnglishRowSubSize = 12.0;
+  static const double compactThaiRowSubSize = 11.5;
+  static const double compactEnglishSheetTitleSize = 25.0;
+  static const double compactThaiSheetTitleSize = 26.0;
 }
 
 abstract final class DriverN01Metrics {

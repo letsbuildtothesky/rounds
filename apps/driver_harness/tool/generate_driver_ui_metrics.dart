@@ -175,6 +175,7 @@ String generateDriverUiMetrics(Map<String, dynamic> json) {
   final l01Section = l01['section'] as Map<String, dynamic>;
   final l01BottomNav = l01['bottomNav'] as Map<String, dynamic>;
   final l01Sheet = l01['sheet'] as Map<String, dynamic>;
+  final l01Compact = l01['compact'] as Map<String, dynamic>;
   final n01 = screens['N01'] as Map<String, dynamic>;
   final n01Top = n01['topBar'] as Map<String, dynamic>;
   final n01Main = n01['main'] as Map<String, dynamic>;
@@ -1860,7 +1861,8 @@ abstract final class DriverJ01Metrics {
 }
 
 abstract final class DriverL01Metrics {
-  static const String source = '${l01['source']}';
+  static const String sourceEnglish = '${l01['sourceEnglish']}';
+  static const String sourceThai = '${l01['sourceThai']}';
 
   static const double topBarHeight = ${_double(l01Top['height'])};
   static const double topBarPaddingHorizontal = ${_double(l01Top['paddingHorizontal'])};
@@ -1874,6 +1876,13 @@ abstract final class DriverL01Metrics {
   static const double eyebrowSize = ${_double(l01Header['eyebrowSize'])};
   static const double eyebrowBottom = ${_double(l01Header['eyebrowBottom'])};
   static const double titleSize = ${_double(l01Header['titleSize'])};
+  static const double thaiHeaderPaddingTop = ${_double(l01Header['thaiPaddingTop'])};
+  static const double thaiHeaderPaddingBottom = ${_double(l01Header['thaiPaddingBottom'])};
+  static const double thaiEyebrowSize = ${_double(l01Header['thaiEyebrowSize'])};
+  static const double thaiEyebrowHeight = ${_double(l01Header['thaiEyebrowHeight'])};
+  static const double thaiEyebrowBottom = ${_double(l01Header['thaiEyebrowBottom'])};
+  static const double thaiTitleSize = ${_double(l01Header['thaiTitleSize'])};
+  static const double thaiTitleHeight = ${_double(l01Header['thaiTitleHeight'])};
   static const double identityPaddingTop = ${_double(l01Identity['paddingTop'])};
   static const double identityPaddingHorizontal = ${_double(l01Identity['paddingHorizontal'])};
   static const double identityPaddingBottom = ${_double(l01Identity['paddingBottom'])};
@@ -1887,12 +1896,31 @@ abstract final class DriverL01Metrics {
   static const double identityStatusTop = ${_double(l01Identity['statusTop'])};
   static const double identityStatusSize = ${_double(l01Identity['statusSize'])};
   static const double identityStatusDotSize = ${_double(l01Identity['statusDotSize'])};
+  static const double thaiIdentityPaddingTop = ${_double(l01Identity['thaiPaddingTop'])};
+  static const double thaiIdentityPaddingBottom = ${_double(l01Identity['thaiPaddingBottom'])};
+  static const double thaiAvatarSize = ${_double(l01Identity['thaiAvatarSize'])};
+  static const double thaiAvatarTextSize = ${_double(l01Identity['thaiAvatarTextSize'])};
+  static const double thaiIdentityColumnGap = ${_double(l01Identity['thaiColumnGap'])};
+  static const double thaiIdentityNameSize = ${_double(l01Identity['thaiNameSize'])};
+  static const double thaiIdentityNameHeight = ${_double(l01Identity['thaiNameHeight'])};
+  static const double thaiIdentitySubTop = ${_double(l01Identity['thaiSubTop'])};
+  static const double thaiIdentitySubSize = ${_double(l01Identity['thaiSubSize'])};
+  static const double thaiIdentitySubHeight = ${_double(l01Identity['thaiSubHeight'])};
+  static const double thaiIdentityStatusTop = ${_double(l01Identity['thaiStatusTop'])};
+  static const double thaiIdentityStatusSize = ${_double(l01Identity['thaiStatusSize'])};
+  static const double thaiIdentityStatusHeight = ${_double(l01Identity['thaiStatusHeight'])};
   static const double workPaddingVertical = ${_double(l01Work['paddingVertical'])};
   static const double workPaddingHorizontal = ${_double(l01Work['paddingHorizontal'])};
   static const double workNameSize = ${_double(l01Work['nameSize'])};
   static const double workSubTop = ${_double(l01Work['subTop'])};
   static const double workSubSize = ${_double(l01Work['subSize'])};
   static const double workStateSize = ${_double(l01Work['stateSize'])};
+  static const double thaiWorkPaddingVertical = ${_double(l01Work['thaiPaddingVertical'])};
+  static const double thaiWorkMinHeight = ${_double(l01Work['thaiMinHeight'])};
+  static const double thaiWorkNameSize = ${_double(l01Work['thaiNameSize'])};
+  static const double thaiWorkNameHeight = ${_double(l01Work['thaiNameHeight'])};
+  static const double thaiWorkSubTop = ${_double(l01Work['thaiSubTop'])};
+  static const double thaiWorkSubHeight = ${_double(l01Work['thaiSubHeight'])};
   static const double sectionPaddingTop = ${_double(l01Section['paddingTop'])};
   static const double sectionPaddingHorizontal = ${_double(l01Section['paddingHorizontal'])};
   static const double sectionPaddingBottom = ${_double(l01Section['paddingBottom'])};
@@ -1904,11 +1932,25 @@ abstract final class DriverL01Metrics {
   static const double rowSubSize = ${_double(l01Section['rowSubSize'])};
   static const double rowValueSize = ${_double(l01Section['rowValueSize'])};
   static const double chevronSize = ${_double(l01Section['chevronSize'])};
+  static const double thaiSectionPaddingTop = ${_double(l01Section['thaiPaddingTop'])};
+  static const double thaiSectionPaddingBottom = ${_double(l01Section['thaiPaddingBottom'])};
+  static const double thaiSectionTitleSize = ${_double(l01Section['thaiTitleSize'])};
+  static const double thaiSectionTitleHeight = ${_double(l01Section['thaiTitleHeight'])};
+  static const double thaiSectionTitleBottom = ${_double(l01Section['thaiTitleBottom'])};
+  static const double thaiRowMinHeight = ${_double(l01Section['thaiRowMinHeight'])};
+  static const double thaiRowTitleSize = ${_double(l01Section['thaiRowTitleSize'])};
+  static const double thaiRowTitleHeight = ${_double(l01Section['thaiRowTitleHeight'])};
+  static const double thaiRowSubTop = ${_double(l01Section['thaiRowSubTop'])};
+  static const double thaiRowSubSize = ${_double(l01Section['thaiRowSubSize'])};
+  static const double thaiRowSubHeight = ${_double(l01Section['thaiRowSubHeight'])};
+  static const double thaiRowValueHeight = ${_double(l01Section['thaiRowValueHeight'])};
   static const double bottomNavPaddingTop = ${_double(l01BottomNav['paddingTop'])};
   static const double bottomNavPaddingHorizontal = ${_double(l01BottomNav['paddingHorizontal'])};
   static const double bottomNavPaddingBottom = ${_double(l01BottomNav['paddingBottom'])};
   static const double bottomNavIconSize = ${_double(l01BottomNav['iconSize'])};
   static const double bottomNavLabelSize = ${_double(l01BottomNav['labelSize'])};
+  static const double thaiBottomNavLabelSize = ${_double(l01BottomNav['thaiLabelSize'])};
+  static const double thaiBottomNavLabelHeight = ${_double(l01BottomNav['thaiLabelHeight'])};
   static const double bottomNavGap = ${_double(l01BottomNav['gap'])};
   static const double sheetPaddingTop = ${_double(l01Sheet['paddingTop'])};
   static const double sheetPaddingHorizontal = ${_double(l01Sheet['paddingHorizontal'])};
@@ -1929,6 +1971,53 @@ abstract final class DriverL01Metrics {
   static const double sheetButtonRadius = ${_double(l01Sheet['buttonRadius'])};
   static const double sheetPrimarySize = ${_double(l01Sheet['primarySize'])};
   static const double sheetSecondarySize = ${_double(l01Sheet['secondarySize'])};
+  static const double thaiSheetKickerSize = ${_double(l01Sheet['thaiKickerSize'])};
+  static const double thaiSheetKickerHeight = ${_double(l01Sheet['thaiKickerHeight'])};
+  static const double thaiSheetKickerBottom = ${_double(l01Sheet['thaiKickerBottom'])};
+  static const double thaiSheetTitleSize = ${_double(l01Sheet['thaiTitleSize'])};
+  static const double thaiSheetTitleHeight = ${_double(l01Sheet['thaiTitleHeight'])};
+  static const double thaiSheetSubHeight = ${_double(l01Sheet['thaiSubHeight'])};
+  static const double thaiSheetChoiceMinHeight = ${_double(l01Sheet['thaiChoiceMinHeight'])};
+  static const double thaiSheetButtonSize = ${_double(l01Sheet['thaiButtonSize'])};
+  static const double thaiSheetButtonHeight = ${_double(l01Sheet['thaiButtonHeight'])};
+
+  static const double compactEnglishHeaderPaddingTop = ${_double(l01Compact['englishHeaderPaddingTop'])};
+  static const double compactEnglishHeaderPaddingBottom = ${_double(l01Compact['englishHeaderPaddingBottom'])};
+  static const double compactEnglishHeaderTitleSize = ${_double(l01Compact['englishHeaderTitleSize'])};
+  static const double compactThaiHeaderPaddingTop = ${_double(l01Compact['thaiHeaderPaddingTop'])};
+  static const double compactThaiHeaderPaddingBottom = ${_double(l01Compact['thaiHeaderPaddingBottom'])};
+  static const double compactThaiHeaderTitleSize = ${_double(l01Compact['thaiHeaderTitleSize'])};
+  static const double compactHorizontalPadding = ${_double(l01Compact['horizontalPadding'])};
+  static const double compactEnglishIdentityPaddingTop = ${_double(l01Compact['englishIdentityPaddingTop'])};
+  static const double compactEnglishIdentityPaddingBottom = ${_double(l01Compact['englishIdentityPaddingBottom'])};
+  static const double compactEnglishAvatarSize = ${_double(l01Compact['englishAvatarSize'])};
+  static const double compactEnglishAvatarTextSize = ${_double(l01Compact['englishAvatarTextSize'])};
+  static const double compactEnglishIdentityColumnGap = ${_double(l01Compact['englishIdentityColumnGap'])};
+  static const double compactEnglishIdentityNameSize = ${_double(l01Compact['englishIdentityNameSize'])};
+  static const double compactEnglishIdentitySubSize = ${_double(l01Compact['englishIdentitySubSize'])};
+  static const double compactEnglishIdentityStatusSize = ${_double(l01Compact['englishIdentityStatusSize'])};
+  static const double compactThaiIdentityPaddingTop = ${_double(l01Compact['thaiIdentityPaddingTop'])};
+  static const double compactThaiIdentityPaddingBottom = ${_double(l01Compact['thaiIdentityPaddingBottom'])};
+  static const double compactThaiAvatarSize = ${_double(l01Compact['thaiAvatarSize'])};
+  static const double compactThaiAvatarTextSize = ${_double(l01Compact['thaiAvatarTextSize'])};
+  static const double compactThaiIdentityColumnGap = ${_double(l01Compact['thaiIdentityColumnGap'])};
+  static const double compactThaiIdentityNameSize = ${_double(l01Compact['thaiIdentityNameSize'])};
+  static const double compactThaiIdentitySubSize = ${_double(l01Compact['thaiIdentitySubSize'])};
+  static const double compactThaiIdentityStatusSize = ${_double(l01Compact['thaiIdentityStatusSize'])};
+  static const double compactEnglishWorkPaddingVertical = ${_double(l01Compact['englishWorkPaddingVertical'])};
+  static const double compactThaiWorkPaddingVertical = ${_double(l01Compact['thaiWorkPaddingVertical'])};
+  static const double compactThaiWorkMinHeight = ${_double(l01Compact['thaiWorkMinHeight'])};
+  static const double compactEnglishSectionPaddingTop = ${_double(l01Compact['englishSectionPaddingTop'])};
+  static const double compactThaiSectionPaddingTop = ${_double(l01Compact['thaiSectionPaddingTop'])};
+  static const double compactSectionPaddingBottom = ${_double(l01Compact['sectionPaddingBottom'])};
+  static const double compactEnglishRowMinHeight = ${_double(l01Compact['englishRowMinHeight'])};
+  static const double compactThaiRowMinHeight = ${_double(l01Compact['thaiRowMinHeight'])};
+  static const double compactEnglishRowTitleSize = ${_double(l01Compact['englishRowTitleSize'])};
+  static const double compactThaiRowTitleSize = ${_double(l01Compact['thaiRowTitleSize'])};
+  static const double compactEnglishRowSubSize = ${_double(l01Compact['englishRowSubSize'])};
+  static const double compactThaiRowSubSize = ${_double(l01Compact['thaiRowSubSize'])};
+  static const double compactEnglishSheetTitleSize = ${_double(l01Compact['englishSheetTitleSize'])};
+  static const double compactThaiSheetTitleSize = ${_double(l01Compact['thaiSheetTitleSize'])};
 }
 
 abstract final class DriverN01Metrics {
