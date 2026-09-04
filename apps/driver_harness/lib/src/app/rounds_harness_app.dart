@@ -10,6 +10,7 @@ import '../ui/live_delivery_change_screen.dart';
 import '../ui/operations_chat_screen.dart';
 import '../ui/pickup_confirmation_screen.dart';
 import '../ui/start_shift_screen.dart';
+import '../ui/team_home_screen.dart';
 import '../ui/shift_end_screen.dart';
 import '../connectivity/offline_reconnecting_screen.dart';
 import '../driver/driver_session.dart';
@@ -19,6 +20,17 @@ import 'generated/driver_ui_metrics.g.dart';
 import 'harness_app_controller.dart';
 
 export 'harness_app_controller.dart';
+
+enum DriverOperationalHome { waiting, assigned, activeRound }
+
+DriverOperationalHome driverOperationalHome(DriverSessionModel session) {
+  final round = session.currentRound;
+  if (round == null) return DriverOperationalHome.waiting;
+  if (round.state == 'approved' || round.state == 'loading') {
+    return DriverOperationalHome.assigned;
+  }
+  return DriverOperationalHome.activeRound;
+}
 
 class RoundsHarnessApp extends StatefulWidget {
   const RoundsHarnessApp({
@@ -167,6 +179,25 @@ class _RoundsHarnessAppState extends State<RoundsHarnessApp> {
               ? () => setState(() => _dismissedShiftSurfaceKey = surfaceKey)
               : null,
         );
+      }
+      if (open) {
+        switch (driverOperationalHome(session)) {
+          case DriverOperationalHome.waiting:
+            return TeamHomeScreen(
+              controller: widget.controller,
+              session: session,
+              enableNativeNavigation: widget.enableNativeNavigation,
+            );
+          case DriverOperationalHome.assigned:
+            return TeamHomeScreen(
+              controller: widget.controller,
+              session: session,
+              round: round,
+              enableNativeNavigation: widget.enableNativeNavigation,
+            );
+          case DriverOperationalHome.activeRound:
+            break;
+        }
       }
     }
     return AssignedRoundScreen(
