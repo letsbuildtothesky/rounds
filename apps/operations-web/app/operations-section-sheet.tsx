@@ -1,12 +1,11 @@
 "use client";
 
-export type OperationsSectionKey = "action" | "deliveries" | "drivers" | "communications" | "history";
+export type OperationsSectionKey = "action" | "deliveries" | "drivers" | "history";
 
 const sectionLabels: Record<OperationsSectionKey, { label: string; detail: string }> = {
   action: { label: "Dispatch", detail: "Live work, planning and exceptions" },
   deliveries: { label: "Deliveries", detail: "Search and inspect canonical delivery truth" },
   drivers: { label: "Drivers", detail: "Own-team capacity, shifts and current work" },
-  communications: { label: "Communications", detail: "Shared Driver conversations" },
   history: { label: "History", detail: "Committed handoffs and POD evidence" },
 };
 

@@ -22,7 +22,14 @@ import {
 } from "../src/operations-message-media";
 
 const roundsApiUrl = process.env.NEXT_PUBLIC_ROUNDS_API_URL ?? "http://127.0.0.1:8080";
-type Props = { accessToken: string; tenant: OperationsTenant; initialThreadId?: string };
+type Props = {
+  accessToken: string;
+  tenant: OperationsTenant;
+  request?: { threadId: string; nonce: number };
+  drawerOpen?: boolean;
+  onHistory: () => void;
+  onOpenRound: (roundId: string) => void;
+};
 type ApiError = { error?: { message?: string }; status?: string };
 
 function timeLabel(value: string, timezone: string): string {
@@ -52,7 +59,7 @@ function MessageAttachments({ message }: { message: DriverThreadMessage }) {
     if (attachment.kind === "location") {
       const coordinates = `${attachment.latitude},${attachment.longitude}`;
       const href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(coordinates)}`;
-      return <a className="message-location" href={href} target="_blank" rel="noreferrer" key={`${attachment.kind}:${attachment.capturedAt}:${index}`}>
+      return <a className="v45-comms-attachment" href={href} target="_blank" rel="noreferrer" key={`${attachment.kind}:${attachment.capturedAt}:${index}`}>
         <span aria-hidden="true">⌖</span>
         <span><strong>{attachment.label}</strong><small>{attachment.latitude.toFixed(4)}, {attachment.longitude.toFixed(4)}</small></span>
         <i aria-hidden="true">›</i>
@@ -63,7 +70,7 @@ function MessageAttachments({ message }: { message: DriverThreadMessage }) {
       : `${Math.ceil(attachment.byteSize / 1024)} KB`;
     const duration = attachment.durationMilliseconds == null ? "" : `${Math.floor(attachment.durationMilliseconds / 60000)}:${String(Math.ceil(attachment.durationMilliseconds / 1000) % 60).padStart(2, "0")}`;
     return <a
-      className="message-location message-media"
+      className="v45-comms-attachment"
       href={attachment.downloadUrl}
       target="_blank"
       rel="noreferrer"
@@ -95,16 +102,16 @@ function StagedAttachmentPreview({ attachment, onRemove }: { attachment: StagedO
     : attachment.kind === "voice"
       ? `${Math.max(1, Math.round((attachment.durationMilliseconds ?? 0) / 1000))} sec · ${formatAttachmentSize(attachment.byteSize)}`
       : formatAttachmentSize(attachment.byteSize);
-  return <div className="staged-attachment">
-    <span className="staged-attachment-mark" aria-hidden="true">
+  return <div className="v45-comms-staged-row">
+    <span className="v45-comms-staged-mark" aria-hidden="true">
       {attachment.kind === "image" && previewUrl ? <img src={previewUrl} alt="" /> : attachment.kind === "location" ? "⌖" : attachment.kind === "voice" ? "●" : "DOC"}
     </span>
-    <span className="staged-attachment-copy"><strong>{label}</strong><small>{detail}</small>{attachment.kind === "voice" && previewUrl && <audio src={previewUrl} controls preload="metadata" />}</span>
+    <span className="v45-comms-staged-copy"><strong>{label}</strong><small>{detail}</small>{attachment.kind === "voice" && previewUrl && <audio src={previewUrl} controls preload="metadata" />}</span>
     <button type="button" onClick={onRemove} aria-label={`Remove ${label}`}>×</button>
   </div>;
 }
 
-export function CommunicationsPanel({ accessToken, tenant, initialThreadId = "" }: Props) {
+export function CommunicationsPanel({ accessToken, tenant, request, drawerOpen = false, onHistory, onOpenRound }: Props) {
   const [projection, setProjection] = useState<OperationsCommunicationsProjection | null>(null);
   const [selectedThreadId, setSelectedThreadId] = useState("");
   const [draft, setDraft] = useState("");
@@ -116,11 +123,14 @@ export function CommunicationsPanel({ accessToken, tenant, initialThreadId = "" 
   const [dragActive, setDragActive] = useState(false);
   const [recording, setRecording] = useState(false);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
+  const [expanded, setExpanded] = useState(false);
+  const [activeThreadIds, setActiveThreadIds] = useState<string[]>([]);
   const photoInput = useRef<HTMLInputElement>(null);
   const fileInput = useRef<HTMLInputElement>(null);
   const mediaRecorder = useRef<MediaRecorder | null>(null);
   const recordingChunks = useRef<Blob[]>([]);
   const recordingStartedAt = useRef(0);
+  const handledRequest = useRef(0);
 
   const load = useCallback(async (quiet = false) => {
     if (!quiet) setLoading(true);
@@ -136,16 +146,14 @@ export function CommunicationsPanel({ accessToken, tenant, initialThreadId = "" 
       if (!response.ok) throw new Error(messageFrom(body as ApiError, `Communications HTTP ${response.status}`));
       const next = body as OperationsCommunicationsProjection;
       setProjection(next);
-      setSelectedThreadId((current) => next.threads.some((thread) => thread.id === initialThreadId)
-        ? initialThreadId
-        : next.threads.some((thread) => thread.id === current) ? current : next.threads[0]?.id ?? "");
+      setSelectedThreadId((current) => next.threads.some((thread) => thread.id === current) ? current : next.threads[0]?.id ?? "");
       setError("");
     } catch (caught) {
       if (!quiet) setError(caught instanceof Error ? caught.message : "Communications could not be loaded");
     } finally {
       if (!quiet) setLoading(false);
     }
-  }, [accessToken, initialThreadId, tenant.id]);
+  }, [accessToken, tenant.id]);
 
   useEffect(() => {
     void load();
@@ -157,6 +165,23 @@ export function CommunicationsPanel({ accessToken, tenant, initialThreadId = "" 
     () => projection?.threads.find((thread) => thread.id === selectedThreadId) ?? null,
     [projection, selectedThreadId],
   );
+
+  useEffect(() => {
+    if (!projection || !request?.nonce || request.nonce <= handledRequest.current) return;
+    handledRequest.current = request.nonce;
+    setExpanded(true);
+    if (!projection.threads.length) {
+      setSelectedThreadId("");
+      return;
+    }
+    const threadId = projection.threads.some((thread) => thread.id === request.threadId)
+      ? request.threadId
+      : projection.threads.some((thread) => thread.id === selectedThreadId)
+        ? selectedThreadId
+        : projection.threads[0]!.id;
+    setSelectedThreadId(threadId);
+    setActiveThreadIds((current) => current.includes(threadId) ? current : [...current, threadId]);
+  }, [projection, request?.nonce, request?.threadId, selectedThreadId]);
 
   useEffect(() => {
     let active = true;
@@ -376,58 +401,85 @@ export function CommunicationsPanel({ accessToken, tenant, initialThreadId = "" 
     if (url) updateDraft(draft ? `${draft}\n${url}` : url);
   }
 
-  return <div className="communications-workspace">
-    <section className="page-heading communications-heading">
-      <div><p className="eyebrow">DRIVER SUPPORT</p><h1>Communications</h1><p>Durable messages attached to the active Round and Stop.</p></div>
-      <button type="button" className="history-refresh" onClick={() => void load()}>Refresh</button>
-    </section>
-    {error && <div className="alert error" role="alert"><div><strong>Couldn&apos;t continue</strong><span>{error}</span></div></div>}
-    {loading ? <section className="dispatch-loading"><span /><p>Loading driver conversations…</p></section> : !projection?.threads.length ? <section className="history-empty"><div>↔</div><h2>No driver conversations yet</h2><p>A conversation appears when a Team driver opens Contact Operations during an active Round.</p></section> : <section className="communications-frame">
-      <aside className="thread-list" aria-label="Driver conversations">
-        <div className="thread-list-title"><strong>Active threads</strong><span>{projection.threads.length}</span></div>
-        {projection.threads.map((thread) => {
-          const last = thread.messages.at(-1);
-          return <button type="button" key={thread.id} className={`${thread.id === selectedThreadId ? "thread-row selected" : "thread-row"}${thread.priority === "emergency" ? " emergency" : ""}`} onClick={() => setSelectedThreadId(thread.id)}>
-            <span className="driver-avatar">{thread.driverName.slice(0, 1).toUpperCase()}</span>
-            <span className="thread-copy"><strong>{thread.priority === "emergency" ? "EMERGENCY · " : ""}{thread.driverName}</strong><small>{thread.roundReference} · Stop {thread.stopSequence}</small><em>{messageSummary(last)}</em></span>
-            <time>{last ? timeLabel(last.sentAt, tenant.timezone) : ""}</time>
-          </button>;
-        })}
-      </aside>
-      {selected && <article className={`conversation-card${dragActive ? " drop-active" : ""}`} onDragEnter={(event) => { event.preventDefault(); setDragActive(true); }} onDragOver={(event) => event.preventDefault()} onDragLeave={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDragActive(false); }} onDrop={onDrop}>
-        {dragActive && <div className="communications-drop-target"><strong>Drop to stage for {selected.driverName}</strong><span>Photos and files wait for review before Send.</span></div>}
-        <header className="conversation-header">
-          <span className="driver-avatar large">{selected.driverName.slice(0, 1).toUpperCase()}</span>
-          <div><p className="eyebrow">{selected.priority === "emergency" ? "DRIVER EMERGENCY · PRIORITY" : "TEAM DRIVER · ACTIVE ROUND"}</p><h2>{selected.driverName}</h2><span>{selected.roundReference} · Stop {selected.stopSequence} · {selected.deliveryReference}</span></div>
-          <span className={`live-pill ${selected.priority === "emergency" ? "emergency" : ""}`}><i /> {selected.priority === "emergency" ? "Emergency" : "Active"}</span>
-        </header>
-        <div className="conversation-context"><div><small>Recipient</small><strong>{selected.recipientName}</strong></div><div><small>Destination</small><strong>{selected.rawAddress}</strong></div></div>
-        <div className="message-stream" aria-live="polite">
-          {!selected.messages.length && <div className="message-empty">No messages in this thread yet.</div>}
-          {selected.messages.map((message) => message.sender === "system" ? <div className="system-message" key={message.id}>{message.body}</div> : <div className={`message-row ${message.sender}`} key={message.id}>
-            <div className="message-bubble">{message.body && <p>{message.body}</p>}<MessageAttachments message={message} /><time>{timeLabel(message.sentAt, tenant.timezone)}</time></div>
-          </div>)}
+  const activeThreads = activeThreadIds
+    .map((threadId) => projection?.threads.find((thread) => thread.id === threadId))
+    .filter((thread): thread is NonNullable<typeof thread> => Boolean(thread));
+
+  function activateThread(threadId: string) {
+    setSelectedThreadId(threadId);
+    setActiveThreadIds((current) => current.includes(threadId) ? current : [...current, threadId]);
+    setExpanded(true);
+  }
+
+  function closeSelectedThread() {
+    if (!selectedThreadId) {
+      setExpanded(false);
+      return;
+    }
+    const remaining = activeThreadIds.filter((threadId) => threadId !== selectedThreadId);
+    setActiveThreadIds(remaining);
+    if (remaining.length) setSelectedThreadId(remaining.at(-1)!);
+    else setExpanded(false);
+  }
+
+  return <>
+    {expanded && <aside className={`v45-comms-widget${drawerOpen ? " beside-drawer" : ""}${dragActive ? " drop-active" : ""}`} aria-label="Driver communication" onDragEnter={(event) => { event.preventDefault(); setDragActive(true); }} onDragOver={(event) => event.preventDefault()} onDragLeave={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDragActive(false); }} onDrop={onDrop}>
+      {dragActive && selected && <div className="v45-comms-drop-overlay"><strong>Drop to send to {selected.driverName}</strong><span>Photos and files are staged first for review.</span></div>}
+      <header className="v45-comms-head">
+        <span className={`v45-comms-avatar${selected?.priority === "emergency" ? " emergency" : ""}`}>{selected?.driverName.slice(0, 2).toUpperCase() || "DR"}</span>
+        <span className="v45-comms-title"><strong>{selected?.driverName ?? (loading ? "Loading conversations…" : "Driver communications")}</strong><small>{selected ? `Own driver · ${selected.roundReference}` : "No active driver thread"}</small></span>
+        {selected && <span className={`v45-comms-presence${selected.priority === "emergency" ? " emergency" : ""}`}><i />{selected.priority === "emergency" ? "Emergency" : "Active Round"}</span>}
+        <span className="v45-comms-head-actions">
+          <button type="button" className="call" disabled title="In-app calling is not connected yet" aria-label="Call driver"><CallIcon /></button>
+          <button type="button" onClick={() => setExpanded(false)} title="Minimize" aria-label="Minimize">−</button>
+          <button type="button" onClick={closeSelectedThread} title="Close" aria-label="Close">×</button>
+        </span>
+      </header>
+
+      {selected && <div className="v45-comms-context">
+        <span><strong>{selected.roundReference}</strong><small>#{selected.deliveryReference} · {selected.recipientName}</small></span>
+        <span><button type="button" onClick={onHistory}>History</button><button type="button" onClick={() => onOpenRound(selected.roundId)}>Open Round</button></span>
+      </div>}
+
+      {error && <div className="v45-comms-error" role="alert"><strong>Couldn&apos;t continue</strong><span>{error}</span><button type="button" onClick={() => { setError(""); void load(); }}>Retry</button></div>}
+
+      <div className="v45-comms-thread" aria-live="polite">
+        {loading ? <div className="v45-comms-empty">Loading driver conversations…</div> : !projection?.threads.length ? <div className="v45-comms-empty"><strong>No driver conversations yet</strong><span>A thread appears when a Team driver opens Contact Operations during an active Round.</span></div> : selected && !selected.messages.length ? <div className="v45-comms-empty">No messages in this thread yet.</div> : selected?.messages.map((message) => message.sender === "system" ? <div className="v45-comms-event" key={message.id}><span>{message.body} · {timeLabel(message.sentAt, tenant.timezone)}</span></div> : <div className={`v45-comms-message ${message.sender}`} key={message.id}>
+          <div className="v45-comms-bubble">{message.body && <p>{message.body}</p>}<MessageAttachments message={message} /></div><div className="v45-comms-message-meta">{timeLabel(message.sentAt, tenant.timezone)}</div>
+        </div>)}
+      </div>
+
+      {selected && <footer className="v45-comms-compose">
+        <input ref={photoInput} className="v45-comms-file-input" type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={(event) => { void stageFiles(Array.from(event.target.files ?? [])); event.target.value = ""; }} />
+        <input ref={fileInput} className="v45-comms-file-input" type="file" multiple onChange={(event) => { void stageFiles(Array.from(event.target.files ?? [])); event.target.value = ""; }} />
+        {attachmentMenuOpen && <div className="v45-comms-attach-menu" role="menu"><button type="button" onClick={() => photoInput.current?.click()}>Photo</button><button type="button" onClick={() => fileInput.current?.click()}>File</button><button type="button" onClick={() => stageCurrentLocation("Dispatcher location")}>Location</button><button type="button" onClick={stageMapContext}>Map context</button></div>}
+        {!!staged.length && <div className="v45-comms-staged"><header><strong>{staged.length} attachment{staged.length === 1 ? "" : "s"} ready</strong><span>Add a message or Send</span></header>{staged.map((attachment) => <StagedAttachmentPreview key={attachment.localId} attachment={attachment} onRemove={() => void removeAttachment(attachment)} />)}</div>}
+        {recording && <div className="v45-comms-recording" role="status"><span /><strong>Recording voice note</strong><i className="v45-comms-wave" aria-hidden="true">||||||||</i><time>{Math.floor(recordingSeconds / 60)}:{String(recordingSeconds % 60).padStart(2, "0")}</time><button type="button" onClick={stopVoiceRecording}>Stop</button></div>}
+        <div className="v45-comms-compose-row">
+          <button className="attach" type="button" aria-label="Add attachment" aria-expanded={attachmentMenuOpen} onClick={() => setAttachmentMenuOpen((open) => !open)} disabled={tenant.role === "viewer"}>+</button>
+          <textarea aria-label="Message driver" rows={1} maxLength={2000} value={draft} onChange={(event) => updateDraft(event.target.value)} onKeyDown={onComposerKeyDown} onPaste={onComposerPaste} disabled={tenant.role === "viewer" || recording} placeholder={tenant.role === "viewer" ? "Viewer access is read-only" : "Message driver…"} />
+          <button className={`mic${recording ? " recording" : ""}`} type="button" aria-label={recording ? "Stop voice recording" : "Record voice note"} onClick={() => recording ? stopVoiceRecording() : void startVoiceRecording()} disabled={tenant.role === "viewer"}><MicIcon /></button>
+          <button className="send" type="button" onClick={() => void send()} disabled={(!draft.trim() && !staged.length) || sending || tenant.role === "viewer"} aria-label="Send message"><SendIcon /></button>
         </div>
-        <footer className="composer rich-composer">
-          <input ref={photoInput} className="composer-file-input" type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={(event) => { void stageFiles(Array.from(event.target.files ?? [])); event.target.value = ""; }} />
-          <input ref={fileInput} className="composer-file-input" type="file" multiple onChange={(event) => { void stageFiles(Array.from(event.target.files ?? [])); event.target.value = ""; }} />
-          {attachmentMenuOpen && <div className="composer-attachment-menu" role="menu">
-            <button type="button" onClick={() => photoInput.current?.click()}>Photo</button>
-            <button type="button" onClick={() => fileInput.current?.click()}>File</button>
-            <button type="button" onClick={() => stageCurrentLocation("Dispatcher location")}>Location</button>
-            <button type="button" onClick={stageMapContext}>Map context</button>
-          </div>}
-          {!!staged.length && <div className="staged-attachments"><header><strong>{staged.length} staged</strong><span>Review before Send</span></header>{staged.map((attachment) => <StagedAttachmentPreview key={attachment.localId} attachment={attachment} onRemove={() => void removeAttachment(attachment)} />)}</div>}
-          {recording && <div className="voice-recording" role="status"><span /><strong>Recording voice note</strong><time>{Math.floor(recordingSeconds / 60)}:{String(recordingSeconds % 60).padStart(2, "0")}</time><button type="button" onClick={stopVoiceRecording}>Stop</button></div>}
-          <div className="composer-row">
-            <button className="composer-add" type="button" aria-label="Add attachment" aria-expanded={attachmentMenuOpen} onClick={() => setAttachmentMenuOpen((open) => !open)} disabled={tenant.role === "viewer"}>+</button>
-            <textarea aria-label="Reply to driver" rows={2} maxLength={2000} value={draft} onChange={(event) => updateDraft(event.target.value)} onKeyDown={onComposerKeyDown} onPaste={onComposerPaste} disabled={tenant.role === "viewer" || recording} placeholder={tenant.role === "viewer" ? "Viewer access is read-only" : "Message the driver…"} />
-            <button className={`composer-mic${recording ? " recording" : ""}`} type="button" aria-label={recording ? "Stop voice recording" : "Record voice note"} onClick={() => recording ? stopVoiceRecording() : void startVoiceRecording()} disabled={tenant.role === "viewer"}>◉</button>
-            <button className="composer-send" type="button" onClick={() => void send()} disabled={(!draft.trim() && !staged.length) || sending || tenant.role === "viewer"}>{sending ? "Uploading…" : "Send"}</button>
-          </div>
-          <small>Drop files here · paste images or links · Enter to send · drafts stay on this browser</small>
-        </footer>
-      </article>}
-    </section>}
-  </div>;
+        <div className="v45-comms-compose-hint"><span>Drop files or links here · paste images or links · Enter to send</span><span>#{selected.deliveryReference}</span></div>
+      </footer>}
+    </aside>}
+
+    {!!activeThreads.length && <div className="v45-comms-tray" aria-label="Active driver conversations">
+      {activeThreads.slice(-4).map((thread) => <button type="button" key={thread.id} className={thread.id === selectedThreadId && expanded ? "active" : ""} onClick={() => activateThread(thread.id)}><span className="v45-comms-tray-avatar">{thread.driverName.slice(0, 2).toUpperCase()}</span><span><strong>{thread.driverName}</strong><small>{messageSummary(thread.messages.at(-1))}</small></span>{thread.priority === "emergency" && <i>!</i>}</button>)}
+      {activeThreads.length > 4 && <span className="v45-comms-tray-overflow">+{activeThreads.length - 4}</span>}
+    </div>}
+  </>;
+}
+
+function CallIcon() {
+  return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h3l1.2 4-2 1.2a15 15 0 0 0 5.6 5.6l1.2-2L20 14v3c0 1.1-.9 2-2 2C10.8 19 5 13.2 5 6c0-1.1.9-2 2-2Z" /></svg>;
+}
+
+function MicIcon() {
+  return <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" /><path d="M5.5 10.5a6.5 6.5 0 0 0 13 0M12 17v4M8.5 21h7" /></svg>;
+}
+
+function SendIcon() {
+  return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 14-7-4 14-3-6-7-1Z" /><path d="m12 13 7-8" /></svg>;
 }

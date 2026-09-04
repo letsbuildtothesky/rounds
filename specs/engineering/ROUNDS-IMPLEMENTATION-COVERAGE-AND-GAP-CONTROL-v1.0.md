@@ -7,6 +7,14 @@
 
 ## Changelog
 
+- **2026-09-04 · Checkpoint 36:** Removes the non-canonical standalone
+  Communications workspace from desktop and responsive navigation. Real
+  Operations messaging now opens inside the v45 Dispatch map as the specified
+  compact 420 px conversation window, coexists beside the contextual drawer
+  at wide desktop widths, becomes the dominant overlay at constrained widths,
+  and minimizes into a persistent bottom conversation tray. The original
+  message/media backend and offline draft behavior are retained rather than
+  replaced by prototype-only interactions.
 - **2026-09-04 · Checkpoint 35:** Replaces the Dispatch text-only composer
   with the canonical v45 Photo, File, Location and Map context menu, visible
   microphone, staged-review area, image paste, file drop and ordinary-text URL
@@ -200,7 +208,7 @@ Canonical visual source: `ux/operations/rounds-operations-current-v45.html`. The
 | Post-pickup live delivery change | Slice 2 P0 | `IMPLEMENTED` | The v45 Round detail opens a custody-locked live-change drawer, accepts only the authorized own-team fields, calls a real consequence preview, applies one versioned/idempotent database command and projects pending or acknowledged Driver state. Route order, destination version, audit, system ledger and Driver notification state commit atomically. | Complete signed-in browser/device acceptance with an active multi-Stop Round and connect the canonical map-based pin selector plus risk-override acknowledgement when that authority is configured. |
 | Pickup exception resolution | Pilot P0 | `VERIFIED` | Audited correction returns Stop to assigned and requires manifest recheck. | Broader pickup outcomes/evidence views. |
 | Delivery exception resolution | Pilot/Slice 2 P0 | `PARTIAL` | Damaged-item hold, return confirmation and reconciliation exist. Typed G02 location holds show authoritative-versus-observed coordinates in v45, while both UI and database deliberately block generic resolution. Post-pickup destination-change authority and Driver acknowledgement now exist as a separate versioned flow. | Approve and implement the recipient/address/cannot-complete/emergency exception outcomes and connect approved address corrections through the live-change boundary. |
-| Communications | Pilot/Slice 2 P1 | `PARTIAL` | Persistent two-way shared threads now support Driver and Operations text, location, photo, file and voice. The v45 Dispatch composer exposes its canonical attachment menu and visible mic; selected blobs/text persist locally across refresh, offline Send preserves the draft, private media is integrity-verified, and message/media commit atomically. Localhost browser verification covers menu, authoritative Stop map-context staging and refresh restoration; migration `202609040006` is applied. | Complete physical browser Photo/File/Location/voice sends to the Samsung Driver, then implement the canonical floating window/tray/marker synchronized unread state, call events and full filtered contact-history ledger. |
+| Communications | Pilot/Slice 2 P1 | `PARTIAL` | Persistent two-way shared threads support Driver and Operations text, location, photo, file and voice. The standalone invented board has been removed: the real composer now lives in the canonical v45 compact map window, coexists with the Round drawer on wide desktop, minimizes to the bottom conversation tray, and becomes an overlay at constrained widths. Selected blobs/text persist locally across refresh, offline Send preserves the draft, private media is integrity-verified, and message/media commit atomically. Localhost browser verification covers open, minimize, tray reopen and authoritative map-context draft restoration; migration `202609040006` is applied. | Complete physical browser Photo/File/Location/voice sends to the Samsung Driver, then implement synchronized unread/read state on map markers/tray/top bar, call events and the full filtered contact-history ledger. |
 | Own Drivers capacity view | Slice 2 P0 | `VERIFIED` | Own-team availability, live/stale/unknown presence, current Round and effective shift projection exist. | Route-completion availability estimate and complete vehicle/cargo truth. |
 | Recurring schedules/date exceptions | Slice 2 P0 | `VERIFIED` | Versioned/idempotent drawers and server commands exist. | Driver-side shift lifecycle and overnight/date-policy acceptance. |
 | Vehicle profiles and cargo limits | Slice 2 P0 | `VERIFIED` | Versioned cargo classes/limits are projected and enforced with max Stops/departure pattern by the common planner validator and database approval guard; unknown cargo is `review_required`. | UrbanFlowers must approve production taxonomy/limits; connect the canonical Settings controls for managed edits. |

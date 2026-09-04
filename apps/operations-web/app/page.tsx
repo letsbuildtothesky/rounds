@@ -13,7 +13,6 @@ import {
   type DeliveryFormDraft,
 } from "../src/delivery-form";
 import { HistoryPanel } from "./history-panel";
-import { CommunicationsPanel } from "./communications-panel";
 import { OperationsWorkstation } from "./operations-workstation";
 import { OperationsMenuIcon, OperationsSectionSheet, type OperationsSectionKey } from "./operations-section-sheet";
 import { DeliveryIntake, type SubmissionSuccess } from "./delivery-intake";
@@ -63,7 +62,7 @@ export default function OperationsPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState<SubmissionSuccess | null>(null);
   const [section, setSection] = useState<OperationsSectionKey>("action");
-  const [communicationThreadId, setCommunicationThreadId] = useState("");
+  const [communicationRequest, setCommunicationRequest] = useState({ threadId: "", nonce: 0 });
   const [developmentPreview, setDevelopmentPreview] = useState(false);
   const [sectionMenuOpen, setSectionMenuOpen] = useState(false);
   const [deliveryIntakeOpen, setDeliveryIntakeOpen] = useState(false);
@@ -130,9 +129,8 @@ export default function OperationsPage() {
     setError("");
   }
 
-  function openCommunicationThread(threadId: string) {
-    setCommunicationThreadId(threadId);
-    setSection("communications");
+  function openCommunicationThread(threadId = "") {
+    setCommunicationRequest((current) => ({ threadId, nonce: current.nonce + 1 }));
   }
 
   function updateDraft<K extends keyof DeliveryFormDraft>(key: K, value: DeliveryFormDraft[K]) {
@@ -195,7 +193,7 @@ export default function OperationsPage() {
   if (!authSession) return <LoginScreen supabase={supabase} error={error} setError={setError} onPreview={developmentPreviewEnabled ? () => setDevelopmentPreview(true) : undefined} />;
   if (loadingProfile) return <LoadingScreen label="Checking merchant access" />;
 
-  if (operationsSession && selectedTenant && (section === "action" || section === "deliveries" || section === "drivers")) {
+  if (operationsSession && selectedTenant && section !== "history") {
     return <OperationsWorkstation
       accessToken={authSession.access_token}
       tenant={selectedTenant}
@@ -204,6 +202,7 @@ export default function OperationsPage() {
       deliveriesOpen={section === "deliveries"}
       driversOpen={section === "drivers"}
       deliveryRefreshKey={deliveryRevision}
+      communicationRequest={communicationRequest}
       onCloseDeliveryIntake={() => setDeliveryIntakeOpen(false)}
       onDeliveries={() => { setDeliveryIntakeOpen(false); setSection("deliveries"); }}
       onDrivers={() => { setDeliveryIntakeOpen(false); setSection("drivers"); }}
@@ -225,8 +224,7 @@ export default function OperationsPage() {
       onHistory={() => setSection("history")}
       onCommunications={(threadId) => {
         setDeliveryIntakeOpen(false);
-        if (threadId) setCommunicationThreadId(threadId);
-        setSection("communications");
+        openCommunicationThread(threadId);
       }}
       onSignOut={() => void signOut()}
     />;
@@ -236,7 +234,7 @@ export default function OperationsPage() {
     <div className="operations-shell">
       <header className="app-header">
         <div className="brand"><RoundsMark /><span>ROUNDS</span></div>
-        <nav aria-label="Operations sections"><button type="button" className={section === "action" ? "active" : ""} onClick={() => setSection("action")}>Dispatch</button><button type="button" className={section === "deliveries" ? "active" : ""} onClick={() => setSection("deliveries")}>Deliveries</button><button type="button" className={section === "drivers" ? "active" : ""} onClick={() => setSection("drivers")}>Drivers</button><button type="button" className={section === "communications" ? "active" : ""} onClick={() => setSection("communications")}>Communications</button><button type="button" className={section === "history" ? "active" : ""} onClick={() => setSection("history")}>History</button></nav>
+        <nav aria-label="Operations sections"><button type="button" className={section === "action" ? "active" : ""} onClick={() => setSection("action")}>Dispatch</button><button type="button" className={section === "deliveries" ? "active" : ""} onClick={() => setSection("deliveries")}>Deliveries</button><button type="button" className={section === "drivers" ? "active" : ""} onClick={() => setSection("drivers")}>Drivers</button><button type="button" className={section === "history" ? "active" : ""} onClick={() => setSection("history")}>History</button></nav>
         <div className="account">
           <div><strong>{operationsSession?.user.displayName ?? authSession.user.email}</strong><small>{selectedTenant ? roleLabel(selectedTenant.role) : "No access"}</small></div>
           <button type="button" onClick={() => void signOut()}>Sign out</button>
@@ -253,7 +251,7 @@ export default function OperationsPage() {
       />
 
       <main className="operations-main dispatch-main">
-        {section === "communications" && selectedTenant ? <CommunicationsPanel accessToken={authSession.access_token} tenant={selectedTenant} initialThreadId={communicationThreadId} /> : section === "history" && selectedTenant ? <HistoryPanel accessToken={authSession.access_token} tenant={selectedTenant} /> : <section className="empty-access"><LockIcon /><h2>No active Operations membership</h2><p>This authenticated account is not linked to an active merchant role.</p><button onClick={() => void loadOperationsSession(authSession)}>Check again</button></section>}
+        {section === "history" && selectedTenant ? <HistoryPanel accessToken={authSession.access_token} tenant={selectedTenant} /> : <section className="empty-access"><LockIcon /><h2>No active Operations membership</h2><p>This authenticated account is not linked to an active merchant role.</p><button onClick={() => void loadOperationsSession(authSession)}>Check again</button></section>}
       </main>
     </div>
   );

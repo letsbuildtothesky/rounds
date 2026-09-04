@@ -19,6 +19,7 @@ import { OperationsMenuIcon, OperationsSectionSheet, type OperationsSectionKey }
 import { DeliveriesWorkspace } from "./deliveries-workspace";
 import { DriversWorkspace } from "./drivers-workspace";
 import { RoundDetailWorkspace } from "./round-detail-workspace";
+import { CommunicationsPanel } from "./communications-panel";
 
 const roundsApiUrl = process.env.NEXT_PUBLIC_ROUNDS_API_URL ?? "http://127.0.0.1:8080";
 
@@ -36,6 +37,7 @@ type Props = {
   deliveriesOpen?: boolean;
   driversOpen?: boolean;
   deliveryRefreshKey?: number;
+  communicationRequest?: { threadId: string; nonce: number };
   onCloseDeliveryIntake?: () => void;
   onDeliveries?: () => void;
   onDrivers?: () => void;
@@ -150,7 +152,7 @@ function nextRoundReference(deliveries: UnplannedDeliverySummary[]): string {
   return `ROUND-${serviceDate.replaceAll("-", "")}-${time}`;
 }
 
-export function OperationsWorkstation({ accessToken, tenant, userName, demoMode = false, deliveryIntake, deliveryIntakeOpen = false, deliveriesOpen = false, driversOpen = false, deliveryRefreshKey = 0, onCloseDeliveryIntake, onDeliveries, onDrivers, onCloseDeliveries, onCloseDrivers, onAddDelivery, onHistory, onCommunications, onSignOut }: Props) {
+export function OperationsWorkstation({ accessToken, tenant, userName, demoMode = false, deliveryIntake, deliveryIntakeOpen = false, deliveriesOpen = false, driversOpen = false, deliveryRefreshKey = 0, communicationRequest, onCloseDeliveryIntake, onDeliveries, onDrivers, onCloseDeliveries, onCloseDrivers, onAddDelivery, onHistory, onCommunications, onSignOut }: Props) {
   const [projection, setProjection] = useState<OperationsActionProjection | null>(null);
   const [planning, setPlanning] = useState<OperationsPlanningProjection | null>(null);
   const [driverCapacity, setDriverCapacity] = useState<OperationsDriversProjection | null>(null);
@@ -412,6 +414,11 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
     }
   }
 
+  function openCommunications(threadId?: string) {
+    if (typeof window !== "undefined" && window.innerWidth <= 1180) setSelection(null);
+    onCommunications(threadId);
+  }
+
   return <main className="v45-app">
     <header className="v45-topbar">
       <div className="v45-wordmark">Rounds<i /></div>
@@ -426,7 +433,7 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
       <button className="v45-section-trigger" type="button" aria-haspopup="dialog" aria-expanded={sectionMenuOpen} onClick={() => setSectionMenuOpen(true)}><span>{driversOpen ? "Drivers" : deliveriesOpen || deliveryIntakeOpen ? "Deliveries" : "Dispatch"}</span><OperationsMenuIcon /></button>
       <div className="v45-spacer" />
       <button className="v45-network" type="button" disabled title="Network dispatch is outside the connected Own-Team slice"><i /><span>Own Team</span><ChevronIcon /></button>
-      <button className="v45-util" type="button" title="Driver communications" onClick={() => onCommunications()}><MessageIcon />{buckets.action.length > 0 && <b>{buckets.action.length}</b>}</button>
+      <button className="v45-util" type="button" title="Driver communications" onClick={() => openCommunications()}><MessageIcon /></button>
       <button className="v45-util" type="button" title="Operational alerts" onClick={() => setTab("action")}><BellIcon /></button>
       <div className="v45-profile-wrap"><button className="v45-util" type="button" title="Business settings" onClick={() => setProfileOpen((open) => !open)}><UserIcon /></button>{profileOpen && <div className="v45-profile-menu"><strong>{userName}</strong><span>{tenant.displayName}</span><button type="button" onClick={onSignOut}>Sign out</button></div>}</div>
     </header>
@@ -441,7 +448,6 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
         if (section === "action") { onCloseDeliveryIntake?.(); onCloseDeliveries?.(); onCloseDrivers?.(); }
         else if (section === "deliveries") { onCloseDeliveryIntake?.(); onCloseDrivers?.(); onDeliveries?.(); }
         else if (section === "drivers") { onCloseDeliveryIntake?.(); onCloseDeliveries?.(); onDrivers?.(); }
-        else if (section === "communications") onCommunications();
         else if (section === "history") onHistory();
       }}
       onSignOut={onSignOut}
@@ -526,11 +532,20 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
 
         <aside className={`v45-drawer ${selection ? "open" : ""}`} aria-hidden={!selection}>
           <header><div><small>{selection?.kind === "exception" ? "ORDER DECISION" : selection?.kind === "delivery" ? "PLANNING DELIVERY" : "LIVE ROUND"}</small><h2>{selection?.kind === "exception" ? selection.item.recipientName : selection?.kind === "round" ? selection.item.reference : selection?.kind === "delivery" ? selection.item.recipientName : ""}</h2><p>{selection?.kind === "exception" ? `#${selection.item.deliveryReference} · ${selection.item.rawAddress}` : selection?.kind === "round" ? `${selection.item.driverName} · ${selection.item.stopCount} Stops` : selection?.kind === "delivery" ? `#${selection.item.reference} · ${selection.item.rawAddress}` : ""}</p></div><button type="button" onClick={() => setSelection(null)} aria-label="Close drawer"><CloseIcon /></button></header>
-          <div className="v45-drawer-body">{selection?.kind === "exception" ? <ExceptionDrawer item={selection.item} accessToken={accessToken} tenant={tenant} onCommunications={onCommunications} onResolved={() => { setSelection(null); void load(); }} /> : selection?.kind === "round" ? <RoundDrawer item={selection.item} onCommunications={onCommunications} onOpen={() => setRoundDetailId(selection.item.id)} /> : selection?.kind === "delivery" ? <PlanningDrawer item={selection.item} timezone={tenant.timezone} /> : null}</div>
+          <div className="v45-drawer-body">{selection?.kind === "exception" ? <ExceptionDrawer item={selection.item} accessToken={accessToken} tenant={tenant} onCommunications={openCommunications} onResolved={() => { setSelection(null); void load(); }} /> : selection?.kind === "round" ? <RoundDrawer item={selection.item} onCommunications={openCommunications} onOpen={() => setRoundDetailId(selection.item.id)} /> : selection?.kind === "delivery" ? <PlanningDrawer item={selection.item} timezone={tenant.timezone} /> : null}</div>
         </aside>
+
+        {accessToken && <CommunicationsPanel
+          accessToken={accessToken}
+          tenant={tenant}
+          request={communicationRequest}
+          drawerOpen={Boolean(selection)}
+          onHistory={onHistory}
+          onOpenRound={(roundId) => setRoundDetailId(roundId)}
+        />}
       </section>
 
-      {roundDetailId && accessToken && <RoundDetailWorkspace accessToken={accessToken} tenant={tenant} roundId={roundDetailId} onClose={() => setRoundDetailId("")} onCommunications={(threadId) => { setRoundDetailId(""); onCommunications(threadId); }} />}
+      {roundDetailId && accessToken && <RoundDetailWorkspace accessToken={accessToken} tenant={tenant} roundId={roundDetailId} onClose={() => setRoundDetailId("")} onCommunications={(threadId) => { setRoundDetailId(""); openCommunications(threadId); }} />}
 
       {deliveriesOpen && accessToken && <DeliveriesWorkspace
         accessToken={accessToken}
@@ -545,7 +560,7 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
           setQuery(item.reference);
           setSelection(null);
         }}
-        onCommunications={() => onCommunications()}
+        onCommunications={() => openCommunications()}
       />}
 
       {driversOpen && accessToken && <DriversWorkspace
@@ -553,7 +568,7 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
         tenant={tenant}
         onBackToDispatch={() => { onCloseDrivers?.(); }}
         onOpenRound={(roundId) => { onCloseDrivers?.(); setRoundDetailId(roundId); }}
-        onCommunications={() => onCommunications()}
+        onCommunications={() => openCommunications()}
       />}
 
       {deliveryIntakeOpen && <>
