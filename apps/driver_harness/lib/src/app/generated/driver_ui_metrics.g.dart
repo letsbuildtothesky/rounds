@@ -1485,6 +1485,74 @@ abstract final class DriverG05Metrics {
   static const double sheetRowDetailSize = 12.0;
 }
 
+abstract final class DriverH01Metrics {
+  static const String source = 'ux/driver/en/screens/ROUNDS-H01-OPERATOR-CHAT-v4-10OF10.html';
+
+  static const double topBarHeight = 64.0;
+  static const double topBarPaddingHorizontal = 18.0;
+  static const double topButtonSize = 44.0;
+  static const double topColumnGap = 10.0;
+  static const double topIconSize = 22.0;
+  static const double topTitleSize = 17.0;
+  static const double topStatusGap = 5.0;
+  static const double topStatusSize = 11.5;
+  static const double topStatusDotSize = 7.0;
+  static const double topStatusDotGap = 7.0;
+
+  static const double contextHeight = 58.0;
+  static const double contextPaddingHorizontal = 20.0;
+  static const double contextColumnGap = 12.0;
+  static const double contextKickerSize = 10.5;
+  static const double contextKickerTracking = 0.9975;
+  static const double contextNameGap = 5.0;
+  static const double contextNameSize = 15.0;
+  static const double contextActionHeight = 38.0;
+  static const double contextActionSize = 13.0;
+
+  static const double connectionMinHeight = 34.0;
+  static const double connectionPaddingVertical = 8.0;
+  static const double connectionPaddingHorizontal = 20.0;
+  static const double connectionSize = 12.0;
+  static const double connectionHeight = 1.3;
+
+  static const double messagesPaddingTop = 16.0;
+  static const double messagesPaddingHorizontal = 18.0;
+  static const double messagesPaddingBottom = 18.0;
+  static const double daySize = 11.0;
+  static const double dayTracking = 0.77;
+  static const double dayBottom = 14.0;
+  static const double rowTop = 13.0;
+  static const double maxBubbleFraction = 0.79;
+  static const double senderSize = 10.5;
+  static const double senderBottom = 5.0;
+  static const double bubbleRadius = 8.0;
+  static const double bubblePaddingVertical = 10.0;
+  static const double bubblePaddingHorizontal = 12.0;
+  static const double bubbleSize = 14.0;
+  static const double bubbleHeight = 1.42;
+  static const double metaTop = 6.0;
+  static const double metaSize = 10.8;
+
+  static const double composerPaddingTop = 8.0;
+  static const double composerPaddingHorizontal = 12.0;
+  static const double composerPaddingBottom = 12.0;
+  static const double composerControlSize = 48.0;
+  static const double composerColumnGap = 8.0;
+  static const double composerRadius = 7.0;
+  static const double composerInputPaddingVertical = 10.0;
+  static const double composerInputPaddingHorizontal = 12.0;
+  static const double composerInputSize = 14.0;
+  static const double composerInputHeight = 1.35;
+
+  static const double compactTopBarPaddingHorizontal = 12.0;
+  static const double compactContextPaddingHorizontal = 14.0;
+  static const double compactMessagesPaddingHorizontal = 14.0;
+  static const double compactMaxBubbleFraction = 0.84;
+  static const double compactComposerPaddingHorizontal = 8.0;
+  static const double compactComposerControlSize = 46.0;
+  static const double compactComposerColumnGap = 6.0;
+}
+
 abstract final class DriverH03Metrics {
   static const String source = 'ux/driver/en/screens/ROUNDS-H03-CONTACT-HISTORY-v2-10OF10.html';
 

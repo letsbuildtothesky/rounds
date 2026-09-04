@@ -147,6 +147,13 @@ String generateDriverUiMetrics(Map<String, dynamic> json) {
   final g05State = g05['state'] as Map<String, dynamic>;
   final g05Footer = g05['footer'] as Map<String, dynamic>;
   final g05Sheet = g05['sheet'] as Map<String, dynamic>;
+  final h01 = screens['H01'] as Map<String, dynamic>;
+  final h01Top = h01['topBar'] as Map<String, dynamic>;
+  final h01Context = h01['context'] as Map<String, dynamic>;
+  final h01Connection = h01['connection'] as Map<String, dynamic>;
+  final h01Messages = h01['messages'] as Map<String, dynamic>;
+  final h01Composer = h01['composer'] as Map<String, dynamic>;
+  final h01Compact = h01['compact'] as Map<String, dynamic>;
   final h03 = screens['H03'] as Map<String, dynamic>;
   final h03Top = h03['topBar'] as Map<String, dynamic>;
   final h03Context = h03['context'] as Map<String, dynamic>;
@@ -1684,6 +1691,74 @@ abstract final class DriverG05Metrics {
   static const double sheetRowTitleSize = ${_double(g05Sheet['rowTitleSize'])};
   static const double sheetRowDetailGap = ${_double(g05Sheet['rowDetailGap'])};
   static const double sheetRowDetailSize = ${_double(g05Sheet['rowDetailSize'])};
+}
+
+abstract final class DriverH01Metrics {
+  static const String source = '${h01['source']}';
+
+  static const double topBarHeight = ${_double(h01Top['height'])};
+  static const double topBarPaddingHorizontal = ${_double(h01Top['paddingHorizontal'])};
+  static const double topButtonSize = ${_double(h01Top['buttonSize'])};
+  static const double topColumnGap = ${_double(h01Top['columnGap'])};
+  static const double topIconSize = ${_double(h01Top['iconSize'])};
+  static const double topTitleSize = ${_double(h01Top['titleSize'])};
+  static const double topStatusGap = ${_double(h01Top['statusGap'])};
+  static const double topStatusSize = ${_double(h01Top['statusSize'])};
+  static const double topStatusDotSize = ${_double(h01Top['statusDotSize'])};
+  static const double topStatusDotGap = ${_double(h01Top['statusDotGap'])};
+
+  static const double contextHeight = ${_double(h01Context['height'])};
+  static const double contextPaddingHorizontal = ${_double(h01Context['paddingHorizontal'])};
+  static const double contextColumnGap = ${_double(h01Context['columnGap'])};
+  static const double contextKickerSize = ${_double(h01Context['kickerSize'])};
+  static const double contextKickerTracking = ${_double(h01Context['kickerTracking'])};
+  static const double contextNameGap = ${_double(h01Context['nameGap'])};
+  static const double contextNameSize = ${_double(h01Context['nameSize'])};
+  static const double contextActionHeight = ${_double(h01Context['actionHeight'])};
+  static const double contextActionSize = ${_double(h01Context['actionSize'])};
+
+  static const double connectionMinHeight = ${_double(h01Connection['minHeight'])};
+  static const double connectionPaddingVertical = ${_double(h01Connection['paddingVertical'])};
+  static const double connectionPaddingHorizontal = ${_double(h01Connection['paddingHorizontal'])};
+  static const double connectionSize = ${_double(h01Connection['size'])};
+  static const double connectionHeight = ${_double(h01Connection['height'])};
+
+  static const double messagesPaddingTop = ${_double(h01Messages['paddingTop'])};
+  static const double messagesPaddingHorizontal = ${_double(h01Messages['paddingHorizontal'])};
+  static const double messagesPaddingBottom = ${_double(h01Messages['paddingBottom'])};
+  static const double daySize = ${_double(h01Messages['daySize'])};
+  static const double dayTracking = ${_double(h01Messages['dayTracking'])};
+  static const double dayBottom = ${_double(h01Messages['dayBottom'])};
+  static const double rowTop = ${_double(h01Messages['rowTop'])};
+  static const double maxBubbleFraction = ${_double(h01Messages['maxBubbleFraction'])};
+  static const double senderSize = ${_double(h01Messages['senderSize'])};
+  static const double senderBottom = ${_double(h01Messages['senderBottom'])};
+  static const double bubbleRadius = ${_double(h01Messages['bubbleRadius'])};
+  static const double bubblePaddingVertical = ${_double(h01Messages['bubblePaddingVertical'])};
+  static const double bubblePaddingHorizontal = ${_double(h01Messages['bubblePaddingHorizontal'])};
+  static const double bubbleSize = ${_double(h01Messages['bubbleSize'])};
+  static const double bubbleHeight = ${_double(h01Messages['bubbleHeight'])};
+  static const double metaTop = ${_double(h01Messages['metaTop'])};
+  static const double metaSize = ${_double(h01Messages['metaSize'])};
+
+  static const double composerPaddingTop = ${_double(h01Composer['paddingTop'])};
+  static const double composerPaddingHorizontal = ${_double(h01Composer['paddingHorizontal'])};
+  static const double composerPaddingBottom = ${_double(h01Composer['paddingBottom'])};
+  static const double composerControlSize = ${_double(h01Composer['controlSize'])};
+  static const double composerColumnGap = ${_double(h01Composer['columnGap'])};
+  static const double composerRadius = ${_double(h01Composer['radius'])};
+  static const double composerInputPaddingVertical = ${_double(h01Composer['inputPaddingVertical'])};
+  static const double composerInputPaddingHorizontal = ${_double(h01Composer['inputPaddingHorizontal'])};
+  static const double composerInputSize = ${_double(h01Composer['inputSize'])};
+  static const double composerInputHeight = ${_double(h01Composer['inputHeight'])};
+
+  static const double compactTopBarPaddingHorizontal = ${_double(h01Compact['topBarPaddingHorizontal'])};
+  static const double compactContextPaddingHorizontal = ${_double(h01Compact['contextPaddingHorizontal'])};
+  static const double compactMessagesPaddingHorizontal = ${_double(h01Compact['messagesPaddingHorizontal'])};
+  static const double compactMaxBubbleFraction = ${_double(h01Compact['maxBubbleFraction'])};
+  static const double compactComposerPaddingHorizontal = ${_double(h01Compact['composerPaddingHorizontal'])};
+  static const double compactComposerControlSize = ${_double(h01Compact['controlSize'])};
+  static const double compactComposerColumnGap = ${_double(h01Compact['columnGap'])};
 }
 
 abstract final class DriverH03Metrics {

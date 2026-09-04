@@ -19,6 +19,12 @@ Phase 0 motorcycle, background, battery and degraded-network evidence remains
 open. Continuing authorized implementation must not be described as a Phase 0
 field PASS or production readiness.
 
+**Current sequencing decision (2026-09-04):** finish and physically stabilize
+the English Pilot/own-fleet surfaces before continuing additional Thai parity
+work. Existing shared localization remains in place; this changes execution
+order only and does not authorize a separate application or duplicated
+business logic.
+
 This file controls implementation sequence. The complete Build Spec set exists, but Codex must not build everything in parallel.
 
 ## Current execution control

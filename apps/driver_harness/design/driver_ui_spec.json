@@ -1394,6 +1394,79 @@
       "footer": { "paddingTop": 11, "paddingHorizontal": 22, "paddingBottom": 17, "primaryHeight": 62, "primaryRadius": 7, "primarySize": 17, "secondaryHeight": 48, "secondaryGap": 7, "secondarySize": 15 },
       "sheet": { "inset": 10, "radiusTop": 12, "radiusBottom": 8, "paddingHorizontal": 18, "paddingBottom": 14, "handleWidth": 42, "handleHeight": 4, "handleBottom": 14, "titleSize": 22, "detailGap": 7, "detailSize": 13, "rowHeight": 66, "rowColumnGap": 14, "rowIconSize": 23, "rowTitleSize": 15, "rowDetailGap": 4, "rowDetailSize": 12 }
     },
+    "H01": {
+      "source": "ux/driver/en/screens/ROUNDS-H01-OPERATOR-CHAT-v4-10OF10.html",
+      "topBar": {
+        "height": 64,
+        "paddingHorizontal": 18,
+        "buttonSize": 44,
+        "columnGap": 10,
+        "iconSize": 22,
+        "titleSize": 17,
+        "statusGap": 5,
+        "statusSize": 11.5,
+        "statusDotSize": 7,
+        "statusDotGap": 7
+      },
+      "context": {
+        "height": 58,
+        "paddingHorizontal": 20,
+        "columnGap": 12,
+        "kickerSize": 10.5,
+        "kickerTracking": 0.9975,
+        "nameGap": 5,
+        "nameSize": 15,
+        "actionHeight": 38,
+        "actionSize": 13
+      },
+      "connection": {
+        "minHeight": 34,
+        "paddingVertical": 8,
+        "paddingHorizontal": 20,
+        "size": 12,
+        "height": 1.3
+      },
+      "messages": {
+        "paddingTop": 16,
+        "paddingHorizontal": 18,
+        "paddingBottom": 18,
+        "daySize": 11,
+        "dayTracking": 0.77,
+        "dayBottom": 14,
+        "rowTop": 13,
+        "maxBubbleFraction": 0.79,
+        "senderSize": 10.5,
+        "senderBottom": 5,
+        "bubbleRadius": 8,
+        "bubblePaddingVertical": 10,
+        "bubblePaddingHorizontal": 12,
+        "bubbleSize": 14,
+        "bubbleHeight": 1.42,
+        "metaTop": 6,
+        "metaSize": 10.8
+      },
+      "composer": {
+        "paddingTop": 8,
+        "paddingHorizontal": 12,
+        "paddingBottom": 12,
+        "controlSize": 48,
+        "columnGap": 8,
+        "radius": 7,
+        "inputPaddingVertical": 10,
+        "inputPaddingHorizontal": 12,
+        "inputSize": 14,
+        "inputHeight": 1.35
+      },
+      "compact": {
+        "topBarPaddingHorizontal": 12,
+        "contextPaddingHorizontal": 14,
+        "messagesPaddingHorizontal": 14,
+        "maxBubbleFraction": 0.84,
+        "composerPaddingHorizontal": 8,
+        "controlSize": 46,
+        "columnGap": 6
+      }
+    },
     "H03": {
       "source": "ux/driver/en/screens/ROUNDS-H03-CONTACT-HISTORY-v2-10OF10.html",
       "topBar": {
