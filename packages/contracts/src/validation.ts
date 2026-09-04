@@ -42,6 +42,8 @@ import type {
   ReportLocationProblemPayload,
   ReportDriverEmergencyCommand,
   ReportDriverEmergencyPayload,
+  EndDriverShiftCommand,
+  EndDriverShiftPayload,
   StartDriverShiftCommand,
   StartDriverShiftPayload,
 } from "./round.js";
@@ -86,6 +88,29 @@ export function validateStartDriverShiftCommand(command: StartDriverShiftCommand
   if (command.idempotencyKey.length > 200) throw new ContractError("idempotencyKey exceeds 200 characters");
   if (command.expectedVersion !== 0) throw new ContractError("StartDriverShift expectedVersion must be 0");
   validateStartDriverShiftPayload(command.payload);
+}
+
+export function validateEndDriverShiftPayload(payload: EndDriverShiftPayload): void {
+  assertUuid(payload.attendanceId, "attendanceId");
+}
+
+export function validateEndDriverShiftCommand(command: EndDriverShiftCommand): void {
+  if (command.schemaVersion !== 1 || command.commandType !== "driver.end_shift") {
+    throw new ContractError("unsupported EndDriverShift command envelope");
+  }
+  assertUuid(command.commandId, "commandId");
+  assertUuid(command.traceId, "traceId");
+  assertUuid(command.tenantId, "tenantId");
+  assertUuid(command.aggregateId, "aggregateId");
+  assertNonEmpty(command.idempotencyKey, "idempotencyKey");
+  if (command.idempotencyKey.length > 200) throw new ContractError("idempotencyKey exceeds 200 characters");
+  if (!Number.isInteger(command.expectedVersion) || command.expectedVersion < 1) {
+    throw new ContractError("EndDriverShift expectedVersion must be a positive integer");
+  }
+  validateEndDriverShiftPayload(command.payload);
+  if (command.aggregateId !== command.payload.attendanceId) {
+    throw new ContractError("EndDriverShift aggregateId must equal attendanceId");
+  }
 }
 
 export function validateSetDriverRecurringSchedulePayload(payload: SetDriverRecurringSchedulePayload): void {

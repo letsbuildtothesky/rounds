@@ -70,6 +70,9 @@ import type {
   StartDriverShiftCommand,
   StartDriverShiftPayload,
   StartDriverShiftResult,
+  EndDriverShiftCommand,
+  EndDriverShiftPayload,
+  EndDriverShiftResult,
 } from "@rounds/contracts";
 import type { PlanningRouteContext, PlanningRouteService } from "./planning-route-service.js";
 
@@ -167,6 +170,10 @@ export interface DriverShiftGateway {
     command: StartDriverShiftCommand,
     identity: AuthenticatedIdentity,
   ): Promise<StartDriverShiftResult>;
+  endDriverShift(
+    command: EndDriverShiftCommand,
+    identity: AuthenticatedIdentity,
+  ): Promise<EndDriverShiftResult>;
 }
 
 export interface OperationsCommunicationsGateway {
@@ -378,6 +385,7 @@ export type DriverShiftDependencies = DriverSessionDependencies & {
 };
 
 export type StartDriverShiftRequestBody = StartDriverShiftPayload;
+export type EndDriverShiftRequestBody = EndDriverShiftPayload;
 
 export type ConfirmPickupDependencies = DriverSessionDependencies & {
   pickup: PickupGateway;

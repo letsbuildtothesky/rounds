@@ -49,6 +49,14 @@ String generateDriverUiMetrics(Map<String, dynamic> json) {
   final b00Dispatch = b00['dispatch'] as Map<String, dynamic>;
   final b00Start = b00['start'] as Map<String, dynamic>;
   final b00BottomNav = b00['bottomNav'] as Map<String, dynamic>;
+  final b01 = screens['B01DEF'] as Map<String, dynamic>;
+  final b01Shell = b01['shell'] as Map<String, dynamic>;
+  final b01Ending = b01['endingHero'] as Map<String, dynamic>;
+  final b01Delivery = b01['activeDelivery'] as Map<String, dynamic>;
+  final b01Footer = b01['taskFooter'] as Map<String, dynamic>;
+  final b01Confirm = b01['confirmHero'] as Map<String, dynamic>;
+  final b01Hours = b01['hours'] as Map<String, dynamic>;
+  final b01Actions = b01['actions'] as Map<String, dynamic>;
   final d01 = screens['D01'] as Map<String, dynamic>;
   final d01Control = d01['roadControl'] as Map<String, dynamic>;
   final d01Instruction = d01['instruction'] as Map<String, dynamic>;
@@ -361,6 +369,129 @@ abstract final class DriverB00Metrics {
   static const double englishBottomNavLabelSize = ${_double(b00BottomNav['englishLabelSize'])};
   static const double thaiBottomNavLabelSize = ${_double(b00BottomNav['thaiLabelSize'])};
   static const double thaiCompactBottomNavLabelSize = ${_double(b00BottomNav['thaiCompactLabelSize'])};
+}
+
+abstract final class DriverB01DefMetrics {
+  static const String sourceEnglishEnding = '${b01['sourceEnglishEnding']}';
+  static const String sourceEnglishOvertime = '${b01['sourceEnglishOvertime']}';
+  static const String sourceEnglishConfirm = '${b01['sourceEnglishConfirm']}';
+  static const String sourceThaiEnding = '${b01['sourceThaiEnding']}';
+  static const String sourceThaiOvertime = '${b01['sourceThaiOvertime']}';
+  static const String sourceThaiConfirm = '${b01['sourceThaiConfirm']}';
+
+  static const double topBarHeight = ${_double(b01Shell['topBarHeight'])};
+  static const double topBarPaddingHorizontal = ${_double(b01Shell['topBarPaddingHorizontal'])};
+  static const double brandSize = ${_double(b01Shell['brandSize'])};
+  static const double brandTracking = ${_double(b01Shell['brandTracking'])};
+  static const double brandDotSize = ${_double(b01Shell['brandDotSize'])};
+  static const double notificationSize = ${_double(b01Shell['notificationSize'])};
+  static const double notificationIconSize = ${_double(b01Shell['notificationIconSize'])};
+  static const double bottomNavHeight = ${_double(b01Shell['bottomNavHeight'])};
+  static const double bottomNavIconSize = ${_double(b01Shell['bottomNavIconSize'])};
+  static const double bottomNavGap = ${_double(b01Shell['bottomNavGap'])};
+  static const double englishBottomNavLabelSize = ${_double(b01Shell['englishBottomNavLabelSize'])};
+  static const double thaiBottomNavLabelSize = ${_double(b01Shell['thaiBottomNavLabelSize'])};
+
+  static const double endingPaddingHorizontal = ${_double(b01Ending['paddingHorizontal'])};
+  static const double englishEndingPaddingTop = ${_double(b01Ending['englishPaddingTop'])};
+  static const double englishEndingPaddingBottom = ${_double(b01Ending['englishPaddingBottom'])};
+  static const double thaiEndingPaddingTop = ${_double(b01Ending['thaiPaddingTop'])};
+  static const double thaiEndingPaddingBottom = ${_double(b01Ending['thaiPaddingBottom'])};
+  static const double endingStateGap = ${_double(b01Ending['stateGap'])};
+  static const double endingStateDotSize = ${_double(b01Ending['stateDotSize'])};
+  static const double endingStateHalo = ${_double(b01Ending['stateHalo'])};
+  static const double englishEndingStateSize = ${_double(b01Ending['englishStateSize'])};
+  static const double thaiEndingStateSize = ${_double(b01Ending['thaiStateSize'])};
+  static const double endingTitleTop = ${_double(b01Ending['titleTop'])};
+  static const double englishEndingTitleSize = ${_double(b01Ending['englishTitleSize'])};
+  static const double thaiEndingTitleSize = ${_double(b01Ending['thaiTitleSize'])};
+  static const double englishEndingTitleHeight = ${_double(b01Ending['englishTitleHeight'])};
+  static const double thaiEndingTitleHeight = ${_double(b01Ending['thaiTitleHeight'])};
+  static const double englishEndingTitleTracking = ${_double(b01Ending['englishTitleTracking'])};
+  static const double endingSublineTop = ${_double(b01Ending['sublineTop'])};
+  static const double englishEndingSublineSize = ${_double(b01Ending['englishSublineSize'])};
+  static const double thaiEndingSublineSize = ${_double(b01Ending['thaiSublineSize'])};
+
+  static const double deliveryPaddingHorizontal = ${_double(b01Delivery['paddingHorizontal'])};
+  static const double englishDeliveryPaddingTop = ${_double(b01Delivery['englishPaddingTop'])};
+  static const double englishDeliveryPaddingBottom = ${_double(b01Delivery['englishPaddingBottom'])};
+  static const double thaiDeliveryPaddingTop = ${_double(b01Delivery['thaiPaddingTop'])};
+  static const double thaiDeliveryPaddingBottom = ${_double(b01Delivery['thaiPaddingBottom'])};
+  static const double englishDeliveryLabelSize = ${_double(b01Delivery['englishLabelSize'])};
+  static const double thaiDeliveryLabelSize = ${_double(b01Delivery['thaiLabelSize'])};
+  static const double deliveryLabelBottom = ${_double(b01Delivery['labelBottom'])};
+  static const double englishDestinationSize = ${_double(b01Delivery['englishDestinationSize'])};
+  static const double thaiDestinationSize = ${_double(b01Delivery['thaiDestinationSize'])};
+  static const double deliverySubrowTop = ${_double(b01Delivery['subrowTop'])};
+  static const double deliveryAreaSize = ${_double(b01Delivery['areaSize'])};
+  static const double englishEtaSize = ${_double(b01Delivery['englishEtaSize'])};
+  static const double thaiEtaSize = ${_double(b01Delivery['thaiEtaSize'])};
+  static const double etaLabelSize = ${_double(b01Delivery['etaLabelSize'])};
+  static const double deliveryMetaTop = ${_double(b01Delivery['metaTop'])};
+  static const double deliveryMetaPaddingTop = ${_double(b01Delivery['metaPaddingTop'])};
+  static const double deliveryMetaSize = ${_double(b01Delivery['metaSize'])};
+
+  static const double footerPaddingTop = ${_double(b01Footer['paddingTop'])};
+  static const double footerPaddingHorizontal = ${_double(b01Footer['paddingHorizontal'])};
+  static const double footerPaddingBottom = ${_double(b01Footer['paddingBottom'])};
+  static const double footerUtilityHeight = ${_double(b01Footer['utilityHeight'])};
+  static const double footerUtilityBottom = ${_double(b01Footer['utilityBottom'])};
+  static const double dispatchLabelSize = ${_double(b01Footer['dispatchLabelSize'])};
+  static const double dispatchNameSize = ${_double(b01Footer['dispatchNameSize'])};
+  static const double footerActionSize = ${_double(b01Footer['actionSize'])};
+  static const double footerActionGap = ${_double(b01Footer['actionGap'])};
+  static const double footerActionIconSize = ${_double(b01Footer['actionIconSize'])};
+  static const double footerPrimaryHeight = ${_double(b01Footer['primaryHeight'])};
+  static const double footerPrimaryRadius = ${_double(b01Footer['primaryRadius'])};
+  static const double englishFooterPrimarySize = ${_double(b01Footer['englishPrimarySize'])};
+  static const double thaiFooterPrimarySize = ${_double(b01Footer['thaiPrimarySize'])};
+
+  static const double confirmPaddingHorizontal = ${_double(b01Confirm['paddingHorizontal'])};
+  static const double englishConfirmPaddingTop = ${_double(b01Confirm['englishPaddingTop'])};
+  static const double englishConfirmPaddingBottom = ${_double(b01Confirm['englishPaddingBottom'])};
+  static const double thaiConfirmPaddingTop = ${_double(b01Confirm['thaiPaddingTop'])};
+  static const double thaiConfirmPaddingBottom = ${_double(b01Confirm['thaiPaddingBottom'])};
+  static const double confirmStateGap = ${_double(b01Confirm['stateGap'])};
+  static const double confirmStateMarkSize = ${_double(b01Confirm['stateMarkSize'])};
+  static const double confirmStateIconSize = ${_double(b01Confirm['stateIconSize'])};
+  static const double englishConfirmStateSize = ${_double(b01Confirm['englishStateSize'])};
+  static const double thaiConfirmStateSize = ${_double(b01Confirm['thaiStateSize'])};
+  static const double confirmTitleTop = ${_double(b01Confirm['titleTop'])};
+  static const double englishConfirmTitleSize = ${_double(b01Confirm['englishTitleSize'])};
+  static const double thaiConfirmTitleSize = ${_double(b01Confirm['thaiTitleSize'])};
+  static const double englishConfirmTitleHeight = ${_double(b01Confirm['englishTitleHeight'])};
+  static const double thaiConfirmTitleHeight = ${_double(b01Confirm['thaiTitleHeight'])};
+  static const double englishConfirmTitleTracking = ${_double(b01Confirm['englishTitleTracking'])};
+  static const double confirmShiftTop = ${_double(b01Confirm['shiftTop'])};
+  static const double englishConfirmShiftSize = ${_double(b01Confirm['englishShiftSize'])};
+  static const double thaiConfirmShiftSize = ${_double(b01Confirm['thaiShiftSize'])};
+
+  static const double hoursPaddingTop = ${_double(b01Hours['paddingTop'])};
+  static const double hoursPaddingHorizontal = ${_double(b01Hours['paddingHorizontal'])};
+  static const double hoursPaddingBottom = ${_double(b01Hours['paddingBottom'])};
+  static const double thaiHoursPaddingTop = ${_double(b01Hours['thaiPaddingTop'])};
+  static const double thaiHoursPaddingBottom = ${_double(b01Hours['thaiPaddingBottom'])};
+  static const double hoursLabelSize = ${_double(b01Hours['labelSize'])};
+  static const double hoursLabelBottom = ${_double(b01Hours['labelBottom'])};
+  static const double englishHoursTotalSize = ${_double(b01Hours['englishTotalSize'])};
+  static const double thaiHoursTotalSize = ${_double(b01Hours['thaiTotalSize'])};
+  static const double hoursCaptionSize = ${_double(b01Hours['captionSize'])};
+  static const double breakdownTop = ${_double(b01Hours['breakdownTop'])};
+  static const double breakdownPaddingTop = ${_double(b01Hours['breakdownPaddingTop'])};
+  static const double breakdownGap = ${_double(b01Hours['breakdownGap'])};
+  static const double hoursRowSize = ${_double(b01Hours['rowSize'])};
+  static const double hoursValueSize = ${_double(b01Hours['valueSize'])};
+
+  static const double actionsPaddingTop = ${_double(b01Actions['paddingTop'])};
+  static const double actionsPaddingHorizontal = ${_double(b01Actions['paddingHorizontal'])};
+  static const double actionsPaddingBottom = ${_double(b01Actions['paddingBottom'])};
+  static const double actionsPrimaryHeight = ${_double(b01Actions['primaryHeight'])};
+  static const double actionsPrimaryRadius = ${_double(b01Actions['primaryRadius'])};
+  static const double englishActionsPrimarySize = ${_double(b01Actions['englishPrimarySize'])};
+  static const double thaiActionsPrimarySize = ${_double(b01Actions['thaiPrimarySize'])};
+  static const double actionsSecondaryTop = ${_double(b01Actions['secondaryTop'])};
+  static const double actionsSecondaryHeight = ${_double(b01Actions['secondaryHeight'])};
+  static const double actionsSecondarySize = ${_double(b01Actions['secondarySize'])};
 }
 
 abstract final class DriverD01Metrics {

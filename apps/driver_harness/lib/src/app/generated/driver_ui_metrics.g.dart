@@ -209,6 +209,129 @@ abstract final class DriverB00Metrics {
   static const double thaiCompactBottomNavLabelSize = 10.1;
 }
 
+abstract final class DriverB01DefMetrics {
+  static const String sourceEnglishEnding = 'ux/driver/en/screens/ROUNDS-B01D-SHIFT-ENDING-SOON-v3-10OF10.html';
+  static const String sourceEnglishOvertime = 'ux/driver/en/screens/ROUNDS-B01E-SHIFT-OVERTIME-v3-10OF10.html';
+  static const String sourceEnglishConfirm = 'ux/driver/en/screens/ROUNDS-B01F-END-SHIFT-CONFIRM-v2-10OF10.html';
+  static const String sourceThaiEnding = 'ux/driver/th/ROUNDS-B01D-SHIFT-ENDING-SOON-TH-v1-10OF10.html';
+  static const String sourceThaiOvertime = 'ux/driver/th/ROUNDS-B01E-SHIFT-OVERTIME-TH-v1-10OF10.html';
+  static const String sourceThaiConfirm = 'ux/driver/th/ROUNDS-B01F-END-SHIFT-CONFIRM-TH-v2-10OF10.html';
+
+  static const double topBarHeight = 58.0;
+  static const double topBarPaddingHorizontal = 20.0;
+  static const double brandSize = 20.0;
+  static const double brandTracking = -1.0;
+  static const double brandDotSize = 6.0;
+  static const double notificationSize = 38.0;
+  static const double notificationIconSize = 20.0;
+  static const double bottomNavHeight = 76.0;
+  static const double bottomNavIconSize = 20.0;
+  static const double bottomNavGap = 5.0;
+  static const double englishBottomNavLabelSize = 11.5;
+  static const double thaiBottomNavLabelSize = 10.8;
+
+  static const double endingPaddingHorizontal = 20.0;
+  static const double englishEndingPaddingTop = 31.0;
+  static const double englishEndingPaddingBottom = 29.0;
+  static const double thaiEndingPaddingTop = 27.0;
+  static const double thaiEndingPaddingBottom = 27.0;
+  static const double endingStateGap = 9.0;
+  static const double endingStateDotSize = 9.0;
+  static const double endingStateHalo = 5.0;
+  static const double englishEndingStateSize = 14.0;
+  static const double thaiEndingStateSize = 13.5;
+  static const double endingTitleTop = 18.0;
+  static const double englishEndingTitleSize = 43.0;
+  static const double thaiEndingTitleSize = 39.0;
+  static const double englishEndingTitleHeight = 0.98;
+  static const double thaiEndingTitleHeight = 1.1;
+  static const double englishEndingTitleTracking = -2.58;
+  static const double endingSublineTop = 12.0;
+  static const double englishEndingSublineSize = 17.0;
+  static const double thaiEndingSublineSize = 15.0;
+
+  static const double deliveryPaddingHorizontal = 20.0;
+  static const double englishDeliveryPaddingTop = 26.0;
+  static const double englishDeliveryPaddingBottom = 24.0;
+  static const double thaiDeliveryPaddingTop = 24.0;
+  static const double thaiDeliveryPaddingBottom = 22.0;
+  static const double englishDeliveryLabelSize = 11.5;
+  static const double thaiDeliveryLabelSize = 12.0;
+  static const double deliveryLabelBottom = 10.0;
+  static const double englishDestinationSize = 29.0;
+  static const double thaiDestinationSize = 28.0;
+  static const double deliverySubrowTop = 8.0;
+  static const double deliveryAreaSize = 14.0;
+  static const double englishEtaSize = 27.0;
+  static const double thaiEtaSize = 22.0;
+  static const double etaLabelSize = 11.5;
+  static const double deliveryMetaTop = 23.0;
+  static const double deliveryMetaPaddingTop = 16.0;
+  static const double deliveryMetaSize = 13.0;
+
+  static const double footerPaddingTop = 16.0;
+  static const double footerPaddingHorizontal = 20.0;
+  static const double footerPaddingBottom = 16.0;
+  static const double footerUtilityHeight = 40.0;
+  static const double footerUtilityBottom = 12.0;
+  static const double dispatchLabelSize = 11.5;
+  static const double dispatchNameSize = 14.0;
+  static const double footerActionSize = 40.0;
+  static const double footerActionGap = 7.0;
+  static const double footerActionIconSize = 18.0;
+  static const double footerPrimaryHeight = 62.0;
+  static const double footerPrimaryRadius = 7.0;
+  static const double englishFooterPrimarySize = 17.0;
+  static const double thaiFooterPrimarySize = 16.0;
+
+  static const double confirmPaddingHorizontal = 20.0;
+  static const double englishConfirmPaddingTop = 31.0;
+  static const double englishConfirmPaddingBottom = 28.0;
+  static const double thaiConfirmPaddingTop = 27.0;
+  static const double thaiConfirmPaddingBottom = 27.0;
+  static const double confirmStateGap = 9.0;
+  static const double confirmStateMarkSize = 18.0;
+  static const double confirmStateIconSize = 11.0;
+  static const double englishConfirmStateSize = 14.0;
+  static const double thaiConfirmStateSize = 13.5;
+  static const double confirmTitleTop = 18.0;
+  static const double englishConfirmTitleSize = 40.0;
+  static const double thaiConfirmTitleSize = 39.0;
+  static const double englishConfirmTitleHeight = 0.99;
+  static const double thaiConfirmTitleHeight = 1.08;
+  static const double englishConfirmTitleTracking = -2.32;
+  static const double confirmShiftTop = 12.0;
+  static const double englishConfirmShiftSize = 17.0;
+  static const double thaiConfirmShiftSize = 15.0;
+
+  static const double hoursPaddingTop = 27.0;
+  static const double hoursPaddingHorizontal = 20.0;
+  static const double hoursPaddingBottom = 25.0;
+  static const double thaiHoursPaddingTop = 24.0;
+  static const double thaiHoursPaddingBottom = 23.0;
+  static const double hoursLabelSize = 11.5;
+  static const double hoursLabelBottom = 11.0;
+  static const double englishHoursTotalSize = 43.0;
+  static const double thaiHoursTotalSize = 38.0;
+  static const double hoursCaptionSize = 13.0;
+  static const double breakdownTop = 23.0;
+  static const double breakdownPaddingTop = 16.0;
+  static const double breakdownGap = 13.0;
+  static const double hoursRowSize = 14.0;
+  static const double hoursValueSize = 15.0;
+
+  static const double actionsPaddingTop = 16.0;
+  static const double actionsPaddingHorizontal = 20.0;
+  static const double actionsPaddingBottom = 16.0;
+  static const double actionsPrimaryHeight = 62.0;
+  static const double actionsPrimaryRadius = 7.0;
+  static const double englishActionsPrimarySize = 17.0;
+  static const double thaiActionsPrimarySize = 16.0;
+  static const double actionsSecondaryTop = 9.0;
+  static const double actionsSecondaryHeight = 46.0;
+  static const double actionsSecondarySize = 14.0;
+}
+
 abstract final class DriverD01Metrics {
   static const String source = 'ux/driver/en/screens/ROUNDS-D01-NAVIGATE-TO-PICKUP-v5-10OF10.html';
 

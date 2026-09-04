@@ -148,6 +148,22 @@ class DriverApi {
     );
   }
 
+  Future<DriverCommandOutcome> endShift(DriverSessionModel session) {
+    final attendance = session.shift?.attendance;
+    if (attendance == null || attendance.endedAt != null) {
+      throw const DriverApiException('No open Team shift is available');
+    }
+    return _queueAndSend(
+      commandType: 'driver.end_shift',
+      aggregateId: attendance.id,
+      expectedVersion: attendance.version,
+      idempotencyKey:
+          'driver-shift:end:${attendance.id}:v${attendance.version}',
+      endpoint: '/v1/driver/shifts/end',
+      payload: {'attendanceId': attendance.id},
+    );
+  }
+
   Future<DriverOperationsThreadModel> getOperationsThread({
     required DriverRoundModel round,
     required DriverRoundStopModel stop,

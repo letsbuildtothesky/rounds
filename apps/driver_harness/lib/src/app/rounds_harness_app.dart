@@ -10,6 +10,7 @@ import '../ui/live_delivery_change_screen.dart';
 import '../ui/operations_chat_screen.dart';
 import '../ui/pickup_confirmation_screen.dart';
 import '../ui/start_shift_screen.dart';
+import '../ui/shift_end_screen.dart';
 import '../connectivity/offline_reconnecting_screen.dart';
 import '../driver/driver_session.dart';
 import 'app_strings.dart';
@@ -39,6 +40,7 @@ class RoundsHarnessApp extends StatefulWidget {
 
 class _RoundsHarnessAppState extends State<RoundsHarnessApp> {
   late bool _splashComplete = widget.splashDuration == Duration.zero;
+  String? _dismissedShiftSurfaceKey;
 
   static const _previewScreen = String.fromEnvironment('ROUNDS_PREVIEW_SCREEN');
 
@@ -136,6 +138,36 @@ class _RoundsHarnessAppState extends State<RoundsHarnessApp> {
         shift.attendance == null &&
         (round == null || round.state == 'approved')) {
       return StartShiftScreen(controller: widget.controller, session: session);
+    }
+    if (session != null && shift?.attendance != null) {
+      final attendance = shift!.attendance!;
+      final now = DateTime.now();
+      final open = attendance.endedAt == null;
+      final atOrAfterEnd = !now.isBefore(shift.effective.endAt);
+      final endingSoon =
+          now.isBefore(shift.effective.endAt) &&
+          shift.effective.endAt.difference(now) <= const Duration(minutes: 15);
+      final DriverShiftSurface? surface = open
+          ? round == null && atOrAfterEnd
+                ? DriverShiftSurface.endConfirmation
+                : round != null && atOrAfterEnd
+                ? DriverShiftSurface.overtime
+                : round != null && endingSoon
+                ? DriverShiftSurface.endingSoon
+                : null
+          : null;
+      final surfaceKey = '${attendance.id}:${surface?.name}';
+      if (surface != null && _dismissedShiftSurfaceKey != surfaceKey) {
+        return ShiftEndScreen(
+          controller: widget.controller,
+          session: session,
+          surface: surface,
+          enableNativeNavigation: widget.enableNativeNavigation,
+          onNotYet: surface == DriverShiftSurface.endConfirmation
+              ? () => setState(() => _dismissedShiftSurfaceKey = surfaceKey)
+              : null,
+        );
+      }
     }
     return AssignedRoundScreen(
       controller: widget.controller,

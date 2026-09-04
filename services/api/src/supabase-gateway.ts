@@ -83,6 +83,8 @@ import type {
   DriverLiveDeliveryChange,
   StartDriverShiftCommand,
   StartDriverShiftResult,
+  EndDriverShiftCommand,
+  EndDriverShiftResult,
 } from "@rounds/contracts";
 
 type MembershipRow = {
@@ -221,6 +223,18 @@ function zonedLocalIso(serviceDate: string, localTime: string, timezone: string)
 
 function compactLocalTime(value: string): string {
   return value.slice(0, 5);
+}
+
+function localClockTime(value: string, timezone: string): string {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: timezone,
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(new Date(value));
+  const part = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((entry) => entry.type === type)?.value ?? "00";
+  return `${part("hour")}:${part("minute")}`;
 }
 
 function initials(displayName: string): string {
@@ -1064,6 +1078,23 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     });
     if (error) throw error;
     return data as StartDriverShiftResult;
+  }
+
+  async endDriverShift(
+    command: EndDriverShiftCommand,
+    identity: AuthenticatedIdentity,
+  ): Promise<EndDriverShiftResult> {
+    const actorPersonId = await this.driverActorPersonId(identity);
+    if (!actorPersonId) return {
+      status: "rejected",
+      error: { code: "NOT_AUTHORIZED", message: "Driver identity is not linked" },
+    };
+    const { data, error } = await this.admin.rpc("end_driver_shift_command", {
+      p_command: command,
+      p_actor_person_id: actorPersonId,
+    });
+    if (error) throw error;
+    return data as EndDriverShiftResult;
   }
 
   async reportPickupProblem(
@@ -2028,11 +2059,21 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     type DriverShiftAttendanceRow = {
       id: string;
       service_date: string;
+      timezone: string;
+      schedule_source: "recurring" | "exception";
+      scheduled_start_at: string;
+      scheduled_end_at: string;
       started_at: string;
       ended_at: string | null;
       version: number;
     };
-    const serviceDate = localServiceDate(new Date(), tenant.timezone);
+    const currentServiceDate = localServiceDate(new Date(), tenant.timezone);
+    const openAttendanceResult = await this.admin.from("driver_shift_attendance")
+      .select("id, service_date, timezone, schedule_source, scheduled_start_at, scheduled_end_at, started_at, ended_at, version")
+      .eq("tenant_id", tenant.id).eq("driver_id", driver.id).is("ended_at", null)
+      .order("service_date", { ascending: false }).limit(1).maybeSingle<DriverShiftAttendanceRow>();
+    if (openAttendanceResult.error) throw openAttendanceResult.error;
+    const serviceDate = openAttendanceResult.data?.service_date ?? currentServiceDate;
     const isoDay = new Date(`${serviceDate}T00:00:00.000Z`).getUTCDay() || 7;
     const [scheduleResult, shiftExceptionResult, attendanceResult] = await Promise.all([
       this.admin.from("driver_recurring_schedules")
@@ -2043,14 +2084,17 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
         .select("exception_kind, start_local, end_local")
         .eq("tenant_id", tenant.id).eq("driver_id", driver.id).eq("service_date", serviceDate)
         .is("deleted_at", null).maybeSingle<DriverShiftExceptionRow>(),
-      this.admin.from("driver_shift_attendance")
-        .select("id, service_date, started_at, ended_at, version")
-        .eq("tenant_id", tenant.id).eq("driver_id", driver.id).eq("service_date", serviceDate)
-        .maybeSingle<DriverShiftAttendanceRow>(),
+      openAttendanceResult.data
+        ? Promise.resolve({ data: openAttendanceResult.data, error: null })
+        : this.admin.from("driver_shift_attendance")
+          .select("id, service_date, timezone, schedule_source, scheduled_start_at, scheduled_end_at, started_at, ended_at, version")
+          .eq("tenant_id", tenant.id).eq("driver_id", driver.id).eq("service_date", serviceDate)
+          .maybeSingle<DriverShiftAttendanceRow>(),
     ]);
     if (scheduleResult.error) throw scheduleResult.error;
     if (shiftExceptionResult.error) throw shiftExceptionResult.error;
     if (attendanceResult.error) throw attendanceResult.error;
+    const attendance = attendanceResult.data;
     const shiftException = shiftExceptionResult.data;
     const schedule = scheduleResult.data;
     const exceptionShift = shiftException?.exception_kind === "shift"
@@ -2068,25 +2112,43 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
           endLocal: compactLocalTime(schedule.end_local),
         }
       : undefined;
-    const effectiveShift = exceptionShift ?? recurringShift;
-    const crossesMidnight = !!effectiveShift && effectiveShift.endLocal <= effectiveShift.startLocal;
+    const configuredShift = exceptionShift ?? recurringShift;
+    const effectiveShift = attendance ? {
+      source: attendance.schedule_source,
+      startLocal: localClockTime(attendance.scheduled_start_at, attendance.timezone),
+      endLocal: localClockTime(attendance.scheduled_end_at, attendance.timezone),
+      startAt: attendance.scheduled_start_at,
+      endAt: attendance.scheduled_end_at,
+      timezone: attendance.timezone,
+    } : configuredShift ? {
+      ...configuredShift,
+      startAt: zonedLocalIso(serviceDate, configuredShift.startLocal, tenant.timezone),
+      endAt: zonedLocalIso(
+        configuredShift.endLocal <= configuredShift.startLocal ? addCalendarDay(serviceDate) : serviceDate,
+        configuredShift.endLocal,
+        tenant.timezone,
+      ),
+      timezone: tenant.timezone,
+    } : undefined;
+    const crossesMidnight = !!effectiveShift
+      && localServiceDate(new Date(effectiveShift.endAt), effectiveShift.timezone) !== serviceDate;
     const shiftProjection = effectiveShift ? {
       effective: {
         serviceDate,
-        timezone: tenant.timezone,
+        timezone: effectiveShift.timezone,
         source: effectiveShift.source,
-        startAt: zonedLocalIso(serviceDate, effectiveShift.startLocal, tenant.timezone),
-        endAt: zonedLocalIso(crossesMidnight ? addCalendarDay(serviceDate) : serviceDate, effectiveShift.endLocal, tenant.timezone),
+        startAt: effectiveShift.startAt,
+        endAt: effectiveShift.endAt,
         startLocal: effectiveShift.startLocal,
         endLocal: effectiveShift.endLocal,
         crossesMidnight,
       },
-      ...(attendanceResult.data ? { attendance: {
-        id: attendanceResult.data.id,
-        version: attendanceResult.data.version,
-        serviceDate: attendanceResult.data.service_date,
-        startedAt: attendanceResult.data.started_at,
-        ...(attendanceResult.data.ended_at ? { endedAt: attendanceResult.data.ended_at } : {}),
+      ...(attendance ? { attendance: {
+        id: attendance.id,
+        version: attendance.version,
+        serviceDate: attendance.service_date,
+        startedAt: attendance.started_at,
+        ...(attendance.ended_at ? { endedAt: attendance.ended_at } : {}),
       } } : {}),
     } : undefined;
 

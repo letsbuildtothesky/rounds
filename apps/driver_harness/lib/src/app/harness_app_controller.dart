@@ -165,6 +165,12 @@ class HarnessAppController extends ChangeNotifier {
     return _runDriverCommand(() => _driverApi.startShift(session));
   }
 
+  Future<DriverCommandOutcome?> endShift() {
+    final session = _driverSession;
+    if (session == null) return Future.value(null);
+    return _runDriverCommand(() => _driverApi.endShift(session));
+  }
+
   void _startSessionRefresh() {
     _sessionRefreshTimer?.cancel();
     _sessionRefreshTimer = Timer.periodic(

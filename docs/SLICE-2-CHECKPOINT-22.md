@@ -23,15 +23,15 @@
 - The B00 English reference-width golden, exact fixed-region geometry, Start Shift action and Thai compact layout are covered.
 - Generated Driver UI metrics report no drift.
 - The Operations production build and Android debug APK build pass.
+- A configured APK was installed over the existing app data on the Samsung SM-S928B. The real B00 surface loaded from the authenticated schedule, its Start Shift tap committed through the local API to linked Supabase, and the refreshed session transitioned to the real assigned-Round home without an app or command error.
 
 ## Honest remaining boundary
 
-- B00 is `PARTIAL`, not device-accepted. The final Samsung button-to-remote-attendance transition has not yet been exercised.
+- The central B00 Start Shift transition is physically accepted on Android. The whole board remains `PARTIAL` because shift-level contact without a Round, Notifications and Hours are not authoritative yet.
 - Local pgTAP execution is unavailable on this Mac because Docker/Podman is absent. The migration compiled remotely and the SQL behavior test is committed for the next Docker-capable run.
 - The B00 board links to shift-level dispatch contact even when no Round exists, but the current communication authority is Round/Stop-scoped. The app does not invent a recipient, phone number or thread.
 - M01 Notifications, K00 Hours and B01D–B01F ending/overtime are separately specified capabilities and remain unimplemented.
 
 ## Next safe work
 
-- Install a configured debug build and accept the B00 start transition on the connected Samsung, then confirm the returned attendance removes B00 and exposes the canonical waiting/assigned home state.
 - Continue the explicit shift lifecycle with B01D–B01F only after extracting their canonical English/Thai layout contracts and confirming overtime/end-shift policy.

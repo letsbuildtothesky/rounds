@@ -335,6 +335,7 @@ class DriverRoundModel {
     required this.stops,
     this.plannedDistanceMeters,
     this.plannedDurationSeconds,
+    this.plannedStops = const [],
   });
 
   final String id;
@@ -347,6 +348,14 @@ class DriverRoundModel {
   final List<DriverRoundStopModel> stops;
   final int? plannedDistanceMeters;
   final int? plannedDurationSeconds;
+  final List<DriverPlannedStopModel> plannedStops;
+
+  DriverPlannedStopModel? plannedStop(String stopId) {
+    for (final stop in plannedStops) {
+      if (stop.stopId == stopId) return stop;
+    }
+    return null;
+  }
 
   factory DriverRoundModel.fromJson(Map<String, dynamic> json) {
     final tenant = json['tenant'] as Map<String, dynamic>;
@@ -369,6 +378,12 @@ class DriverRoundModel {
           .toList(growable: false),
       plannedDistanceMeters: (routePlan?['distanceMeters'] as num?)?.round(),
       plannedDurationSeconds: (routePlan?['durationSeconds'] as num?)?.round(),
+      plannedStops: (routePlan?['stops'] as List<dynamic>? ?? const [])
+          .map(
+            (item) =>
+                DriverPlannedStopModel.fromJson(item as Map<String, dynamic>),
+          )
+          .toList(growable: false),
     );
   }
 
@@ -381,13 +396,46 @@ class DriverRoundModel {
     'tenant': {'displayName': tenantName},
     'pickup': pickup.toJson(),
     'stops': stops.map((stop) => stop.toJson()).toList(growable: false),
-    if (plannedDistanceMeters != null || plannedDurationSeconds != null)
+    if (plannedDistanceMeters != null ||
+        plannedDurationSeconds != null ||
+        plannedStops.isNotEmpty)
       'routePlan': {
         if (plannedDistanceMeters != null)
           'distanceMeters': plannedDistanceMeters,
         if (plannedDurationSeconds != null)
           'durationSeconds': plannedDurationSeconds,
+        if (plannedStops.isNotEmpty)
+          'stops': plannedStops.map((stop) => stop.toJson()).toList(),
       },
+  };
+}
+
+class DriverPlannedStopModel {
+  const DriverPlannedStopModel({
+    required this.stopId,
+    required this.eta,
+    required this.departureAt,
+    required this.legDurationSeconds,
+  });
+
+  final String stopId;
+  final DateTime eta;
+  final DateTime departureAt;
+  final int legDurationSeconds;
+
+  factory DriverPlannedStopModel.fromJson(Map<String, dynamic> json) =>
+      DriverPlannedStopModel(
+        stopId: json['stopId'] as String,
+        eta: DateTime.parse(json['eta'] as String),
+        departureAt: DateTime.parse(json['departureAt'] as String),
+        legDurationSeconds: (json['legDurationSeconds'] as num).round(),
+      );
+
+  Map<String, Object?> toJson() => {
+    'stopId': stopId,
+    'eta': eta.toUtc().toIso8601String(),
+    'departureAt': departureAt.toUtc().toIso8601String(),
+    'legDurationSeconds': legDurationSeconds,
   };
 }
 

@@ -790,3 +790,15 @@ export type DriverShiftStartedPayload = DriverShiftAttendance & {
 };
 export type DriverShiftStartedEvent = DomainEventEnvelope<"driver.shift_started", DriverShiftStartedPayload>;
 export type StartDriverShiftResult = CommandResult<DriverShiftStartedPayload, DriverShiftStartedEvent>;
+
+export type EndDriverShiftPayload = { attendanceId: string };
+export type EndDriverShiftCommand = CommandEnvelope<"driver.end_shift", EndDriverShiftPayload>;
+export type DriverShiftEndedPayload = DriverShiftAttendance & {
+  driverId: string;
+  scheduledStartAt: string;
+  scheduledEndAt: string;
+  workedMinutes: number;
+  pastScheduledEndMinutes: number;
+};
+export type DriverShiftEndedEvent = DomainEventEnvelope<"driver.shift_ended", DriverShiftEndedPayload>;
+export type EndDriverShiftResult = CommandResult<DriverShiftEndedPayload, DriverShiftEndedEvent>;

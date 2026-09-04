@@ -1,7 +1,7 @@
 # Rounds · Implementation Coverage and Gap Control
 
 **Version:** 1.0  
-**Date:** 2026-09-03  
+**Date:** 2026-09-04
 **Status:** Active implementation-control specification  
 **Applies to:** English own-fleet Pilot / Slice 1 closure and Slice 2 execution
 
@@ -68,10 +68,10 @@ These are evidence-based planning estimates, not release claims. Recalculate the
 
 | Surface | Weighted functional coverage | Production readiness | Full roadmap context |
 |---|---:|---:|---:|
-| Driver · English Pilot business path only | 67.5% (`34.45 / 51`) | gate incomplete | not comparable to the complete board set |
-| Driver · all currently authorized own-fleet depth | 53.6% (`41.30 / 77`) | gate incomplete | approximately 30% of the complete Driver V1 board set; roadmap estimate only |
-| Operations · currently authorized own-fleet depth | 71.2% (`39.85 / 56`) | gate incomplete | approximately 35% of the complete Operations vision; roadmap estimate only |
-| Combined authorized English own-fleet work | 61.0% (`81.15 / 133`) | **not release-ready** | approximately 20–25% of Slices 1–7; roadmap estimate only |
+| Driver · English Pilot business path only | 69.9% (`35.65 / 51`) | gate incomplete | not comparable to the complete board set |
+| Driver · all currently authorized own-fleet depth | 60.3% (`46.40 / 77`) | gate incomplete | approximately 30% of the complete Driver V1 board set; roadmap estimate only |
+| Operations · currently authorized own-fleet depth | 72.8% (`40.75 / 56`) | gate incomplete | approximately 35% of the complete Operations vision; roadmap estimate only |
+| Combined authorized English own-fleet work | 65.5% (`87.15 / 133`) | **not release-ready** | approximately 20–25% of Slices 1–7; roadmap estimate only |
 
 The Driver percentage is higher for the narrow delivery loop than for the complete 47-board product because Network onboarding, offers, earnings and marketplace behavior are deliberately outside the current own-fleet slice.
 
@@ -88,10 +88,10 @@ Canonical inventory: `specs/product/ROUNDS-DRIVER-CANONICAL-MANIFEST-v6.md` and 
 | A02–A05 Entry / Team invite | Pilot P0 | `PARTIAL` | Protected Team email login and pilot one-tap login exist. | Replace pilot shortcut for release; implement canonical phone/OTP/invite path or record an approved product amendment. |
 | A06 Team About You | Later onboarding depth | `DEFERRED` | No production onboarding form. | Promote with self-service Team onboarding. |
 | A06B–A12 Independent identity/payment | Network | `DEFERRED` | Intentionally absent. | Build only with Network promotion and trust/payment policies. |
-| B00 Start Shift | Slice 2 P1 | `PARTIAL` | The authenticated Driver session now projects today's effective recurring/date-exception shift and any real attendance. The canonical measured English/Thai B00 surface commits one explicit server-timed, versioned and idempotent shift start; the database snapshots schedule source/window and emits audit/domain evidence without changing assignment or custody. Automated contract/API/widget/golden coverage passes and migration `202609030017` compiled and applied remotely. Unsupported notification/Hours actions remain inactive rather than fabricated. | Exercise the real button-to-database transition on the Samsung, run the pgTAP behavior suite in a Docker-capable environment, and define a real shift-level Operations contact identity/thread when no Round-scoped contact exists. Ending/overtime remain B01D–B01F work. |
+| B00 Start Shift | Slice 2 P1 | `PARTIAL` | The authenticated Driver session now projects today's effective recurring/date-exception shift and any real attendance. The canonical measured English/Thai B00 surface commits one explicit server-timed, versioned and idempotent shift start; the database snapshots schedule source/window and emits audit/domain evidence without changing assignment or custody. Automated contract/API/widget/golden coverage passes, migration `202609030017` is applied, and the real configured Samsung transition from B00 to the assigned-Round home passed. Unsupported notification/Hours actions remain inactive rather than fabricated. | Run the pgTAP behavior suite in a Docker-capable environment and define a real shift-level Operations contact identity/thread when no Round-scoped contact exists. Resolve GAP-013 late-start presentation. Ending/overtime remain B01D–B01F work. |
 | B01 / B01B Team Home + assigned Round | Pilot P0 | `PARTIAL` | Waiting state, assigned Round projection and active overview exist. | Complete canonical home/assignment states, refresh behavior and visual acceptance. |
 | B01C Switch to Network | Network | `DEFERRED` | Intentionally absent. | Slice 5+ only. |
-| B01D–B01F Shift ending/overtime/end | Slice 2 P1 | `SPECIFIED` | Operations shift boundaries exist. | Add warnings, overtime policy and versioned end-shift command. |
+| B01D–B01F Shift ending/overtime/end | Slice 2 P1 | `IMPLEMENTED` | The authenticated Driver app now derives the ending-soon, overtime and ready-to-end states from the immutable attendance snapshot, current assigned-Round truth and real stored route-plan timing. English and Thai surfaces use measurements extracted from all six supplied canonical boards. One typed offline-capable end command is authenticated, server-timed, versioned and idempotent; the database rejects an early end or any end while assigned work/custody remains, then records audit and domain-event evidence. Automated contract/API/widget/golden coverage passes and migration `202609040001` is applied. Overtime is factual elapsed time only, with no invented pay claim. | Run the pgTAP suite in a Docker-capable environment and complete physical near-end/overtime/end acceptance. B01F's post-end Network switch target remains deferred; Team Drivers return to the existing own-fleet home without fabricated Network availability. |
 | B02 / B03 Verification + Network home | Network | `DEFERRED` | Intentionally absent. | Slice 5+ only. |
 | C01 / C03 Delivery offers | Network | `DEFERRED` | Team work is assigned, not offered. | Slice 5+ only. |
 | D01 Navigate to pickup | Pilot P0 | `VERIFIED` | An approved assigned Round now routes through the canonical D01 state using the authoritative pickup coordinate, live Google maneuver/ETA/distance events, measured D01 geometry, the canonical bottom action drawer and the D01→D03/D04 arrival transition. Automated/golden checks and a live Samsung provider check pass. | Physically approach the pickup to accept the 100 m/native-arrival reveal, then finish degraded-network/background road gates. |
@@ -170,6 +170,7 @@ Not every unfinished feature is a missing specification. This table contains onl
 | GAP-010 | Notification channels, templates, retry rules and recipient consent are not locked. | Product/legal | No fake notification success. Store only canonical events until notifications are promoted. | Product decision before M01/BS-11 notification work. |
 | GAP-011 | Supported Android/iOS versions and final release/device matrix are not locked. | Product/engineering | Current Samsung/API 36 is evidence, not the supported-device declaration. | Engineering/product before store submission. |
 | GAP-012 | Field evidence is incomplete for motorcycle route quality, OEM background behavior, battery and degraded networks. | External evidence | Bench acceptance cannot be promoted to field acceptance. | Phase 0 field run before Pilot release. |
+| GAP-013 | B00 defines only a pre-shift countdown; it does not define what an unstarted Driver sees after the scheduled start time. | Driver UX/operations | Keep the Start Shift action available and clamp the supplied countdown at zero. Do not claim the Driver started, was late or was excused from client time alone. | Product/UX decision before B00 can leave `PARTIAL`. |
 
 ## 8. Gap-handling protocol
 

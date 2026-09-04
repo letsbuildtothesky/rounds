@@ -5,6 +5,8 @@ import type {
   OperationsSession,
   StartDriverShiftCommand,
   StartDriverShiftResult,
+  EndDriverShiftCommand,
+  EndDriverShiftResult,
 } from "@rounds/contracts";
 import { startDriverShiftHandler } from "../src/start-driver-shift-handler.js";
 import type {
@@ -63,6 +65,9 @@ class FakeShiftGateway implements IdentityGateway, DriverShiftGateway {
       },
       events: [],
     };
+  }
+  async endDriverShift(_command: EndDriverShiftCommand): Promise<EndDriverShiftResult> {
+    throw new Error("not used");
   }
 }
 
