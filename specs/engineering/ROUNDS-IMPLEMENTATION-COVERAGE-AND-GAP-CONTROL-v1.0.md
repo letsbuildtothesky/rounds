@@ -7,6 +7,14 @@
 
 ## Changelog
 
+- **2026-09-04 · Checkpoint 38:** Re-audits the running Operations workspace
+  against the final v45 board and corrects the shared shell, Live/Plan rail,
+  planning controls, Drivers command surface, terminal History ledger and
+  manual-delivery drawer to that canonical visual hierarchy. Connected
+  own-team data and commands are retained; unsupported automatic-dispatch,
+  on-time, Weather, Network and history-projection claims are not fabricated.
+  All 169 repository tests, the Operations typecheck and its production build
+  pass.
 - **2026-09-04 · Checkpoint 37:** Aligns the Dispatch shell and embedded
   Communications window to the canonical final v45 override measurements,
   including the 438 × 650 px desktop conversation surface, flat Live/Plan

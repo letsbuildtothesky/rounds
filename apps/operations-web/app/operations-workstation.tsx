@@ -18,6 +18,7 @@ import { OperationsMap, type OperationsMapCamera, type OperationsMapHandle, type
 import { OperationsMenuIcon, OperationsSectionSheet, type OperationsSectionKey } from "./operations-section-sheet";
 import { DeliveriesWorkspace } from "./deliveries-workspace";
 import { DriversWorkspace } from "./drivers-workspace";
+import { HistoryPanel } from "./history-panel";
 import { RoundDetailWorkspace } from "./round-detail-workspace";
 import { CommunicationsPanel } from "./communications-panel";
 
@@ -36,6 +37,7 @@ type Props = {
   deliveryIntakeOpen?: boolean;
   deliveriesOpen?: boolean;
   driversOpen?: boolean;
+  historyOpen?: boolean;
   deliveryRefreshKey?: number;
   communicationRequest?: { threadId: string; nonce: number };
   onCloseDeliveryIntake?: () => void;
@@ -43,6 +45,7 @@ type Props = {
   onDrivers?: () => void;
   onCloseDeliveries?: () => void;
   onCloseDrivers?: () => void;
+  onCloseHistory?: () => void;
   onAddDelivery: () => void;
   onHistory: () => void;
   onCommunications: (threadId?: string) => void;
@@ -154,7 +157,7 @@ function nextRoundReference(deliveries: UnplannedDeliverySummary[]): string {
   return `ROUND-${serviceDate.replaceAll("-", "")}-${time}`;
 }
 
-export function OperationsWorkstation({ accessToken, tenant, userName, demoMode = false, deliveryIntake, deliveryIntakeOpen = false, deliveriesOpen = false, driversOpen = false, deliveryRefreshKey = 0, communicationRequest, onCloseDeliveryIntake, onDeliveries, onDrivers, onCloseDeliveries, onCloseDrivers, onAddDelivery, onHistory, onCommunications, onSignOut }: Props) {
+export function OperationsWorkstation({ accessToken, tenant, userName, demoMode = false, deliveryIntake, deliveryIntakeOpen = false, deliveriesOpen = false, driversOpen = false, historyOpen = false, deliveryRefreshKey = 0, communicationRequest, onCloseDeliveryIntake, onDeliveries, onDrivers, onCloseDeliveries, onCloseDrivers, onCloseHistory, onAddDelivery, onHistory, onCommunications, onSignOut }: Props) {
   const [projection, setProjection] = useState<OperationsActionProjection | null>(null);
   const [planning, setPlanning] = useState<OperationsPlanningProjection | null>(null);
   const [driverCapacity, setDriverCapacity] = useState<OperationsDriversProjection | null>(null);
@@ -452,15 +455,14 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
   return <main className="v45-app">
     <header className="v45-topbar">
       <div className="v45-wordmark">Rounds<i /></div>
-      <div className="v45-workspace"><b>{tenant.displayName}</b><span>Bangkok · Automatic dispatch</span></div>
+      <div className="v45-workspace"><b>{tenant.displayName}</b><span>Bangkok · Own-team dispatch</span></div>
       <nav className="v45-nav" aria-label="Operations sections">
-        <button className={!deliveriesOpen && !driversOpen ? "on" : ""} type="button" onClick={() => { onCloseDeliveries?.(); onCloseDrivers?.(); }}>Dispatch</button>
-        <button className={deliveriesOpen ? "on" : ""} type="button" onClick={onDeliveries}>Deliveries</button>
+        <button className={!deliveriesOpen && !driversOpen && !historyOpen ? "on" : ""} type="button" onClick={() => { onCloseDeliveries?.(); onCloseDrivers?.(); onCloseHistory?.(); }}>Dispatch</button>
         <button className={driversOpen ? "on" : ""} type="button" onClick={onDrivers}>Drivers</button>
-        <button type="button" onClick={onHistory}>History</button>
+        <button className={historyOpen ? "on" : ""} type="button" onClick={onHistory}>History</button>
         <button type="button" disabled title="Settings workspace is not connected yet">Settings</button>
       </nav>
-      <button className="v45-section-trigger" type="button" aria-haspopup="dialog" aria-expanded={sectionMenuOpen} onClick={() => setSectionMenuOpen(true)}><span>{driversOpen ? "Drivers" : deliveriesOpen || deliveryIntakeOpen ? "Deliveries" : "Dispatch"}</span><OperationsMenuIcon /></button>
+      <button className="v45-section-trigger" type="button" aria-haspopup="dialog" aria-expanded={sectionMenuOpen} onClick={() => setSectionMenuOpen(true)}><span>{historyOpen ? "History" : driversOpen ? "Drivers" : deliveriesOpen || deliveryIntakeOpen ? "Deliveries" : "Dispatch"}</span><OperationsMenuIcon /></button>
       <div className="v45-spacer" />
       <button className="v45-network" type="button" disabled title="Network dispatch is outside the connected Own-Team slice"><i /><span>Own Team</span><ChevronIcon /></button>
       <button className="v45-util" type="button" title="Driver communications" onClick={() => openCommunications()}><MessageIcon /></button>
@@ -472,12 +474,12 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
 
     <OperationsSectionSheet
       open={sectionMenuOpen}
-      current={driversOpen ? "drivers" : deliveriesOpen || deliveryIntakeOpen ? "deliveries" : "action"}
+      current={historyOpen ? "history" : driversOpen ? "drivers" : deliveriesOpen || deliveryIntakeOpen ? "deliveries" : "action"}
       onClose={() => setSectionMenuOpen(false)}
       onSelect={(section: OperationsSectionKey) => {
-        if (section === "action") { onCloseDeliveryIntake?.(); onCloseDeliveries?.(); onCloseDrivers?.(); }
-        else if (section === "deliveries") { onCloseDeliveryIntake?.(); onCloseDrivers?.(); onDeliveries?.(); }
-        else if (section === "drivers") { onCloseDeliveryIntake?.(); onCloseDeliveries?.(); onDrivers?.(); }
+        if (section === "action") { onCloseDeliveryIntake?.(); onCloseDeliveries?.(); onCloseDrivers?.(); onCloseHistory?.(); }
+        else if (section === "deliveries") { onCloseDeliveryIntake?.(); onCloseDrivers?.(); onCloseHistory?.(); onDeliveries?.(); }
+        else if (section === "drivers") { onCloseDeliveryIntake?.(); onCloseDeliveries?.(); onCloseHistory?.(); onDrivers?.(); }
         else if (section === "history") onHistory();
       }}
       onSignOut={onSignOut}
@@ -486,9 +488,9 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
     <div className="v45-board">
       <aside className="v45-rail">
         <div className="v45-rail-head">
-          <div className="v45-rail-title"><div><h1>Dispatch</h1><p>What needs attention now.</p></div><button type="button" className="v45-add" onClick={onAddDelivery}>+ Deliveries</button></div>
-          <div className="v45-mode"><button className={dispatchMode === "live" ? "on" : ""} type="button" onClick={() => { setDispatchMode("live"); setSelection(null); }}>Live</button><button className={dispatchMode === "plan" ? "on" : ""} type="button" onClick={() => { setDispatchMode("plan"); setSelection(null); }}>Plan <span>{planning?.unplannedDeliveries.length ?? buckets.ready.length}</span></button></div>
-          {dispatchMode === "plan" ? <div className="v45-plan-controls"><label>Planning date<div className="v45-plan-date"><button type="button" aria-label="Previous date" onClick={() => { setPlanningDate((date) => shiftCalendarDate(date, -1)); setSelectedStops([]); setRequestedDepartureAt(""); }}>‹</button><input type="date" value={planningDate} onChange={(event) => { setPlanningDate(event.target.value); setSelectedStops([]); setRequestedDepartureAt(""); setRoundError(""); setRoundSuccess(null); }} /><button type="button" aria-label="Next date" onClick={() => { setPlanningDate((date) => shiftCalendarDate(date, 1)); setSelectedStops([]); setRequestedDepartureAt(""); }}>›</button></div></label><p><span>Unplanned deliveries waiting</span><b>{planning?.unplannedDeliveries.filter((delivery) => delivery.serviceDate === planningDate).length ?? "—"}</b></p><button type="button" onClick={() => { void loadPlanning(); void loadDriverCapacity(); }}>Refresh planning truth</button><small>Select Stops in visit order. Nothing is assigned until explicit approval.</small></div> : <div className="v45-scope"><label>Delivery view<select defaultValue="all"><option value="all">All deliveries</option><option value="today">Today</option></select></label><p><b>{buckets.action.length} action</b><span>·</span><b>{activeRounds} live</b><span>·</span><span>{buckets.done.length} completed today</span></p></div>}
+          <div className="v45-rail-title"><div><h1>Dispatch</h1><p>{dispatchMode === "plan" ? "Build today’s Rounds." : "What needs attention now."}</p></div><button type="button" className="v45-add" onClick={onAddDelivery}>+ Deliveries</button></div>
+          <div className={`v45-mode ${dispatchMode === "plan" ? "plan" : ""}`}><button className={dispatchMode === "live" ? "on" : ""} type="button" onClick={() => { setDispatchMode("live"); setSelection(null); }}>Live</button><button className={dispatchMode === "plan" ? "on" : ""} type="button" onClick={() => { setDispatchMode("plan"); setSelection(null); }}>Plan <span>{planning?.unplannedDeliveries.length ?? buckets.ready.length}</span></button></div>
+          {dispatchMode === "plan" ? <div className="v45-plan-controls"><div className="v45-plan-calendar"><div className="v45-plan-date"><button type="button" aria-label="Previous date" onClick={() => { setPlanningDate((date) => shiftCalendarDate(date, -1)); setSelectedStops([]); setRequestedDepartureAt(""); }}>‹</button><input aria-label="Planning date" type="date" value={planningDate} onChange={(event) => { setPlanningDate(event.target.value); setSelectedStops([]); setRequestedDepartureAt(""); setRoundError(""); setRoundSuccess(null); }} /><button type="button" aria-label="Next date" onClick={() => { setPlanningDate((date) => shiftCalendarDate(date, 1)); setSelectedStops([]); setRequestedDepartureAt(""); }}>›</button></div><button type="button" className="v45-plan-today" onClick={() => { setPlanningDate(new Intl.DateTimeFormat("en-CA", { timeZone: tenant.timezone }).format(new Date())); setSelectedStops([]); setRequestedDepartureAt(""); }}>Today</button></div><p><span>Unplanned deliveries waiting</span><b>{planning?.unplannedDeliveries.filter((delivery) => delivery.serviceDate === planningDate).length ?? "—"}</b></p><button type="button" onClick={() => { void loadPlanning(); void loadDriverCapacity(); }}>Refresh planning truth</button><small>Select Stops in visit order. Nothing is assigned until explicit approval.</small></div> : <div className="v45-scope"><label>Delivery view<select defaultValue="all"><option value="all">All deliveries</option><option value="today">Today</option></select></label><p><b>{buckets.action.length} action</b><span>·</span><b>{activeRounds} live</b><span>·</span><span>{buckets.done.length} completed today</span></p></div>}
           {dispatchMode === "live" && <div className="v45-tabs" role="tablist">
             {(["action", "ready", "live", "done"] as QueueTab[]).map((item) => <button key={item} type="button" role="tab" aria-selected={tab === item} className={tab === item ? "on" : ""} onClick={() => { setTab(item); setSelection(null); }}><b>{buckets[item].length}</b>{item[0]!.toUpperCase() + item.slice(1)}</button>)}
           </div>}
@@ -501,7 +503,7 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
       </aside>
 
       <section className="v45-map-wrap">
-        <div className="v45-map-header"><strong>Bangkok · {dispatchMode === "live" ? "Live" : "Plan"}</strong><span>{dispatchMode === "plan" ? `${planning?.unplannedDeliveries.filter((delivery) => delivery.serviceDate === planningDate).length ?? 0} unplanned` : tab === "action" ? "All deliveries" : `${visible.length} ${tab}`}</span><button type="button" disabled title="Round overview is not connected yet">Rounds</button><button type="button" disabled title="Automatic planning is not connected yet"><i />Manual</button><div className="v45-spacer" /><em><i />{stale ? "Connection delayed" : dispatchMode === "plan" ? "Draft only" : "On time"}</em><span>{dispatchMode === "plan" ? `${selectedStops.length} selected · not approved` : <>Live rounds <b>{activeRounds}</b></>}</span></div>
+        <div className="v45-map-header"><strong>Bangkok · {dispatchMode === "live" ? "Live" : "Plan"}</strong><span className="v45-map-context">{dispatchMode === "plan" ? `${planning?.unplannedDeliveries.filter((delivery) => delivery.serviceDate === planningDate).length ?? 0} unplanned · ${selectedStops.length} selected` : `${buckets.action.length} Action · ${buckets.live.length} Live · ${activeRounds} active Rounds · ${buckets.ready.length} planned`}</span><button type="button" disabled title="Round overview is not connected yet">Rounds</button><button type="button" disabled title="Automatic planning is not connected yet"><i />Manual</button><div className="v45-spacer" /><em><i />{stale ? "Connection delayed" : dispatchMode === "plan" ? "Draft only" : "Connected"}</em><span>{dispatchMode === "plan" ? `${selectedStops.length} selected · not approved` : <>Live rounds <b>{activeRounds}</b></>}</span></div>
         <div className="v45-map-body" onClick={() => setMapMenuOpen(false)}>
           <OperationsMap
             ref={operationsMapRef}
@@ -605,9 +607,12 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
         accessToken={accessToken}
         tenant={tenant}
         onBackToDispatch={() => { onCloseDrivers?.(); }}
+        onHistory={onHistory}
         onOpenRound={(roundId) => { onCloseDrivers?.(); setRoundDetailId(roundId); }}
         onCommunications={() => openCommunications()}
       />}
+
+      {historyOpen && accessToken && <HistoryPanel accessToken={accessToken} tenant={tenant} />}
 
       {deliveryIntakeOpen && <>
         <button className="v45-intake-scrim" type="button" aria-label="Close delivery intake" onClick={onCloseDeliveryIntake} />

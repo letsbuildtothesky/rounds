@@ -23,6 +23,7 @@ type Props = {
   accessToken: string;
   tenant: OperationsTenant;
   onBackToDispatch: () => void;
+  onHistory: () => void;
   onOpenRound: (roundId: string) => void;
   onCommunications: () => void;
 };
@@ -47,7 +48,7 @@ function scheduleLabel(driver: OperationsDriverCapacityItem): string {
   return `${days} · ${driver.schedule.startLocal.slice(0, 5)}–${driver.schedule.endLocal.slice(0, 5)}`;
 }
 
-export function DriversWorkspace({ accessToken, tenant, onBackToDispatch, onOpenRound, onCommunications }: Props) {
+export function DriversWorkspace({ accessToken, tenant, onBackToDispatch, onHistory, onOpenRound, onCommunications }: Props) {
   const [serviceDate, setServiceDate] = useState(() => localDate(tenant.timezone));
   const [projection, setProjection] = useState<OperationsDriversProjection | null>(null);
   const [tab, setTab] = useState<Tab>("team");
@@ -86,41 +87,53 @@ export function DriversWorkspace({ accessToken, tenant, onBackToDispatch, onOpen
   }, [projection, query]);
 
   const observedLabel = projection ? new Intl.DateTimeFormat("en-GB", { timeZone: tenant.timezone, hour: "2-digit", minute: "2-digit" }).format(new Date(projection.observedAt)) : "—";
+  const nextCapacity = useMemo(() => {
+    if ((projection?.summary.availableNow ?? 0) > 0) return "Now";
+    const next = (projection?.drivers ?? [])
+      .flatMap((driver) => driver.availability.nextAvailableAt ? [driver.availability.nextAvailableAt] : [])
+      .sort()[0];
+    return next ? timeLabel(next, tenant.timezone) : "—";
+  }, [projection, tenant.timezone]);
+  const motorbikes = projection?.summary.vehicleGroups.motorbike ?? 0;
+  const cars = projection?.summary.vehicleGroups.car ?? 0;
 
   return <section className="v45-drivers" aria-label="Drivers workspace">
     <header className="v45-drivers-head">
-      <div><button className="v45-drivers-back" type="button" onClick={onBackToDispatch}><BackIcon /> Dispatch</button><p>OWN-FLEET CAPACITY</p><h1>Drivers</h1><span>Shifts, vehicles and current work</span></div>
-      <div><small>Observed {observedLabel}</small><button type="button" onClick={() => void load()}>Refresh</button></div>
+      <div><button className="v45-drivers-back" type="button" onClick={onBackToDispatch}><BackIcon /> Dispatch</button><h1>Drivers</h1><p>{tab === "team" ? "See who is working, what they are carrying, and when capacity becomes available." : tab === "network" ? "See live Network availability without confusing availability with performance." : "Shape own-fleet capacity with recurring schedules and date-specific exceptions."}</p></div>
+      <div><small>Observed {observedLabel}</small><button type="button" onClick={() => void load()}>Refresh</button>{tab !== "schedule" && <button type="button" onClick={onHistory}>Driver history</button>}</div>
     </header>
 
     <nav className="v45-drivers-tabs" aria-label="Drivers sections">
-      <button className={tab === "team" ? "on" : ""} type="button" onClick={() => setTab("team")}>Own team <b>{projection?.summary.ownDrivers ?? 0}</b></button>
-      <button className={tab === "network" ? "on" : ""} type="button" onClick={() => setTab("network")}>Network <small>Later slice</small></button>
-      <button className={tab === "schedule" ? "on" : ""} type="button" onClick={() => setTab("schedule")}>Schedule <b>{projection?.summary.scheduled ?? 0}</b></button>
+      <button className={tab === "team" ? "on" : ""} type="button" onClick={() => setTab("team")}>Own team</button>
+      <button className={tab === "network" ? "on" : ""} type="button" onClick={() => setTab("network")}>Network</button>
+      <button className={tab === "schedule" ? "on" : ""} type="button" onClick={() => setTab("schedule")}>Schedule</button>
     </nav>
 
-    {tab === "network" ? <div className="v45-drivers-deferred"><span>NETWORK CAPACITY</span><h2>Network drivers are not connected yet.</h2><p>This checkpoint is deliberately limited to your own team. No partner availability or price is being simulated.</p><button type="button" onClick={() => setTab("team")}>Return to Own team</button></div> : <>
-      <section className="v45-driver-kpis" aria-label="Own team capacity summary">
-        <div><small>OWN DRIVERS</small><b>{projection?.summary.ownDrivers ?? "—"}</b><span>Active team relationships</span></div>
-        <div><small>AVAILABLE NOW</small><b>{projection?.summary.availableNow ?? "—"}</b><span>Schedule projection</span></div>
-        <div><small>ACTIVE ROUNDS</small><b>{projection?.summary.activeRounds ?? "—"}</b><span>Loading or on the road</span></div>
-        <div><small>SCHEDULE REQUIRED</small><b>{projection?.summary.scheduleRequired ?? "—"}</b><span>Needs dispatcher setup</span></div>
+    {tab === "network" ? <div className="v45-drivers-deferred"><span>ROUNDS NETWORK · LATER SLICE</span><h2>Network drivers are not connected yet.</h2><p>This checkpoint is deliberately limited to your own team. No partner availability, exact location, performance or price is being simulated.</p><button type="button" onClick={() => setTab("team")}>Return to Own team</button></div> : <div className="v45-drivers-body">
+      <section className="v45-drivers-hero">
+        <div className="v45-drivers-section-head"><div><small>{tab === "schedule" ? "OWN FLEET · CAPACITY" : "OWN FLEET · LIVE"}</small><h2>{tab === "schedule" ? "Schedule shapes what Dispatch can promise." : "Your team right now."}</h2><p>{tab === "schedule" ? "Recurring work patterns set the baseline. Date exceptions override a single day without rewriting the normal week." : "Availability is calculated from shift state and current Rounds. Reliability evidence stays in History."}</p></div><div className="v45-drivers-command-live"><b><i />{tab === "schedule" ? `${projection?.summary.scheduled ?? 0} scheduled` : `${projection?.summary.ownDrivers ?? 0} active`}</b><span>{tab === "schedule" ? serviceDate : <>Next capacity <strong>{nextCapacity}</strong></>}</span></div></div>
+        <div className="v45-driver-kpis" aria-label="Own team capacity summary">
+          <div><span>Scheduled today</span><b>{projection?.summary.scheduled ?? "—"}</b><small>own drivers</small></div>
+          <div><span>Active Rounds</span><b>{projection?.summary.activeRounds ?? "—"}</b><small>in progress</small></div>
+          <div><span>{tab === "schedule" ? "Available now" : "Next available"}</span><b>{tab === "schedule" ? projection?.summary.availableNow ?? "—" : nextCapacity}</b><small>projected</small></div>
+          <div><span>Motorbikes / cars</span><b>{motorbikes} / {cars}</b><small>today</small></div>
+        </div>
       </section>
 
-      <div className="v45-drivers-tools">
-        <label><SearchIcon /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search driver, vehicle or Round" /></label>
-        <label className="v45-drivers-date"><span>Service date</span><input type="date" value={serviceDate} onChange={(event) => setServiceDate(event.target.value)} /></label>
-      </div>
-
-      <div className="v45-drivers-content">
-        <header><div><small>{tab === "schedule" ? "RECURRING SHIFTS" : "OWN TEAM"}</small><h2>{tab === "schedule" ? "Schedule" : "Current capacity"}</h2></div><p>{visibleDrivers.length} driver{visibleDrivers.length === 1 ? "" : "s"} · {serviceDate}</p></header>
+      <section className="v45-drivers-content">
+        <header><div><small>{tab === "schedule" ? "RECURRING SHIFTS" : "OWN TEAM"}</small><h2>{tab === "schedule" ? "Schedule" : "Live work and capacity"}</h2></div><p>{visibleDrivers.length} driver{visibleDrivers.length === 1 ? "" : "s"}</p></header>
+        <div className={`v45-drivers-tools ${tab === "team" ? "team" : ""}`}>
+          <label><SearchIcon /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search driver, vehicle or Round" /></label>
+          <label className="v45-drivers-date"><span>Service date</span><input type="date" value={serviceDate} onChange={(event) => setServiceDate(event.target.value)} /></label>
+        </div>
         {loading ? <div className="v45-drivers-message">Checking own-team capacity…</div> : error ? <div className="v45-drivers-message error"><b>Couldn&apos;t load Drivers</b><span>{error}</span><button type="button" onClick={() => void load()}>Retry</button></div> : visibleDrivers.length === 0 ? <div className="v45-drivers-message"><b>No own drivers found.</b><span>Drivers appear after an active own-team relationship is configured.</span></div> : <div className="v45-driver-list">
           {visibleDrivers.map((driver) => tab === "schedule"
             ? <ScheduleRow key={driver.driverId} driver={driver} tenant={tenant} onEdit={() => setEditing(driver)} onException={() => setEditingException(driver)} />
             : <DriverRow key={driver.driverId} driver={driver} tenant={tenant} onSchedule={() => { setTab("schedule"); setEditing(driver); }} onOpenRound={onOpenRound} onCommunications={onCommunications} />)}
         </div>}
-      </div>
-    </>}
+        {tab === "team" && <p className="v45-drivers-context"><strong>Operational context first.</strong> Current work and next availability help Dispatch act now. Cause-attributed reliability, attendance and custody evidence stay in History.</p>}
+      </section>
+    </div>}
 
     {editing && projection && <ScheduleDrawer driver={editing} projection={projection} accessToken={accessToken} tenant={tenant} onClose={() => setEditing(null)} onSaved={async () => { setEditing(null); await load(); }} />}
     {editingException && projection && <ShiftExceptionDrawer driver={editingException} projection={projection} serviceDate={serviceDate} accessToken={accessToken} tenant={tenant} onClose={() => setEditingException(null)} onSaved={async () => { setEditingException(null); await load(); }} />}

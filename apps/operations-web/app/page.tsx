@@ -12,7 +12,6 @@ import {
   defaultDeliveryDraft,
   type DeliveryFormDraft,
 } from "../src/delivery-form";
-import { HistoryPanel } from "./history-panel";
 import { OperationsWorkstation } from "./operations-workstation";
 import { OperationsMenuIcon, OperationsSectionSheet, type OperationsSectionKey } from "./operations-section-sheet";
 import { DeliveryIntake, type SubmissionSuccess } from "./delivery-intake";
@@ -193,7 +192,7 @@ export default function OperationsPage() {
   if (!authSession) return <LoginScreen supabase={supabase} error={error} setError={setError} onPreview={developmentPreviewEnabled ? () => setDevelopmentPreview(true) : undefined} />;
   if (loadingProfile) return <LoadingScreen label="Checking merchant access" />;
 
-  if (operationsSession && selectedTenant && section !== "history") {
+  if (operationsSession && selectedTenant) {
     return <OperationsWorkstation
       accessToken={authSession.access_token}
       tenant={selectedTenant}
@@ -201,6 +200,7 @@ export default function OperationsPage() {
       deliveryIntakeOpen={deliveryIntakeOpen}
       deliveriesOpen={section === "deliveries"}
       driversOpen={section === "drivers"}
+      historyOpen={section === "history"}
       deliveryRefreshKey={deliveryRevision}
       communicationRequest={communicationRequest}
       onCloseDeliveryIntake={() => setDeliveryIntakeOpen(false)}
@@ -208,6 +208,7 @@ export default function OperationsPage() {
       onDrivers={() => { setDeliveryIntakeOpen(false); setSection("drivers"); }}
       onCloseDeliveries={() => setSection("action")}
       onCloseDrivers={() => setSection("action")}
+      onCloseHistory={() => setSection("action")}
       deliveryIntake={<DeliveryIntake
         operationsSession={operationsSession}
         selectedTenant={selectedTenant}
@@ -251,7 +252,7 @@ export default function OperationsPage() {
       />
 
       <main className="operations-main dispatch-main">
-        {section === "history" && selectedTenant ? <HistoryPanel accessToken={authSession.access_token} tenant={selectedTenant} /> : <section className="empty-access"><LockIcon /><h2>No active Operations membership</h2><p>This authenticated account is not linked to an active merchant role.</p><button onClick={() => void loadOperationsSession(authSession)}>Check again</button></section>}
+        <section className="empty-access"><LockIcon /><h2>No active Operations membership</h2><p>This authenticated account is not linked to an active merchant role.</p><button onClick={() => void loadOperationsSession(authSession)}>Check again</button></section>
       </main>
     </div>
   );
