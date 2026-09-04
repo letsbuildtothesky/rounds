@@ -81,12 +81,21 @@ bool _duplicatesTypedCall(
 DriverContactHistoryEventModel _messageEvent(
   DriverOperationsMessageModel message,
 ) {
+  final attachmentReferences = message.attachments
+      .map((attachment) => attachment.copyReference)
+      .toList(growable: false);
+  final humanDetail = [
+    if (message.body.trim().isNotEmpty) message.body.trim(),
+    ...attachmentReferences,
+  ].join('\n');
+  final locationOnly =
+      message.body.trim().isEmpty && message.attachments.isNotEmpty;
   if (message.sender == 'driver') {
     return DriverContactHistoryEventModel(
       id: 'message:${message.id}',
       kind: DriverContactHistoryEventKind.driverMessage,
-      title: 'Message to Operations',
-      detail: message.body,
+      title: locationOnly ? 'Location shared' : 'Message to Operations',
+      detail: humanDetail,
       occurredAt: message.sentAt,
       savedLocally: message.savedLocally,
     );
@@ -95,8 +104,8 @@ DriverContactHistoryEventModel _messageEvent(
     return DriverContactHistoryEventModel(
       id: 'message:${message.id}',
       kind: DriverContactHistoryEventKind.operationsMessage,
-      title: 'Operations message',
-      detail: message.body,
+      title: locationOnly ? 'Operations location' : 'Operations message',
+      detail: humanDetail,
       occurredAt: message.sentAt,
       savedLocally: message.savedLocally,
     );

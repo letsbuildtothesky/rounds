@@ -271,6 +271,14 @@ class DriverApi {
             id: record.id,
             sender: 'driver',
             body: payload['body'] as String,
+            attachments:
+                ((payload['attachments'] as List<dynamic>?) ?? const [])
+                    .map(
+                      (attachment) => DriverMessageAttachmentModel.fromJson(
+                        attachment as Map<String, dynamic>,
+                      ),
+                    )
+                    .toList(growable: false),
             sentAt: DateTime.parse(record.occurredFromDeviceAt),
             savedLocally: true,
           );
@@ -282,17 +290,21 @@ class DriverApi {
     required DriverRoundModel round,
     required DriverRoundStopModel stop,
     required String body,
+    List<DriverMessageAttachmentModel> attachments = const [],
   }) {
     final trimmed = body.trim();
     final nonce = DateTime.now().toUtc().microsecondsSinceEpoch;
-    final fingerprint = sha256.convert(utf8.encode('$nonce:$trimmed'));
+    final attachmentJson = attachments.map((item) => item.toJson()).toList();
+    final fingerprint = sha256.convert(
+      utf8.encode('$nonce:$trimmed:${jsonEncode(attachmentJson)}'),
+    );
     return _queueAndSend(
       commandType: 'thread.send_message',
       aggregateId: stop.id,
       expectedVersion: 1,
       idempotencyKey: 'driver-message:${stop.id}:$fingerprint',
       endpoint: '/v1/driver/rounds/${round.id}/stops/${stop.id}/messages',
-      payload: {'body': trimmed},
+      payload: {'body': trimmed, 'attachments': attachmentJson},
     );
   }
 

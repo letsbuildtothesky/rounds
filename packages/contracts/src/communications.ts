@@ -2,10 +2,22 @@ import type { CommandEnvelope, CommandResult, DomainEventEnvelope } from "./comm
 
 export type DriverMessageSender = "driver" | "operations" | "system";
 
+export type MessageLocationAttachment = {
+  kind: "location";
+  label: string;
+  latitude: number;
+  longitude: number;
+  accuracyMeters?: number;
+  capturedAt: string;
+};
+
+export type ThreadMessageAttachment = MessageLocationAttachment;
+
 export type DriverThreadMessage = {
   id: string;
   sender: DriverMessageSender;
   body: string;
+  attachments?: ThreadMessageAttachment[];
   sentAt: string;
 };
 
@@ -19,6 +31,7 @@ export type DriverOperationsThread = {
 
 export type SendDriverMessagePayload = {
   body: string;
+  attachments?: ThreadMessageAttachment[];
 };
 
 export type SendDriverMessageCommand = CommandEnvelope<

@@ -1261,9 +1261,9 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
         .returns<{ id: string; delivery_id: string }[]>(),
       this.admin.from("driver_profiles").select("id, person_id").in("id", driverIds)
         .returns<{ id: string; person_id: string }[]>(),
-      this.admin.from("operations_messages").select("id, thread_id, sender, body, sent_at")
+      this.admin.from("operations_messages").select("id, thread_id, sender, body, attachments, sent_at")
         .eq("tenant_id", actor.tenantId).in("thread_id", threadIds).order("sent_at")
-        .returns<{ id: string; thread_id: string; sender: "driver" | "operations" | "system"; body: string; sent_at: string }[]>(),
+        .returns<{ id: string; thread_id: string; sender: "driver" | "operations" | "system"; body: string; attachments: OperationsCommunicationThread["messages"][number]["attachments"]; sent_at: string }[]>(),
     ]);
     if (roundResult.error) throw roundResult.error;
     if (roundStopResult.error) throw roundStopResult.error;
@@ -1318,6 +1318,7 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
             id: message.id,
             sender: message.sender,
             body: message.body,
+            attachments: message.attachments ?? [],
             sentAt: message.sent_at,
           })),
         }];

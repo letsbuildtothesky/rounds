@@ -1,7 +1,7 @@
 begin;
 
 create extension if not exists pgtap with schema extensions;
-select plan(38);
+select plan(42);
 
 select has_function('public', 'ensure_driver_operations_thread', array['uuid', 'uuid', 'uuid'], 'driver thread projection exists');
 select has_function('public', 'send_driver_message_command', array['jsonb', 'uuid'], 'driver message command exists');
@@ -145,6 +145,41 @@ select is(
   (public.send_operations_message_command(jsonb_set((select body from operations_message_command), '{idempotencyKey}', '"operations-message:stale"'), '70000000-0000-4000-8000-000000000009') -> 'error' ->> 'code'),
   'STALE_VERSION', 'stale Operations reply cannot append a message'
 );
+
+create temporary table location_message_command (body jsonb not null) on commit drop;
+insert into location_message_command values (jsonb_build_object(
+  'schemaVersion', 1, 'commandType', 'thread.send_message',
+  'commandId', '70000000-0000-4000-8000-000000000221',
+  'traceId', '70000000-0000-4000-8000-000000000222',
+  'idempotencyKey', 'message:THREAD-001:location',
+  'tenantId', '70000000-0000-4000-8000-000000000001',
+  'aggregateId', (select body ->> 'id' from thread_projection),
+  'expectedVersion', 3,
+  'occurredFromDeviceAt', '2026-09-02T03:02:00Z',
+  'payload', jsonb_build_object(
+    'body', '',
+    'attachments', jsonb_build_array(jsonb_build_object(
+      'kind', 'location', 'label', 'Current location',
+      'latitude', 13.7306, 'longitude', 100.5697,
+      'accuracyMeters', 8.5, 'capturedAt', '2026-09-02T03:02:00Z'
+    ))
+  )
+));
+
+select is((public.send_driver_message_command((select body from location_message_command), '70000000-0000-4000-8000-000000000007') ->> 'status'), 'committed', 'location-only message commits');
+select is((select attachments -> 0 ->> 'kind' from public.operations_messages where command_id = '70000000-0000-4000-8000-000000000221'), 'location', 'location remains structured durable thread data');
+select is((public.ensure_driver_operations_thread(
+  '70000000-0000-4000-8000-000000000130',
+  '70000000-0000-4000-8000-000000000110',
+  '70000000-0000-4000-8000-000000000007'
+) -> 'messages' -> 2 -> 'attachments' -> 0 ->> 'label'), 'Current location', 'driver thread projection returns the attachment');
+select is((public.send_driver_message_command(
+  jsonb_set(
+    jsonb_set((select body from location_message_command), '{idempotencyKey}', '"message:THREAD-001:bad-location"'),
+    '{payload,attachments,0,latitude}', '130'::jsonb
+  ),
+  '70000000-0000-4000-8000-000000000007'
+) -> 'error' ->> 'code'), 'VALIDATION_FAILED', 'invalid location coordinates are rejected');
 
 set local role authenticated;
 select throws_ok(

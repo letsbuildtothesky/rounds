@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rounds_driver_harness/src/app/driver_design_system.dart';
 import 'package:rounds_driver_harness/src/app/harness_app_controller.dart';
+import 'package:rounds_driver_harness/src/driver/driver_operations_thread.dart';
 import 'package:rounds_driver_harness/src/storage/operations_message_draft_store.dart';
 import 'package:rounds_driver_harness/src/ui/assigned_round_screen.dart';
 import 'package:rounds_driver_harness/src/ui/operations_chat_screen.dart';
@@ -45,6 +46,50 @@ void main() {
     expect(find.text('Waiting at reception.'), findsOneWidget);
     expect(find.text('Operations'), findsOneWidget);
     expect(find.text('View stop'), findsOneWidget);
+
+    controller.dispose();
+  });
+
+  testWidgets('H01 stages and persists a real structured location', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    SharedPreferences.setMockInitialValues({});
+    final preferences = await SharedPreferences.getInstance();
+    final draftStore = OperationsMessageDraftStore(preferences: preferences);
+    final round = AssignedRoundScreen.demoRound;
+    final controller = await HarnessAppController.create();
+    await draftStore.saveLocation(
+      round.stops.first.id,
+      DriverMessageAttachmentModel.location(
+        label: 'Current location',
+        latitude: 13.7306,
+        longitude: 100.5697,
+        accuracyMeters: 8,
+        capturedAt: DateTime.utc(2026, 9, 4, 3),
+      ),
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildRoundsDriverTheme(),
+        home: OperationsChatScreen(
+          controller: controller,
+          round: round,
+          stop: round.stops.first,
+          draftStore: draftStore,
+        ),
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 500));
+
+    expect(find.byKey(const Key('h01-staged-location')), findsOneWidget);
+    final restored = draftStore.restoreLocation(round.stops.first.id);
+    expect(restored?.latitude, 13.7306);
+    expect(restored?.longitude, 100.5697);
 
     controller.dispose();
   });

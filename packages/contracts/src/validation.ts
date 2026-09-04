@@ -272,8 +272,27 @@ export function validateConfirmDeliveryReturnCommand(command: ConfirmDeliveryRet
 }
 
 export function validateSendDriverMessagePayload(payload: SendDriverMessagePayload): void {
-  assertNonEmpty(payload.body, "body");
+  const body = payload.body.trim();
+  const attachments = payload.attachments ?? [];
+  if (!body && attachments.length === 0) throw new ContractError("message content is required");
   if (payload.body.trim().length > 2000) throw new ContractError("body exceeds 2000 characters");
+  if (attachments.length > 8) throw new ContractError("attachments exceeds 8 items");
+  for (const attachment of attachments) {
+    if (attachment.kind !== "location") throw new ContractError("attachment kind is not supported");
+    assertNonEmpty(attachment.label, "attachment.label");
+    if (attachment.label.trim().length > 120) throw new ContractError("attachment.label exceeds 120 characters");
+    if (!Number.isFinite(attachment.latitude) || attachment.latitude < -90 || attachment.latitude > 90) {
+      throw new ContractError("attachment.latitude is invalid");
+    }
+    if (!Number.isFinite(attachment.longitude) || attachment.longitude < -180 || attachment.longitude > 180) {
+      throw new ContractError("attachment.longitude is invalid");
+    }
+    if (attachment.accuracyMeters !== undefined &&
+      (!Number.isFinite(attachment.accuracyMeters) || attachment.accuracyMeters < 0)) {
+      throw new ContractError("attachment.accuracyMeters is invalid");
+    }
+    if (Number.isNaN(Date.parse(attachment.capturedAt))) throw new ContractError("attachment.capturedAt is invalid");
+  }
 }
 
 export function validateSendDriverMessageCommand(command: SendDriverMessageCommand): void {

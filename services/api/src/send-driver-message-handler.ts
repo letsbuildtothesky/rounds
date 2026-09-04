@@ -48,7 +48,10 @@ export async function sendDriverMessageHandler(
     aggregateId: thread.id,
     expectedVersion: thread.version,
     occurredFromDeviceAt: dependencies.now().toISOString(),
-    payload: { body: payload.body.trim() },
+    payload: {
+      body: typeof payload.body === "string" ? payload.body.trim() : "",
+      attachments: Array.isArray(payload.attachments) ? payload.attachments : [],
+    },
   };
   try {
     validateSendDriverMessageCommand(command);

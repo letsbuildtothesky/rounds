@@ -284,9 +284,14 @@ class HarnessAppController extends ChangeNotifier {
     required DriverRoundModel round,
     required DriverRoundStopModel stop,
     required String body,
+    List<DriverMessageAttachmentModel> attachments = const [],
   }) => _runDriverCommand(
-    () =>
-        _driverApi.sendOperationsMessage(round: round, stop: stop, body: body),
+    () => _driverApi.sendOperationsMessage(
+      round: round,
+      stop: stop,
+      body: body,
+      attachments: attachments,
+    ),
   );
 
   Future<DriverCommandOutcome?> acknowledgeLiveDeliveryChange(

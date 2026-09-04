@@ -87,6 +87,32 @@ void main() {
     expect(history.events.single.savedLocally, isTrue);
   });
 
+  test('structured location appears as durable contact evidence', () {
+    final history = composeDriverContactHistory(
+      messages: [
+        DriverOperationsMessageModel(
+          id: 'location-message',
+          sender: 'driver',
+          body: '',
+          attachments: [
+            DriverMessageAttachmentModel.location(
+              label: 'Current location',
+              latitude: 13.7306,
+              longitude: 100.5697,
+              capturedAt: DateTime.utc(2026, 9, 4, 3),
+            ),
+          ],
+          sentAt: DateTime.utc(2026, 9, 4, 3),
+        ),
+      ],
+      contactAttempts: const [],
+      threadUnavailable: false,
+    );
+
+    expect(history.events.single.title, 'Location shared');
+    expect(history.events.single.detail, contains('13.730600, 100.569700'));
+  });
+
   testWidgets('H03 uses canonical regions and only renders real evidence', (
     tester,
   ) async {

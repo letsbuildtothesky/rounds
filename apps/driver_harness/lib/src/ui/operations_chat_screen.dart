@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../app/driver_design_system.dart';
 import '../app/generated/driver_ui_metrics.g.dart';
 import '../app/harness_app_controller.dart';
+import '../driver/driver_chat_location.dart';
 import '../driver/driver_message_links.dart';
 import '../driver/driver_operations_thread.dart';
 import '../driver/driver_session.dart';
@@ -19,6 +20,7 @@ class OperationsChatScreen extends StatefulWidget {
     required this.round,
     required this.stop,
     this.draftStore,
+    this.locationGateway = const GeolocatorDriverChatLocationGateway(),
     super.key,
   });
 
@@ -26,6 +28,7 @@ class OperationsChatScreen extends StatefulWidget {
   final DriverRoundModel round;
   final DriverRoundStopModel stop;
   final OperationsMessageDraftStore? draftStore;
+  final DriverChatLocationGateway locationGateway;
 
   @override
   State<OperationsChatScreen> createState() => _OperationsChatScreenState();
@@ -37,6 +40,8 @@ class _OperationsChatScreenState extends State<OperationsChatScreen> {
   List<DriverOperationsMessageModel> _messages = const [];
   bool _loading = true;
   bool _sending = false;
+  bool _capturingLocation = false;
+  DriverMessageAttachmentModel? _stagedLocation;
   String? _loadError;
   OperationsMessageDraftStore? _draftStore;
   Timer? _draftTimer;
@@ -73,6 +78,10 @@ class _OperationsChatScreenState extends State<OperationsChatScreen> {
         text: draft,
         selection: TextSelection.collapsed(offset: draft.length),
       );
+    }
+    final location = store.restoreLocation(widget.stop.id);
+    if (location != null) {
+      setState(() => _stagedLocation = location);
     }
   }
 
@@ -116,12 +125,14 @@ class _OperationsChatScreenState extends State<OperationsChatScreen> {
 
   Future<void> _send() async {
     final body = _composer.text.trim();
-    if (body.isEmpty || _sending) return;
+    final location = _stagedLocation;
+    if ((body.isEmpty && location == null) || _sending) return;
     setState(() => _sending = true);
     final outcome = await widget.controller.sendOperationsMessage(
       round: widget.round,
       stop: widget.stop,
       body: body,
+      attachments: [?location],
     );
     if (!mounted) return;
     if (outcome == null) {
@@ -139,8 +150,12 @@ class _OperationsChatScreenState extends State<OperationsChatScreen> {
     }
     _composer.clear();
     await _draftStore?.clear(widget.stop.id);
+    await _draftStore?.clearLocation(widget.stop.id);
     if (!mounted) return;
-    setState(() => _sending = false);
+    setState(() {
+      _sending = false;
+      _stagedLocation = null;
+    });
     await _load();
     if (!mounted) return;
     if (outcome.pendingSync) {
@@ -152,6 +167,82 @@ class _OperationsChatScreenState extends State<OperationsChatScreen> {
         ),
       );
     }
+  }
+
+  Future<void> _showAttachmentSheet() async {
+    if (_sending || _capturingLocation) return;
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.white,
+      showDragHandle: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+      ),
+      builder: (sheetContext) => SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Add to message',
+                style: TextStyle(
+                  color: RoundsColors.ink,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 12),
+              ListTile(
+                key: const Key('h01-add-location'),
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(
+                  Icons.location_on_outlined,
+                  color: RoundsColors.ink,
+                ),
+                title: const Text(
+                  'Location',
+                  style: TextStyle(fontWeight: FontWeight.w800),
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  unawaited(_captureLocation());
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _captureLocation() async {
+    if (_capturingLocation) return;
+    setState(() => _capturingLocation = true);
+    try {
+      final location = await widget.locationGateway.captureCurrentLocation();
+      await _draftStore?.saveLocation(widget.stop.id, location);
+      if (!mounted) return;
+      setState(() => _stagedLocation = location);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Location added')));
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.toString())));
+    } finally {
+      if (mounted) setState(() => _capturingLocation = false);
+    }
+  }
+
+  Future<void> _removeStagedLocation() async {
+    await _draftStore?.clearLocation(widget.stop.id);
+    if (mounted) setState(() => _stagedLocation = null);
   }
 
   void _scrollToEnd() {
@@ -257,8 +348,13 @@ class _OperationsChatScreenState extends State<OperationsChatScreen> {
               _Composer(
                 controller: _composer,
                 sending: _sending,
-                canSend: _composer.text.trim().isNotEmpty,
+                capturingLocation: _capturingLocation,
+                stagedLocation: _stagedLocation,
+                canSend:
+                    _composer.text.trim().isNotEmpty || _stagedLocation != null,
                 compact: compact,
+                onAdd: _showAttachmentSheet,
+                onRemoveLocation: _removeStagedLocation,
                 onSend: _send,
               ),
             ],
@@ -595,6 +691,10 @@ class _MessageBubble extends StatelessWidget {
     final time = TimeOfDay.fromDateTime(
       message.sentAt.toLocal(),
     ).format(context);
+    final copyText = [
+      if (message.body.trim().isNotEmpty) message.body.trim(),
+      ...message.attachments.map((attachment) => attachment.copyReference),
+    ].join(' · ');
     return Align(
       alignment: mine ? Alignment.centerRight : Alignment.centerLeft,
       child: Padding(
@@ -645,7 +745,7 @@ class _MessageBubble extends StatelessWidget {
                   key: Key('h01-message-${message.id}'),
                   behavior: HitTestBehavior.opaque,
                   onLongPress: () async {
-                    await Clipboard.setData(ClipboardData(text: message.body));
+                    await Clipboard.setData(ClipboardData(text: copyText));
                     if (!context.mounted) return;
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Message copied')),
@@ -656,15 +756,21 @@ class _MessageBubble extends StatelessWidget {
                         ? CrossAxisAlignment.end
                         : CrossAxisAlignment.start,
                     children: [
-                      _MessageBody(
-                        body: message.body,
-                        style: TextStyle(
-                          color: mine ? Colors.white : RoundsColors.ink,
-                          fontSize: DriverH01Metrics.bubbleSize,
-                          height: DriverH01Metrics.bubbleHeight,
-                          fontWeight: FontWeight.w500,
+                      if (message.body.trim().isNotEmpty)
+                        _MessageBody(
+                          body: message.body,
+                          style: TextStyle(
+                            color: mine ? Colors.white : RoundsColors.ink,
+                            fontSize: DriverH01Metrics.bubbleSize,
+                            height: DriverH01Metrics.bubbleHeight,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                      ),
+                      for (final attachment in message.attachments)
+                        _LocationAttachmentCard(
+                          attachment: attachment,
+                          mine: mine,
+                        ),
                       const SizedBox(height: DriverH01Metrics.metaTop),
                       Text(
                         mine
@@ -687,6 +793,103 @@ class _MessageBubble extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _LocationAttachmentCard extends StatelessWidget {
+  const _LocationAttachmentCard({required this.attachment, required this.mine});
+
+  final DriverMessageAttachmentModel attachment;
+  final bool mine;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    key: Key('h01-location-${attachment.latitude}-${attachment.longitude}'),
+    margin: const EdgeInsets.only(top: 9),
+    decoration: BoxDecoration(
+      color: mine ? Colors.white.withValues(alpha: .08) : Colors.white,
+      border: Border.all(
+        color: mine
+            ? Colors.white.withValues(alpha: .18)
+            : const Color(0xFFDCE3E8),
+      ),
+      borderRadius: BorderRadius.circular(7),
+    ),
+    child: InkWell(
+      borderRadius: BorderRadius.circular(7),
+      onTap: () => _open(context),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
+        child: Row(
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: mine
+                    ? Colors.white.withValues(alpha: .12)
+                    : const Color(0xFFF3F5F7),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Icon(
+                Icons.location_on_outlined,
+                size: 19,
+                color: mine ? Colors.white : RoundsColors.warning,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    attachment.label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: mine ? Colors.white : RoundsColors.ink,
+                      fontSize: 12.8,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    '${attachment.latitude.toStringAsFixed(4)}, '
+                    '${attachment.longitude.toStringAsFixed(4)}',
+                    style: TextStyle(
+                      color: mine
+                          ? Colors.white.withValues(alpha: .65)
+                          : RoundsColors.muted,
+                      fontSize: 11.3,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.chevron_right,
+              size: 18,
+              color: mine
+                  ? Colors.white.withValues(alpha: .55)
+                  : RoundsColors.muted,
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+
+  Future<void> _open(BuildContext context) async {
+    final uri = Uri.https('www.google.com', '/maps/search/', {
+      'api': '1',
+      'query': '${attachment.latitude},${attachment.longitude}',
+    });
+    final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!opened && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('The location could not be opened.')),
+      );
+    }
   }
 }
 
@@ -750,14 +953,22 @@ class _Composer extends StatelessWidget {
   const _Composer({
     required this.controller,
     required this.sending,
+    required this.capturingLocation,
+    required this.stagedLocation,
     required this.canSend,
     required this.compact,
+    required this.onAdd,
+    required this.onRemoveLocation,
     required this.onSend,
   });
   final TextEditingController controller;
   final bool sending;
+  final bool capturingLocation;
+  final DriverMessageAttachmentModel? stagedLocation;
   final bool canSend;
   final bool compact;
+  final VoidCallback onAdd;
+  final VoidCallback onRemoveLocation;
   final VoidCallback onSend;
 
   @override
@@ -777,84 +988,199 @@ class _Composer extends StatelessWidget {
       color: Colors.white,
       border: Border(top: BorderSide(color: RoundsColors.line)),
     ),
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.end,
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Expanded(
-          child: TextField(
-            key: const Key('operations-chat-composer'),
-            controller: controller,
-            minLines: 1,
-            maxLines: 4,
-            textCapitalization: TextCapitalization.sentences,
-            onSubmitted: (_) => onSend(),
-            style: const TextStyle(
-              color: RoundsColors.ink,
-              fontSize: DriverH01Metrics.composerInputSize,
-              height: DriverH01Metrics.composerInputHeight,
-            ),
-            decoration: const InputDecoration(
-              hintText: 'Message Operations',
-              filled: false,
-              isDense: true,
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: DriverH01Metrics.composerInputPaddingHorizontal,
-                vertical: DriverH01Metrics.composerInputPaddingVertical,
-              ),
-              border: OutlineInputBorder(
-                borderSide: BorderSide(color: RoundsColors.lineStrong),
-                borderRadius: BorderRadius.all(
-                  Radius.circular(DriverH01Metrics.composerRadius),
-                ),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: RoundsColors.lineStrong),
-                borderRadius: BorderRadius.all(
-                  Radius.circular(DriverH01Metrics.composerRadius),
-                ),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Color(0xFF9CAAB8)),
-                borderRadius: BorderRadius.all(
-                  Radius.circular(DriverH01Metrics.composerRadius),
-                ),
-              ),
-            ),
+        if (stagedLocation != null)
+          _StagedLocation(
+            attachment: stagedLocation!,
+            onRemove: onRemoveLocation,
           ),
-        ),
-        SizedBox(
-          width: compact
-              ? DriverH01Metrics.compactComposerColumnGap
-              : DriverH01Metrics.composerColumnGap,
-        ),
-        SizedBox.square(
-          dimension: compact
-              ? DriverH01Metrics.compactComposerControlSize
-              : DriverH01Metrics.composerControlSize,
-          child: IconButton.filled(
-            key: const Key('operations-chat-send'),
-            onPressed: sending || !canSend ? null : onSend,
-            style: IconButton.styleFrom(
-              backgroundColor: RoundsColors.ink,
-              disabledBackgroundColor: RoundsColors.line,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(
-                  DriverH01Metrics.composerRadius,
-                ),
-              ),
-            ),
-            icon: sending
-                ? const SizedBox.square(
-                    dimension: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            SizedBox.square(
+              dimension: compact
+                  ? DriverH01Metrics.compactComposerControlSize
+                  : DriverH01Metrics.composerControlSize,
+              child: IconButton.outlined(
+                key: const Key('h01-add-attachment'),
+                onPressed: sending || capturingLocation ? null : onAdd,
+                style: IconButton.styleFrom(
+                  foregroundColor: RoundsColors.ink,
+                  side: const BorderSide(color: RoundsColors.line),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(
+                      DriverH01Metrics.composerRadius,
                     ),
-                  )
-                : const Icon(Icons.arrow_upward, color: Colors.white),
-          ),
+                  ),
+                ),
+                icon: capturingLocation
+                    ? const SizedBox.square(
+                        dimension: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.add),
+              ),
+            ),
+            SizedBox(
+              width: compact
+                  ? DriverH01Metrics.compactComposerColumnGap
+                  : DriverH01Metrics.composerColumnGap,
+            ),
+            Expanded(
+              child: TextField(
+                key: const Key('operations-chat-composer'),
+                controller: controller,
+                minLines: 1,
+                maxLines: 4,
+                textCapitalization: TextCapitalization.sentences,
+                onSubmitted: (_) => onSend(),
+                style: const TextStyle(
+                  color: RoundsColors.ink,
+                  fontSize: DriverH01Metrics.composerInputSize,
+                  height: DriverH01Metrics.composerInputHeight,
+                ),
+                decoration: const InputDecoration(
+                  hintText: 'Message Operations',
+                  filled: false,
+                  isDense: true,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: DriverH01Metrics.composerInputPaddingHorizontal,
+                    vertical: DriverH01Metrics.composerInputPaddingVertical,
+                  ),
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide(color: RoundsColors.lineStrong),
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(DriverH01Metrics.composerRadius),
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: RoundsColors.lineStrong),
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(DriverH01Metrics.composerRadius),
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Color(0xFF9CAAB8)),
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(DriverH01Metrics.composerRadius),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(
+              width: compact
+                  ? DriverH01Metrics.compactComposerColumnGap
+                  : DriverH01Metrics.composerColumnGap,
+            ),
+            SizedBox.square(
+              dimension: compact
+                  ? DriverH01Metrics.compactComposerControlSize
+                  : DriverH01Metrics.composerControlSize,
+              child: IconButton.filled(
+                key: const Key('operations-chat-send'),
+                onPressed: sending || !canSend ? null : onSend,
+                style: IconButton.styleFrom(
+                  backgroundColor: RoundsColors.ink,
+                  disabledBackgroundColor: RoundsColors.line,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(
+                      DriverH01Metrics.composerRadius,
+                    ),
+                  ),
+                ),
+                icon: sending
+                    ? const SizedBox.square(
+                        dimension: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Icon(Icons.arrow_upward, color: Colors.white),
+              ),
+            ),
+          ],
         ),
       ],
+    ),
+  );
+}
+
+class _StagedLocation extends StatelessWidget {
+  const _StagedLocation({required this.attachment, required this.onRemove});
+
+  final DriverMessageAttachmentModel attachment;
+  final VoidCallback onRemove;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: 8),
+    child: Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        key: const Key('h01-staged-location'),
+        width: 168,
+        height: 56,
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: RoundsColors.line),
+          borderRadius: BorderRadius.circular(7),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF2EB),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: const Icon(
+                Icons.location_on_outlined,
+                size: 17,
+                color: RoundsColors.warning,
+              ),
+            ),
+            const SizedBox(width: 7),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Location',
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    attachment.label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: RoundsColors.muted,
+                      fontSize: 10.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            IconButton(
+              key: const Key('h01-remove-location'),
+              onPressed: onRemove,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints.tightFor(width: 24, height: 24),
+              icon: const Icon(Icons.close, size: 18),
+            ),
+          ],
+        ),
+      ),
     ),
   );
 }

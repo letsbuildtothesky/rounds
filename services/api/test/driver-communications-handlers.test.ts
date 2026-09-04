@@ -86,6 +86,7 @@ class FakeCommunicationsGateway implements IdentityGateway, DriverCommunications
           id: "10000000-0000-4000-8000-000000000030",
           sender: "driver",
           body: command.payload.body,
+          attachments: command.payload.attachments ?? [],
           sentAt: "2026-09-02T03:00:00Z",
         },
       },
@@ -146,6 +147,29 @@ test("assigned driver sends a trimmed versioned message", async () => {
   assert.equal(gateway.command?.aggregateId, threadId);
   assert.equal(gateway.command?.expectedVersion, 3);
   assert.equal(gateway.command?.payload.body, "Running five minutes late");
+});
+
+test("assigned driver sends a structured location attachment", async () => {
+  const gateway = new FakeCommunicationsGateway();
+  const attachment = {
+    kind: "location" as const,
+    label: "Current location",
+    latitude: 13.7306,
+    longitude: 100.5697,
+    accuracyMeters: 9,
+    capturedAt: "2026-09-04T03:00:00Z",
+  };
+  const response = await sendDriverMessageHandler(new Request("http://test/messages", {
+    method: "POST",
+    headers: {
+      authorization: "Bearer token",
+      "content-type": "application/json",
+      "idempotency-key": "message:location:one",
+    },
+    body: JSON.stringify({ body: "", attachments: [attachment] }),
+  }), roundId, stopId, dependencies(gateway));
+  assert.equal(response.status, 201);
+  assert.deepEqual(gateway.command?.payload.attachments, [attachment]);
 });
 
 test("driver cannot read a thread outside the current assignment", async () => {

@@ -52,6 +52,39 @@ test("accepts a bounded versioned driver message", () => {
   }));
 });
 
+test("accepts a location-only driver message", () => {
+  assert.doesNotThrow(() => validateSendDriverMessageCommand({
+    ...base,
+    payload: {
+      body: "",
+      attachments: [{
+        kind: "location",
+        label: "Current location",
+        latitude: 13.7306,
+        longitude: 100.5697,
+        accuracyMeters: 8.5,
+        capturedAt: "2026-09-04T03:00:00Z",
+      }],
+    },
+  }));
+});
+
+test("rejects invalid location coordinates", () => {
+  assert.throws(() => validateSendDriverMessageCommand({
+    ...base,
+    payload: {
+      body: "Here",
+      attachments: [{
+        kind: "location",
+        label: "Current location",
+        latitude: 130,
+        longitude: 100.5697,
+        capturedAt: "2026-09-04T03:00:00Z",
+      }],
+    },
+  }), ContractError);
+});
+
 test("rejects empty and oversized message bodies", () => {
   assert.throws(() => validateSendDriverMessageCommand({
     ...base,

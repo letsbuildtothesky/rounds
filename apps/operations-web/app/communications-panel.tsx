@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState, type KeyboardEvent } from "react";
 import type {
+  DriverThreadMessage,
   OperationsCommunicationsProjection,
   OperationsTenant,
   SendOperationsMessageResult,
@@ -21,6 +22,31 @@ function timeLabel(value: string, timezone: string): string {
 
 function messageFrom(body: ApiError, fallback: string): string {
   return body.error?.message ?? fallback;
+}
+
+function messageSummary(message: DriverThreadMessage | undefined): string {
+  if (!message) return "No messages yet";
+  if (message.body.trim()) return message.body;
+  return message.attachments?.[0]?.kind === "location" ? "Location shared" : "Attachment";
+}
+
+function MessageAttachments({ message }: { message: DriverThreadMessage }) {
+  return <>{message.attachments?.map((attachment, index) => {
+    if (attachment.kind !== "location") return null;
+    const coordinates = `${attachment.latitude},${attachment.longitude}`;
+    const href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(coordinates)}`;
+    return <a
+      className="message-location"
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      key={`${attachment.kind}:${attachment.capturedAt}:${index}`}
+    >
+      <span aria-hidden="true">⌖</span>
+      <span><strong>{attachment.label}</strong><small>{attachment.latitude.toFixed(4)}, {attachment.longitude.toFixed(4)}</small></span>
+      <i aria-hidden="true">›</i>
+    </a>;
+  })}</>;
 }
 
 export function CommunicationsPanel({ accessToken, tenant, initialThreadId = "" }: Props) {
@@ -118,7 +144,7 @@ export function CommunicationsPanel({ accessToken, tenant, initialThreadId = "" 
           const last = thread.messages.at(-1);
           return <button type="button" key={thread.id} className={`${thread.id === selectedThreadId ? "thread-row selected" : "thread-row"}${thread.priority === "emergency" ? " emergency" : ""}`} onClick={() => setSelectedThreadId(thread.id)}>
             <span className="driver-avatar">{thread.driverName.slice(0, 1).toUpperCase()}</span>
-            <span className="thread-copy"><strong>{thread.priority === "emergency" ? "EMERGENCY · " : ""}{thread.driverName}</strong><small>{thread.roundReference} · Stop {thread.stopSequence}</small><em>{last?.body ?? "No messages yet"}</em></span>
+            <span className="thread-copy"><strong>{thread.priority === "emergency" ? "EMERGENCY · " : ""}{thread.driverName}</strong><small>{thread.roundReference} · Stop {thread.stopSequence}</small><em>{messageSummary(last)}</em></span>
             <time>{last ? timeLabel(last.sentAt, tenant.timezone) : ""}</time>
           </button>;
         })}
@@ -133,7 +159,7 @@ export function CommunicationsPanel({ accessToken, tenant, initialThreadId = "" 
         <div className="message-stream" aria-live="polite">
           {!selected.messages.length && <div className="message-empty">No messages in this thread yet.</div>}
           {selected.messages.map((message) => message.sender === "system" ? <div className="system-message" key={message.id}>{message.body}</div> : <div className={`message-row ${message.sender}`} key={message.id}>
-            <div className="message-bubble"><p>{message.body}</p><time>{timeLabel(message.sentAt, tenant.timezone)}</time></div>
+            <div className="message-bubble">{message.body && <p>{message.body}</p>}<MessageAttachments message={message} /><time>{timeLabel(message.sentAt, tenant.timezone)}</time></div>
           </div>)}
         </div>
         <footer className="composer">

@@ -286,6 +286,14 @@ svg { width: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-l
 .message-bubble { width: fit-content; max-width: min(72%, 520px); padding: 11px 13px 8px; border: 1px solid #d9dfda; border-radius: 15px 15px 15px 4px; background: white; box-shadow: 0 3px 10px rgba(24,52,43,.04); }
 .message-row.operations .message-bubble { border-color: #0d4b3d; border-radius: 15px 15px 4px; color: white; background: var(--forest); }
 .message-bubble p { margin: 0; font-size: .76rem; line-height: 1.48; white-space: pre-wrap; }
+.message-location { display: grid; min-width: 240px; margin-top: 8px; padding: 8px; grid-template-columns: 34px minmax(0, 1fr) 12px; gap: 9px; align-items: center; border: 1px solid #d9dfda; border-radius: 9px; color: inherit; background: rgba(255,255,255,.08); text-decoration: none; }
+.message-location > span:first-child { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 7px; color: var(--orange); background: #fff2eb; font-size: 1.1rem; }
+.message-location strong, .message-location small { display: block; }
+.message-location strong { font-size: .7rem; }
+.message-location small { margin-top: 2px; color: #7c8882; font-size: .6rem; }
+.message-row.operations .message-location { border-color: rgba(255,255,255,.22); }
+.message-row.operations .message-location small { color: rgba(255,255,255,.68); }
+.message-location i { font-style: normal; opacity: .55; }
 .message-bubble time { display: block; margin-top: 5px; color: #929c97; font-size: .55rem; text-align: right; }
 .message-row.operations time { color: #b9d1c8; }
 .system-message { width: fit-content; margin: 8px auto 16px; padding: 5px 9px; border-radius: 99px; color: #738079; background: #e8ece8; font-size: .59rem; }
