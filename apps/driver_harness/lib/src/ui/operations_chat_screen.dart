@@ -38,7 +38,8 @@ class OperationsChatScreen extends StatefulWidget {
   State<OperationsChatScreen> createState() => _OperationsChatScreenState();
 }
 
-class _OperationsChatScreenState extends State<OperationsChatScreen> {
+class _OperationsChatScreenState extends State<OperationsChatScreen>
+    with WidgetsBindingObserver {
   final _composer = TextEditingController();
   final _scrollController = ScrollController();
   List<DriverOperationsMessageModel> _messages = const [];
@@ -51,20 +52,34 @@ class _OperationsChatScreenState extends State<OperationsChatScreen> {
   String? _loadError;
   OperationsMessageDraftStore? _draftStore;
   Timer? _draftTimer;
+  Timer? _messageRefreshTimer;
+  bool _refreshingMessages = false;
   late final DriverChatMediaGateway _mediaGateway =
       widget.mediaGateway ?? DriverChatMediaGateway();
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _composer.addListener(_composerChanged);
     unawaited(_restoreDraft());
     unawaited(_load());
+    _messageRefreshTimer = Timer.periodic(
+      const Duration(seconds: 5),
+      (_) => unawaited(_load()),
+    );
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) unawaited(_load());
   }
 
   @override
   void dispose() {
     _draftTimer?.cancel();
+    _messageRefreshTimer?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
     final draftStore = _draftStore;
     if (draftStore != null) {
       unawaited(draftStore.save(widget.stop.id, _composer.text));
@@ -108,32 +123,62 @@ class _OperationsChatScreenState extends State<OperationsChatScreen> {
   }
 
   Future<void> _load() async {
+    if (_refreshingMessages) return;
+    _refreshingMessages = true;
     var pending = const <DriverOperationsMessageModel>[];
     DriverOperationsThreadModel? thread;
     String? error;
     try {
-      pending = await widget.controller.pendingOperationsMessages(
-        round: widget.round,
-        stop: widget.stop,
-      );
-      thread = await widget.controller.getOperationsThread(
-        round: widget.round,
-        stop: widget.stop,
-      );
-    } catch (caught) {
-      error = caught.toString();
+      try {
+        pending = await widget.controller.pendingOperationsMessages(
+          round: widget.round,
+          stop: widget.stop,
+        );
+        thread = await widget.controller.getOperationsThread(
+          round: widget.round,
+          stop: widget.stop,
+        );
+      } catch (caught) {
+        error = caught.toString();
+      }
+      if (!mounted) return;
+      final combined = _mergeMessages([
+        ...(thread?.messages ?? _messages),
+        ...pending,
+      ]);
+      final previousSignature = _messageSignature(_messages);
+      final nextSignature = _messageSignature(combined);
+      final messagesChanged = previousSignature != nextSignature;
+      setState(() {
+        _messages = combined;
+        _loadError = error;
+        _loading = false;
+      });
+      if (messagesChanged) {
+        WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToEnd());
+      }
+    } finally {
+      _refreshingMessages = false;
     }
-    if (!mounted) return;
-    final combined = <DriverOperationsMessageModel>[
-      ...?thread?.messages,
-      ...pending,
-    ]..sort((a, b) => a.sentAt.compareTo(b.sentAt));
-    setState(() {
-      _messages = combined;
-      _loadError = error;
-      _loading = false;
-    });
-    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToEnd());
+  }
+
+  String _messageSignature(
+    List<DriverOperationsMessageModel> messages,
+  ) => messages
+      .map(
+        (message) =>
+            '${message.id}:${message.savedLocally}:${message.attachments.length}',
+      )
+      .join('|');
+
+  List<DriverOperationsMessageModel> _mergeMessages(
+    List<DriverOperationsMessageModel> messages,
+  ) {
+    final unique = <String, DriverOperationsMessageModel>{};
+    for (final message in messages) {
+      unique[message.id] = message;
+    }
+    return unique.values.toList()..sort((a, b) => a.sentAt.compareTo(b.sentAt));
   }
 
   Future<void> _send() async {

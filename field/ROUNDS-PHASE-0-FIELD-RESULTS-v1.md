@@ -128,6 +128,14 @@ represented as motorcycle field evidence.
   remote verification found the synthetic Delivery delivered and its JPEG media
   asset committed. This is physical-device acceptance evidence, not a Phase 0
   route-field result.
+- Communications bench evidence: the Samsung sent current location, a gallery
+  photo, a file and a 31-second voice note through H01; all reached the
+  canonical Dispatch window, and private media projected signed URLs.
+  Dispatch map context and text reached the same Samsung thread. After the H01
+  foreground-refresh fix, new Operations text appeared in the already-open
+  conversation without navigating away. Desktop Photo/File/current-Location/
+  voice acceptance and actual playback/download remain open. This is bench
+  acceptance evidence, not route-field evidence.
 - Crash reports:
 
 ## Gate decision
