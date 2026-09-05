@@ -7,6 +7,17 @@
 
 ## Changelog
 
+- **2026-09-05 · Checkpoint 57:** Reconciles the connected manual
+  single-delivery drawer with the supplied v45 hierarchy and current BS-08
+  boundary. The invented command banner and blurred scrim are removed;
+  Recipient, promise, manifest and inherited pickup follow the canonical
+  order. Editable coordinate boxes are replaced by the shared real Mapbox
+  crosshair selector, which writes `dispatcher_pin` truth only after explicit
+  confirmation. At 1280×720 the React and reference drawers both measured 410
+  px wide at x=870 with exact header/body padding; the map selector loaded with
+  attribution and no delivery was submitted. AI/file extraction and batch
+  import remain absent until their connected draft/reconciliation workflows
+  are promoted.
 - **2026-09-05 · Checkpoint 56:** Removes the authenticated workstation's
   custom narrow navigation substitution and restores the supplied v45 compact
   behavior: global destinations remain visible in a two-row iPad header while
@@ -378,7 +389,7 @@ Canonical visual source: `ux/operations/rounds-operations-current-v45.html`. The
 | v45 workstation shell and navigation | Pilot P1 | `VERIFIED` | React shell follows the canonical Dispatch/Deliveries/Drivers/Communications/History structure. Canonical side-by-side browser comparison now passes for the Dispatch rail/map workstation at 1280×720, 1024×768 and 768×1024; the supplied two-row tablet navigation, exact compact rail/map splits and overflow safety are accepted. | Repeat compact reference comparison for every business workspace/open drawer and complete physical iPad/Safari acceptance. |
 | Real Operations map | Pilot/Slice 2 P0 | `VERIFIED` | Real Mapbox renderer, Operations/Satellite styles, zoom, north, rotation, pitch, truthful error state, server positions and server route geometry exist. The v45 legend is now derived from rendered own-driver, action-Stop, unplanned-Stop and proposed-route evidence; disconnected Network, external and traffic roles are absent. Own-driver markers are keyed to the physical Driver rather than Round rows, use the newest hot position, retain one deterministic primary-click Round and aggregate unread state across that Driver's visible Rounds. The supplied driver quick-contact menu is connected: primary click opens the Round, desktop right-click/touch long-press exposes exact-thread Message/Voice, real-coordinate Center and Show full Round; Call remains disabled until real calling exists. Numbered live Stop markers now come from tenant-scoped Round order, Stop state and saved destination pins; terminal, future and current emphasis follows canonical v45 semantics and action exceptions do not create duplicate pins. | Complete live route/trail distinction, physical current-Stop acceptance, physical touch long-press acceptance and responsive/device acceptance. |
 | Live Dispatch / Action queue | Pilot P0 | `VERIFIED` | Server-backed Rounds, exceptions, live positions and freshness states exist. | Remaining edge states, filtering and realtime/polling production policy. |
-| Single delivery intake | Pilot P0 | `VERIFIED` | Canonical internal delivery command, idempotency and drawer UI exist. | Address validation depth and final v45 visual acceptance. |
+| Single delivery intake | Pilot P0 | `VERIFIED` | The canonical internal command and idempotency path now use the supplied v45 drawer hierarchy without the former invented banner/scrim. Recipient, promise, manifest and inherited pickup retain their connected truth. The operational destination is selected through the shared real Mapbox crosshair workflow and enters the command only as explicitly confirmed `dispatcher_pin` provenance. Signed-in 1280×720 comparison matches the reference drawer width, x-position and header/body padding; no delivery was submitted during acceptance. | Complete the production address/geocoding provider-coherence decision and corresponding validation depth, then physical tablet/Safari acceptance. |
 | Batch/manual import | Slice 2 P1 | `SPECIFIED` | No batch ingestion UI. | Define file template, row validation, partial failure and reconciliation UX. |
 | Deliveries workspace | Pilot P1 | `VERIFIED` | Server-backed delivery list/details and operational states exist. | Complete filters, edit boundaries and remaining v45 record states. |
 | Manual plan construction | Slice 2 P0 | `VERIFIED` | Date, ordered Stop selection, own driver, shared multidimensional capacity check, real route/window preview and explicit approval exist. | Configure production cargo values and add service dwell after the responsible business decisions. |
@@ -600,6 +611,15 @@ This sequence does not promote later slices; it orders the already authorized En
   passed at 1280×720, 1024×768 and 768×1024 with measured compact rail/map
   splits, all four global navigation items and no page overflow. Business
   workspaces/open drawers and physical iPad Safari remain open.
+- **D24 canonical single-delivery intake accepted 2026-09-05:** the connected
+  manual form now follows the supplied v45 drawer hierarchy and exact 1280 px
+  drawer geometry. A shared real Mapbox crosshair replaces raw coordinate
+  editing for both creation and live destination change; only explicit
+  confirmation writes `dispatcher_pin` truth. AI/file and batch controls remain
+  absent rather than simulating later-slice behavior. Production address
+  provider validation and physical tablet/Safari acceptance remain open. The
+  next authorized capability is the connected Deliveries workspace's remaining
+  v45 filters, edit boundaries and record-state acceptance.
 - Complete assigned-Round offline read cache and consolidated sync truth.
 - Finish N01/N02/N03 recovery states.
 - Run golden/reference-viewport comparisons for every in-scope board.

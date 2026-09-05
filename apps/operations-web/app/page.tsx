@@ -221,6 +221,7 @@ export default function OperationsPage() {
         onUpdate={updateDraft}
         onChooseTenant={chooseTenant}
         onReset={resetForm}
+        onCancel={() => setDeliveryIntakeOpen(false)}
       />}
       onAddDelivery={() => setDeliveryIntakeOpen(true)}
       onHistory={() => setSection("history")}

@@ -25,6 +25,11 @@ test("normalizes the manual form into the canonical delivery contract", () => {
   const payload = buildCreateDeliveryPayload(validDraft());
   assert.equal(payload.sourceSystem, "manual");
   assert.equal(payload.externalId, "UF-10452");
+  assert.deepEqual(payload.recipient.coordinate, {
+    latitude: 13.7439,
+    longitude: 100.547,
+    provenance: "dispatcher_pin",
+  });
   assert.equal(payload.promise.windowStart, "2026-09-02T02:00:00.000Z");
   assert.equal(payload.promise.windowEnd, "2026-09-02T05:00:00.000Z");
   assert.deepEqual(payload.manifest.items[0], {

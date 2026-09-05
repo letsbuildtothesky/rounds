@@ -700,7 +700,7 @@ export function OperationsWorkstation({ accessToken, realtimeClient, tenant, use
       {deliveryIntakeOpen && <>
         <button className="v45-intake-scrim" type="button" aria-label="Close delivery intake" onClick={onCloseDeliveryIntake} />
         <aside className="v45-intake-drawer" role="dialog" aria-modal="true" aria-labelledby="v45-intake-title">
-          <header><div><small>+ DELIVERIES</small><h2 id="v45-intake-title">Add delivery</h2><p>Create one canonical delivery for the unplanned pool.</p></div><button type="button" onClick={onCloseDeliveryIntake} aria-label="Close delivery intake"><CloseIcon /></button></header>
+          <header><div><small>DELIVERY INTAKE</small><h2 id="v45-intake-title">Add delivery</h2><p>Manual single delivery · type and verify operational details</p></div><button type="button" onClick={onCloseDeliveryIntake} aria-label="Close delivery intake"><CloseIcon /></button></header>
           <div className="v45-intake-body">{deliveryIntake}</div>
         </aside>
       </>}
