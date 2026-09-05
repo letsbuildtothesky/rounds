@@ -14,6 +14,7 @@ import '../driver/driver_chat_location.dart';
 import '../driver/driver_chat_attachment_opener.dart';
 import '../driver/driver_chat_media.dart';
 import '../driver/driver_message_links.dart';
+import '../driver/driver_operations_realtime.dart';
 import '../driver/driver_operations_thread.dart';
 import '../driver/driver_session.dart';
 import '../storage/operations_message_draft_store.dart';
@@ -55,7 +56,13 @@ class _OperationsChatScreenState extends State<OperationsChatScreen>
   OperationsMessageDraftStore? _draftStore;
   Timer? _draftTimer;
   Timer? _messageRefreshTimer;
+  late final DriverOperationsRealtime _realtime = DriverOperationsRealtime(
+    supabaseUrl: const String.fromEnvironment('SUPABASE_URL'),
+    publishableKey: const String.fromEnvironment('SUPABASE_PUBLISHABLE_KEY'),
+    accessTokenProvider: widget.controller.driverRealtimeAccessToken,
+  );
   bool _refreshingMessages = false;
+  bool _messageRefreshPending = false;
   bool _initialReadBoundaryCaptured = false;
   bool _markingRead = false;
   String? _unreadBoundaryMessageId;
@@ -71,21 +78,25 @@ class _OperationsChatScreenState extends State<OperationsChatScreen>
     _composer.addListener(_composerChanged);
     unawaited(_restoreDraft());
     unawaited(_load());
+    unawaited(_startRealtime());
     _messageRefreshTimer = Timer.periodic(
-      const Duration(seconds: 5),
-      (_) => unawaited(_load()),
+      const Duration(seconds: 30),
+      (_) => unawaited(_refreshFromFallback()),
     );
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) unawaited(_load());
+    if (state == AppLifecycleState.resumed) {
+      unawaited(_refreshFromFallback());
+    }
   }
 
   @override
   void dispose() {
     _draftTimer?.cancel();
     _messageRefreshTimer?.cancel();
+    unawaited(_realtime.close());
     WidgetsBinding.instance.removeObserver(this);
     final draftStore = _draftStore;
     if (draftStore != null) {
@@ -96,6 +107,36 @@ class _OperationsChatScreenState extends State<OperationsChatScreen>
     _scrollController.dispose();
     if (widget.mediaGateway == null) unawaited(_mediaGateway.dispose());
     super.dispose();
+  }
+
+  Future<void> _startRealtime() async {
+    final driverId = widget.controller.driverSession?.driverId;
+    if (!widget.controller.driverConfigured || driverId == null) return;
+    try {
+      await _realtime.start(
+        driverId: driverId,
+        onChanged: () {
+          if (mounted) unawaited(_load());
+        },
+      );
+    } catch (error) {
+      assert(() {
+        debugPrint(
+          '[Rounds realtime] driver channel start failed (${error.runtimeType})',
+        );
+        return true;
+      }());
+      // The authoritative 30-second API refresh remains available.
+    }
+  }
+
+  Future<void> _refreshFromFallback() async {
+    await _load();
+    try {
+      await _realtime.refreshAuth();
+    } catch (_) {
+      // Token refresh failure is handled by the existing authenticated API.
+    }
   }
 
   Future<void> _restoreDraft() async {
@@ -130,8 +171,12 @@ class _OperationsChatScreenState extends State<OperationsChatScreen>
   }
 
   Future<void> _load() async {
-    if (_refreshingMessages) return;
+    if (_refreshingMessages) {
+      _messageRefreshPending = true;
+      return;
+    }
     _refreshingMessages = true;
+    _messageRefreshPending = false;
     var pending = const <DriverOperationsMessageModel>[];
     DriverOperationsThreadModel? thread;
     String? error;
@@ -177,6 +222,10 @@ class _OperationsChatScreenState extends State<OperationsChatScreen>
       }
     } finally {
       _refreshingMessages = false;
+      if (_messageRefreshPending && mounted) {
+        _messageRefreshPending = false;
+        unawaited(_load());
+      }
     }
   }
 
@@ -191,7 +240,7 @@ class _OperationsChatScreenState extends State<OperationsChatScreen>
       );
       _lastMarkedMessageId = messageId;
     } catch (_) {
-      // Read metadata is retried by the next five-second thread refresh.
+      // Read metadata is retried by the next authoritative thread refresh.
     } finally {
       _markingRead = false;
     }

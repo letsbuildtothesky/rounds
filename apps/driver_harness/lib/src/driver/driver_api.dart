@@ -76,6 +76,8 @@ class DriverApi {
       publishableKey.isNotEmpty &&
       roundsApiUrl.isNotEmpty;
 
+  Future<String?> realtimeAccessToken() => _storage.read(key: _accessTokenKey);
+
   Future<DriverSessionModel?> restore() async {
     final accessToken = await _storage.read(key: _accessTokenKey);
     if (accessToken == null) return null;

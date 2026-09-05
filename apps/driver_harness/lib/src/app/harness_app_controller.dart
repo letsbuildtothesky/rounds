@@ -275,6 +275,9 @@ class HarnessAppController extends ChangeNotifier {
     required DriverRoundStopModel stop,
   }) => _driverApi.getOperationsThread(round: round, stop: stop);
 
+  Future<String?> driverRealtimeAccessToken() =>
+      _driverApi.realtimeAccessToken();
+
   Future<void> markOperationsThreadRead({
     required DriverRoundModel round,
     required DriverRoundStopModel stop,
