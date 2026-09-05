@@ -16,7 +16,6 @@ import type {
   UnplannedDeliverySummary,
 } from "@rounds/contracts";
 import { OperationsMap, type OperationsMapCamera, type OperationsMapHandle, type OperationsMapMode } from "./operations-map";
-import { OperationsMenuIcon, OperationsSectionSheet, type OperationsSectionKey } from "./operations-section-sheet";
 import { DeliveriesWorkspace } from "./deliveries-workspace";
 import { DriversWorkspace } from "./drivers-workspace";
 import { HistoryPanel } from "./history-panel";
@@ -198,7 +197,6 @@ export function OperationsWorkstation({ accessToken, realtimeClient, tenant, use
   const [stale, setStale] = useState(false);
   const [error, setError] = useState("");
   const [profileOpen, setProfileOpen] = useState(false);
-  const [sectionMenuOpen, setSectionMenuOpen] = useState(false);
   const [mapMode, setMapMode] = useState<OperationsMapMode>("operations");
   const [mapMenuOpen, setMapMenuOpen] = useState(false);
   const [mapCamera, setMapCamera] = useState<OperationsMapCamera>({ bearing: 0, pitch: 0 });
@@ -535,7 +533,6 @@ export function OperationsWorkstation({ accessToken, realtimeClient, tenant, use
         <button className={historyOpen ? "on" : ""} type="button" onClick={onHistory}>History</button>
         <button type="button" disabled title="Settings workspace is not connected yet">Settings</button>
       </nav>
-      <button className="v45-section-trigger" type="button" aria-haspopup="dialog" aria-expanded={sectionMenuOpen} onClick={() => setSectionMenuOpen(true)}><span>{historyOpen ? "History" : driversOpen ? "Drivers" : deliveriesOpen || deliveryIntakeOpen ? "Deliveries" : "Dispatch"}</span><OperationsMenuIcon /></button>
       <div className="v45-spacer" />
       <button className="v45-network" type="button" disabled title="Network dispatch is outside the connected Own-Team slice"><i /><span>Own Team</span><ChevronIcon /></button>
       <button className="v45-util" type="button" title="Driver communications" onClick={() => openCommunications()}><MessageIcon />{!!communications.projection?.totalUnreadCount && <b>{communications.projection.totalUnreadCount}</b>}</button>
@@ -544,19 +541,6 @@ export function OperationsWorkstation({ accessToken, realtimeClient, tenant, use
     </header>
 
     {stale && <div className="v45-system-strip"><i /><b>Last-known operational view</b><span>Live refresh is paused. Decisions are withheld until current truth returns.</span><button onClick={() => void load()}>Retry</button></div>}
-
-    <OperationsSectionSheet
-      open={sectionMenuOpen}
-      current={historyOpen ? "history" : driversOpen ? "drivers" : deliveriesOpen || deliveryIntakeOpen ? "deliveries" : "action"}
-      onClose={() => setSectionMenuOpen(false)}
-      onSelect={(section: OperationsSectionKey) => {
-        if (section === "action") { onCloseDeliveryIntake?.(); onCloseDeliveries?.(); onCloseDrivers?.(); onCloseHistory?.(); }
-        else if (section === "deliveries") { onCloseDeliveryIntake?.(); onCloseDrivers?.(); onCloseHistory?.(); onDeliveries?.(); }
-        else if (section === "drivers") { onCloseDeliveryIntake?.(); onCloseDeliveries?.(); onCloseHistory?.(); onDrivers?.(); }
-        else if (section === "history") onHistory();
-      }}
-      onSignOut={onSignOut}
-    />
 
     <div className="v45-board">
       <aside className="v45-rail">
@@ -576,7 +560,7 @@ export function OperationsWorkstation({ accessToken, realtimeClient, tenant, use
       </aside>
 
       <section className="v45-map-wrap">
-        <div className="v45-map-header"><strong>Bangkok · {dispatchMode === "live" ? "Live" : "Plan"}</strong><span className="v45-map-context">{dispatchMode === "plan" ? `${planning?.unplannedDeliveries.filter((delivery) => delivery.serviceDate === planningDate).length ?? 0} unplanned · ${selectedStops.length} selected` : `${buckets.action.length} Action · ${buckets.live.length} Live · ${activeRounds} active Rounds · ${buckets.ready.length} planned`}</span><button type="button" aria-haspopup="dialog" aria-expanded={roundsOverviewOpen} onClick={() => { setSelection(null); setContactHistoryThreadId(""); setRoundsOverviewOpen(true); }}>Rounds</button><button type="button" disabled title="Automatic planning is not connected yet"><i />Manual</button><div className="v45-spacer" /><em><i />{stale ? "Connection delayed" : dispatchMode === "plan" ? "Draft only" : "Connected"}</em><span>{dispatchMode === "plan" ? `${selectedStops.length} selected · not approved` : <>Live rounds <b>{activeRounds}</b></>}</span></div>
+        <div className="v45-map-header"><strong>Bangkok · {dispatchMode === "live" ? "Live" : "Plan"}</strong><span className="v45-map-context">{dispatchMode === "plan" ? `${planning?.unplannedDeliveries.filter((delivery) => delivery.serviceDate === planningDate).length ?? 0} unplanned · ${selectedStops.length} selected` : `${buckets.action.length} Action · ${buckets.live.length} Live · ${activeRounds} active Rounds · ${buckets.ready.length} planned`}</span><button className="v45-rounds-map-link" type="button" aria-haspopup="dialog" aria-expanded={roundsOverviewOpen} onClick={() => { setSelection(null); setContactHistoryThreadId(""); setRoundsOverviewOpen(true); }}>Rounds</button><button className="v45-map-automation" type="button" disabled title="Automatic planning is not connected yet"><i /><span>Manual</span></button><div className="v45-spacer" /><em className="v45-map-health"><i />{stale ? "Connection delayed" : dispatchMode === "plan" ? "Draft only" : "Connected"}</em><span>{dispatchMode === "plan" ? `${selectedStops.length} selected · not approved` : <>Live rounds <b>{activeRounds}</b></>}</span></div>
         <div className="v45-map-body" onClick={() => { setMapMenuOpen(false); setDriverMapMenu(null); }}>
           <OperationsMap
             ref={operationsMapRef}

@@ -7,6 +7,14 @@
 
 ## Changelog
 
+- **2026-09-05 · Checkpoint 56:** Removes the authenticated workstation's
+  custom narrow navigation substitution and restores the supplied v45 compact
+  behavior: global destinations remain visible in a two-row iPad header while
+  the Dispatch rail and map stay side by side. Side-by-side browser comparison
+  against the canonical HTML passed at 1280×720, 1024×768 and 768×1024. The
+  compact React layouts measured 282/742 px and 274/494 px rail/map splits,
+  retained all four navigation items and produced no document overflow.
+  Disconnected Network, weather and automatic-planning claims remain absent.
 - **2026-09-05 · Checkpoint 55:** Connects canonical numbered Stop markers to
   authoritative own-fleet Round data. The Action projection now batches the
   selected tenant's assigned Stop order, state, delivery identity and saved
@@ -367,7 +375,7 @@ Canonical visual source: `ux/operations/rounds-operations-current-v45.html`. The
 | Capability | Current scope | Status | Evidence now | Required closure |
 |---|---|---|---|---|
 | Authentication, tenant and role projection | Pilot P0 | `VERIFIED` | Supabase session, tenant membership, dispatcher/viewer roles and read-only enforcement exist. | Production account lifecycle, recovery and session security. |
-| v45 workstation shell and navigation | Pilot P1 | `IMPLEMENTED` | React shell follows the canonical Dispatch/Deliveries/Drivers/Communications/History structure. | Full visual comparison and narrow/iPad responsive pass. |
+| v45 workstation shell and navigation | Pilot P1 | `VERIFIED` | React shell follows the canonical Dispatch/Deliveries/Drivers/Communications/History structure. Canonical side-by-side browser comparison now passes for the Dispatch rail/map workstation at 1280×720, 1024×768 and 768×1024; the supplied two-row tablet navigation, exact compact rail/map splits and overflow safety are accepted. | Repeat compact reference comparison for every business workspace/open drawer and complete physical iPad/Safari acceptance. |
 | Real Operations map | Pilot/Slice 2 P0 | `VERIFIED` | Real Mapbox renderer, Operations/Satellite styles, zoom, north, rotation, pitch, truthful error state, server positions and server route geometry exist. The v45 legend is now derived from rendered own-driver, action-Stop, unplanned-Stop and proposed-route evidence; disconnected Network, external and traffic roles are absent. Own-driver markers are keyed to the physical Driver rather than Round rows, use the newest hot position, retain one deterministic primary-click Round and aggregate unread state across that Driver's visible Rounds. The supplied driver quick-contact menu is connected: primary click opens the Round, desktop right-click/touch long-press exposes exact-thread Message/Voice, real-coordinate Center and Show full Round; Call remains disabled until real calling exists. Numbered live Stop markers now come from tenant-scoped Round order, Stop state and saved destination pins; terminal, future and current emphasis follows canonical v45 semantics and action exceptions do not create duplicate pins. | Complete live route/trail distinction, physical current-Stop acceptance, physical touch long-press acceptance and responsive/device acceptance. |
 | Live Dispatch / Action queue | Pilot P0 | `VERIFIED` | Server-backed Rounds, exceptions, live positions and freshness states exist. | Remaining edge states, filtering and realtime/polling production policy. |
 | Single delivery intake | Pilot P0 | `VERIFIED` | Canonical internal delivery command, idempotency and drawer UI exist. | Address validation depth and final v45 visual acceptance. |
@@ -586,6 +594,12 @@ This sequence does not promote later slices; it orders the already authorized En
   five real future Stops and exact Stop 2 selection; no active live fixture was
   available, so current-Stop emphasis remains a deterministic automated proof
   until physical acceptance.
+- **D23 canonical responsive Dispatch shell accepted 2026-09-05:** removed the
+  authenticated workstation's custom compact navigation trigger and restored
+  the supplied v45 two-row iPad navigation. Side-by-side reference comparison
+  passed at 1280×720, 1024×768 and 768×1024 with measured compact rail/map
+  splits, all four global navigation items and no page overflow. Business
+  workspaces/open drawers and physical iPad Safari remain open.
 - Complete assigned-Round offline read cache and consolidated sync truth.
 - Finish N01/N02/N03 recovery states.
 - Run golden/reference-viewport comparisons for every in-scope board.
