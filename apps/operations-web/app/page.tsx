@@ -199,15 +199,12 @@ export default function OperationsPage() {
       tenant={selectedTenant}
       userName={operationsSession?.user.displayName ?? authSession.user.email ?? "Operations"}
       deliveryIntakeOpen={deliveryIntakeOpen}
-      deliveriesOpen={section === "deliveries"}
       driversOpen={section === "drivers"}
       historyOpen={section === "history"}
       deliveryRefreshKey={deliveryRevision}
       communicationRequest={communicationRequest}
       onCloseDeliveryIntake={() => setDeliveryIntakeOpen(false)}
-      onDeliveries={() => { setDeliveryIntakeOpen(false); setSection("deliveries"); }}
       onDrivers={() => { setDeliveryIntakeOpen(false); setSection("drivers"); }}
-      onCloseDeliveries={() => setSection("action")}
       onCloseDrivers={() => setSection("action")}
       onCloseHistory={() => setSection("action")}
       deliveryIntake={<DeliveryIntake
@@ -237,7 +234,7 @@ export default function OperationsPage() {
     <div className="operations-shell">
       <header className="app-header">
         <div className="brand"><RoundsMark /><span>ROUNDS</span></div>
-        <nav aria-label="Operations sections"><button type="button" className={section === "action" ? "active" : ""} onClick={() => setSection("action")}>Dispatch</button><button type="button" className={section === "deliveries" ? "active" : ""} onClick={() => setSection("deliveries")}>Deliveries</button><button type="button" className={section === "drivers" ? "active" : ""} onClick={() => setSection("drivers")}>Drivers</button><button type="button" className={section === "history" ? "active" : ""} onClick={() => setSection("history")}>History</button></nav>
+        <nav aria-label="Operations sections"><button type="button" className={section === "action" ? "active" : ""} onClick={() => setSection("action")}>Dispatch</button><button type="button" className={section === "drivers" ? "active" : ""} onClick={() => setSection("drivers")}>Drivers</button><button type="button" className={section === "history" ? "active" : ""} onClick={() => setSection("history")}>History</button></nav>
         <div className="account">
           <div><strong>{operationsSession?.user.displayName ?? authSession.user.email}</strong><small>{selectedTenant ? roleLabel(selectedTenant.role) : "No access"}</small></div>
           <button type="button" onClick={() => void signOut()}>Sign out</button>

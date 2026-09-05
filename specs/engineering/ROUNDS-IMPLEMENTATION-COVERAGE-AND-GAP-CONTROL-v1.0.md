@@ -7,6 +7,21 @@
 
 ## Changelog
 
+- **2026-09-05 · Checkpoint 58:** Reconciles delivery records with the supplied
+  v45 Dispatch information architecture. Ready, Live and Done now list
+  individual server-authoritative deliveries rather than Round summaries; the
+  All/Today scope and reference/recipient/address/phone/Round search operate on
+  the same projection. Each record opens the canonical right drawer with its
+  promise, recipient, destination, Round/Stop version and physical manifest,
+  then routes only to an existing protected workflow: planning before
+  assignment, the exact assigned/live Stop after assignment, or committed
+  History after closure. The unreachable invented top-level Deliveries board
+  is removed, and both controls in the Plan delivery drawer now perform their
+  labelled selection/map actions. Signed-in localhost acceptance covered five
+  real Ready records, the tenant-local Today filter and exact B2 Stop 2 handoff;
+  all 36 Operations tests, typecheck and production build pass. A live-state
+  fixture and the generic pre-custody delivery-edit consequence workflow remain
+  open rather than being simulated.
 - **2026-09-05 · Checkpoint 57:** Reconciles the connected manual
   single-delivery drawer with the supplied v45 hierarchy and current BS-08
   boundary. The invented command banner and blurred scrim are removed;
@@ -386,12 +401,12 @@ Canonical visual source: `ux/operations/rounds-operations-current-v45.html`. The
 | Capability | Current scope | Status | Evidence now | Required closure |
 |---|---|---|---|---|
 | Authentication, tenant and role projection | Pilot P0 | `VERIFIED` | Supabase session, tenant membership, dispatcher/viewer roles and read-only enforcement exist. | Production account lifecycle, recovery and session security. |
-| v45 workstation shell and navigation | Pilot P1 | `VERIFIED` | React shell follows the canonical Dispatch/Deliveries/Drivers/Communications/History structure. Canonical side-by-side browser comparison now passes for the Dispatch rail/map workstation at 1280×720, 1024×768 and 768×1024; the supplied two-row tablet navigation, exact compact rail/map splits and overflow safety are accepted. | Repeat compact reference comparison for every business workspace/open drawer and complete physical iPad/Safari acceptance. |
+| v45 workstation shell and navigation | Pilot P1 | `VERIFIED` | React shell follows the canonical Dispatch/Drivers/History/Settings navigation; delivery records and communications remain contextual to Dispatch exactly as in v45. Canonical side-by-side browser comparison now passes for the Dispatch rail/map workstation at 1280×720, 1024×768 and 768×1024; the supplied two-row tablet navigation, exact compact rail/map splits and overflow safety are accepted. | Repeat compact reference comparison for every business workspace/open drawer and complete physical iPad/Safari acceptance. |
 | Real Operations map | Pilot/Slice 2 P0 | `VERIFIED` | Real Mapbox renderer, Operations/Satellite styles, zoom, north, rotation, pitch, truthful error state, server positions and server route geometry exist. The v45 legend is now derived from rendered own-driver, action-Stop, unplanned-Stop and proposed-route evidence; disconnected Network, external and traffic roles are absent. Own-driver markers are keyed to the physical Driver rather than Round rows, use the newest hot position, retain one deterministic primary-click Round and aggregate unread state across that Driver's visible Rounds. The supplied driver quick-contact menu is connected: primary click opens the Round, desktop right-click/touch long-press exposes exact-thread Message/Voice, real-coordinate Center and Show full Round; Call remains disabled until real calling exists. Numbered live Stop markers now come from tenant-scoped Round order, Stop state and saved destination pins; terminal, future and current emphasis follows canonical v45 semantics and action exceptions do not create duplicate pins. | Complete live route/trail distinction, physical current-Stop acceptance, physical touch long-press acceptance and responsive/device acceptance. |
 | Live Dispatch / Action queue | Pilot P0 | `VERIFIED` | Server-backed Rounds, exceptions, live positions and freshness states exist. | Remaining edge states, filtering and realtime/polling production policy. |
 | Single delivery intake | Pilot P0 | `VERIFIED` | The canonical internal command and idempotency path now use the supplied v45 drawer hierarchy without the former invented banner/scrim. Recipient, promise, manifest and inherited pickup retain their connected truth. The operational destination is selected through the shared real Mapbox crosshair workflow and enters the command only as explicitly confirmed `dispatcher_pin` provenance. Signed-in 1280×720 comparison matches the reference drawer width, x-position and header/body padding; no delivery was submitted during acceptance. | Complete the production address/geocoding provider-coherence decision and corresponding validation depth, then physical tablet/Safari acceptance. |
 | Batch/manual import | Slice 2 P1 | `SPECIFIED` | No batch ingestion UI. | Define file template, row validation, partial failure and reconciliation UX. |
-| Deliveries workspace | Pilot P1 | `VERIFIED` | Server-backed delivery list/details and operational states exist. | Complete filters, edit boundaries and remaining v45 record states. |
+| Contextual delivery records | Pilot P1 | `VERIFIED` | The v45 Ready/Live/Done queues now list individual server-authoritative deliveries, with working All/Today scope and canonical record drawers for promise, recipient, destination, Round/Stop version and manifest truth. The prior invented top-level board is removed. Record actions route to real planning, exact assigned/live Stop or History workflows; the Plan drawer has no ghost selection/map controls. Signed-in localhost accepted five real Ready records and exact B2 Stop 2 handoff. | Physically accept a live-state fixture and implement the generic pre-custody edit field policy plus route/capacity consequence preview before exposing an Edit delivery command. |
 | Manual plan construction | Slice 2 P0 | `VERIFIED` | Date, ordered Stop selection, own driver, shared multidimensional capacity check, real route/window preview and explicit approval exist. | Configure production cargo values and add service dwell after the responsible business decisions. |
 | Automatic plan generation | Slice 2 P1 | `SPECIFIED` | Intentionally not simulated in React. | Explainable heuristic, proposed plan persistence, uncovered-work truth and tests. |
 | Plan adjustment before approval | Slice 2 P0 | `ACCEPTED` | Canonical Stop-order/departure controls and existing-Round Stop movement use fresh server route/window/shift/cargo previews. Moving a Stop recalculates only source/target Rounds, shows both consequences and commits through one dual-version atomic database command. Signed-in live acceptance passed with two approved, explicitly configured demo Rounds. | Production-approved cargo values and service dwell remain before full operating approval. |
@@ -618,8 +633,19 @@ This sequence does not promote later slices; it orders the already authorized En
   confirmation writes `dispatcher_pin` truth. AI/file and batch controls remain
   absent rather than simulating later-slice behavior. Production address
   provider validation and physical tablet/Safari acceptance remain open. The
-  next authorized capability is the connected Deliveries workspace's remaining
-  v45 filters, edit boundaries and record-state acceptance.
+  next authorized capability is the contextual delivery-record reconciliation.
+- **D25 contextual v45 delivery records accepted 2026-09-05:** Ready, Live and
+  Done are now delivery queues backed by the canonical Operations delivery
+  projection, with real All/Today scope and shared search. Their right drawer
+  exposes current delivery, promise, destination, Round/Stop and manifest
+  versions and routes to the existing authoritative workflow for that custody
+  boundary. The invented unreachable top-level Deliveries workspace is removed,
+  and the Plan drawer's two visible controls are now functional. Signed-in
+  localhost accepted five Ready deliveries, tenant-local Today filtering and
+  exact assigned Stop 2 navigation; automated tests and production build pass.
+  The next authorized capability is a pre-custody delivery-edit command with
+  explicit field policy and route/capacity consequence preview; no generic Edit
+  control is exposed before that command exists.
 - Complete assigned-Round offline read cache and consolidated sync truth.
 - Finish N01/N02/N03 recovery states.
 - Run golden/reference-viewport comparisons for every in-scope board.

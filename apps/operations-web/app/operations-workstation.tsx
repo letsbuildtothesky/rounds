@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import type {
   OperationsActionException,
   OperationsActionProjection,
+  OperationsDeliveriesProjection,
   OperationsPlanningProjection,
   OperationsDeliveryItem,
   OperationsDriverCapacityItem,
@@ -16,7 +17,6 @@ import type {
   UnplannedDeliverySummary,
 } from "@rounds/contracts";
 import { OperationsMap, type OperationsMapCamera, type OperationsMapHandle, type OperationsMapMode } from "./operations-map";
-import { DeliveriesWorkspace } from "./deliveries-workspace";
 import { DriversWorkspace } from "./drivers-workspace";
 import { HistoryPanel } from "./history-panel";
 import { ContactHistoryDrawer } from "./contact-history-drawer";
@@ -26,11 +26,23 @@ import { CommunicationsPanel } from "./communications-panel";
 import { useOperationsCommunications } from "./use-operations-communications";
 import { communicationUnreadByRound } from "../src/operations-communications-state";
 import { operationsMapLegendEntries } from "../src/operations-map-legend";
+import {
+  deliveryCommandBoundary,
+  deliveryMatchesScope,
+  deliveryMatchesSearch,
+  deliveryQueueTab,
+  type DeliveryScope,
+} from "../src/operations-delivery-dispatch";
 
 const roundsApiUrl = process.env.NEXT_PUBLIC_ROUNDS_API_URL ?? "http://127.0.0.1:8080";
 
 type QueueTab = "action" | "ready" | "live" | "done";
-type Selection = { kind: "exception"; item: OperationsActionException } | { kind: "round"; item: OperationsRoundSummary } | { kind: "delivery"; item: UnplannedDeliverySummary } | null;
+type Selection =
+  | { kind: "exception"; item: OperationsActionException }
+  | { kind: "round"; item: OperationsRoundSummary }
+  | { kind: "planning-delivery"; item: UnplannedDeliverySummary }
+  | { kind: "delivery-record"; item: OperationsDeliveryItem }
+  | null;
 type DriverMapMenu = { round: OperationsRoundSummary; position: { latitude: number; longitude: number }; x: number; y: number };
 type ApiError = { error?: { message?: string } };
 
@@ -42,15 +54,12 @@ type Props = {
   demoMode?: boolean;
   deliveryIntake?: ReactNode;
   deliveryIntakeOpen?: boolean;
-  deliveriesOpen?: boolean;
   driversOpen?: boolean;
   historyOpen?: boolean;
   deliveryRefreshKey?: number;
   communicationRequest?: { threadId: string; nonce: number; startVoice?: boolean };
   onCloseDeliveryIntake?: () => void;
-  onDeliveries?: () => void;
   onDrivers?: () => void;
-  onCloseDeliveries?: () => void;
   onCloseDrivers?: () => void;
   onCloseHistory?: () => void;
   onAddDelivery: () => void;
@@ -98,6 +107,36 @@ function demoPlanningProjection(tenantId: string): OperationsPlanningProjection 
     ],
     activeRounds: demoProjection(tenantId).rounds,
   };
+}
+
+function demoDeliveriesProjection(tenantId: string): OperationsDeliveriesProjection {
+  const observedAt = new Date().toISOString();
+  const planning = demoPlanningProjection(tenantId);
+  const action = demoProjection(tenantId);
+  const planned: OperationsDeliveryItem[] = action.mapStops.map((stop) => {
+    const round = action.rounds.find((item) => item.id === stop.roundId)!;
+    const state: OperationsDeliveryItem["state"] = stop.stopState === "arrived" ? "arrived" : stop.stopState === "exception" ? "exception" : "en_route";
+    return {
+      deliveryId: stop.deliveryId, reference: stop.deliveryReference, state, version: 1, sourceSystem: "preview",
+      serviceDate: round.serviceDate, serviceTimezone: "Asia/Bangkok", pickupLocationId: "urbanflowers", pickupLocationName: "UrbanFlowers",
+      buyerSameAsRecipient: true, buyerName: stop.recipientName, buyerPhone: "+66000000000", recipientName: stop.recipientName,
+      recipientPhone: "+66000000000", rawAddress: stop.rawAddress, coordinate: stop.coordinate, isSurprise: false,
+      createdAt: observedAt, updatedAt: observedAt, stop: { id: stop.stopId, state: stop.stopState, version: 1 },
+      promise: { windowStart: `${round.serviceDate}T02:00:00.000Z`, windowEnd: `${round.serviceDate}T10:00:00.000Z` },
+      manifest: { id: `manifest-${stop.deliveryId}`, state: state === "en_route" || state === "arrived" ? "locked" : "draft", version: 1, items: [{ lineNumber: 1, description: "Flower delivery", quantity: 1 }] },
+      round: { id: round.id, reference: round.reference, state: round.state, sequence: stop.sequence, driverName: round.driverName },
+    };
+  });
+  const unplanned: OperationsDeliveryItem[] = planning.unplannedDeliveries.map((item) => ({
+    deliveryId: item.deliveryId, reference: item.reference, state: "unplanned", version: 1, sourceSystem: "preview",
+    serviceDate: item.serviceDate, serviceTimezone: "Asia/Bangkok", pickupLocationId: item.pickupLocationId, pickupLocationName: "UrbanFlowers",
+    buyerSameAsRecipient: true, buyerName: item.recipientName, buyerPhone: "+66000000000", recipientName: item.recipientName,
+    recipientPhone: "+66000000000", rawAddress: item.rawAddress, coordinate: item.coordinate, isSurprise: false,
+    createdAt: observedAt, updatedAt: observedAt, stop: { id: item.stopId, state: "draft", version: 1 },
+    promise: { windowStart: item.windowStart, windowEnd: item.windowEnd },
+    manifest: { id: `manifest-${item.deliveryId}`, state: "draft", version: 1, items: [{ lineNumber: 1, description: item.manifestSummary, quantity: 1 }] },
+  }));
+  return { tenantId, observedAt, deliveries: [...unplanned, ...planned] };
 }
 
 function demoCapacityProjection(tenantId: string, serviceDate: string): OperationsDriversProjection {
@@ -171,10 +210,11 @@ function nextRoundReference(deliveries: UnplannedDeliverySummary[]): string {
   return `ROUND-${serviceDate.replaceAll("-", "")}-${time}`;
 }
 
-export function OperationsWorkstation({ accessToken, realtimeClient, tenant, userName, demoMode = false, deliveryIntake, deliveryIntakeOpen = false, deliveriesOpen = false, driversOpen = false, historyOpen = false, deliveryRefreshKey = 0, communicationRequest, onCloseDeliveryIntake, onDeliveries, onDrivers, onCloseDeliveries, onCloseDrivers, onCloseHistory, onAddDelivery, onHistory, onCommunications, onSignOut }: Props) {
+export function OperationsWorkstation({ accessToken, realtimeClient, tenant, userName, demoMode = false, deliveryIntake, deliveryIntakeOpen = false, driversOpen = false, historyOpen = false, deliveryRefreshKey = 0, communicationRequest, onCloseDeliveryIntake, onDrivers, onCloseDrivers, onCloseHistory, onAddDelivery, onHistory, onCommunications, onSignOut }: Props) {
   const communications = useOperationsCommunications(accessToken, tenant, realtimeClient);
   const roundUnread = useMemo(() => communicationUnreadByRound(communications.projection), [communications.projection]);
   const [projection, setProjection] = useState<OperationsActionProjection | null>(null);
+  const [deliveryProjection, setDeliveryProjection] = useState<OperationsDeliveriesProjection | null>(null);
   const [planning, setPlanning] = useState<OperationsPlanningProjection | null>(null);
   const [driverCapacity, setDriverCapacity] = useState<OperationsDriversProjection | null>(null);
   const [planningDate, setPlanningDate] = useState(() => new Intl.DateTimeFormat("en-CA", { timeZone: tenant.timezone }).format(new Date()));
@@ -192,6 +232,7 @@ export function OperationsWorkstation({ accessToken, realtimeClient, tenant, use
   const [dispatchMode, setDispatchMode] = useState<"live" | "plan">("live");
   const [tab, setTab] = useState<QueueTab>("action");
   const [query, setQuery] = useState("");
+  const [deliveryScope, setDeliveryScope] = useState<DeliveryScope>("all");
   const [selection, setSelection] = useState<Selection>(null);
   const [loading, setLoading] = useState(true);
   const [stale, setStale] = useState(false);
@@ -226,11 +267,11 @@ export function OperationsWorkstation({ accessToken, realtimeClient, tenant, use
   }, [selection]);
 
   useEffect(() => {
-    if (deliveriesOpen || driversOpen || historyOpen || deliveryIntakeOpen) {
+    if (driversOpen || historyOpen || deliveryIntakeOpen) {
       setContactHistoryThreadId("");
       setRoundsOverviewOpen(false);
     }
-  }, [deliveriesOpen, deliveryIntakeOpen, driversOpen, historyOpen]);
+  }, [deliveryIntakeOpen, driversOpen, historyOpen]);
 
   useEffect(() => {
     if (contactHistoryThreadId) setRoundsOverviewOpen(false);
@@ -247,22 +288,26 @@ export function OperationsWorkstation({ accessToken, realtimeClient, tenant, use
     if (!quiet) setLoading(true);
     if (demoMode) {
       setProjection(demoProjection(tenant.id));
+      setDeliveryProjection(demoDeliveriesProjection(tenant.id));
       setError("");
       setStale(false);
       setLoading(false);
       return;
     }
     try {
-      const response = await fetch(`${roundsApiUrl}/v1/operations/action`, {
-        headers: {
-          authorization: `Bearer ${accessToken}`,
-          "x-rounds-tenant-id": tenant.id,
-          "x-trace-id": crypto.randomUUID(),
-        },
-      });
-      const body = await response.json() as OperationsActionProjection | ApiError;
-      if (!response.ok) throw new Error((body as ApiError).error?.message ?? `Action HTTP ${response.status}`);
-      setProjection(body as OperationsActionProjection);
+      const headers = { authorization: `Bearer ${accessToken}`, "x-rounds-tenant-id": tenant.id, "x-trace-id": crypto.randomUUID() };
+      const [actionResponse, deliveriesResponse] = await Promise.all([
+        fetch(`${roundsApiUrl}/v1/operations/action`, { headers }),
+        fetch(`${roundsApiUrl}/v1/operations/deliveries`, { headers: { ...headers, "x-trace-id": crypto.randomUUID() } }),
+      ]);
+      const [actionBody, deliveriesBody] = await Promise.all([
+        actionResponse.json() as Promise<OperationsActionProjection | ApiError>,
+        deliveriesResponse.json() as Promise<OperationsDeliveriesProjection | ApiError>,
+      ]);
+      if (!actionResponse.ok) throw new Error((actionBody as ApiError).error?.message ?? `Action HTTP ${actionResponse.status}`);
+      if (!deliveriesResponse.ok) throw new Error((deliveriesBody as ApiError).error?.message ?? `Deliveries HTTP ${deliveriesResponse.status}`);
+      setProjection(actionBody as OperationsActionProjection);
+      setDeliveryProjection(deliveriesBody as OperationsDeliveriesProjection);
       setError("");
       setStale(false);
     } catch (caught) {
@@ -271,7 +316,7 @@ export function OperationsWorkstation({ accessToken, realtimeClient, tenant, use
     } finally {
       if (!quiet) setLoading(false);
     }
-  }, [accessToken, demoMode, tenant.id]);
+  }, [accessToken, deliveryRefreshKey, demoMode, tenant.id]);
 
   const loadPlanning = useCallback(async () => {
     if (demoMode) {
@@ -341,20 +386,22 @@ export function OperationsWorkstation({ accessToken, realtimeClient, tenant, use
     return () => window.clearTimeout(timer);
   }, [mapMode]);
 
+  const today = new Intl.DateTimeFormat("en-CA", { timeZone: tenant.timezone }).format(new Date());
   const buckets = useMemo(() => {
-    const rounds = projection?.rounds ?? [];
+    const scopedDeliveries = deliveryProjection?.deliveries.filter((item) => deliveryMatchesScope(item, deliveryScope, today)) ?? [];
+    const scopedDeliveryIds = new Set(scopedDeliveries.map((item) => item.deliveryId));
     return {
-      action: projection?.exceptions ?? [],
-      ready: rounds.filter((round) => round.state === "approved" || round.state === "loading"),
-      live: rounds.filter((round) => round.state === "active"),
-      done: rounds.filter((round) => round.state === "complete"),
+      action: projection?.exceptions.filter((item) => deliveryScope === "all" || scopedDeliveryIds.has(item.deliveryId)) ?? [],
+      ready: scopedDeliveries.filter((item) => deliveryQueueTab(item) === "ready"),
+      live: scopedDeliveries.filter((item) => deliveryQueueTab(item) === "live"),
+      done: scopedDeliveries.filter((item) => deliveryQueueTab(item) === "done"),
     };
-  }, [projection]);
+  }, [deliveryProjection, deliveryScope, projection?.exceptions, today]);
 
   const visible = useMemo(() => {
     const needle = query.trim().toLowerCase();
     if (tab === "action") return buckets.action.filter((item) => !needle || `${item.deliveryReference} ${item.recipientName} ${item.rawAddress}`.toLowerCase().includes(needle));
-    return buckets[tab].filter((item) => !needle || `${item.reference} ${item.driverName} ${item.state}`.toLowerCase().includes(needle));
+    return buckets[tab].filter((item) => deliveryMatchesSearch(item, needle));
   }, [buckets, query, tab]);
 
   const mapPlanningDeliveries = useMemo(
@@ -377,7 +424,7 @@ export function OperationsWorkstation({ accessToken, realtimeClient, tenant, use
     if (selection?.kind === "exception") {
       return { title: `${selection.item.deliveryReference} · ${selection.item.recipientName}`, address: selection.item.rawAddress, coordinate: selection.item.coordinate ?? { latitude: 13.735, longitude: 100.5598 } };
     }
-    if (selection?.kind === "delivery") {
+    if (selection?.kind === "planning-delivery" || selection?.kind === "delivery-record") {
       return { title: `${selection.item.reference} · ${selection.item.recipientName}`, address: selection.item.rawAddress, coordinate: selection.item.coordinate ?? { latitude: 13.735, longitude: 100.5598 } };
     }
     if (selection?.kind === "round" && selection.item.currentPosition) {
@@ -391,7 +438,7 @@ export function OperationsWorkstation({ accessToken, realtimeClient, tenant, use
     };
   }, [projection, selection]);
 
-  const activeRounds = buckets.live.length;
+  const activeRounds = projection?.rounds.filter((round) => round.state === "active").length ?? 0;
   const chosenDeliveries = useMemo(() => planning?.unplannedDeliveries.filter((delivery) => selectedStops.includes(delivery.stopId)) ?? [], [planning, selectedStops]);
   const planningAnchor = chosenDeliveries[0];
   const chosenDriver = driverCapacity?.drivers.find((driver) => driver.driverId === planningDriverId);
@@ -528,7 +575,7 @@ export function OperationsWorkstation({ accessToken, realtimeClient, tenant, use
       <div className="v45-wordmark">Rounds<i /></div>
       <div className="v45-workspace"><b>{tenant.displayName}</b><span>Bangkok · Own-team dispatch</span></div>
       <nav className="v45-nav" aria-label="Operations sections">
-        <button className={!deliveriesOpen && !driversOpen && !historyOpen ? "on" : ""} type="button" onClick={() => { onCloseDeliveries?.(); onCloseDrivers?.(); onCloseHistory?.(); }}>Dispatch</button>
+        <button className={!driversOpen && !historyOpen ? "on" : ""} type="button" onClick={() => { onCloseDrivers?.(); onCloseHistory?.(); }}>Dispatch</button>
         <button className={driversOpen ? "on" : ""} type="button" onClick={onDrivers}>Drivers</button>
         <button className={historyOpen ? "on" : ""} type="button" onClick={onHistory}>History</button>
         <button type="button" disabled title="Settings workspace is not connected yet">Settings</button>
@@ -547,7 +594,7 @@ export function OperationsWorkstation({ accessToken, realtimeClient, tenant, use
         <div className="v45-rail-head">
           <div className="v45-rail-title"><div><h1>Dispatch</h1><p>{dispatchMode === "plan" ? "Build today’s Rounds." : "What needs attention now."}</p></div><button type="button" className="v45-add" onClick={onAddDelivery}>+ Deliveries</button></div>
           <div className={`v45-mode ${dispatchMode === "plan" ? "plan" : ""}`}><button className={dispatchMode === "live" ? "on" : ""} type="button" onClick={() => { setDispatchMode("live"); setSelection(null); }}>Live</button><button className={dispatchMode === "plan" ? "on" : ""} type="button" onClick={() => { setDispatchMode("plan"); setSelection(null); }}>Plan <span>{planning?.unplannedDeliveries.length ?? buckets.ready.length}</span></button></div>
-          {dispatchMode === "plan" ? <div className="v45-plan-controls"><div className="v45-plan-calendar"><div className="v45-plan-date"><button type="button" aria-label="Previous date" onClick={() => { setPlanningDate((date) => shiftCalendarDate(date, -1)); setSelectedStops([]); setRequestedDepartureAt(""); }}>‹</button><input aria-label="Planning date" type="date" value={planningDate} onChange={(event) => { setPlanningDate(event.target.value); setSelectedStops([]); setRequestedDepartureAt(""); setRoundError(""); setRoundSuccess(null); }} /><button type="button" aria-label="Next date" onClick={() => { setPlanningDate((date) => shiftCalendarDate(date, 1)); setSelectedStops([]); setRequestedDepartureAt(""); }}>›</button></div><button type="button" className="v45-plan-today" onClick={() => { setPlanningDate(new Intl.DateTimeFormat("en-CA", { timeZone: tenant.timezone }).format(new Date())); setSelectedStops([]); setRequestedDepartureAt(""); }}>Today</button></div><p><span>Unplanned deliveries waiting</span><b>{planning?.unplannedDeliveries.filter((delivery) => delivery.serviceDate === planningDate).length ?? "—"}</b></p><button type="button" onClick={() => { void loadPlanning(); void loadDriverCapacity(); }}>Refresh planning truth</button><small>Select Stops in visit order. Nothing is assigned until explicit approval.</small></div> : <div className="v45-scope"><label>Delivery view<select defaultValue="all"><option value="all">All deliveries</option><option value="today">Today</option></select></label><p><b>{buckets.action.length} action</b><span>·</span><b>{activeRounds} live</b><span>·</span><span>{buckets.done.length} completed today</span></p></div>}
+          {dispatchMode === "plan" ? <div className="v45-plan-controls"><div className="v45-plan-calendar"><div className="v45-plan-date"><button type="button" aria-label="Previous date" onClick={() => { setPlanningDate((date) => shiftCalendarDate(date, -1)); setSelectedStops([]); setRequestedDepartureAt(""); }}>‹</button><input aria-label="Planning date" type="date" value={planningDate} onChange={(event) => { setPlanningDate(event.target.value); setSelectedStops([]); setRequestedDepartureAt(""); setRoundError(""); setRoundSuccess(null); }} /><button type="button" aria-label="Next date" onClick={() => { setPlanningDate((date) => shiftCalendarDate(date, 1)); setSelectedStops([]); setRequestedDepartureAt(""); }}>›</button></div><button type="button" className="v45-plan-today" onClick={() => { setPlanningDate(new Intl.DateTimeFormat("en-CA", { timeZone: tenant.timezone }).format(new Date())); setSelectedStops([]); setRequestedDepartureAt(""); }}>Today</button></div><p><span>Unplanned deliveries waiting</span><b>{planning?.unplannedDeliveries.filter((delivery) => delivery.serviceDate === planningDate).length ?? "—"}</b></p><button type="button" onClick={() => { void loadPlanning(); void loadDriverCapacity(); }}>Refresh planning truth</button><small>Select Stops in visit order. Nothing is assigned until explicit approval.</small></div> : <div className="v45-scope"><label>Delivery view<select value={deliveryScope} onChange={(event) => { setDeliveryScope(event.target.value as DeliveryScope); setSelection(null); }}><option value="all">All deliveries</option><option value="today">Today</option></select></label><p><b>{buckets.action.length} action</b><span>·</span><b>{buckets.live.length} live</b><span>·</span><span>{buckets.done.length} done</span></p></div>}
           {dispatchMode === "live" && <div className="v45-tabs" role="tablist">
             {(["action", "ready", "live", "done"] as QueueTab[]).map((item) => <button key={item} type="button" role="tab" aria-selected={tab === item} className={tab === item ? "on" : ""} onClick={() => { setTab(item); setSelection(null); }}><b>{buckets[item].length}</b>{item[0]!.toUpperCase() + item.slice(1)}</button>)}
           </div>}
@@ -555,7 +602,7 @@ export function OperationsWorkstation({ accessToken, realtimeClient, tenant, use
         </div>
         <div className="v45-queue">
           {dispatchMode === "plan" ? <PlanningQueue planning={planning} planningDate={planningDate} query={query} selection={selection} selectedStops={selectedStops} anchor={planningAnchor} setSelection={setSelection} onToggle={togglePlanningDelivery} onMove={movePlanningStop} timezone={tenant.timezone} /> : <><div className={`v45-group ${tab === "action" ? "action" : ""}`}><b>{tab === "action" ? "Needs action" : tab === "ready" ? "Ready" : tab === "live" ? "Live deliveries" : "Recently completed"}</b><span>{visible.length}</span></div>
-          {loading ? <div className="v45-empty">Checking live Operations truth…</div> : error ? <div className="v45-empty error"><b>Couldn&apos;t load Dispatch</b><span>{error}</span><button onClick={() => void load()}>Retry</button></div> : visible.length === 0 ? <div className="v45-empty"><b>{tab === "action" ? "Nothing needs attention." : `No ${tab} work right now.`}</b><span>{tab === "action" ? "The exception queue is clear." : "Live work appears here automatically."}</span></div> : tab === "action" ? (visible as OperationsActionException[]).map((item) => <ExceptionRow key={item.id} item={item} selected={selection?.kind === "exception" && selection.item.id === item.id} onSelect={() => setSelection({ kind: "exception", item })} timezone={tenant.timezone} />) : (visible as OperationsRoundSummary[]).map((item) => <RoundRow key={item.id} item={item} selected={selection?.kind === "round" && selection.item.id === item.id} onSelect={() => setSelection({ kind: "round", item })} />)}</>}
+          {loading ? <div className="v45-empty">Checking live Operations truth…</div> : error ? <div className="v45-empty error"><b>Couldn&apos;t load Dispatch</b><span>{error}</span><button onClick={() => void load()}>Retry</button></div> : visible.length === 0 ? <div className="v45-empty"><b>{tab === "action" ? "Nothing needs attention." : `No ${tab} work right now.`}</b><span>{tab === "action" ? "The exception queue is clear." : "Canonical deliveries appear here automatically."}</span></div> : tab === "action" ? (visible as OperationsActionException[]).map((item) => <ExceptionRow key={item.id} item={item} selected={selection?.kind === "exception" && selection.item.id === item.id} onSelect={() => setSelection({ kind: "exception", item })} timezone={tenant.timezone} />) : (visible as OperationsDeliveryItem[]).map((item) => <DeliveryRow key={item.deliveryId} item={item} selected={selection?.kind === "delivery-record" && selection.item.deliveryId === item.deliveryId} onSelect={() => setSelection({ kind: "delivery-record", item })} timezone={tenant.timezone} />)}</>}
         </div>
       </aside>
 
@@ -577,7 +624,7 @@ export function OperationsWorkstation({ accessToken, realtimeClient, tenant, use
             onSelectStop={(round, stop) => { setSelection(null); openRoundDetail(round.id, stop.stopId); }}
             onOpenDriverMenu={(round, position, point) => { setSelection(null); setDriverMapMenu({ round, position, ...point }); }}
             onSelectException={(item) => { setDispatchMode("live"); setTab("action"); setSelection({ kind: "exception", item }); }}
-            onSelectDelivery={(item) => { setDispatchMode("plan"); setSelection({ kind: "delivery", item }); }}
+            onSelectDelivery={(item) => { setDispatchMode("plan"); setSelection({ kind: "planning-delivery", item }); }}
           />
           <div className="v45-map-mode" onClick={(event) => event.stopPropagation()}>
             <button type="button" aria-haspopup="menu" aria-expanded={mapMenuOpen} onClick={() => setMapMenuOpen((open) => !open)}>{mapModeCopy[mapMode].label}<span>▾</span></button>
@@ -636,8 +683,8 @@ export function OperationsWorkstation({ accessToken, realtimeClient, tenant, use
         />}
 
         <aside className={`v45-drawer ${selection ? "open" : ""}`} aria-hidden={!selection}>
-          <header><div><small>{selection?.kind === "exception" ? "ORDER DECISION" : selection?.kind === "delivery" ? "PLANNING DELIVERY" : "LIVE ROUND"}</small><h2>{selection?.kind === "exception" ? selection.item.recipientName : selection?.kind === "round" ? selection.item.reference : selection?.kind === "delivery" ? selection.item.recipientName : ""}</h2><p>{selection?.kind === "exception" ? `#${selection.item.deliveryReference} · ${selection.item.rawAddress}` : selection?.kind === "round" ? `${selection.item.driverName} · ${selection.item.stopCount} Stops` : selection?.kind === "delivery" ? `#${selection.item.reference} · ${selection.item.rawAddress}` : ""}</p></div><button type="button" onClick={() => setSelection(null)} aria-label="Close drawer"><CloseIcon /></button></header>
-          <div className="v45-drawer-body">{selection?.kind === "exception" ? <ExceptionDrawer item={selection.item} accessToken={accessToken} tenant={tenant} onCommunications={openCommunications} onResolved={() => { setSelection(null); void load(); }} /> : selection?.kind === "round" ? <RoundDrawer item={selection.item} onCommunications={openCommunications} onOpen={() => openRoundDetail(selection.item.id)} /> : selection?.kind === "delivery" ? <PlanningDrawer item={selection.item} timezone={tenant.timezone} /> : null}</div>
+          <header><div><small>{selection?.kind === "exception" ? "ORDER DECISION" : selection?.kind === "planning-delivery" ? "PLANNING DELIVERY" : selection?.kind === "delivery-record" ? "DELIVERY RECORD" : "LIVE ROUND"}</small><h2>{selection?.kind === "exception" || selection?.kind === "planning-delivery" || selection?.kind === "delivery-record" ? selection.item.recipientName : selection?.kind === "round" ? selection.item.reference : ""}</h2><p>{selection?.kind === "exception" ? `#${selection.item.deliveryReference} · ${selection.item.rawAddress}` : selection?.kind === "round" ? `${selection.item.driverName} · ${selection.item.stopCount} Stops` : selection?.kind === "planning-delivery" || selection?.kind === "delivery-record" ? `#${selection.item.reference} · ${selection.item.rawAddress}` : ""}</p></div><button type="button" onClick={() => setSelection(null)} aria-label="Close drawer"><CloseIcon /></button></header>
+          <div className="v45-drawer-body">{selection?.kind === "exception" ? <ExceptionDrawer item={selection.item} accessToken={accessToken} tenant={tenant} onCommunications={openCommunications} onResolved={() => { setSelection(null); void load(); }} /> : selection?.kind === "round" ? <RoundDrawer item={selection.item} onCommunications={openCommunications} onOpen={() => openRoundDetail(selection.item.id)} /> : selection?.kind === "planning-delivery" ? <PlanningDrawer item={selection.item} timezone={tenant.timezone} selected={selectedStops.includes(selection.item.stopId)} onToggle={() => togglePlanningDelivery(selection.item)} onInspect={() => selection.item.coordinate && operationsMapRef.current?.focusPosition(selection.item.coordinate)} /> : selection?.kind === "delivery-record" ? <DeliveryRecordDrawer item={selection.item} timezone={tenant.timezone} onPlan={() => { setDispatchMode("plan"); setPlanningDate(selection.item.serviceDate); setQuery(selection.item.reference); setSelection(null); }} onOpenRound={() => selection.item.round && openRoundDetail(selection.item.round.id, selection.item.stop.id)} onHistory={() => { setSelection(null); onHistory(); }} onInspect={() => selection.item.coordinate && operationsMapRef.current?.focusPosition(selection.item.coordinate)} /> : null}</div>
         </aside>
 
         {contactHistoryThread && <ContactHistoryDrawer
@@ -670,22 +717,6 @@ export function OperationsWorkstation({ accessToken, realtimeClient, tenant, use
 
       {roundDetailId && accessToken && <RoundDetailWorkspace accessToken={accessToken} tenant={tenant} roundId={roundDetailId} initialStopId={roundDetailStopId} onClose={closeRoundDetail} onCommunications={(threadId) => { closeRoundDetail(); openCommunications(threadId); }} />}
 
-      {deliveriesOpen && accessToken && <DeliveriesWorkspace
-        accessToken={accessToken}
-        tenant={tenant}
-        refreshKey={deliveryRefreshKey}
-        onAddDelivery={onAddDelivery}
-        onBackToDispatch={() => onCloseDeliveries?.()}
-        onOpenPlanning={(item: OperationsDeliveryItem) => {
-          onCloseDeliveries?.();
-          setDispatchMode("plan");
-          setPlanningDate(item.serviceDate);
-          setQuery(item.reference);
-          setSelection(null);
-        }}
-        onCommunications={() => openCommunications()}
-      />}
-
       {driversOpen && accessToken && <DriversWorkspace
         accessToken={accessToken}
         tenant={tenant}
@@ -716,9 +747,17 @@ function RoundRow({ item, selected, onSelect }: { item: OperationsRoundSummary; 
   return <button type="button" className={`v45-order round ${selected ? "selected" : ""}`} onClick={onSelect}><span className="v45-order-line"><span><b>{item.reference}</b><small>{item.driverName}</small></span><em>{item.stopCount} Stops</em></span><span className="v45-order-foot"><span>{item.custodyStopCount} custody</span><span>{item.openExceptionCount} action</span><b>{item.state}</b></span></button>;
 }
 
+function deliveryStateLabel(state: OperationsDeliveryItem["state"]): string {
+  return state.split("_").map((word) => word[0]!.toUpperCase() + word.slice(1)).join(" ");
+}
+
+function DeliveryRow({ item, selected, onSelect, timezone }: { item: OperationsDeliveryItem; selected: boolean; onSelect: () => void; timezone: string }) {
+  return <button type="button" className={`v45-order delivery state-${item.state} ${selected ? "selected" : ""}`} onClick={onSelect}><span className="v45-order-line"><span><b>{item.recipientName}</b><small>{item.rawAddress}</small></span><em>#{item.reference}</em></span><span className="v45-order-foot"><span>{shortTime(item.promise.windowStart, timezone)}–{shortTime(item.promise.windowEnd, timezone)}</span><span>{item.round ? `${item.round.reference} · Stop ${item.round.sequence}` : item.pickupLocationName}</span><b>{deliveryStateLabel(item.state)}</b></span></button>;
+}
+
 function PlanningQueue({ planning, planningDate, query, selection, selectedStops, anchor, setSelection, onToggle, onMove, timezone }: { planning: OperationsPlanningProjection | null; planningDate: string; query: string; selection: Selection; selectedStops: string[]; anchor?: UnplannedDeliverySummary; setSelection: (selection: Selection) => void; onToggle: (item: UnplannedDeliverySummary) => void; onMove: (stopId: string, delta: -1 | 1) => void; timezone: string }) {
   const deliveries = planning?.unplannedDeliveries.filter((item) => item.serviceDate === planningDate && (!query.trim() || `${item.reference} ${item.recipientName} ${item.rawAddress}`.toLowerCase().includes(query.trim().toLowerCase()))) ?? [];
-  return <><div className="v45-group"><b>Unplanned deliveries</b><span>{deliveries.length}</span></div>{!planning ? <div className="v45-empty">Loading the delivery pool…</div> : deliveries.length === 0 ? <div className="v45-empty"><b>No unplanned deliveries for this date.</b><span>Add a delivery or choose another planning date.</span></div> : deliveries.map((item) => <PlanningRow key={item.stopId} item={item} inspected={selection?.kind === "delivery" && selection.item.stopId === item.stopId} selectedOrder={selectedStops.includes(item.stopId) ? selectedStops.indexOf(item.stopId) + 1 : 0} selectedCount={selectedStops.length} disabled={Boolean(anchor && !selectedStops.includes(item.stopId) && (anchor.serviceDate !== item.serviceDate || anchor.pickupLocationId !== item.pickupLocationId))} onInspect={() => setSelection({ kind: "delivery", item })} onToggle={() => onToggle(item)} onMove={(delta) => onMove(item.stopId, delta)} timezone={timezone} />)}</>;
+  return <><div className="v45-group"><b>Unplanned deliveries</b><span>{deliveries.length}</span></div>{!planning ? <div className="v45-empty">Loading the delivery pool…</div> : deliveries.length === 0 ? <div className="v45-empty"><b>No unplanned deliveries for this date.</b><span>Add a delivery or choose another planning date.</span></div> : deliveries.map((item) => <PlanningRow key={item.stopId} item={item} inspected={selection?.kind === "planning-delivery" && selection.item.stopId === item.stopId} selectedOrder={selectedStops.includes(item.stopId) ? selectedStops.indexOf(item.stopId) + 1 : 0} selectedCount={selectedStops.length} disabled={Boolean(anchor && !selectedStops.includes(item.stopId) && (anchor.serviceDate !== item.serviceDate || anchor.pickupLocationId !== item.pickupLocationId))} onInspect={() => setSelection({ kind: "planning-delivery", item })} onToggle={() => onToggle(item)} onMove={(delta) => onMove(item.stopId, delta)} timezone={timezone} />)}</>;
 }
 
 function PlanningRow({ item, inspected, selectedOrder, selectedCount, disabled, onInspect, onToggle, onMove, timezone }: { item: UnplannedDeliverySummary; inspected: boolean; selectedOrder: number; selectedCount: number; disabled: boolean; onInspect: () => void; onToggle: () => void; onMove: (delta: -1 | 1) => void; timezone: string }) {
@@ -820,8 +859,28 @@ function RoundDrawer({ item, onCommunications, onOpen }: { item: OperationsRound
   return <><section className="v45-decision"><small>ROUND STATUS</small><h3>{item.state === "active" ? "Round is moving." : item.state === "complete" ? "Round completed." : "Round is ready for execution."}</h3><p>Dispatch sees the same server-authoritative operational state produced by the driver app.</p><div><span><small>Stops</small><b>{item.stopCount}</b></span><span><small>Custody</small><b>{item.custodyStopCount}</b></span><span><small>Action</small><b>{item.openExceptionCount}</b></span></div></section><section className="v45-detail"><h4>Assignment <span>live</span></h4><dl><div><dt>Driver</dt><dd>{item.driverName}</dd></div><div><dt>Service date</dt><dd>{item.serviceDate}</dd></div><div><dt>State</dt><dd>{item.state}</dd></div></dl></section><div className="v45-drawer-actions"><button className="primary" onClick={onOpen}>Open Round details</button><button onClick={() => onCommunications()}>Open communications</button></div></>;
 }
 
-function PlanningDrawer({ item, timezone }: { item: UnplannedDeliverySummary; timezone: string }) {
-  return <><section className="v45-decision"><small>PLAN INPUT</small><h3>Ready to place into a physical Round.</h3><p>Rounds will compare the delivery window, pickup, driver shift, vehicle and cargo limits before approval.</p><div><span><small>Window</small><b>{shortTime(item.windowStart, timezone)}</b></span><span><small>Service</small><b>{item.serviceDate}</b></span><span><small>State</small><b>Ready</b></span></div></section><section className="v45-detail"><h4>Delivery <span>unplanned</span></h4><dl><div><dt>Reference</dt><dd>#{item.reference}</dd></div><div><dt>Destination</dt><dd>{item.rawAddress}</dd></div><div><dt>Manifest</dt><dd>{item.manifestSummary}</dd></div></dl></section><div className="v45-drawer-actions"><button className="primary">Add to proposed Round</button><button>Inspect destination on map</button></div></>;
+function PlanningDrawer({ item, timezone, selected, onToggle, onInspect }: { item: UnplannedDeliverySummary; timezone: string; selected: boolean; onToggle: () => void; onInspect: () => void }) {
+  return <><section className="v45-decision"><small>PLAN INPUT</small><h3>Ready to place into a physical Round.</h3><p>Rounds will compare the delivery window, pickup, driver shift, vehicle and cargo limits before approval.</p><div><span><small>Window</small><b>{shortTime(item.windowStart, timezone)}</b></span><span><small>Service</small><b>{item.serviceDate}</b></span><span><small>State</small><b>{selected ? "Proposed" : "Ready"}</b></span></div></section><section className="v45-detail"><h4>Delivery <span>unplanned</span></h4><dl><div><dt>Reference</dt><dd>#{item.reference}</dd></div><div><dt>Destination</dt><dd>{item.rawAddress}</dd></div><div><dt>Manifest</dt><dd>{item.manifestSummary}</dd></div></dl></section><div className="v45-drawer-actions"><button className="primary" type="button" onClick={onToggle}>{selected ? "Remove from proposed Round" : "Add to proposed Round"}</button>{item.coordinate && <button type="button" onClick={onInspect}>Inspect destination on map</button>}</div></>;
+}
+
+function DeliveryRecordDrawer({ item, timezone, onPlan, onOpenRound, onHistory, onInspect }: { item: OperationsDeliveryItem; timezone: string; onPlan: () => void; onOpenRound: () => void; onHistory: () => void; onInspect: () => void }) {
+  const boundary = deliveryCommandBoundary(item);
+  const copy = boundary === "plan"
+    ? { label: "READY TO PLAN", title: "Place this delivery into a physical Round.", detail: "The saved destination, promise and manifest will be checked against driver, vehicle and route capacity before approval." }
+    : boundary === "round-pre-custody"
+      ? { label: "BEFORE PICKUP", title: "Pickup has not transferred custody.", detail: "Open the assigned Round to review this Stop or move it through the protected planning workflow." }
+      : boundary === "round-live"
+        ? { label: "LIVE DELIVERY", title: "Custody is active.", detail: "Open the exact Stop for live status, communication and the consequence-preview change workflow." }
+        : boundary === "history"
+          ? { label: "COMMITTED RECORD", title: "Execution is closed.", detail: "The delivery and physical manifest are read-only. History holds the committed outcome and evidence." }
+          : { label: "NEEDS ACTION", title: "An Operations decision is required.", detail: "Use the Action queue to resolve the current exception against the latest Stop version." };
+  const manifestLocked = item.manifest.state !== "draft" || boundary === "round-live" || boundary === "history";
+
+  return <><section className="v45-decision"><small>{copy.label}</small><h3>{copy.title}</h3><p>{copy.detail}</p><div><span><small>Promise</small><b>{shortTime(item.promise.windowStart, timezone)}–{shortTime(item.promise.windowEnd, timezone)}</b></span><span><small>Stop</small><b>{item.round ? `${item.round.sequence} of ${item.round.reference}` : "Unplanned"}</b></span><span><small>State</small><b>{deliveryStateLabel(item.state)}</b></span></div></section>
+    <section className="v45-detail"><h4>Delivery truth <span>v{item.version}</span></h4><dl><div><dt>Recipient</dt><dd>{item.recipientName}<small>{item.recipientPhone}</small></dd></div><div><dt>Destination</dt><dd>{item.rawAddress}{item.accessNote && <small>{item.accessNote}</small>}</dd></div><div><dt>Pickup</dt><dd>{item.pickupLocationName}</dd></div><div><dt>Service date</dt><dd>{item.serviceDate}</dd></div>{item.round && <><div><dt>Round</dt><dd>{item.round.reference}<small>{item.round.driverName}</small></dd></div><div><dt>Stop version</dt><dd>v{item.stop.version}</dd></div></>}</dl></section>
+    <section className="v45-detail v45-record-manifest"><h4>Physical manifest <span>{manifestLocked ? "locked" : "draft"} · v{item.manifest.version}</span></h4>{item.manifest.items.map((manifestItem) => <article key={manifestItem.lineNumber}><b>{String(manifestItem.lineNumber).padStart(2, "0")}</b><span><strong>{manifestItem.description}</strong>{manifestItem.handlingNote && <small>{manifestItem.handlingNote}</small>}</span><em>×{manifestItem.quantity}</em></article>)}{item.deliveryNote && <p><b>Instruction</b>{item.deliveryNote}</p>}</section>
+    <div className="v45-drawer-actions">{boundary === "plan" && <button className="primary" type="button" onClick={onPlan}>Open in planning</button>}{(boundary === "round-pre-custody" || boundary === "round-live") && <button className="primary" type="button" onClick={onOpenRound}>{boundary === "round-live" ? "Open live Stop" : "Open assigned Round"}</button>}{boundary === "history" && <button className="primary" type="button" onClick={onHistory}>Open delivery history</button>}{item.coordinate && <button type="button" onClick={onInspect}>Inspect destination on map</button>}<button type="button" onClick={() => void navigator.clipboard.writeText(item.deliveryId)}>Copy delivery ID</button></div>
+  </>;
 }
 
 function SearchIcon() { return <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>; }
