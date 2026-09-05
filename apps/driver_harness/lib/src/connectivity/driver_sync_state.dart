@@ -87,7 +87,7 @@ class SqliteDriverQueueInspector implements DriverQueueInspector {
         pendingStatuses += count;
       }
     }
-    final proofRows = await Future.wait([
+    final queueRows = await Future.wait([
       db.rawQuery('''
         select count(*) as item_count from pod_evidence_outbox
         where status in ('local_saved','prepared','uploading','uploaded','pending_command')
@@ -100,6 +100,10 @@ class SqliteDriverQueueInspector implements DriverQueueInspector {
         select count(*) as item_count from position_samples
         where upload_state = 'pending'
       '''),
+      db.rawQuery('''
+        select count(*) as item_count from message_media_outbox
+        where status in ('pending', 'uploading')
+      '''),
     ]);
     int count(List<Map<String, Object?>> rows) =>
         (rows.single['item_count'] as num?)?.toInt() ?? 0;
@@ -107,10 +111,10 @@ class SqliteDriverQueueInspector implements DriverQueueInspector {
     return DriverSyncSnapshot(
       phase: phase,
       currentRouteAvailable: currentRouteAvailable,
-      pendingProofCount: count(proofRows[0]) + count(proofRows[1]),
-      pendingMessageCount: pendingMessages,
+      pendingProofCount: count(queueRows[0]) + count(queueRows[1]),
+      pendingMessageCount: pendingMessages + count(queueRows[3]),
       pendingStatusCount: pendingStatuses,
-      pendingTelemetryCount: count(proofRows[2]),
+      pendingTelemetryCount: count(queueRows[2]),
       lastSyncedAt: lastSyncedAt,
     );
   }

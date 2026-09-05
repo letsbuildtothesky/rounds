@@ -17,6 +17,7 @@ void main() {
             await HarnessDatabase.createCommandOutboxSchema(db);
             await HarnessDatabase.createPodEvidenceSchema(db);
             await HarnessDatabase.createDeliveryExceptionEvidenceSchema(db);
+            await HarnessDatabase.createMessageMediaOutboxSchema(db);
             await db.execute('''
             create table position_samples (
               sequence integer primary key,
@@ -62,6 +63,17 @@ void main() {
         'source': 'gps',
         'upload_state': 'pending',
       });
+      await database.insert('message_media_outbox', {
+        'id': 'rich-message',
+        'round_id': 'round-1',
+        'stop_id': 'stop-1',
+        'body': 'See attachment',
+        'attachments_json': '[]',
+        'idempotency_key': 'rich-message',
+        'status': 'uploading',
+        'created_at': now,
+        'updated_at': now,
+      });
 
       final snapshot =
           await SqliteDriverQueueInspector(
@@ -72,11 +84,11 @@ void main() {
             lastSyncedAt: DateTime.utc(2026, 9, 3, 8),
           );
 
-      expect(snapshot.pendingMessageCount, 1);
+      expect(snapshot.pendingMessageCount, 2);
       expect(snapshot.pendingStatusCount, 1);
       expect(snapshot.pendingTelemetryCount, 1);
       expect(snapshot.pendingProofCount, 0);
-      expect(snapshot.totalPending, 3);
+      expect(snapshot.totalPending, 4);
       expect(snapshot.currentRouteAvailable, isTrue);
     },
   );
