@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState, type ClipboardEvent, type DragEve
 import type {
   DriverThreadMessage,
   MessageLocationAttachment,
+  MessageMediaAttachment,
   OperationsTenant,
   SendOperationsMessageResult,
 } from "@rounds/contracts";
@@ -55,6 +56,125 @@ function messageSummary(message: DriverThreadMessage | undefined): string {
   return attachment.fileName;
 }
 
+function attachmentSizeLabel(bytes: number): string {
+  return bytes >= 1048576
+    ? `${(bytes / 1048576).toFixed(1)} MB`
+    : `${Math.max(1, Math.ceil(bytes / 1024))} KB`;
+}
+
+function attachmentDurationLabel(milliseconds: number): string {
+  const seconds = Math.max(0, Math.ceil(milliseconds / 1000));
+  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+}
+
+function VoiceMessageAttachment({ attachment }: { attachment: MessageMediaAttachment }) {
+  const latestUrl = useRef(attachment.downloadUrl);
+  const audio = useRef<HTMLAudioElement | null>(null);
+  const [playing, setPlaying] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    latestUrl.current = attachment.downloadUrl;
+  }, [attachment.downloadUrl]);
+
+  useEffect(() => () => {
+    if (!audio.current) return;
+    audio.current.pause();
+    audio.current.removeAttribute("src");
+    audio.current.load();
+  }, []);
+
+  async function togglePlayback() {
+    if (!latestUrl.current) {
+      setError("Voice note unavailable");
+      return;
+    }
+    const player = audio.current ?? new Audio(latestUrl.current);
+    if (!audio.current) {
+      player.preload = "metadata";
+      player.onplay = () => setPlaying(true);
+      player.onpause = () => setPlaying(false);
+      player.onended = () => setPlaying(false);
+      player.onerror = () => {
+        setPlaying(false);
+        setError("Voice note could not be played");
+      };
+      audio.current = player;
+    }
+    setError("");
+    try {
+      if (player.paused) {
+        if (player.ended) player.currentTime = 0;
+        await player.play();
+      } else {
+        player.pause();
+      }
+    } catch {
+      setPlaying(false);
+      setError("Voice note could not be played");
+    }
+  }
+
+  return <div className="v45-comms-voice-card">
+    <button type="button" className="v45-comms-voice-play" onClick={() => void togglePlayback()} disabled={!attachment.downloadUrl} aria-label={playing ? "Pause voice note" : "Play voice note"}>{playing ? "Ⅱ" : "▶"}</button>
+    <span className="v45-comms-voice-wave" aria-hidden="true">{Array.from({ length: 12 }, (_, index) => <i key={index} />)}</span>
+    <time>{attachmentDurationLabel(attachment.durationMilliseconds ?? 0)}</time>
+    {error && <small role="status">{error}</small>}
+  </div>;
+}
+
+function PhotoMessageAttachment({ attachment }: { attachment: MessageMediaAttachment }) {
+  const [source, setSource] = useState(attachment.downloadUrl ?? "");
+  useEffect(() => {
+    setSource((current) => current || attachment.downloadUrl || "");
+  }, [attachment.downloadUrl]);
+  return <div className="v45-comms-media-card">
+    <div className="v45-comms-media-photo">
+      {source
+        ? <img src={source} alt={attachment.fileName} onError={() => setSource(attachment.downloadUrl !== source ? attachment.downloadUrl ?? "" : "")} />
+        : <span>Photo unavailable</span>}
+    </div>
+    <div className="v45-comms-media-copy"><small>PHOTO</small><strong>{attachment.fileName}</strong><span>{attachmentSizeLabel(attachment.byteSize)}</span></div>
+  </div>;
+}
+
+function FileMessageAttachment({ attachment }: { attachment: MessageMediaAttachment }) {
+  const latestUrl = useRef(attachment.downloadUrl);
+  const [opening, setOpening] = useState(false);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    latestUrl.current = attachment.downloadUrl;
+  }, [attachment.downloadUrl]);
+
+  async function openFile() {
+    const url = latestUrl.current;
+    if (!url || opening) return;
+    setOpening(true);
+    setError("");
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`File HTTP ${response.status}`);
+      const objectUrl = URL.createObjectURL(await response.blob());
+      const anchor = document.createElement("a");
+      anchor.href = objectUrl;
+      anchor.target = "_blank";
+      anchor.rel = "noopener noreferrer";
+      anchor.click();
+      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+    } catch {
+      setError("File could not be opened");
+    } finally {
+      setOpening(false);
+    }
+  }
+
+  return <div className="v45-comms-media-card">
+    <div className="v45-comms-media-file" aria-hidden="true">↗</div>
+    <div className="v45-comms-media-copy"><small>FILE</small><strong>{attachment.fileName}</strong><span>{error || attachmentSizeLabel(attachment.byteSize)}</span></div>
+    <button type="button" className="v45-comms-media-action" onClick={() => void openFile()} disabled={!attachment.downloadUrl || opening}>{opening ? "Opening…" : "Open file"}</button>
+  </div>;
+}
+
 function MessageAttachments({ message }: { message: DriverThreadMessage }) {
   return <>{message.attachments?.map((attachment, index) => {
     if (attachment.kind === "location") {
@@ -66,22 +186,10 @@ function MessageAttachments({ message }: { message: DriverThreadMessage }) {
         <i aria-hidden="true">›</i>
       </a>;
     }
-    const size = attachment.byteSize >= 1048576
-      ? `${(attachment.byteSize / 1048576).toFixed(1)} MB`
-      : `${Math.ceil(attachment.byteSize / 1024)} KB`;
-    const duration = attachment.durationMilliseconds == null ? "" : `${Math.floor(attachment.durationMilliseconds / 60000)}:${String(Math.ceil(attachment.durationMilliseconds / 1000) % 60).padStart(2, "0")}`;
-    return <a
-      className="v45-comms-attachment"
-      href={attachment.downloadUrl}
-      target="_blank"
-      rel="noreferrer"
-      key={`${attachment.kind}:${attachment.mediaAssetId}:${index}`}
-      aria-disabled={!attachment.downloadUrl}
-    >
-      <span aria-hidden="true">{attachment.kind === "voice" ? "▶" : attachment.kind === "image" ? "▧" : "▤"}</span>
-      <span><strong>{attachment.kind === "voice" ? "Voice note" : attachment.fileName}</strong><small>{attachment.kind === "voice" ? duration : size}</small></span>
-      <i aria-hidden="true">›</i>
-    </a>;
+    const key = `${attachment.kind}:${attachment.mediaAssetId}:${index}`;
+    if (attachment.kind === "voice") return <VoiceMessageAttachment attachment={attachment} key={key} />;
+    if (attachment.kind === "image") return <PhotoMessageAttachment attachment={attachment} key={key} />;
+    return <FileMessageAttachment attachment={attachment} key={key} />;
   })}</>;
 }
 

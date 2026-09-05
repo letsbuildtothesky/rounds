@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -1015,7 +1016,10 @@ class _MessageBubble extends StatelessWidget {
                             mine: mine,
                           )
                         else
-                          _MediaAttachmentCard(
+                          DriverChatMediaAttachmentCard(
+                            key: ValueKey(
+                              'h01-media-state-${attachment.mediaAssetId ?? attachment.sha256 ?? attachment.fileName}',
+                            ),
                             attachment: attachment,
                             mine: mine,
                           ),
@@ -1141,20 +1145,49 @@ class _LocationAttachmentCard extends StatelessWidget {
   }
 }
 
-class _MediaAttachmentCard extends StatefulWidget {
-  const _MediaAttachmentCard({required this.attachment, required this.mine});
+class DriverChatMediaAttachmentCard extends StatefulWidget {
+  const DriverChatMediaAttachmentCard({
+    required this.attachment,
+    required this.mine,
+    super.key,
+  });
   final DriverMessageAttachmentModel attachment;
   final bool mine;
 
   @override
-  State<_MediaAttachmentCard> createState() => _MediaAttachmentCardState();
+  State<DriverChatMediaAttachmentCard> createState() =>
+      _DriverChatMediaAttachmentCardState();
 }
 
-class _MediaAttachmentCardState extends State<_MediaAttachmentCard> {
+class _DriverChatMediaAttachmentCardState
+    extends State<DriverChatMediaAttachmentCard> {
   AudioPlayer? _player;
+  StreamSubscription<PlayerState>? _playerStateSubscription;
+  String? _displayUrl;
+  String? _latestDownloadUrl;
+  bool _sourceLoaded = false;
+  bool _playing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _displayUrl = widget.attachment.downloadUrl;
+    _latestDownloadUrl = widget.attachment.downloadUrl;
+  }
+
+  @override
+  void didUpdateWidget(covariant DriverChatMediaAttachmentCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Message polling refreshes signed URLs every few seconds. Keep the URL
+    // already being displayed so an inline photo or playing voice note is not
+    // restarted solely because its temporary signature changed.
+    _displayUrl ??= widget.attachment.downloadUrl;
+    _latestDownloadUrl = widget.attachment.downloadUrl ?? _latestDownloadUrl;
+  }
 
   @override
   void dispose() {
+    unawaited(_playerStateSubscription?.cancel());
     unawaited(_player?.dispose());
     super.dispose();
   }
@@ -1164,6 +1197,9 @@ class _MediaAttachmentCardState extends State<_MediaAttachmentCard> {
     final attachment = widget.attachment;
     final mine = widget.mine;
     final isVoice = attachment.kind == 'voice';
+    if (isVoice) return _buildVoiceCard(attachment, mine);
+
+    final isImage = attachment.kind == 'image';
     return Container(
       key: Key('h01-media-${attachment.mediaAssetId ?? attachment.sha256}'),
       margin: const EdgeInsets.only(top: 9),
@@ -1176,91 +1212,228 @@ class _MediaAttachmentCardState extends State<_MediaAttachmentCard> {
         ),
         borderRadius: BorderRadius.circular(7),
       ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(7),
-        onTap: isVoice ? _playVoice : _open,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
-          child: Row(
-            children: [
-              Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  color: mine
-                      ? Colors.white.withValues(alpha: .12)
-                      : const Color(0xFFF3F5F7),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Icon(
-                  isVoice
-                      ? Icons.play_arrow
-                      : attachment.kind == 'image'
-                      ? Icons.photo_outlined
-                      : Icons.insert_drive_file_outlined,
-                  size: 19,
-                  color: mine ? Colors.white : RoundsColors.warning,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      isVoice ? 'Voice note' : attachment.fileName!,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: mine ? Colors.white : RoundsColors.ink,
-                        fontSize: 12.8,
-                        fontWeight: FontWeight.w800,
-                      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (isImage)
+            InkWell(
+              key: const Key('h01-photo-preview'),
+              onTap: _open,
+              child: SizedBox(height: 118, child: _buildPhotoPreview(mine)),
+            ),
+          InkWell(
+            borderRadius: isImage
+                ? const BorderRadius.vertical(bottom: Radius.circular(7))
+                : BorderRadius.circular(7),
+            onTap: _open,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
+              child: Row(
+                children: [
+                  Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: mine
+                          ? Colors.white.withValues(alpha: .12)
+                          : const Color(0xFFF3F5F7),
+                      borderRadius: BorderRadius.circular(6),
                     ),
-                    const SizedBox(height: 3),
-                    Text(
-                      isVoice
-                          ? _durationLabel(attachment.durationMilliseconds ?? 0)
-                          : _sizeLabel(attachment.byteSize ?? 0),
-                      style: TextStyle(
-                        color: mine
-                            ? Colors.white.withValues(alpha: .65)
-                            : RoundsColors.muted,
-                        fontSize: 11.3,
-                      ),
+                    child: Icon(
+                      isImage
+                          ? Icons.photo_outlined
+                          : Icons.insert_drive_file_outlined,
+                      size: 19,
+                      color: mine ? Colors.white : RoundsColors.warning,
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          attachment.fileName!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: mine ? Colors.white : RoundsColors.ink,
+                            fontSize: 12.8,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          isImage ? 'Photo' : 'File',
+                          style: TextStyle(
+                            color: mine
+                                ? Colors.white.withValues(alpha: .65)
+                                : RoundsColors.muted,
+                            fontSize: 11.3,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    Icons.chevron_right,
+                    size: 18,
+                    color: mine
+                        ? Colors.white.withValues(alpha: .55)
+                        : RoundsColors.muted,
+                  ),
+                ],
               ),
-              Icon(
-                Icons.chevron_right,
-                size: 18,
-                color: mine
-                    ? Colors.white.withValues(alpha: .55)
-                    : RoundsColors.muted,
-              ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
 
+  Widget _buildPhotoPreview(bool mine) {
+    final localPath = widget.attachment.localPath;
+    final image = localPath != null
+        ? Image.file(
+            File(localPath),
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: 118,
+            errorBuilder: (_, _, _) => _photoFallback(mine),
+          )
+        : _displayUrl != null
+        ? Image.network(
+            _displayUrl!,
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: 118,
+            errorBuilder: (_, _, _) => _photoFallback(mine),
+          )
+        : _photoFallback(mine);
+    return ColoredBox(color: const Color(0xFFE9EDF1), child: image);
+  }
+
+  Widget _photoFallback(bool mine) => Center(
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          Icons.photo_outlined,
+          size: 26,
+          color: mine ? Colors.white70 : const Color(0xFF6E7B8E),
+        ),
+        const SizedBox(height: 7),
+        Text(
+          'Photo unavailable',
+          style: TextStyle(
+            color: mine ? Colors.white70 : const Color(0xFF6E7B8E),
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
+    ),
+  );
+
+  Widget _buildVoiceCard(
+    DriverMessageAttachmentModel attachment,
+    bool mine,
+  ) => Container(
+    key: Key('h01-media-${attachment.mediaAssetId ?? attachment.sha256}'),
+    margin: const EdgeInsets.only(top: 9),
+    constraints: const BoxConstraints(minWidth: 184),
+    child: Row(
+      children: [
+        InkWell(
+          key: const Key('h01-voice-play'),
+          borderRadius: BorderRadius.circular(6),
+          onTap: _playVoice,
+          child: Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              color: mine ? Colors.white.withValues(alpha: .13) : Colors.white,
+              borderRadius: BorderRadius.circular(6),
+            ),
+            alignment: Alignment.center,
+            child: Icon(
+              _playing ? Icons.pause : Icons.play_arrow,
+              size: 18,
+              color: mine ? Colors.white : RoundsColors.ink,
+            ),
+          ),
+        ),
+        const SizedBox(width: 9),
+        Expanded(
+          child: Row(
+            key: const Key('h01-voice-wave'),
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: const [7.0, 13.0, 19.0, 10.0, 16.0, 8.0, 21.0, 12.0, 17.0]
+                .map(
+                  (height) => DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: mine
+                          ? Colors.white.withValues(alpha: .55)
+                          : RoundsColors.ink.withValues(alpha: .55),
+                      borderRadius: const BorderRadius.all(Radius.circular(2)),
+                    ),
+                    child: SizedBox(width: 2, height: height),
+                  ),
+                )
+                .toList(),
+          ),
+        ),
+        const SizedBox(width: 9),
+        Text(
+          _durationLabel(attachment.durationMilliseconds ?? 0),
+          style: TextStyle(
+            color: mine
+                ? Colors.white.withValues(alpha: .7)
+                : RoundsColors.muted,
+            fontSize: 11.5,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
+    ),
+  );
+
   Future<void> _playVoice() async {
     final source = widget.attachment.localPath;
-    final remote = widget.attachment.downloadUrl;
+    final remote = _latestDownloadUrl;
     if (source == null && remote == null) return;
-    final player = _player ??= AudioPlayer();
-    if (source != null) {
-      await player.setFilePath(source);
-    } else {
-      await player.setUrl(remote!);
+    try {
+      final player = _player ??= AudioPlayer();
+      _playerStateSubscription ??= player.playerStateStream.listen((state) {
+        if (!mounted) return;
+        setState(() => _playing = state.playing);
+      });
+      if (player.playing) {
+        await player.pause();
+        return;
+      }
+      if (!_sourceLoaded) {
+        if (source != null) {
+          await player.setFilePath(source);
+        } else {
+          await player.setUrl(remote!);
+        }
+        _sourceLoaded = true;
+      } else if (player.processingState == ProcessingState.completed) {
+        await player.seek(Duration.zero);
+      }
+      unawaited(player.play());
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('The voice note could not be played.')),
+      );
     }
-    await player.play();
   }
 
   Future<void> _open() async {
-    final remote = widget.attachment.downloadUrl;
+    final remote = _latestDownloadUrl;
     final local = widget.attachment.localPath;
     final uri = remote != null
         ? Uri.parse(remote)
@@ -1276,10 +1449,6 @@ class _MediaAttachmentCardState extends State<_MediaAttachmentCard> {
     }
   }
 }
-
-String _sizeLabel(int bytes) => bytes >= 1048576
-    ? '${(bytes / 1048576).toStringAsFixed(1)} MB'
-    : '${(bytes / 1024).ceil()} KB';
 
 String _durationLabel(int milliseconds) {
   final seconds = (milliseconds / 1000).ceil();
