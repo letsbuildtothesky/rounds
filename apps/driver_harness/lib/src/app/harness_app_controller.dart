@@ -26,6 +26,7 @@ class HarnessAppController extends ChangeNotifier {
   static const _localeKey = 'driver_locale';
   static const _selectedKey = 'driver_locale_selected';
   static const _sessionCacheKey = 'driver_session_cache_v1';
+  static const _pendingWorkOwnerKey = 'driver_pending_work_owner_v1';
   static const _lastSyncedAtKey = 'driver_session_last_synced_at_v1';
 
   final SharedPreferences _preferences;
@@ -35,6 +36,7 @@ class HarnessAppController extends ChangeNotifier {
   final DriverQueueInspector _queueInspector;
   final FlutterSecureStorage _sessionStorage;
   DriverSessionModel? _driverSession;
+  String? _pendingWorkOwnerDriverId;
   bool _currentRouteAvailable = false;
   bool _driverLoading = false;
   String? _driverError;
@@ -100,12 +102,18 @@ class HarnessAppController extends ChangeNotifier {
     _driverError = null;
     notifyListeners();
     try {
-      final restored = await _driverApi.restore().timeout(
-        const Duration(seconds: 15),
-      );
+      final expectedDriverId = await _expectedDriverIdBeforeSync();
+      final restored = await _driverApi
+          .restore(expectedDriverId: expectedDriverId)
+          .timeout(const Duration(seconds: 15));
       if (restored == null) {
-        _driverSession = null;
         _currentRouteAvailable = false;
+        if (_driverSession != null) {
+          _driverError = 'Sign in again before saved work can sync.';
+          await _refreshSyncSnapshot(phase: DriverConnectionPhase.offline);
+          _showConnectionSurface = true;
+          return;
+        }
         await _clearCachedSession();
       } else {
         await _acceptAuthenticatedSession(restored);
@@ -136,7 +144,12 @@ class HarnessAppController extends ChangeNotifier {
     _driverError = null;
     notifyListeners();
     try {
-      final signedIn = await _driverApi.signIn(email, password);
+      final expectedDriverId = await _expectedDriverIdBeforeSync();
+      final signedIn = await _driverApi.signIn(
+        email,
+        password,
+        expectedDriverId: expectedDriverId,
+      );
       await _acceptAuthenticatedSession(signedIn);
       await _saveSession(signedIn);
       _requestLocaleSync();
@@ -193,9 +206,12 @@ class HarnessAppController extends ChangeNotifier {
     }
     _silentRefreshRunning = true;
     try {
-      final refreshed = await _driverApi.restore().timeout(
-        const Duration(seconds: 8),
-      );
+      final refreshed = await _driverApi
+          .restore(
+            expectedDriverId:
+                _pendingWorkOwnerDriverId ?? _driverSession?.driverId,
+          )
+          .timeout(const Duration(seconds: 8));
       if (refreshed == null) return;
       final changed =
           jsonEncode(refreshed.toJson()) !=
@@ -212,6 +228,25 @@ class HarnessAppController extends ChangeNotifier {
   }
 
   Future<void> signOutDriver() async {
+    final ownerDriverId = _pendingWorkOwnerDriverId ?? _driverSession?.driverId;
+    var preserveOwner = ownerDriverId != null;
+    try {
+      await _refreshSyncSnapshot(phase: _syncSnapshot.phase);
+      preserveOwner = _syncSnapshot.totalPending > 0;
+    } catch (_) {
+      // If local queue inspection fails, retaining the owner is safer than
+      // allowing another Driver to attempt the queued work.
+    }
+    if (preserveOwner && ownerDriverId != null) {
+      _pendingWorkOwnerDriverId = ownerDriverId;
+      await _sessionStorage.write(
+        key: _pendingWorkOwnerKey,
+        value: ownerDriverId,
+      );
+    } else {
+      _pendingWorkOwnerDriverId = null;
+      await _sessionStorage.delete(key: _pendingWorkOwnerKey);
+    }
     _driverSession = null;
     _currentRouteAvailable = false;
     _localeSyncRequested = false;
@@ -419,6 +454,13 @@ class HarnessAppController extends ChangeNotifier {
     if (previousNavigationScope != nextNavigationScope) {
       _currentRouteAvailable = false;
     }
+    if (_pendingWorkOwnerDriverId == null) {
+      _pendingWorkOwnerDriverId = session.driverId;
+      await _sessionStorage.write(
+        key: _pendingWorkOwnerKey,
+        value: session.driverId,
+      );
+    }
     _driverSession = session;
     if (!_hasSelectedLanguage) {
       _locale = HarnessLocaleValue.fromStorage(session.preferredLocale);
@@ -505,12 +547,24 @@ class HarnessAppController extends ChangeNotifier {
 
   Future<void> _restoreCachedSession() async {
     _currentRouteAvailable = false;
-    final raw = await _sessionStorage.read(key: _sessionCacheKey);
+    final stored = await Future.wait([
+      _sessionStorage.read(key: _sessionCacheKey),
+      _sessionStorage.read(key: _pendingWorkOwnerKey),
+    ]);
+    final raw = stored[0];
+    _pendingWorkOwnerDriverId = stored[1];
     if (raw != null) {
       try {
         _driverSession = DriverSessionModel.fromJson(
           jsonDecode(raw) as Map<String, dynamic>,
         );
+        if (_pendingWorkOwnerDriverId == null) {
+          _pendingWorkOwnerDriverId = _driverSession!.driverId;
+          await _sessionStorage.write(
+            key: _pendingWorkOwnerKey,
+            value: _driverSession!.driverId,
+          );
+        }
       } catch (_) {
         await _sessionStorage.delete(key: _sessionCacheKey);
       }
@@ -545,6 +599,25 @@ class HarnessAppController extends ChangeNotifier {
     _sessionStorage.delete(key: _sessionCacheKey),
     _preferences.remove(_lastSyncedAtKey),
   ]);
+
+  Future<String?> _expectedDriverIdBeforeSync() async {
+    final expectedDriverId =
+        _pendingWorkOwnerDriverId ?? _driverSession?.driverId;
+    if (expectedDriverId != null) return expectedDriverId;
+
+    final inspected = await _queueInspector.inspect(
+      phase: DriverConnectionPhase.offline,
+      assignedRoundAvailable: false,
+      currentRouteAvailable: false,
+      lastSyncedAt: DateTime.tryParse(
+        _preferences.getString(_lastSyncedAtKey) ?? '',
+      ),
+    );
+    if (inspected.totalPending > 0) {
+      throw const DriverWorkOwnerUnknownException();
+    }
+    return null;
+  }
 
   Future<void> _startConnectivityMonitoring() async {
     final connectivity = Connectivity();

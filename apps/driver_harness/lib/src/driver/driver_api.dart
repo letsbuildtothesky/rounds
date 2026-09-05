@@ -21,6 +21,20 @@ class DriverApiException implements Exception {
   String toString() => message;
 }
 
+class DriverIdentityMismatchException extends DriverApiException {
+  const DriverIdentityMismatchException()
+    : super(
+        'This phone has saved work for another Driver. Sign in with the original Driver or contact Operations before syncing.',
+      );
+}
+
+class DriverWorkOwnerUnknownException extends DriverApiException {
+  const DriverWorkOwnerUnknownException()
+    : super(
+        'Saved offline work cannot be matched to a Driver. Contact Operations before signing in or syncing.',
+      );
+}
+
 enum DriverCommandDisposition { committed, pendingSync }
 
 class DriverCommandOutcome {
@@ -78,11 +92,12 @@ class DriverApi {
 
   Future<String?> realtimeAccessToken() => _storage.read(key: _accessTokenKey);
 
-  Future<DriverSessionModel?> restore() async {
+  Future<DriverSessionModel?> restore({String? expectedDriverId}) async {
     final accessToken = await _storage.read(key: _accessTokenKey);
     if (accessToken == null) return null;
     try {
       var session = await _driverSession(accessToken);
+      await _validateDriverIdentity(session, expectedDriverId);
       final exceptionFlush = await _flushPendingExceptionEvidence(accessToken);
       final podFlush = await _flushPendingPodEvidence(
         exceptionFlush.accessToken,
@@ -98,6 +113,7 @@ class DriverApi {
         return null;
       }
       var session = await _driverSession(refreshed);
+      await _validateDriverIdentity(session, expectedDriverId);
       final exceptionFlush = await _flushPendingExceptionEvidence(refreshed);
       final podFlush = await _flushPendingPodEvidence(
         exceptionFlush.accessToken,
@@ -109,7 +125,11 @@ class DriverApi {
     }
   }
 
-  Future<DriverSessionModel> signIn(String email, String password) async {
+  Future<DriverSessionModel> signIn(
+    String email,
+    String password, {
+    String? expectedDriverId,
+  }) async {
     final response = await _client.post(
       Uri.parse('$supabaseUrl/auth/v1/token?grant_type=password'),
       headers: {'apikey': publishableKey, 'content-type': 'application/json'},
@@ -124,6 +144,7 @@ class DriverApi {
     await _writeTokens(accessToken, refreshToken);
     try {
       var session = await _driverSession(accessToken);
+      await _validateDriverIdentity(session, expectedDriverId);
       final exceptionFlush = await _flushPendingExceptionEvidence(accessToken);
       final podFlush = await _flushPendingPodEvidence(
         exceptionFlush.accessToken,
@@ -142,6 +163,17 @@ class DriverApi {
     _storage.delete(key: _accessTokenKey),
     _storage.delete(key: _refreshTokenKey),
   ]);
+
+  Future<void> _validateDriverIdentity(
+    DriverSessionModel session,
+    String? expectedDriverId,
+  ) async {
+    if (expectedDriverId == null || expectedDriverId == session.driverId) {
+      return;
+    }
+    await signOut();
+    throw const DriverIdentityMismatchException();
+  }
 
   Future<DriverSessionModel?> syncPreferredLocale({
     required DriverSessionModel session,

@@ -128,7 +128,7 @@ void main() {
           MessageMediaOutbox(recoveredDatabase),
     );
 
-    final restored = await api.restore();
+    final restored = await api.restore(expectedDriverId: 'driver-1');
 
     expect(restored?.driverId, 'driver-1');
     expect(await MessageMediaOutbox(recoveredDatabase).pending(), isEmpty);
