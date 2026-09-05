@@ -4,6 +4,11 @@ import { confirmPickupHandler } from "./confirm-pickup-handler.js";
 import { confirmStopArrivalHandler } from "./confirm-stop-arrival-handler.js";
 import { completeStopPodHandler } from "./complete-stop-pod-handler.js";
 import { driverSessionHandler } from "./driver-session-handler.js";
+import {
+  acceptDriverTeamInviteHandler,
+  pendingDriverTeamInviteHandler,
+  resolveDriverTeamInviteHandler,
+} from "./driver-team-invite-handler.js";
 import { driverOperationsThreadHandler } from "./driver-operations-thread-handler.js";
 import { sendDriverMessageHandler } from "./send-driver-message-handler.js";
 import { prepareMessageMediaHandler, verifyMessageMediaHandler } from "./prepare-message-media-handler.js";
@@ -397,6 +402,36 @@ const server = createServer(async (request, response) => {
         uuid: () => crypto.randomUUID(),
       });
       sendNode(response, driverResponse);
+      return;
+    }
+    if (request.method === "GET" && request.url === "/v1/driver/team-invites/pending") {
+      const webRequest = await toWebRequest(request);
+      const inviteResponse = await pendingDriverTeamInviteHandler(webRequest, {
+        identity: gateway,
+        invites: gateway,
+        uuid: () => crypto.randomUUID(),
+      });
+      sendNode(response, inviteResponse);
+      return;
+    }
+    if (request.method === "POST" && request.url === "/v1/driver/team-invites/resolve") {
+      const webRequest = await toWebRequest(request);
+      const inviteResponse = await resolveDriverTeamInviteHandler(webRequest, {
+        identity: gateway,
+        invites: gateway,
+        uuid: () => crypto.randomUUID(),
+      });
+      sendNode(response, inviteResponse);
+      return;
+    }
+    if (request.method === "POST" && request.url === "/v1/driver/team-invites/accept") {
+      const webRequest = await toWebRequest(request);
+      const inviteResponse = await acceptDriverTeamInviteHandler(webRequest, {
+        identity: gateway,
+        invites: gateway,
+        uuid: () => crypto.randomUUID(),
+      });
+      sendNode(response, inviteResponse);
       return;
     }
     if (request.method === "POST" && request.url === "/v1/driver/preferences/locale") {

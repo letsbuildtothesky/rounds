@@ -205,6 +205,31 @@ export interface DriverProfileGateway {
   ): Promise<UpdateDriverPreferredLocaleResult>;
 }
 
+export type DriverTeamInvite = {
+  id: string;
+  tenantId: string;
+  businessName: string;
+  businessInitials: string;
+  locationLabel: string;
+  expiresAt: string;
+};
+
+export interface DriverTeamInviteGateway {
+  pendingTeamInvite(
+    identity: AuthenticatedIdentity,
+  ): Promise<DriverTeamInvite | null>;
+  resolveTeamInvite(
+    code: string,
+    identity: AuthenticatedIdentity,
+  ): Promise<DriverTeamInvite | null>;
+  acceptTeamInvite(
+    inviteId: string,
+    code: string | undefined,
+    preferredLocale: "th-TH" | "en",
+    identity: AuthenticatedIdentity,
+  ): Promise<boolean>;
+}
+
 export interface OperationsCommunicationsGateway {
   getOperationsCommunications(actor: ActorContext): Promise<OperationsCommunicationsProjection>;
   getOperationsCommunicationThread(threadId: string, actor: ActorContext): Promise<OperationsCommunicationThread | null>;
@@ -453,6 +478,10 @@ export type DriverSessionDependencies = {
 export type DriverPreferredLocaleDependencies = DriverSessionDependencies & {
   profiles: DriverProfileGateway;
   now: () => Date;
+};
+
+export type DriverTeamInviteDependencies = DriverSessionDependencies & {
+  invites: DriverTeamInviteGateway;
 };
 
 export type UpdateDriverPreferredLocaleRequestBody = {

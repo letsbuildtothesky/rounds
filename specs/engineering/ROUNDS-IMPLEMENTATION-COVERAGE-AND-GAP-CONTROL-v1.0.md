@@ -7,6 +7,23 @@
 
 ## Changelog
 
+- **2026-09-05 · Checkpoint 63:** Replaces the invented Driver email/password
+  surface with the canonical English A02–A05 entry flow. Flutter now renders
+  the supplied phone, six-slot OTP, driver-path, invite-code bottom drawer and
+  verified Team-invite boards from generated measurements; no Thai onboarding
+  screen was added. The four-slot prototype was corrected in place to six
+  because the selected Supabase phone provider requires a six-digit OTP. Real
+  Supabase Phone Auth exchanges the OTP, while authenticated API/database
+  commands resolve only pending, unexpired invitations bound to that verified
+  phone, create the Team identity/relationship atomically and consume the
+  invitation once. Raw invitation codes are never stored. Migration
+  `202609050006` is applied remotely. All 166 Driver tests, 116 API tests,
+  Flutter analysis, TypeScript typecheck, linked database lint and Android
+  debug builds pass. A02, A03, A04, the invite drawer and A05 were rendered on
+  the connected Samsung and visually compared with the canonical English
+  board. Live SMS delivery and real invitation acceptance remain open because
+  the SMS provider and the merchant-side invite-issuing surface are not yet
+  configured/defined. A02–A05 therefore remain `PARTIAL`.
 - **2026-09-05 · Checkpoint 62:** Closes the BS-03 mechanical
   auth-expiry/re-auth ownership gate without adding a presentation surface.
   Missing or expired tokens no longer delete the encrypted assigned-Round
@@ -439,7 +456,7 @@ Canonical inventory: `specs/product/ROUNDS-DRIVER-CANONICAL-MANIFEST-v6.md` and 
 |---|---|---|---|---|
 | A01 Splash | Pilot P2 | `IMPLEMENTED` | The shared canonical A01 now renders from generated board measurements, runs the specified word/dot entrance and advances after 1.25 seconds or an explicit full-screen tap. Session restoration still starts independently at process boot, so the visual launch state does not defer recovery work. Timing, centered geometry and returning-Driver routing have automated coverage. | Complete physical-device visual/timing acceptance on the supported Android/iOS matrix. |
 | A01B Choose Language | Pilot P0 | `PARTIAL` | The original generic selector is replaced by one Thai-first localized Flutter surface generated from both canonical EN/TH board measurements. Thai is the first-run default, English is first-class, selection changes the complete screen presentation, and the local pre-auth preference survives relaunch/offline. Authenticated sessions now adopt the profile only when no explicit device choice exists; explicit local choices synchronize through a tenant-authorized, expected-version, idempotent profile command with one stale-version refresh/retry and non-blocking offline behavior. Reference-width geometry, 320 px Thai layout, conflict and offline behavior have automated coverage, and migration `202609040003` is applied remotely. | Complete localization-key coverage for every active flow, physically accept Thai/English layout and run a signed-in cross-device preference acceptance. |
-| A02–A05 Entry / Team invite | Pilot P0 | `PARTIAL` | Protected Team email login and pilot one-tap login exist. | Replace pilot shortcut for release; implement canonical phone/OTP/invite path or record an approved product amendment. |
+| A02–A05 Entry / Team invite | Pilot P0 | `PARTIAL` | The invented email/password and one-tap presentation is removed. The canonical English A02 phone, A03 six-digit OTP, A04 path, invite-code bottom drawer and dynamic A05 merchant invitation now use generated board measurements. The app performs real Supabase phone-OTP request/verification, secure session storage and phone-bound invite discovery/resolution/acceptance. Migration `202609050006` atomically creates the Team identity, membership and relationship, consumes the expiring single-use invite and audits the action without storing its raw code. All 166 Driver tests, 116 API tests, analysis, typecheck, linked lint and APK builds pass; all five visible states were accepted on the connected Samsung. | Configure the production SMS provider; define and implement the canonical merchant-side invite issue/delivery/revoke surface; then run a live SMS → real invitation → Team-session acceptance. |
 | A06 Team About You | Later onboarding depth | `DEFERRED` | No production onboarding form. | Promote with self-service Team onboarding. |
 | A06B–A12 Independent identity/payment | Network | `DEFERRED` | Intentionally absent. | Build only with Network promotion and trust/payment policies. |
 | B00 Start Shift | Slice 2 P1 | `PARTIAL` | The authenticated Driver session now projects today's effective recurring/date-exception shift and any real attendance. The canonical measured English/Thai B00 surface commits one explicit server-timed, versioned and idempotent shift start; the database snapshots schedule source/window and emits audit/domain evidence without changing assignment or custody. Automated contract/API/widget/golden coverage passes, migration `202609030017` is applied, and the real configured Samsung transition from B00 to the assigned-Round home passed. Unsupported notification/Hours actions remain inactive rather than fabricated. | Run the pgTAP behavior suite in a Docker-capable environment and define a real shift-level Operations contact identity/thread when no Round-scoped contact exists. Resolve GAP-013 late-start presentation. Ending/overtime remain B01D–B01F work. |
@@ -516,7 +533,7 @@ Not every unfinished feature is a missing specification. This table contains onl
 | GAP-002 | Cargo taxonomy, dimensions, quantities and vehicle compatibility limits are not production-approved. | Business operations | Use explicit `unclassified`/`review_required`; test fixtures may use clearly labelled non-production values. Never silently treat unknown cargo as fitting. | UrbanFlowers operations decision before full BS-09 approval. |
 | GAP-003 | Destination handoff/service dwell and some pickup/reload turnaround defaults are not locked. | Business operations | Route preview must disclose excluded dwell. No hidden zero-time assumption may be described as full feasibility. | UrbanFlowers operations decision before promise-safe planning claim. |
 | GAP-004 | Final production routing provider, call metering, cache duration and fallback policy are not locked. | Technical/commercial | Keep provider-neutral server interface and preserve provider provenance; Mapbox remains the current development provider. | Engineering + commercial decision before production load test. |
-| GAP-005 | Canonical phone/OTP/team-invite onboarding versus pilot email login needs a release decision. | Product/security | Pilot one-tap login stays development-only; no credential is embedded in a release build. | Product decision before external beta. |
+| GAP-005 · **CLOSED 2026-09-05** | Canonical phone/OTP/team-invite onboarding versus pilot email login needed a release decision. | Product/security | The user selected the supplied canonical phone/OTP/Team-invite flow. The Driver production route no longer exposes email/password or a one-tap pilot credential. | Closed by Checkpoint 63. Live provider acceptance remains implementation evidence, not a product-method decision. |
 | GAP-006 | Recipient-unavailable, address, cannot-complete and emergency resolution policies are not complete enough for implementation. | Business/safety | Preserve custody, open an explicit Operations hold and never auto-complete or auto-return. | Operations policy workshop before those flows can become `VERIFIED`. |
 | GAP-007 · **CLOSED 2026-09-03** | Which post-pickup fields Operations may change and when Driver acknowledgement is mandatory needs final policy. | Business operations | The controlling addendum in `ROUNDS-SPEC-6-DISPATCH-ROUTE-EDITING-COMMS-v1.11.md` limits change authority to destination/pin, promise, handoff/entrance instruction and future own-Round sequence; it requires locked custody, real consequence preview, atomic versioning and explicit Driver acknowledgement. | Closed by the Post-Pickup Live Change Control addendum. Network material-scope consent remains a later-slice authority. |
 | GAP-008 | Batch intake file contract and partial-failure policy are not locked. | Product/integration | Continue single canonical intake; do not invent a production spreadsheet format. | Product + UrbanFlowers data owner before batch intake. |
@@ -526,6 +543,7 @@ Not every unfinished feature is a missing specification. This table contains onl
 | GAP-012 | Field evidence is incomplete for motorcycle route quality, OEM background behavior, battery and degraded networks. | External evidence | Bench acceptance cannot be promoted to field acceptance. | Phase 0 field run before Pilot release. |
 | GAP-013 | B00 defines only a pre-shift countdown; it does not define what an unstarted Driver sees after the scheduled start time. | Driver UX/operations | Keep the Start Shift action available and clamp the supplied countdown at zero. Do not claim the Driver started, was late or was excused from client time alone. | Product/UX decision before B00 can leave `PARTIAL`. |
 | GAP-014 | The canonical POD boards illustrate a signature and automatic GPS, while product authority makes photo, signature, name and geofence evidence conditional by order class; the Driver session and POD command currently project no effective POD policy and persist no signature asset. | Product/operations + data contract | Keep the real required manifest, handoff, receiver-name and photo evidence. Record delivery time on the server. Do not draw a fake signature requirement or claim GPS/geofence evidence until an effective policy projection, signature-media contract and location-evidence fields are authorized end to end. | Product/UrbanFlowers operations must define Pilot order-class rules; Engineering then adds the policy projection, immutable signature asset and optional location evidence before those controls ship. |
+| GAP-015 | The Driver A02–A05 board defines consuming a Team invitation, but the canonical v45 Operations board has no merchant-side issue/resend/revoke control and the active specs do not lock its delivery channel, expiry policy or rate limits. | Product/UX/security | Keep invite acceptance phone-bound, expiring and single-use; store only a digest. Do not invent an Operations screen or claim that SMS/link/QR delivery happened. | Product/UX must add the canonical merchant issuing surface and security policy before external beta. |
 
 ## 8. Gap-handling protocol
 
@@ -771,6 +789,15 @@ This sequence does not promote later slices; it orders the already authorized En
   correct-owner restart path, all 159 Driver tests, analysis, Android build and
   in-place Samsung installation pass. No new entry UI or Thai presentation was
   introduced.
+- **D30 canonical A02–A05 Team entry implemented 2026-09-05:** the Driver now
+  follows the supplied English phone, six-digit provider-compatible OTP,
+  driver-path, invite drawer and merchant confirmation sequence. Real
+  Supabase auth and a remotely applied phone-bound, expiring, single-use Team
+  invitation contract replace the prior email/password UI. Four stable visual
+  baselines plus Samsung captures cover every visible state; all automated
+  suites and builds pass. Production SMS/provider acceptance and a supplied
+  merchant-side invite issuing UX remain open, so the row stays `PARTIAL` and
+  no Operations UI was invented.
 - Define the canonical auth-expiry/re-auth entry presentation from approved
   English UX before exposing another recovery path.
 - Finish N01/N02/N03 recovery states.

@@ -42,6 +42,15 @@ String generateDriverUiMetrics(Map<String, dynamic> json) {
   final a01bContent = a01b['content'] as Map<String, dynamic>;
   final a01bList = a01b['languageList'] as Map<String, dynamic>;
   final a01bFooter = a01b['footer'] as Map<String, dynamic>;
+  final a02a05 = screens['A02A05'] as Map<String, dynamic>;
+  final entryTop = a02a05['topBar'] as Map<String, dynamic>;
+  final entryBody = a02a05['body'] as Map<String, dynamic>;
+  final entryFooter = a02a05['footer'] as Map<String, dynamic>;
+  final entryPhone = a02a05['phone'] as Map<String, dynamic>;
+  final entryOtp = a02a05['otp'] as Map<String, dynamic>;
+  final entryPath = a02a05['path'] as Map<String, dynamic>;
+  final entryInvite = a02a05['invite'] as Map<String, dynamic>;
+  final entrySheet = a02a05['sheet'] as Map<String, dynamic>;
   final b00 = screens['B00'] as Map<String, dynamic>;
   final b00Top = b00['topBar'] as Map<String, dynamic>;
   final b00Hero = b00['hero'] as Map<String, dynamic>;
@@ -329,6 +338,133 @@ abstract final class DriverA01BMetrics {
   static const double englishButtonTracking = ${_double(a01bFooter['englishButtonTracking'])};
   static const double thaiButtonWeight = ${_double(a01bFooter['thaiButtonWeight'])};
   static const double thaiButtonTracking = ${_double(a01bFooter['thaiButtonTracking'])};
+}
+
+abstract final class DriverA02A05Metrics {
+  static const String sourceEnglish = '${a02a05['sourceEnglish']}';
+
+  static const double topBarHeight = ${_double(entryTop['height'])};
+  static const double topBarPaddingHorizontal = ${_double(entryTop['paddingHorizontal'])};
+  static const double brandSize = ${_double(entryTop['brandSize'])};
+  static const double brandWeight = ${_double(entryTop['brandWeight'])};
+  static const double brandTracking = ${_double(entryTop['brandTracking'])};
+  static const double dotSize = ${_double(entryTop['dotSize'])};
+  static const double dotMarginLeft = ${_double(entryTop['dotMarginLeft'])};
+  static const double dotMarginBottom = ${_double(entryTop['dotMarginBottom'])};
+  static const double backSize = ${_double(entryTop['backSize'])};
+  static const double backIconSize = ${_double(entryTop['backIconSize'])};
+
+  static const double bodyPaddingTop = ${_double(entryBody['paddingTop'])};
+  static const double tightBodyPaddingTop = ${_double(entryBody['tightPaddingTop'])};
+  static const double bodyPaddingHorizontal = ${_double(entryBody['paddingHorizontal'])};
+  static const double bodyPaddingBottom = ${_double(entryBody['paddingBottom'])};
+  static const double eyebrowSize = ${_double(entryBody['eyebrowSize'])};
+  static const double eyebrowWeight = ${_double(entryBody['eyebrowWeight'])};
+  static const double eyebrowTracking = ${_double(entryBody['eyebrowTracking'])};
+  static const double eyebrowBottom = ${_double(entryBody['eyebrowBottom'])};
+  static const double titleSize = ${_double(entryBody['titleSize'])};
+  static const double titleHeight = ${_double(entryBody['titleHeight'])};
+  static const double titleWeight = ${_double(entryBody['titleWeight'])};
+  static const double titleTracking = ${_double(entryBody['titleTracking'])};
+  static const double leadTop = ${_double(entryBody['leadTop'])};
+  static const double leadSize = ${_double(entryBody['leadSize'])};
+  static const double leadHeight = ${_double(entryBody['leadHeight'])};
+  static const double leadWeight = ${_double(entryBody['leadWeight'])};
+
+  static const double footerPaddingTop = ${_double(entryFooter['paddingTop'])};
+  static const double footerPaddingHorizontal = ${_double(entryFooter['paddingHorizontal'])};
+  static const double footerPaddingBottom = ${_double(entryFooter['paddingBottom'])};
+  static const double buttonHeight = ${_double(entryFooter['buttonHeight'])};
+  static const double buttonRadius = ${_double(entryFooter['buttonRadius'])};
+  static const double buttonSize = ${_double(entryFooter['buttonSize'])};
+  static const double buttonWeight = ${_double(entryFooter['buttonWeight'])};
+  static const double buttonTracking = ${_double(entryFooter['buttonTracking'])};
+
+  static const double phoneMarginTop = ${_double(entryPhone['marginTop'])};
+  static const double phoneLineHeight = ${_double(entryPhone['lineHeight'])};
+  static const double phoneLinePaddingBottom = ${_double(entryPhone['linePaddingBottom'])};
+  static const double countrySize = ${_double(entryPhone['countrySize'])};
+  static const double countryWeight = ${_double(entryPhone['countryWeight'])};
+  static const double countryTracking = ${_double(entryPhone['countryTracking'])};
+  static const double countryMarginRight = ${_double(entryPhone['countryMarginRight'])};
+  static const double phoneInputSize = ${_double(entryPhone['inputSize'])};
+  static const double phoneInputWeight = ${_double(entryPhone['inputWeight'])};
+  static const double phoneInputTracking = ${_double(entryPhone['inputTracking'])};
+  static const double trustTop = ${_double(entryPhone['trustTop'])};
+  static const double trustGap = ${_double(entryPhone['trustGap'])};
+  static const double trustIconSize = ${_double(entryPhone['trustIconSize'])};
+  static const double trustSize = ${_double(entryPhone['trustSize'])};
+  static const double trustHeight = ${_double(entryPhone['trustHeight'])};
+  static const double trustWeight = ${_double(entryPhone['trustWeight'])};
+
+  static const double otpSentTop = ${_double(entryOtp['sentTop'])};
+  static const double otpSentSize = ${_double(entryOtp['sentSize'])};
+  static const double otpSentWeight = ${_double(entryOtp['sentWeight'])};
+  static const double otpMarginTop = ${_double(entryOtp['marginTop'])};
+  static const double otpSlotGap = ${_double(entryOtp['slotGap'])};
+  static const double otpSlotHeight = ${_double(entryOtp['slotHeight'])};
+  static const double otpSlotSize = ${_double(entryOtp['slotSize'])};
+  static const double otpSlotWeight = ${_double(entryOtp['slotWeight'])};
+  static const double resendTop = ${_double(entryOtp['resendTop'])};
+  static const double resendSize = ${_double(entryOtp['resendSize'])};
+  static const double resendWeight = ${_double(entryOtp['resendWeight'])};
+
+  static const double pathListTop = ${_double(entryPath['listTop'])};
+  static const double pathRowHeight = ${_double(entryPath['rowHeight'])};
+  static const double pathRowPaddingVertical = ${_double(entryPath['rowPaddingVertical'])};
+  static const double pathColumnGap = ${_double(entryPath['columnGap'])};
+  static const double pathIconSize = ${_double(entryPath['iconSize'])};
+  static const double pathIndexSize = ${_double(entryPath['indexSize'])};
+  static const double pathIndexWeight = ${_double(entryPath['indexWeight'])};
+  static const double pathIndexTracking = ${_double(entryPath['indexTracking'])};
+  static const double pathIndexBottom = ${_double(entryPath['indexBottom'])};
+  static const double pathTitleSize = ${_double(entryPath['titleSize'])};
+  static const double pathTitleHeight = ${_double(entryPath['titleHeight'])};
+  static const double pathTitleWeight = ${_double(entryPath['titleWeight'])};
+  static const double pathTitleTracking = ${_double(entryPath['titleTracking'])};
+  static const double pathSubtitleTop = ${_double(entryPath['subtitleTop'])};
+  static const double pathSubtitleSize = ${_double(entryPath['subtitleSize'])};
+  static const double pathSubtitleHeight = ${_double(entryPath['subtitleHeight'])};
+  static const double pathSubtitleWeight = ${_double(entryPath['subtitleWeight'])};
+
+  static const double inviteHeroTop = ${_double(entryInvite['heroTop'])};
+  static const double inviteHeroPaddingTop = ${_double(entryInvite['heroPaddingTop'])};
+  static const double inviteHeroPaddingBottom = ${_double(entryInvite['heroPaddingBottom'])};
+  static const double merchantGap = ${_double(entryInvite['merchantGap'])};
+  static const double merchantMarkSize = ${_double(entryInvite['markSize'])};
+  static const double merchantMarkRadius = ${_double(entryInvite['markRadius'])};
+  static const double merchantMarkTextSize = ${_double(entryInvite['markTextSize'])};
+  static const double merchantTitleSize = ${_double(entryInvite['titleSize'])};
+  static const double merchantMetaTop = ${_double(entryInvite['metaTop'])};
+  static const double merchantMetaSize = ${_double(entryInvite['metaSize'])};
+  static const double verifiedTop = ${_double(entryInvite['verifiedTop'])};
+  static const double verifiedPaddingTop = ${_double(entryInvite['verifiedPaddingTop'])};
+  static const double verifiedGap = ${_double(entryInvite['verifiedGap'])};
+  static const double verifiedIconSize = ${_double(entryInvite['verifiedIconSize'])};
+  static const double verifiedTitleSize = ${_double(entryInvite['verifiedTitleSize'])};
+  static const double verifiedMetaTop = ${_double(entryInvite['verifiedMetaTop'])};
+  static const double verifiedMetaSize = ${_double(entryInvite['verifiedMetaSize'])};
+  static const double alternateTop = ${_double(entryInvite['alternateTop'])};
+  static const double alternateSize = ${_double(entryInvite['alternateSize'])};
+
+  static const double sheetRadius = ${_double(entrySheet['radius'])};
+  static const double sheetPaddingTop = ${_double(entrySheet['paddingTop'])};
+  static const double sheetPaddingHorizontal = ${_double(entrySheet['paddingHorizontal'])};
+  static const double sheetPaddingBottom = ${_double(entrySheet['paddingBottom'])};
+  static const double sheetGrabWidth = ${_double(entrySheet['grabWidth'])};
+  static const double sheetGrabHeight = ${_double(entrySheet['grabHeight'])};
+  static const double sheetGrabBottom = ${_double(entrySheet['grabBottom'])};
+  static const double sheetKickerSize = ${_double(entrySheet['kickerSize'])};
+  static const double sheetKickerBottom = ${_double(entrySheet['kickerBottom'])};
+  static const double sheetTitleSize = ${_double(entrySheet['titleSize'])};
+  static const double sheetSubtitleTop = ${_double(entrySheet['subtitleTop'])};
+  static const double sheetSubtitleSize = ${_double(entrySheet['subtitleSize'])};
+  static const double sheetCodeTop = ${_double(entrySheet['codeTop'])};
+  static const double sheetCodeHeight = ${_double(entrySheet['codeHeight'])};
+  static const double sheetCodeSize = ${_double(entrySheet['codeSize'])};
+  static const double sheetPrimaryTop = ${_double(entrySheet['primaryTop'])};
+  static const double sheetPrimaryHeight = ${_double(entrySheet['primaryHeight'])};
+  static const double sheetSecondaryHeight = ${_double(entrySheet['secondaryHeight'])};
 }
 
 abstract final class DriverB00Metrics {

@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import '../ui/assigned_round_screen.dart';
-import '../ui/driver_login_screen.dart';
+import '../ui/driver_entry_flow_screen.dart';
+import '../driver/driver_entry.dart';
 import '../ui/driver_splash_screen.dart';
 import '../ui/delivery_package_problem_screen.dart';
 import '../ui/dropoff_handoff_screen.dart';
@@ -94,6 +95,27 @@ class _RoundsHarnessAppState extends State<RoundsHarnessApp> {
   }
 
   Widget _home() {
+    if (!kReleaseMode && _previewScreen.startsWith('entry-a0')) {
+      final stage = switch (_previewScreen) {
+        'entry-a03' => DriverEntryStage.otp,
+        'entry-a04' => DriverEntryStage.path,
+        'entry-a05' => DriverEntryStage.teamInvite,
+        _ => DriverEntryStage.phone,
+      };
+      return DriverEntryFlowScreen(
+        controller: widget.controller,
+        previewStage: stage,
+        previewInvite: stage == DriverEntryStage.teamInvite
+            ? const DriverTeamInviteModel(
+                id: 'preview-invite',
+                tenantId: 'preview-tenant',
+                businessName: 'UrbanFlowers',
+                businessInitials: 'UF',
+                locationLabel: 'Bangkok · Delivery team',
+              )
+            : null,
+      );
+    }
     if (!kReleaseMode && _previewScreen == 'pickup') {
       return PickupConfirmationScreen(
         controller: widget.controller,
@@ -131,7 +153,7 @@ class _RoundsHarnessAppState extends State<RoundsHarnessApp> {
     }
     if (widget.controller.driverConfigured &&
         widget.controller.driverSession == null) {
-      return DriverLoginScreen(controller: widget.controller);
+      return DriverEntryFlowScreen(controller: widget.controller);
     }
     final session = widget.controller.driverSession;
     final round = session?.currentRound;

@@ -3,9 +3,11 @@
 Thin Flutter field harness for validating embedded Google Navigation
 `TWO_WHEELER` guidance and simultaneous Rounds operational telemetry.
 
-The same pilot client now supports an English Slice 1 Team-driver sign-in,
-secure token/refresh-token persistence, authenticated Round retrieval and
-server-provided Stop/manifest rendering. Assigned Team drivers can verify every
+The same pilot client now supports the canonical English Team-driver entry
+flow: Thai mobile number, six-digit SMS OTP, driver-path choice, phone-bound
+business invitation and explicit Team join. Supabase tokens remain in secure
+storage; the app then retrieves the authenticated Round and server-provided
+Stop/manifest truth. Assigned Team drivers can verify every
 physical manifest line and commit pickup through the server-authoritative
 custody command. The canonical My Rounds surface also shows the signed-in
 Driver's real current and completed Team Rounds, including durable POD/return
@@ -64,15 +66,13 @@ flutter run \
   --dart-define=ROUNDS_API_URL=https://YOUR_API_HOST
 ```
 
-The current pilot entry method is email/password for controlled Team accounts.
-The production Thailand authentication method remains a pre-pilot decision;
-phone OTP can replace the entry method without changing Round contracts or
-assignment state.
-
-Private debug builds may hide the credential fields and expose one pilot
-`Sign in` button by passing `PILOT_DRIVER_EMAIL` and `PILOT_DRIVER_PASSWORD` as
-Dart defines. This convenience is disabled in release builds. Never commit the
-values or distribute an APK that contains them.
+For local secret handling, the same values may be placed in an ignored JSON
+file and supplied with `--dart-define-from-file=.env.local`. Supabase Phone Auth
+and an SMS provider must be configured before a real OTP can be delivered.
+Team invitations are single-use, expiring, bound to the verified phone number
+and stored only as a code digest. The canonical Operations board does not yet
+define the merchant-side invitation issuing control, so the Driver app does
+not pretend that an invitation was sent.
 
 The real secret files are ignored by Git. The required APIs are Navigation SDK,
 Maps SDK for Android, and Maps SDK for iOS. iOS requires Xcode, Swift Package

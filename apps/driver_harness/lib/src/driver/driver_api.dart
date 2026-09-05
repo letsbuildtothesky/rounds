@@ -13,6 +13,7 @@ import '../storage/message_media_outbox.dart';
 import '../storage/pod_evidence_outbox.dart';
 import 'driver_session.dart';
 import 'driver_operations_thread.dart';
+import 'driver_entry.dart';
 
 class DriverApiException implements Exception {
   const DriverApiException(this.message);
@@ -125,38 +126,94 @@ class DriverApi {
     }
   }
 
-  Future<DriverSessionModel> signIn(
-    String email,
-    String password, {
+  Future<void> requestPhoneOtp(String phoneE164) async {
+    final response = await _client.post(
+      Uri.parse('$supabaseUrl/auth/v1/otp'),
+      headers: {'apikey': publishableKey, 'content-type': 'application/json'},
+      body: jsonEncode({
+        'phone': phoneE164,
+        'create_user': true,
+        'channel': 'sms',
+      }),
+    );
+    if (response.statusCode != 200) {
+      throw DriverApiException(_message(response, 'Code could not be sent'));
+    }
+  }
+
+  Future<DriverPhoneVerificationResult> verifyPhoneOtp(
+    String phoneE164,
+    String token, {
     String? expectedDriverId,
   }) async {
     final response = await _client.post(
-      Uri.parse('$supabaseUrl/auth/v1/token?grant_type=password'),
+      Uri.parse('$supabaseUrl/auth/v1/verify'),
       headers: {'apikey': publishableKey, 'content-type': 'application/json'},
-      body: jsonEncode({'email': email.trim(), 'password': password}),
+      body: jsonEncode({'phone': phoneE164, 'token': token, 'type': 'sms'}),
     );
     if (response.statusCode != 200) {
-      throw DriverApiException(_message(response, 'Sign in failed'));
+      throw DriverApiException(
+        _message(response, 'Code could not be verified'),
+      );
     }
     final body = jsonDecode(response.body) as Map<String, dynamic>;
-    final accessToken = body['access_token'] as String;
-    final refreshToken = body['refresh_token'] as String;
-    await _writeTokens(accessToken, refreshToken);
-    try {
-      var session = await _driverSession(accessToken);
-      await _validateDriverIdentity(session, expectedDriverId);
-      final exceptionFlush = await _flushPendingExceptionEvidence(accessToken);
-      final podFlush = await _flushPendingPodEvidence(
-        exceptionFlush.accessToken,
-      );
-      final mediaFlush = await _flushPendingMessageMedia(podFlush.accessToken);
-      final flush = await _flushPending(mediaFlush.accessToken);
-      if (flush.committedAny) session = await _driverSession(flush.accessToken);
-      return session;
-    } catch (_) {
-      await signOut();
-      rethrow;
+    final accessToken = body['access_token'] as String?;
+    final refreshToken = body['refresh_token'] as String?;
+    if (accessToken == null || refreshToken == null) {
+      throw const DriverApiException('Verified session was not returned');
     }
+    await _writeTokens(accessToken, refreshToken);
+
+    final session = await _driverSessionOrNull(accessToken);
+    if (session != null) {
+      await _validateDriverIdentity(session, expectedDriverId);
+      return DriverPhoneVerificationResult(session: session);
+    }
+    return DriverPhoneVerificationResult(
+      pendingInvite: await _pendingTeamInvite(accessToken),
+    );
+  }
+
+  Future<DriverTeamInviteModel> resolveTeamInvite(String code) async {
+    final response = await _authorizedPost('/v1/driver/team-invites/resolve', {
+      'code': code,
+    });
+    if (response.statusCode != 200) {
+      throw DriverApiException(
+        _message(response, 'Invite code could not be verified'),
+      );
+    }
+    return DriverTeamInviteModel.fromJson(
+      jsonDecode(response.body) as Map<String, dynamic>,
+    );
+  }
+
+  Future<DriverSessionModel> acceptTeamInvite({
+    required DriverTeamInviteModel invite,
+    required String preferredLocale,
+    String? code,
+    String? expectedDriverId,
+  }) async {
+    final response = await _authorizedPost('/v1/driver/team-invites/accept', {
+      'inviteId': invite.id,
+      'preferredLocale': preferredLocale,
+      'code': ?code,
+    });
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw DriverApiException(
+        _message(response, 'The Team invite could not be accepted'),
+      );
+    }
+    final body = jsonDecode(response.body) as Map<String, dynamic>;
+    final sessionJson = body['session'];
+    if (sessionJson is! Map<String, dynamic>) {
+      throw const DriverApiException(
+        'Team access was created but the Driver session is unavailable',
+      );
+    }
+    final session = DriverSessionModel.fromJson(sessionJson);
+    await _validateDriverIdentity(session, expectedDriverId);
+    return session;
   }
 
   Future<void> signOut() => Future.wait([
@@ -1408,6 +1465,46 @@ class DriverApi {
       );
     }
     return DriverSessionModel.fromJson(
+      jsonDecode(response.body) as Map<String, dynamic>,
+    );
+  }
+
+  Future<DriverSessionModel?> _driverSessionOrNull(String accessToken) async {
+    final response = await _client.get(
+      Uri.parse('$roundsApiUrl/v1/driver/session'),
+      headers: {
+        'authorization': 'Bearer $accessToken',
+        'x-trace-id': DateTime.now().microsecondsSinceEpoch.toString(),
+      },
+    );
+    if (response.statusCode == 401) throw const _Unauthorized();
+    if (response.statusCode == 403) return null;
+    if (response.statusCode != 200) {
+      throw DriverApiException(
+        _message(response, 'Driver account could not be loaded'),
+      );
+    }
+    return DriverSessionModel.fromJson(
+      jsonDecode(response.body) as Map<String, dynamic>,
+    );
+  }
+
+  Future<DriverTeamInviteModel?> _pendingTeamInvite(String accessToken) async {
+    final response = await _client.get(
+      Uri.parse('$roundsApiUrl/v1/driver/team-invites/pending'),
+      headers: {
+        'authorization': 'Bearer $accessToken',
+        'x-trace-id': DateTime.now().microsecondsSinceEpoch.toString(),
+      },
+    );
+    if (response.statusCode == 401) throw const _Unauthorized();
+    if (response.statusCode == 204 || response.statusCode == 404) return null;
+    if (response.statusCode != 200) {
+      throw DriverApiException(
+        _message(response, 'Team invitation could not be loaded'),
+      );
+    }
+    return DriverTeamInviteModel.fromJson(
       jsonDecode(response.body) as Map<String, dynamic>,
     );
   }

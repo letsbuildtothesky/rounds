@@ -6,6 +6,8 @@ import type {
   DeliveryCommandGateway,
   DriverCommunicationsGateway,
   DriverProfileGateway,
+  DriverTeamInvite,
+  DriverTeamInviteGateway,
   DriverShiftGateway,
   DriverStopGateway,
   IdentityGateway,
@@ -261,7 +263,7 @@ function initials(displayName: string): string {
   return displayName.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]!.toUpperCase()).join("") || "DR";
 }
 
-export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway, RoundGateway, PickupGateway, DriverStopGateway, DriverCommunicationsGateway, DriverShiftGateway, DriverProfileGateway, OperationsCommunicationsGateway, PodGateway, OperationsHistoryGateway, OperationsActionGateway, OperationsDeliveriesGateway, OperationsDriversGateway, OperationsRoundDetailGateway, PlanningRouteContextGateway, RoundMoveGateway, LiveDeliveryChangeGateway, PrePickupDeliveryEditGateway {
+export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway, RoundGateway, PickupGateway, DriverStopGateway, DriverCommunicationsGateway, DriverShiftGateway, DriverProfileGateway, DriverTeamInviteGateway, OperationsCommunicationsGateway, PodGateway, OperationsHistoryGateway, OperationsActionGateway, OperationsDeliveriesGateway, OperationsDriversGateway, OperationsRoundDetailGateway, PlanningRouteContextGateway, RoundMoveGateway, LiveDeliveryChangeGateway, PrePickupDeliveryEditGateway {
   private readonly admin: SupabaseClient;
 
   constructor(
@@ -2380,6 +2382,44 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
       .maybeSingle<{ person_id: string }>();
     if (error) throw error;
     return data?.person_id ?? null;
+  }
+
+  async pendingTeamInvite(
+    identity: AuthenticatedIdentity,
+  ): Promise<DriverTeamInvite | null> {
+    const { data, error } = await this.admin.rpc("pending_team_driver_invite", {
+      p_auth_user_id: identity.authUserId,
+    });
+    if (error) throw error;
+    return data ? data as DriverTeamInvite : null;
+  }
+
+  async resolveTeamInvite(
+    code: string,
+    identity: AuthenticatedIdentity,
+  ): Promise<DriverTeamInvite | null> {
+    const { data, error } = await this.admin.rpc("resolve_team_driver_invite", {
+      p_auth_user_id: identity.authUserId,
+      p_code: code,
+    });
+    if (error) throw error;
+    return data ? data as DriverTeamInvite : null;
+  }
+
+  async acceptTeamInvite(
+    inviteId: string,
+    code: string | undefined,
+    preferredLocale: "th-TH" | "en",
+    identity: AuthenticatedIdentity,
+  ): Promise<boolean> {
+    const { data, error } = await this.admin.rpc("accept_team_driver_invite", {
+      p_auth_user_id: identity.authUserId,
+      p_invite_id: inviteId,
+      p_code: code ?? null,
+      p_preferred_locale: preferredLocale,
+    });
+    if (error) throw error;
+    return data === true;
   }
 
   async getDriverSession(identity: AuthenticatedIdentity): Promise<DriverSession | null> {

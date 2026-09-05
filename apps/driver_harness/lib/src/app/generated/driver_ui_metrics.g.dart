@@ -123,6 +123,133 @@ abstract final class DriverA01BMetrics {
   static const double thaiButtonTracking = 0.0;
 }
 
+abstract final class DriverA02A05Metrics {
+  static const String sourceEnglish = 'ux/driver/en/screens/ROUNDS-A02-A05-DRIVER-ENTRY-FLOW-v6-10OF10.html';
+
+  static const double topBarHeight = 68.0;
+  static const double topBarPaddingHorizontal = 20.0;
+  static const double brandSize = 24.0;
+  static const double brandWeight = 920.0;
+  static const double brandTracking = -1.32;
+  static const double dotSize = 7.0;
+  static const double dotMarginLeft = 3.0;
+  static const double dotMarginBottom = 2.0;
+  static const double backSize = 40.0;
+  static const double backIconSize = 22.0;
+
+  static const double bodyPaddingTop = 42.0;
+  static const double tightBodyPaddingTop = 28.0;
+  static const double bodyPaddingHorizontal = 20.0;
+  static const double bodyPaddingBottom = 120.0;
+  static const double eyebrowSize = 11.5;
+  static const double eyebrowWeight = 900.0;
+  static const double eyebrowTracking = 1.265;
+  static const double eyebrowBottom = 16.0;
+  static const double titleSize = 46.0;
+  static const double titleHeight = 0.94;
+  static const double titleWeight = 885.0;
+  static const double titleTracking = -2.99;
+  static const double leadTop = 18.0;
+  static const double leadSize = 17.0;
+  static const double leadHeight = 1.42;
+  static const double leadWeight = 650.0;
+
+  static const double footerPaddingTop = 14.0;
+  static const double footerPaddingHorizontal = 20.0;
+  static const double footerPaddingBottom = 18.0;
+  static const double buttonHeight = 62.0;
+  static const double buttonRadius = 7.0;
+  static const double buttonSize = 17.0;
+  static const double buttonWeight = 860.0;
+  static const double buttonTracking = -0.34;
+
+  static const double phoneMarginTop = 58.0;
+  static const double phoneLineHeight = 88.0;
+  static const double phoneLinePaddingBottom = 15.0;
+  static const double countrySize = 27.0;
+  static const double countryWeight = 850.0;
+  static const double countryTracking = -0.945;
+  static const double countryMarginRight = 18.0;
+  static const double phoneInputSize = 31.0;
+  static const double phoneInputWeight = 820.0;
+  static const double phoneInputTracking = -0.775;
+  static const double trustTop = 19.0;
+  static const double trustGap = 10.0;
+  static const double trustIconSize = 18.0;
+  static const double trustSize = 13.5;
+  static const double trustHeight = 1.3;
+  static const double trustWeight = 730.0;
+
+  static const double otpSentTop = 14.0;
+  static const double otpSentSize = 14.5;
+  static const double otpSentWeight = 730.0;
+  static const double otpMarginTop = 60.0;
+  static const double otpSlotGap = 10.0;
+  static const double otpSlotHeight = 72.0;
+  static const double otpSlotSize = 40.0;
+  static const double otpSlotWeight = 900.0;
+  static const double resendTop = 26.0;
+  static const double resendSize = 14.0;
+  static const double resendWeight = 720.0;
+
+  static const double pathListTop = 44.0;
+  static const double pathRowHeight = 162.0;
+  static const double pathRowPaddingVertical = 23.0;
+  static const double pathColumnGap = 20.0;
+  static const double pathIconSize = 54.0;
+  static const double pathIndexSize = 11.0;
+  static const double pathIndexWeight = 900.0;
+  static const double pathIndexTracking = 1.1;
+  static const double pathIndexBottom = 11.0;
+  static const double pathTitleSize = 27.0;
+  static const double pathTitleHeight = 1.02;
+  static const double pathTitleWeight = 875.0;
+  static const double pathTitleTracking = -1.215;
+  static const double pathSubtitleTop = 10.0;
+  static const double pathSubtitleSize = 14.0;
+  static const double pathSubtitleHeight = 1.4;
+  static const double pathSubtitleWeight = 690.0;
+
+  static const double inviteHeroTop = 34.0;
+  static const double inviteHeroPaddingTop = 25.0;
+  static const double inviteHeroPaddingBottom = 24.0;
+  static const double merchantGap = 17.0;
+  static const double merchantMarkSize = 66.0;
+  static const double merchantMarkRadius = 8.0;
+  static const double merchantMarkTextSize = 22.0;
+  static const double merchantTitleSize = 24.0;
+  static const double merchantMetaTop = 7.0;
+  static const double merchantMetaSize = 13.5;
+  static const double verifiedTop = 23.0;
+  static const double verifiedPaddingTop = 19.0;
+  static const double verifiedGap = 12.0;
+  static const double verifiedIconSize = 28.0;
+  static const double verifiedTitleSize = 15.0;
+  static const double verifiedMetaTop = 5.0;
+  static const double verifiedMetaSize = 13.0;
+  static const double alternateTop = 18.0;
+  static const double alternateSize = 13.5;
+
+  static const double sheetRadius = 20.0;
+  static const double sheetPaddingTop = 10.0;
+  static const double sheetPaddingHorizontal = 20.0;
+  static const double sheetPaddingBottom = 20.0;
+  static const double sheetGrabWidth = 38.0;
+  static const double sheetGrabHeight = 4.0;
+  static const double sheetGrabBottom = 18.0;
+  static const double sheetKickerSize = 11.5;
+  static const double sheetKickerBottom = 10.0;
+  static const double sheetTitleSize = 30.0;
+  static const double sheetSubtitleTop = 9.0;
+  static const double sheetSubtitleSize = 13.5;
+  static const double sheetCodeTop = 28.0;
+  static const double sheetCodeHeight = 72.0;
+  static const double sheetCodeSize = 34.0;
+  static const double sheetPrimaryTop = 24.0;
+  static const double sheetPrimaryHeight = 56.0;
+  static const double sheetSecondaryHeight = 46.0;
+}
+
 abstract final class DriverB00Metrics {
   static const String sourceEnglish = 'ux/driver/en/screens/ROUNDS-B00-START-SHIFT-v1-10OF10.html';
   static const String sourceThai = 'ux/driver/th/ROUNDS-B00-START-SHIFT-TH-v1-10OF10.html';

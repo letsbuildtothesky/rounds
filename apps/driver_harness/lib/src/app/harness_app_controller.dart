@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'app_strings.dart';
 import '../connectivity/driver_sync_state.dart';
 import '../driver/driver_api.dart';
+import '../driver/driver_entry.dart';
 import '../driver/driver_session.dart';
 import '../driver/driver_operations_thread.dart';
 import '../telemetry/telemetry_uploader.dart';
@@ -40,6 +41,10 @@ class HarnessAppController extends ChangeNotifier {
   bool _currentRouteAvailable = false;
   bool _driverLoading = false;
   String? _driverError;
+  DriverEntryStage _driverEntryStage = DriverEntryStage.phone;
+  String? _driverPhoneE164;
+  DriverTeamInviteModel? _driverTeamInvite;
+  String? _driverInviteCode;
   DriverSyncSnapshot _syncSnapshot = const DriverSyncSnapshot.online();
   bool _showConnectionSurface = false;
   StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
@@ -52,20 +57,14 @@ class HarnessAppController extends ChangeNotifier {
   bool get hasSelectedLanguage => _hasSelectedLanguage;
   AppStrings get strings => AppStrings(_locale);
   bool get driverConfigured => _driverApi.isConfigured;
-  bool get oneTapPilotSignInConfigured =>
-      !kReleaseMode &&
-      _pilotDriverEmail.isNotEmpty &&
-      _pilotDriverPassword.isNotEmpty;
   DriverSessionModel? get driverSession => _driverSession;
   bool get driverLoading => _driverLoading;
   String? get driverError => _driverError;
+  DriverEntryStage get driverEntryStage => _driverEntryStage;
+  String? get driverPhoneE164 => _driverPhoneE164;
+  DriverTeamInviteModel? get driverTeamInvite => _driverTeamInvite;
   DriverSyncSnapshot get syncSnapshot => _syncSnapshot;
   bool get showConnectionSurface => _showConnectionSurface;
-
-  static const _pilotDriverEmail = String.fromEnvironment('PILOT_DRIVER_EMAIL');
-  static const _pilotDriverPassword = String.fromEnvironment(
-    'PILOT_DRIVER_PASSWORD',
-  );
 
   static Future<HarnessAppController> create() async {
     final preferences = await SharedPreferences.getInstance();
@@ -139,28 +138,73 @@ class HarnessAppController extends ChangeNotifier {
     }
   }
 
-  Future<void> signInDriver(String email, String password) async {
+  Future<bool> requestDriverPhoneOtp(String nationalNumber) async {
+    var digits = nationalNumber.replaceAll(RegExp(r'\D'), '');
+    if (digits.startsWith('0')) digits = digits.substring(1);
+    if (digits.length != 9) {
+      _driverError = 'Enter a nine-digit Thai mobile number';
+      notifyListeners();
+      return false;
+    }
+    _driverLoading = true;
+    _driverError = null;
+    notifyListeners();
+    try {
+      final phoneE164 = '+66$digits';
+      await _driverApi.requestPhoneOtp(phoneE164);
+      _driverPhoneE164 = phoneE164;
+      _driverEntryStage = DriverEntryStage.otp;
+      return true;
+    } catch (error) {
+      _driverError = error.toString();
+      return false;
+    } finally {
+      _driverLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> verifyDriverPhoneOtp(String token) async {
+    final phone = _driverPhoneE164;
+    if (phone == null || token.replaceAll(RegExp(r'\D'), '').length != 6) {
+      _driverError = 'Enter the six-digit code';
+      notifyListeners();
+      return false;
+    }
     _driverLoading = true;
     _driverError = null;
     notifyListeners();
     try {
       final expectedDriverId = await _expectedDriverIdBeforeSync();
-      final signedIn = await _driverApi.signIn(
-        email,
-        password,
+      final verified = await _driverApi.verifyPhoneOtp(
+        phone,
+        token,
         expectedDriverId: expectedDriverId,
       );
-      await _acceptAuthenticatedSession(signedIn);
-      await _saveSession(signedIn);
-      _requestLocaleSync();
-      await _flushPendingTelemetry();
-      await _refreshSyncSnapshot(
-        phase: DriverConnectionPhase.online,
-        syncedNow: true,
-      );
-      if (_syncSnapshot.phase == DriverConnectionPhase.reconnecting) {
-        _showConnectionSurface = true;
+      if (verified.session != null) {
+        await _completeDriverEntry(verified.session!);
+      } else {
+        _driverTeamInvite = verified.pendingInvite;
+        _driverEntryStage = DriverEntryStage.path;
       }
+      return true;
+    } catch (error) {
+      _driverError = error.toString();
+      return false;
+    } finally {
+      _driverLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> resendDriverPhoneOtp() async {
+    final phone = _driverPhoneE164;
+    if (phone == null) return;
+    _driverLoading = true;
+    _driverError = null;
+    notifyListeners();
+    try {
+      await _driverApi.requestPhoneOtp(phone);
     } catch (error) {
       _driverError = error.toString();
     } finally {
@@ -169,11 +213,90 @@ class HarnessAppController extends ChangeNotifier {
     }
   }
 
-  Future<void> signInPilotDriver() {
-    if (!oneTapPilotSignInConfigured) {
-      throw StateError('One-tap pilot sign-in is not configured');
+  bool selectTeamDriverPath() {
+    if (_driverTeamInvite == null) return false;
+    _driverEntryStage = DriverEntryStage.teamInvite;
+    _driverError = null;
+    notifyListeners();
+    return true;
+  }
+
+  Future<bool> resolveDriverTeamInvite(String code) async {
+    final digits = code.replaceAll(RegExp(r'\D'), '');
+    if (digits.length != 6) return false;
+    _driverLoading = true;
+    _driverError = null;
+    notifyListeners();
+    try {
+      _driverTeamInvite = await _driverApi.resolveTeamInvite(digits);
+      _driverInviteCode = digits;
+      _driverEntryStage = DriverEntryStage.teamInvite;
+      return true;
+    } catch (error) {
+      _driverError = error.toString();
+      return false;
+    } finally {
+      _driverLoading = false;
+      notifyListeners();
     }
-    return signInDriver(_pilotDriverEmail, _pilotDriverPassword);
+  }
+
+  Future<bool> acceptDriverTeamInvite() async {
+    final invite = _driverTeamInvite;
+    if (invite == null) return false;
+    _driverLoading = true;
+    _driverError = null;
+    notifyListeners();
+    try {
+      final expectedDriverId = await _expectedDriverIdBeforeSync();
+      final session = await _driverApi.acceptTeamInvite(
+        invite: invite,
+        preferredLocale: _locale.storageValue,
+        code: _driverInviteCode,
+        expectedDriverId: expectedDriverId,
+      );
+      await _completeDriverEntry(session);
+      return true;
+    } catch (error) {
+      _driverError = error.toString();
+      return false;
+    } finally {
+      _driverLoading = false;
+      notifyListeners();
+    }
+  }
+
+  void driverEntryBack() {
+    _driverError = null;
+    switch (_driverEntryStage) {
+      case DriverEntryStage.phone:
+        return;
+      case DriverEntryStage.otp:
+        _driverEntryStage = DriverEntryStage.phone;
+        break;
+      case DriverEntryStage.path:
+        _driverEntryStage = DriverEntryStage.otp;
+        break;
+      case DriverEntryStage.teamInvite:
+        _driverEntryStage = DriverEntryStage.path;
+        break;
+    }
+    notifyListeners();
+  }
+
+  Future<void> _completeDriverEntry(DriverSessionModel session) async {
+    await _acceptAuthenticatedSession(session);
+    await _saveSession(session);
+    _requestLocaleSync();
+    await _flushPendingTelemetry();
+    await _refreshSyncSnapshot(
+      phase: DriverConnectionPhase.online,
+      syncedNow: true,
+    );
+    _driverEntryStage = DriverEntryStage.phone;
+    _driverPhoneE164 = null;
+    _driverTeamInvite = null;
+    _driverInviteCode = null;
   }
 
   Future<void> refreshDriverSession() async {
