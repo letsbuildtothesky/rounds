@@ -7,6 +7,15 @@
 
 ## Changelog
 
+- **2026-09-05 · Checkpoint 53:** Corrects the live own-driver marker model
+  exposed by canonical v45 side-by-side comparison. The map now derives one
+  marker per physical Team driver instead of stacking the same hot position
+  once for every assigned Round. The newest position supplies geography; a
+  deterministic active → loading → approved priority chooses the primary-click
+  Round, and unread state is aggregated across that driver's visible Rounds.
+  Signed-in localhost acceptance reduced four coincident markers to one and
+  confirmed that its primary click opens the chosen authoritative Round. All
+  29 Operations tests, typecheck and production build pass.
 - **2026-09-05 · Checkpoint 52:** Physically accepts the existing canonical
   Operations voice-note path end to end. The signed-in browser obtained a real
   microphone stream, rendered the v45 recording timer and explicit Stop state,
@@ -337,7 +346,7 @@ Canonical visual source: `ux/operations/rounds-operations-current-v45.html`. The
 |---|---|---|---|---|
 | Authentication, tenant and role projection | Pilot P0 | `VERIFIED` | Supabase session, tenant membership, dispatcher/viewer roles and read-only enforcement exist. | Production account lifecycle, recovery and session security. |
 | v45 workstation shell and navigation | Pilot P1 | `IMPLEMENTED` | React shell follows the canonical Dispatch/Deliveries/Drivers/Communications/History structure. | Full visual comparison and narrow/iPad responsive pass. |
-| Real Operations map | Pilot/Slice 2 P0 | `VERIFIED` | Real Mapbox renderer, Operations/Satellite styles, zoom, north, rotation, pitch, truthful error state, server positions and server route geometry exist. The v45 legend is now derived from rendered own-driver, action-Stop, unplanned-Stop and proposed-route evidence; disconnected Network, external and traffic roles are absent. | Complete live route/trail distinction, remaining marker semantics and physical browser/device acceptance. |
+| Real Operations map | Pilot/Slice 2 P0 | `VERIFIED` | Real Mapbox renderer, Operations/Satellite styles, zoom, north, rotation, pitch, truthful error state, server positions and server route geometry exist. The v45 legend is now derived from rendered own-driver, action-Stop, unplanned-Stop and proposed-route evidence; disconnected Network, external and traffic roles are absent. Own-driver markers are keyed to the physical Driver rather than Round rows, use the newest hot position, retain one deterministic primary-click Round and aggregate unread state across that Driver's visible Rounds. | Complete live route/trail distinction, Stop/current-Stop emphasis, right-click/long-press quick contact and physical responsive/device acceptance. |
 | Live Dispatch / Action queue | Pilot P0 | `VERIFIED` | Server-backed Rounds, exceptions, live positions and freshness states exist. | Remaining edge states, filtering and realtime/polling production policy. |
 | Single delivery intake | Pilot P0 | `VERIFIED` | Canonical internal delivery command, idempotency and drawer UI exist. | Address validation depth and final v45 visual acceptance. |
 | Batch/manual import | Slice 2 P1 | `SPECIFIED` | No batch ingestion UI. | Define file template, row validation, partial failure and reconciliation UX. |

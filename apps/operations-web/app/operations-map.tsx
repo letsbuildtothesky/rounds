@@ -4,6 +4,7 @@ import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "re
 import mapboxgl, { type LngLatLike, type Map as MapboxMap } from "mapbox-gl";
 import type { OperationsActionException, OperationsRoundSummary, UnplannedDeliverySummary } from "@rounds/contracts";
 import type { RoundCommunicationUnreadState } from "../src/operations-communications-state";
+import { operationsMapDriverMarkers } from "../src/operations-map-driver-markers";
 
 export type OperationsMapMode = "operations" | "satellite" | "site" | "street";
 export type OperationsMapCamera = { bearing: number; pitch: number };
@@ -168,23 +169,27 @@ export const OperationsMap = forwardRef<OperationsMapHandle, Props>(function Ope
     markersRef.current = [];
 
     const coordinates: Array<[number, number]> = [];
-    rounds.forEach((round) => {
-      if (!round.currentPosition) return;
-      const coordinate: [number, number] = [round.currentPosition.longitude, round.currentPosition.latitude];
+    operationsMapDriverMarkers(rounds).forEach(({ round, roundIds, position }) => {
+      const coordinate: [number, number] = [position.longitude, position.latitude];
       coordinates.push(coordinate);
       const element = document.createElement("button");
       element.type = "button";
       element.className = "v45-mapbox-driver";
       element.textContent = initials(round.driverName);
-      const unread = communicationUnreadByRound[round.id];
-      if (unread) {
+      const unread = roundIds.reduce<{ count: number; hasVoice: boolean }>((total, roundId) => {
+        const current = communicationUnreadByRound[roundId];
+        return { count: total.count + (current?.count ?? 0), hasVoice: total.hasVoice || Boolean(current?.hasVoice) };
+      }, { count: 0, hasVoice: false });
+      if (unread.count) {
         const badge = document.createElement("i");
         badge.className = unread.hasVoice ? "voice" : "";
         badge.textContent = unread.hasVoice ? "●" : String(unread.count);
         badge.setAttribute("aria-hidden", "true");
         element.appendChild(badge);
       }
-      element.title = `${round.reference} · ${round.driverName} · ${new Date(round.currentPosition.capturedAt).toLocaleTimeString()}${unread ? ` · ${unread.count} unread${unread.hasVoice ? " including voice" : ""}` : ""}`;
+      const roundContext = roundIds.length > 1 ? `${round.reference} · ${roundIds.length} Rounds on board` : round.reference;
+      element.title = `${round.driverName} · ${roundContext} · ${new Date(position.capturedAt).toLocaleTimeString()}${unread.count ? ` · ${unread.count} unread${unread.hasVoice ? " including voice" : ""}` : ""}`;
+      element.setAttribute("aria-label", element.title);
       element.addEventListener("click", () => callbacksRef.current.onSelectRound(round));
       markersRef.current.push(new mapboxgl.Marker({ element }).setLngLat(coordinate).addTo(map));
     });
