@@ -20,6 +20,7 @@ dependencies:
   http: ^1.6.0
   image_picker: ^1.2.1
   just_audio: ^0.10.5
+  open_filex: ^4.7.0
   path: ^1.9.1
   path_provider: ^2.1.5
   shared_preferences: ^2.5.5

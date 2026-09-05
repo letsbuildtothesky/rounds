@@ -149,19 +149,22 @@ function FileMessageAttachment({ attachment }: { attachment: MessageMediaAttachm
   async function openFile() {
     const url = latestUrl.current;
     if (!url || opening) return;
+    const viewer = window.open("about:blank", "_blank");
+    if (!viewer) {
+      setError("File could not be opened");
+      return;
+    }
+    viewer.opener = null;
     setOpening(true);
     setError("");
     try {
       const response = await fetch(url);
       if (!response.ok) throw new Error(`File HTTP ${response.status}`);
       const objectUrl = URL.createObjectURL(await response.blob());
-      const anchor = document.createElement("a");
-      anchor.href = objectUrl;
-      anchor.target = "_blank";
-      anchor.rel = "noopener noreferrer";
-      anchor.click();
+      viewer.location.replace(objectUrl);
       window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
     } catch {
+      viewer.close();
       setError("File could not be opened");
     } finally {
       setOpening(false);

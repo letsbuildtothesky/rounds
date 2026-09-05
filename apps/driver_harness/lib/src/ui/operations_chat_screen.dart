@@ -11,6 +11,7 @@ import '../app/driver_design_system.dart';
 import '../app/generated/driver_ui_metrics.g.dart';
 import '../app/harness_app_controller.dart';
 import '../driver/driver_chat_location.dart';
+import '../driver/driver_chat_attachment_opener.dart';
 import '../driver/driver_chat_media.dart';
 import '../driver/driver_message_links.dart';
 import '../driver/driver_operations_thread.dart';
@@ -1162,11 +1163,14 @@ class DriverChatMediaAttachmentCard extends StatefulWidget {
 class _DriverChatMediaAttachmentCardState
     extends State<DriverChatMediaAttachmentCard> {
   AudioPlayer? _player;
+  late final DriverChatAttachmentOpener _attachmentOpener =
+      DriverChatAttachmentOpener();
   StreamSubscription<PlayerState>? _playerStateSubscription;
   String? _displayUrl;
   String? _latestDownloadUrl;
   bool _sourceLoaded = false;
   bool _playing = false;
+  bool _opening = false;
 
   @override
   void initState() {
@@ -1189,6 +1193,7 @@ class _DriverChatMediaAttachmentCardState
   void dispose() {
     unawaited(_playerStateSubscription?.cancel());
     unawaited(_player?.dispose());
+    _attachmentOpener.close();
     super.dispose();
   }
 
@@ -1433,19 +1438,24 @@ class _DriverChatMediaAttachmentCardState
   }
 
   Future<void> _open() async {
-    final remote = _latestDownloadUrl;
-    final local = widget.attachment.localPath;
-    final uri = remote != null
-        ? Uri.parse(remote)
-        : local != null
-        ? Uri.file(local)
-        : null;
-    if (uri == null) return;
-    final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
-    if (!opened && mounted) {
+    if (_opening) return;
+    _opening = true;
+    try {
+      final opened = await _attachmentOpener.open(
+        widget.attachment,
+        downloadUrl: _latestDownloadUrl,
+      );
+      if (opened || !mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('The attachment could not be opened.')),
       );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('The attachment could not be opened.')),
+      );
+    } finally {
+      _opening = false;
     }
   }
 }
