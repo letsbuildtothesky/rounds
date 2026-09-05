@@ -21,6 +21,7 @@ import { DeliveriesWorkspace } from "./deliveries-workspace";
 import { DriversWorkspace } from "./drivers-workspace";
 import { HistoryPanel } from "./history-panel";
 import { ContactHistoryDrawer } from "./contact-history-drawer";
+import { RoundsOverviewDrawer } from "./rounds-overview-drawer";
 import { RoundDetailWorkspace } from "./round-detail-workspace";
 import { CommunicationsPanel } from "./communications-panel";
 import { useOperationsCommunications } from "./use-operations-communications";
@@ -196,15 +197,26 @@ export function OperationsWorkstation({ accessToken, realtimeClient, tenant, use
   const [mapHint, setMapHint] = useState("");
   const [roundDetailId, setRoundDetailId] = useState("");
   const [contactHistoryThreadId, setContactHistoryThreadId] = useState("");
+  const [roundsOverviewOpen, setRoundsOverviewOpen] = useState(false);
   const contactHistoryThread = communications.projection?.threads.find((thread) => thread.id === contactHistoryThreadId) ?? null;
 
   useEffect(() => {
-    if (selection) setContactHistoryThreadId("");
+    if (selection) {
+      setContactHistoryThreadId("");
+      setRoundsOverviewOpen(false);
+    }
   }, [selection]);
 
   useEffect(() => {
-    if (deliveriesOpen || driversOpen || historyOpen || deliveryIntakeOpen) setContactHistoryThreadId("");
+    if (deliveriesOpen || driversOpen || historyOpen || deliveryIntakeOpen) {
+      setContactHistoryThreadId("");
+      setRoundsOverviewOpen(false);
+    }
   }, [deliveriesOpen, deliveryIntakeOpen, driversOpen, historyOpen]);
+
+  useEffect(() => {
+    if (contactHistoryThreadId) setRoundsOverviewOpen(false);
+  }, [contactHistoryThreadId]);
 
   const load = useCallback(async (quiet = false) => {
     if (!quiet) setLoading(true);
@@ -520,7 +532,7 @@ export function OperationsWorkstation({ accessToken, realtimeClient, tenant, use
       </aside>
 
       <section className="v45-map-wrap">
-        <div className="v45-map-header"><strong>Bangkok · {dispatchMode === "live" ? "Live" : "Plan"}</strong><span className="v45-map-context">{dispatchMode === "plan" ? `${planning?.unplannedDeliveries.filter((delivery) => delivery.serviceDate === planningDate).length ?? 0} unplanned · ${selectedStops.length} selected` : `${buckets.action.length} Action · ${buckets.live.length} Live · ${activeRounds} active Rounds · ${buckets.ready.length} planned`}</span><button type="button" disabled title="Round overview is not connected yet">Rounds</button><button type="button" disabled title="Automatic planning is not connected yet"><i />Manual</button><div className="v45-spacer" /><em><i />{stale ? "Connection delayed" : dispatchMode === "plan" ? "Draft only" : "Connected"}</em><span>{dispatchMode === "plan" ? `${selectedStops.length} selected · not approved` : <>Live rounds <b>{activeRounds}</b></>}</span></div>
+        <div className="v45-map-header"><strong>Bangkok · {dispatchMode === "live" ? "Live" : "Plan"}</strong><span className="v45-map-context">{dispatchMode === "plan" ? `${planning?.unplannedDeliveries.filter((delivery) => delivery.serviceDate === planningDate).length ?? 0} unplanned · ${selectedStops.length} selected` : `${buckets.action.length} Action · ${buckets.live.length} Live · ${activeRounds} active Rounds · ${buckets.ready.length} planned`}</span><button type="button" aria-haspopup="dialog" aria-expanded={roundsOverviewOpen} onClick={() => { setSelection(null); setContactHistoryThreadId(""); setRoundsOverviewOpen(true); }}>Rounds</button><button type="button" disabled title="Automatic planning is not connected yet"><i />Manual</button><div className="v45-spacer" /><em><i />{stale ? "Connection delayed" : dispatchMode === "plan" ? "Draft only" : "Connected"}</em><span>{dispatchMode === "plan" ? `${selectedStops.length} selected · not approved` : <>Live rounds <b>{activeRounds}</b></>}</span></div>
         <div className="v45-map-body" onClick={() => setMapMenuOpen(false)}>
           <OperationsMap
             ref={operationsMapRef}
@@ -601,14 +613,23 @@ export function OperationsWorkstation({ accessToken, realtimeClient, tenant, use
           onOpenRound={(roundId) => { setContactHistoryThreadId(""); setRoundDetailId(roundId); }}
         />}
 
+        {roundsOverviewOpen && <RoundsOverviewDrawer
+          accessToken={accessToken}
+          tenant={tenant}
+          rounds={projection?.rounds ?? []}
+          onClose={() => setRoundsOverviewOpen(false)}
+          onOpenRound={(roundId) => { setRoundsOverviewOpen(false); setRoundDetailId(roundId); }}
+          onPlanNext={() => { setRoundsOverviewOpen(false); setDispatchMode("plan"); setSelection(null); }}
+        />}
+
         {accessToken && <CommunicationsPanel
           accessToken={accessToken}
           tenant={tenant}
           communications={communications}
           request={communicationRequest}
-          drawerOpen={Boolean(selection || contactHistoryThread)}
-          onContactHistory={(threadId) => { setSelection(null); setContactHistoryThreadId(threadId); }}
-          onOpenRound={(roundId) => setRoundDetailId(roundId)}
+          drawerOpen={Boolean(selection || contactHistoryThread || roundsOverviewOpen)}
+          onContactHistory={(threadId) => { setSelection(null); setRoundsOverviewOpen(false); setContactHistoryThreadId(threadId); }}
+          onOpenRound={(roundId) => { setRoundsOverviewOpen(false); setRoundDetailId(roundId); }}
         />}
       </section>
 
