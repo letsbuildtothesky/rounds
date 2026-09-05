@@ -92,6 +92,7 @@ import type {
   UpdateDriverPreferredLocaleCommand,
   UpdateDriverPreferredLocaleResult,
 } from "@rounds/contracts";
+import { projectCurrentRoundAvailability } from "./operations-driver-availability.js";
 
 type MembershipRow = {
   person_id: string;
@@ -1776,6 +1777,7 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     type CurrentRoundRow = {
       id: string; reference: string; driver_id: string;
       state: "approved" | "loading" | "active"; updated_at: string;
+      route_plan_snapshot: PlanningRouteSnapshot | null;
     };
     type CurrentPositionRow = { driver_id: string; captured_at: string };
     type TodayPodRow = { driver_id: string };
@@ -1816,7 +1818,7 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
         .select("id, driver_id, service_date, exception_kind, start_local, end_local, vehicle_profile_id, note, version")
         .eq("tenant_id", actor.tenantId).in("driver_id", driverIds).eq("service_date", serviceDate)
         .is("deleted_at", null).returns<ShiftExceptionRow[]>(),
-      this.admin.from("rounds").select("id, reference, driver_id, state, updated_at")
+      this.admin.from("rounds").select("id, reference, driver_id, state, updated_at, route_plan_snapshot")
         .eq("tenant_id", actor.tenantId).in("driver_id", driverIds).in("state", ["approved", "loading", "active"])
         .is("deleted_at", null).order("updated_at", { ascending: false }).returns<CurrentRoundRow[]>(),
       this.admin.from("driver_position_current").select("driver_id, captured_at")
@@ -1903,14 +1905,11 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
         state: "on_round" | "loading" | "available" | "off_shift" | "schedule_required";
         label: string; nextAvailableAt?: string; projectionBasis: string;
       };
-      if (currentRound?.state === "active") availability = {
-        state: "on_round", label: `On ${currentRound.reference}`,
-        projectionBasis: "Current Round is active; route completion estimate is not connected yet.",
-      };
-      else if (currentRound) availability = {
-        state: "loading", label: `${currentRound.reference} · ${currentRound.state}`,
-        projectionBasis: "Assigned work blocks new capacity until the current Round is closed.",
-      };
+      if (currentRound) availability = projectCurrentRoundAvailability({
+        reference: currentRound.reference,
+        state: currentRound.state,
+        routePlan: currentRound.route_plan_snapshot,
+      }, observedAt);
       else if (!shift && !schedule) availability = {
         state: "schedule_required", label: "Schedule required",
         projectionBasis: "No recurring own-team schedule has been configured.",
