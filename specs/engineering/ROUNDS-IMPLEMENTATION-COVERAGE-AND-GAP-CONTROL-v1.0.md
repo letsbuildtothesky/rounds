@@ -7,6 +7,27 @@
 
 ## Changelog
 
+- **2026-09-05 · Checkpoint 59:** Connects the supplied v45 pre-pickup
+  **Edit delivery** workflow to one real, atomic command. Dispatcher/admin may
+  change recipient contact, explicitly confirmed destination pin/address,
+  access note, promise window, draft physical manifest and delivery
+  instruction only before custody; viewers, stale versions, open exceptions
+  and picked-up/terminal Stops are rejected by both API and database. The
+  canonical right drawer now performs a server consequence preview before
+  Save. Route-affecting changes to an assigned Round are recalculated through
+  the real Mapbox/capacity path, while contact-only edits preserve the current
+  authoritative route. Signed-in localhost acceptance changed and restored one
+  real assigned Ready delivery, proving exact preview, committed version
+  increments and refreshed record truth. Equivalent timestamp formats are
+  regression-tested so an unchanged promise does not invent route impact.
+  Migration `202609050004` is applied remotely; all 207 repository tests
+  (including 38 Operations and 108 API tests), typecheck and production build
+  pass. The row remains `VERIFIED`
+  until its open physical live-state acceptance is completed, so the published
+  percentages do not change. The next authorized capability is an
+  authoritative live-route versus driven-trail distinction on the Dispatch
+  map using existing route and telemetry truth, without invented traffic or
+  weather evidence.
 - **2026-09-05 · Checkpoint 58:** Reconciles delivery records with the supplied
   v45 Dispatch information architecture. Ready, Live and Done now list
   individual server-authoritative deliveries rather than Round summaries; the
@@ -406,7 +427,7 @@ Canonical visual source: `ux/operations/rounds-operations-current-v45.html`. The
 | Live Dispatch / Action queue | Pilot P0 | `VERIFIED` | Server-backed Rounds, exceptions, live positions and freshness states exist. | Remaining edge states, filtering and realtime/polling production policy. |
 | Single delivery intake | Pilot P0 | `VERIFIED` | The canonical internal command and idempotency path now use the supplied v45 drawer hierarchy without the former invented banner/scrim. Recipient, promise, manifest and inherited pickup retain their connected truth. The operational destination is selected through the shared real Mapbox crosshair workflow and enters the command only as explicitly confirmed `dispatcher_pin` provenance. Signed-in 1280×720 comparison matches the reference drawer width, x-position and header/body padding; no delivery was submitted during acceptance. | Complete the production address/geocoding provider-coherence decision and corresponding validation depth, then physical tablet/Safari acceptance. |
 | Batch/manual import | Slice 2 P1 | `SPECIFIED` | No batch ingestion UI. | Define file template, row validation, partial failure and reconciliation UX. |
-| Contextual delivery records | Pilot P1 | `VERIFIED` | The v45 Ready/Live/Done queues now list individual server-authoritative deliveries, with working All/Today scope and canonical record drawers for promise, recipient, destination, Round/Stop version and manifest truth. The prior invented top-level board is removed. Record actions route to real planning, exact assigned/live Stop or History workflows; the Plan drawer has no ghost selection/map controls. Signed-in localhost accepted five real Ready records and exact B2 Stop 2 handoff. | Physically accept a live-state fixture and implement the generic pre-custody edit field policy plus route/capacity consequence preview before exposing an Edit delivery command. |
+| Contextual delivery records | Pilot P1 | `VERIFIED` | The v45 Ready/Live/Done queues now list individual server-authoritative deliveries, with working All/Today scope and canonical record drawers for promise, recipient, destination, Round/Stop version and manifest truth. The prior invented top-level board is removed. Record actions route to real planning, exact assigned/live Stop or History workflows; the Plan drawer has no ghost selection/map controls. The canonical pre-custody Edit delivery drawer now previews exact field, route, promise and capacity consequences before one versioned atomic commit, and hard-locks after custody. Signed-in localhost accepted five real Ready records, exact B2 Stop 2 handoff and a real assigned-delivery edit/restore cycle. | Physically accept the complete live-state record/edit boundary on the target Operations device/browser. Production cargo/address-provider decisions remain separate gates. |
 | Manual plan construction | Slice 2 P0 | `VERIFIED` | Date, ordered Stop selection, own driver, shared multidimensional capacity check, real route/window preview and explicit approval exist. | Configure production cargo values and add service dwell after the responsible business decisions. |
 | Automatic plan generation | Slice 2 P1 | `SPECIFIED` | Intentionally not simulated in React. | Explainable heuristic, proposed plan persistence, uncovered-work truth and tests. |
 | Plan adjustment before approval | Slice 2 P0 | `ACCEPTED` | Canonical Stop-order/departure controls and existing-Round Stop movement use fresh server route/window/shift/cargo previews. Moving a Stop recalculates only source/target Rounds, shows both consequences and commits through one dual-version atomic database command. Signed-in live acceptance passed with two approved, explicitly configured demo Rounds. | Production-approved cargo values and service dwell remain before full operating approval. |
@@ -646,6 +667,20 @@ This sequence does not promote later slices; it orders the already authorized En
   The next authorized capability is a pre-custody delivery-edit command with
   explicit field policy and route/capacity consequence preview; no generic Edit
   control is exposed before that command exists.
+- **D26 safe pre-custody delivery editing verified 2026-09-05:** the canonical
+  v45 delivery record now opens a real edit drawer only for authorized
+  pre-custody truth. Recipient contact, explicit destination pin/address,
+  access note, promise, draft manifest and delivery instruction are validated
+  and previewed by the server. Assigned route-affecting edits recalculate real
+  Mapbox route/promise/capacity consequences; contact-only edits do not invent
+  route work. Delivery, Stop, destination, manifest and assigned-Round versions
+  are checked and advanced atomically with audit, domain-outbox and idempotency
+  evidence. The database independently rejects stale, exception, terminal or
+  custody-locked edits. Signed-in localhost acceptance committed and restored
+  one real assigned Ready record, and migration `202609050004` is remotely
+  applied. The next authorized capability is the Dispatch map's authoritative
+  live-route versus driven-trail distinction using persisted route and
+  telemetry truth; disconnected traffic/weather claims stay absent.
 - Complete assigned-Round offline read cache and consolidated sync truth.
 - Finish N01/N02/N03 recovery states.
 - Run golden/reference-viewport comparisons for every in-scope board.

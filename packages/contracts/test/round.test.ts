@@ -10,6 +10,7 @@ import {
   validateMoveRoundStopCommand,
   validateMoveRoundStopRequest,
   validateLiveDeliveryChangeRequest,
+  validatePrePickupDeliveryEditRequest,
   validatePlanRoundCommand,
   validatePlanRoundPayload,
   validatePlanningRoutePreviewRequest,
@@ -19,6 +20,19 @@ import {
   validateReportDriverEmergencyCommand,
   validateUpdateDriverPreferredLocaleCommand,
 } from "../src/index.js";
+
+test("validates bounded pre-pickup delivery edits and consecutive manifest lines", () => {
+  const edit = {
+    deliveryId: "10000000-0000-4000-8000-000000000010",
+    expectedDeliveryVersion: 2,
+    expectedStopVersion: 3,
+    expectedDestinationVersion: 1,
+    expectedManifestVersion: 1,
+    changes: { recipientName: "Siriporn", manifestItems: [{ lineNumber: 1, description: "Bouquet", quantity: 2 }] },
+  };
+  assert.doesNotThrow(() => validatePrePickupDeliveryEditRequest(edit));
+  assert.throws(() => validatePrePickupDeliveryEditRequest({ ...edit, changes: { manifestItems: [{ lineNumber: 2, description: "Bouquet", quantity: 2 }] } }), /consecutive/);
+});
 
 const payload = () => ({
   reference: "ROUND-2026-001",

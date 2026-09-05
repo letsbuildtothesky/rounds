@@ -39,6 +39,9 @@ import type {
   AcknowledgeLiveDeliveryChangeCommand,
   AcknowledgeLiveDeliveryChangeResult,
   LiveDeliveryChangeRequest,
+  ApplyPrePickupDeliveryEditCommand,
+  ApplyPrePickupDeliveryEditResult,
+  PrePickupDeliveryEditRequest,
   PlanRoundCommand,
   PlanRoundPayload,
   PlanningRoutePreview,
@@ -267,6 +270,10 @@ export interface OperationsDeliveriesGateway {
   getOperationsDeliveries(actor: ActorContext, observedAt: Date): Promise<OperationsDeliveriesProjection>;
 }
 
+export interface PrePickupDeliveryEditGateway {
+  applyPrePickupDeliveryEdit(command: ApplyPrePickupDeliveryEditCommand, actor: ActorContext): Promise<ApplyPrePickupDeliveryEditResult>;
+}
+
 export interface OperationsDriversGateway {
   getOperationsDrivers(actor: ActorContext, serviceDate: string, observedAt: Date): Promise<OperationsDriversProjection>;
   setDriverRecurringSchedule(
@@ -406,6 +413,16 @@ export type LiveDeliveryChangeDependencies = {
 };
 
 export type LiveDeliveryChangeRequestBody = LiveDeliveryChangeRequest;
+
+export type PrePickupDeliveryEditDependencies = {
+  identity: IdentityGateway;
+  deliveries: OperationsDeliveriesGateway & OperationsRoundDetailGateway & PrePickupDeliveryEditGateway;
+  routes: PlanningRouteService;
+  uuid: () => string;
+  now: () => Date;
+};
+
+export type PrePickupDeliveryEditRequestBody = PrePickupDeliveryEditRequest;
 
 export type DriverLiveDeliveryChangeDependencies = {
   identity: IdentityGateway;

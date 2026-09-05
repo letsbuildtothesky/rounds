@@ -23,6 +23,7 @@ import { clearDriverShiftExceptionHandler, setDriverShiftExceptionHandler } from
 import { operationsRoundDetailHandler } from "./operations-round-detail-handler.js";
 import { roundMoveHandler, roundMovePreviewHandler } from "./round-move-handler.js";
 import { acknowledgeLiveDeliveryChangeHandler, applyLiveDeliveryChangeHandler, liveDeliveryChangePreviewHandler } from "./live-delivery-change-handler.js";
+import { applyPrePickupDeliveryEditHandler, prePickupDeliveryEditPreviewHandler } from "./pre-pickup-delivery-edit-handler.js";
 import { resolveOperationsExceptionHandler } from "./resolve-operations-exception-handler.js";
 import { confirmDeliveryReturnHandler } from "./confirm-delivery-return-handler.js";
 import { planRoundHandler } from "./plan-round-handler.js";
@@ -242,6 +243,22 @@ const server = createServer(async (request, response) => {
         identity: gateway, changes: gateway, routes: routeService, uuid: () => crypto.randomUUID(), now: () => new Date(),
       });
       sendNode(response, addOperationsCors(changeResponse, request.headers.origin));
+      return;
+    }
+    if (request.method === "POST" && request.url === "/v1/operations/delivery-edits/preview") {
+      const webRequest = await toWebRequest(request);
+      const editResponse = await prePickupDeliveryEditPreviewHandler(webRequest, {
+        identity: gateway, deliveries: gateway, routes: routeService, uuid: () => crypto.randomUUID(), now: () => new Date(),
+      });
+      sendNode(response, addOperationsCors(editResponse, request.headers.origin));
+      return;
+    }
+    if (request.method === "POST" && request.url === "/v1/operations/delivery-edits") {
+      const webRequest = await toWebRequest(request);
+      const editResponse = await applyPrePickupDeliveryEditHandler(webRequest, {
+        identity: gateway, deliveries: gateway, routes: routeService, uuid: () => crypto.randomUUID(), now: () => new Date(),
+      });
+      sendNode(response, addOperationsCors(editResponse, request.headers.origin));
       return;
     }
     const operationsRoundMatch = request.url?.match(/^\/v1\/operations\/rounds\/([0-9a-f-]+)$/i);

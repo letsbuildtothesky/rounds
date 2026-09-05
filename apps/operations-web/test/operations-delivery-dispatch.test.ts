@@ -28,7 +28,7 @@ function delivery(state: OperationsDeliveryItem["state"], overrides: Partial<Ope
     isSurprise: false,
     createdAt: "2026-09-05T01:00:00.000Z",
     updatedAt: "2026-09-05T01:00:00.000Z",
-    stop: { id: "stop-1", state: "assigned", version: 1 },
+    stop: { id: "stop-1", state: "assigned", version: 1, destinationVersion: 1 },
     promise: { windowStart: "2026-09-05T02:00:00.000Z", windowEnd: "2026-09-05T04:00:00.000Z" },
     manifest: { id: "manifest-1", state: "draft", version: 1, items: [{ lineNumber: 1, description: "Bouquet", quantity: 1 }] },
     ...overrides,
@@ -53,7 +53,7 @@ test("Today scope uses the tenant-local service date and All remains complete", 
 });
 
 test("delivery search covers reference, recipient, address, phone and Round", () => {
-  const item = delivery("assigned", { round: { id: "round-1", reference: "ROUND-88", state: "approved", sequence: 1, driverName: "Johannes" } });
+  const item = delivery("assigned", { round: { id: "round-1", reference: "ROUND-88", state: "approved", version: 1, sequence: 1, driverName: "Johannes" } });
   assert.equal(deliveryMatchesSearch(item, "wireless"), true);
   assert.equal(deliveryMatchesSearch(item, "round-88"), true);
   assert.equal(deliveryMatchesSearch(item, "missing"), false);
@@ -61,8 +61,8 @@ test("delivery search covers reference, recipient, address, phone and Round", ()
 
 test("actions route to the existing authoritative workflow instead of inventing edits", () => {
   assert.equal(deliveryCommandBoundary(delivery("unplanned")), "plan");
-  assert.equal(deliveryCommandBoundary(delivery("assigned", { round: { id: "round-1", reference: "ROUND-1", state: "approved", sequence: 1, driverName: "Johannes" } })), "round-pre-custody");
-  assert.equal(deliveryCommandBoundary(delivery("en_route", { round: { id: "round-1", reference: "ROUND-1", state: "active", sequence: 1, driverName: "Johannes" } })), "round-live");
+  assert.equal(deliveryCommandBoundary(delivery("assigned", { round: { id: "round-1", reference: "ROUND-1", state: "approved", version: 1, sequence: 1, driverName: "Johannes" } })), "round-pre-custody");
+  assert.equal(deliveryCommandBoundary(delivery("en_route", { round: { id: "round-1", reference: "ROUND-1", state: "active", version: 1, sequence: 1, driverName: "Johannes" } })), "round-live");
   assert.equal(deliveryCommandBoundary(delivery("delivered")), "history");
   assert.equal(deliveryCommandBoundary(delivery("exception")), "exception");
 });

@@ -14,6 +14,9 @@ import type {
   OperationsTenant,
   PlanRoundResult,
   PlanningRoutePreview,
+  PrePickupDeliveryEditPreview,
+  PrePickupDeliveryEditRequest,
+  PrePickupDeliveryManifestItem,
   UnplannedDeliverySummary,
 } from "@rounds/contracts";
 import { OperationsMap, type OperationsMapCamera, type OperationsMapHandle, type OperationsMapMode } from "./operations-map";
@@ -22,10 +25,12 @@ import { HistoryPanel } from "./history-panel";
 import { ContactHistoryDrawer } from "./contact-history-drawer";
 import { RoundsOverviewDrawer } from "./rounds-overview-drawer";
 import { RoundDetailWorkspace } from "./round-detail-workspace";
+import { DestinationPinPicker } from "./destination-pin-picker";
 import { CommunicationsPanel } from "./communications-panel";
 import { useOperationsCommunications } from "./use-operations-communications";
 import { communicationUnreadByRound } from "../src/operations-communications-state";
 import { operationsMapLegendEntries } from "../src/operations-map-legend";
+import { tenantLocalDateTimeInput, tenantLocalDateTimeToIso } from "../src/operations-time";
 import {
   deliveryCommandBoundary,
   deliveryMatchesScope,
@@ -121,10 +126,10 @@ function demoDeliveriesProjection(tenantId: string): OperationsDeliveriesProject
       serviceDate: round.serviceDate, serviceTimezone: "Asia/Bangkok", pickupLocationId: "urbanflowers", pickupLocationName: "UrbanFlowers",
       buyerSameAsRecipient: true, buyerName: stop.recipientName, buyerPhone: "+66000000000", recipientName: stop.recipientName,
       recipientPhone: "+66000000000", rawAddress: stop.rawAddress, coordinate: stop.coordinate, isSurprise: false,
-      createdAt: observedAt, updatedAt: observedAt, stop: { id: stop.stopId, state: stop.stopState, version: 1 },
+      createdAt: observedAt, updatedAt: observedAt, stop: { id: stop.stopId, state: stop.stopState, version: 1, destinationVersion: 1 },
       promise: { windowStart: `${round.serviceDate}T02:00:00.000Z`, windowEnd: `${round.serviceDate}T10:00:00.000Z` },
       manifest: { id: `manifest-${stop.deliveryId}`, state: state === "en_route" || state === "arrived" ? "locked" : "draft", version: 1, items: [{ lineNumber: 1, description: "Flower delivery", quantity: 1 }] },
-      round: { id: round.id, reference: round.reference, state: round.state, sequence: stop.sequence, driverName: round.driverName },
+      round: { id: round.id, reference: round.reference, state: round.state, version: 1, sequence: stop.sequence, driverName: round.driverName },
     };
   });
   const unplanned: OperationsDeliveryItem[] = planning.unplannedDeliveries.map((item) => ({
@@ -132,7 +137,7 @@ function demoDeliveriesProjection(tenantId: string): OperationsDeliveriesProject
     serviceDate: item.serviceDate, serviceTimezone: "Asia/Bangkok", pickupLocationId: item.pickupLocationId, pickupLocationName: "UrbanFlowers",
     buyerSameAsRecipient: true, buyerName: item.recipientName, buyerPhone: "+66000000000", recipientName: item.recipientName,
     recipientPhone: "+66000000000", rawAddress: item.rawAddress, coordinate: item.coordinate, isSurprise: false,
-    createdAt: observedAt, updatedAt: observedAt, stop: { id: item.stopId, state: "draft", version: 1 },
+    createdAt: observedAt, updatedAt: observedAt, stop: { id: item.stopId, state: "draft", version: 1, destinationVersion: 1 },
     promise: { windowStart: item.windowStart, windowEnd: item.windowEnd },
     manifest: { id: `manifest-${item.deliveryId}`, state: "draft", version: 1, items: [{ lineNumber: 1, description: item.manifestSummary, quantity: 1 }] },
   }));
@@ -684,7 +689,7 @@ export function OperationsWorkstation({ accessToken, realtimeClient, tenant, use
 
         <aside className={`v45-drawer ${selection ? "open" : ""}`} aria-hidden={!selection}>
           <header><div><small>{selection?.kind === "exception" ? "ORDER DECISION" : selection?.kind === "planning-delivery" ? "PLANNING DELIVERY" : selection?.kind === "delivery-record" ? "DELIVERY RECORD" : "LIVE ROUND"}</small><h2>{selection?.kind === "exception" || selection?.kind === "planning-delivery" || selection?.kind === "delivery-record" ? selection.item.recipientName : selection?.kind === "round" ? selection.item.reference : ""}</h2><p>{selection?.kind === "exception" ? `#${selection.item.deliveryReference} · ${selection.item.rawAddress}` : selection?.kind === "round" ? `${selection.item.driverName} · ${selection.item.stopCount} Stops` : selection?.kind === "planning-delivery" || selection?.kind === "delivery-record" ? `#${selection.item.reference} · ${selection.item.rawAddress}` : ""}</p></div><button type="button" onClick={() => setSelection(null)} aria-label="Close drawer"><CloseIcon /></button></header>
-          <div className="v45-drawer-body">{selection?.kind === "exception" ? <ExceptionDrawer item={selection.item} accessToken={accessToken} tenant={tenant} onCommunications={openCommunications} onResolved={() => { setSelection(null); void load(); }} /> : selection?.kind === "round" ? <RoundDrawer item={selection.item} onCommunications={openCommunications} onOpen={() => openRoundDetail(selection.item.id)} /> : selection?.kind === "planning-delivery" ? <PlanningDrawer item={selection.item} timezone={tenant.timezone} selected={selectedStops.includes(selection.item.stopId)} onToggle={() => togglePlanningDelivery(selection.item)} onInspect={() => selection.item.coordinate && operationsMapRef.current?.focusPosition(selection.item.coordinate)} /> : selection?.kind === "delivery-record" ? <DeliveryRecordDrawer item={selection.item} timezone={tenant.timezone} onPlan={() => { setDispatchMode("plan"); setPlanningDate(selection.item.serviceDate); setQuery(selection.item.reference); setSelection(null); }} onOpenRound={() => selection.item.round && openRoundDetail(selection.item.round.id, selection.item.stop.id)} onHistory={() => { setSelection(null); onHistory(); }} onInspect={() => selection.item.coordinate && operationsMapRef.current?.focusPosition(selection.item.coordinate)} /> : null}</div>
+          <div className="v45-drawer-body">{selection?.kind === "exception" ? <ExceptionDrawer item={selection.item} accessToken={accessToken} tenant={tenant} onCommunications={openCommunications} onResolved={() => { setSelection(null); void load(); }} /> : selection?.kind === "round" ? <RoundDrawer item={selection.item} onCommunications={openCommunications} onOpen={() => openRoundDetail(selection.item.id)} /> : selection?.kind === "planning-delivery" ? <PlanningDrawer item={selection.item} timezone={tenant.timezone} selected={selectedStops.includes(selection.item.stopId)} onToggle={() => togglePlanningDelivery(selection.item)} onInspect={() => selection.item.coordinate && operationsMapRef.current?.focusPosition(selection.item.coordinate)} /> : selection?.kind === "delivery-record" ? <DeliveryRecordDrawer item={selection.item} accessToken={accessToken} tenant={tenant} onPlan={() => { setDispatchMode("plan"); setPlanningDate(selection.item.serviceDate); setQuery(selection.item.reference); setSelection(null); }} onOpenRound={() => selection.item.round && openRoundDetail(selection.item.round.id, selection.item.stop.id)} onHistory={() => { setSelection(null); onHistory(); }} onInspect={() => selection.item.coordinate && operationsMapRef.current?.focusPosition(selection.item.coordinate)} onUpdated={() => { setSelection(null); void load(); }} /> : null}</div>
         </aside>
 
         {contactHistoryThread && <ContactHistoryDrawer
@@ -863,8 +868,121 @@ function PlanningDrawer({ item, timezone, selected, onToggle, onInspect }: { ite
   return <><section className="v45-decision"><small>PLAN INPUT</small><h3>Ready to place into a physical Round.</h3><p>Rounds will compare the delivery window, pickup, driver shift, vehicle and cargo limits before approval.</p><div><span><small>Window</small><b>{shortTime(item.windowStart, timezone)}</b></span><span><small>Service</small><b>{item.serviceDate}</b></span><span><small>State</small><b>{selected ? "Proposed" : "Ready"}</b></span></div></section><section className="v45-detail"><h4>Delivery <span>unplanned</span></h4><dl><div><dt>Reference</dt><dd>#{item.reference}</dd></div><div><dt>Destination</dt><dd>{item.rawAddress}</dd></div><div><dt>Manifest</dt><dd>{item.manifestSummary}</dd></div></dl></section><div className="v45-drawer-actions"><button className="primary" type="button" onClick={onToggle}>{selected ? "Remove from proposed Round" : "Add to proposed Round"}</button>{item.coordinate && <button type="button" onClick={onInspect}>Inspect destination on map</button>}</div></>;
 }
 
-function DeliveryRecordDrawer({ item, timezone, onPlan, onOpenRound, onHistory, onInspect }: { item: OperationsDeliveryItem; timezone: string; onPlan: () => void; onOpenRound: () => void; onHistory: () => void; onInspect: () => void }) {
+type DeliveryEditDraft = {
+  recipientName: string;
+  recipientPhone: string;
+  rawAddress: string;
+  latitude: string;
+  longitude: string;
+  accessNote: string;
+  deliveryNote: string;
+  windowStart: string;
+  windowEnd: string;
+  manifestItems: Array<PrePickupDeliveryManifestItem & { quantityText: string }>;
+};
+
+function deliveryEditDraft(item: OperationsDeliveryItem, timezone: string): DeliveryEditDraft {
+  return {
+    recipientName: item.recipientName,
+    recipientPhone: item.recipientPhone,
+    rawAddress: item.rawAddress,
+    latitude: item.coordinate ? String(item.coordinate.latitude) : "",
+    longitude: item.coordinate ? String(item.coordinate.longitude) : "",
+    accessNote: item.accessNote ?? "",
+    deliveryNote: item.deliveryNote ?? "",
+    windowStart: tenantLocalDateTimeInput(item.promise.windowStart, timezone),
+    windowEnd: tenantLocalDateTimeInput(item.promise.windowEnd, timezone),
+    manifestItems: item.manifest.items.map((manifestItem) => ({ ...manifestItem, quantityText: String(manifestItem.quantity) })),
+  };
+}
+
+function DeliveryRecordDrawer({ item, accessToken, tenant, onPlan, onOpenRound, onHistory, onInspect, onUpdated }: { item: OperationsDeliveryItem; accessToken?: string; tenant: OperationsTenant; onPlan: () => void; onOpenRound: () => void; onHistory: () => void; onInspect: () => void; onUpdated: () => void }) {
   const boundary = deliveryCommandBoundary(item);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState<DeliveryEditDraft>(() => deliveryEditDraft(item, tenant.timezone));
+  const [preview, setPreview] = useState<PrePickupDeliveryEditPreview | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [editError, setEditError] = useState("");
+  const [pinPickerOpen, setPinPickerOpen] = useState(false);
+  const idempotencyKey = useRef(crypto.randomUUID());
+  const canEdit = Boolean(accessToken && tenant.role !== "viewer" && item.coordinate && item.manifest.state === "draft" && (boundary === "plan" || boundary === "round-pre-custody"));
+
+  function updateDraft<K extends keyof DeliveryEditDraft>(key: K, value: DeliveryEditDraft[K]) {
+    setDraft((current) => ({ ...current, [key]: value }));
+    setPreview(null); setEditError("");
+  }
+
+  function editRequest(): PrePickupDeliveryEditRequest {
+    const latitude = Number(draft.latitude);
+    const longitude = Number(draft.longitude);
+    if (!draft.recipientName.trim() || !draft.recipientPhone.trim()) throw new Error("Recipient name and phone are required.");
+    if (!draft.rawAddress.trim()) throw new Error("Delivery address is required.");
+    if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90 || !Number.isFinite(longitude) || longitude < -180 || longitude > 180) throw new Error("Confirm a valid destination pin on the map.");
+    const windowStart = tenantLocalDateTimeToIso(draft.windowStart, tenant.timezone);
+    const windowEnd = tenantLocalDateTimeToIso(draft.windowEnd, tenant.timezone);
+    if (Date.parse(windowEnd) <= Date.parse(windowStart)) throw new Error("Enter a valid promised delivery window.");
+    const manifestItems = draft.manifestItems.map((manifestItem, index) => {
+      const quantity = Number(manifestItem.quantityText);
+      if (!manifestItem.description.trim()) throw new Error(`Manifest line ${index + 1} needs an item name.`);
+      if (!Number.isInteger(quantity) || quantity < 1) throw new Error(`Manifest line ${index + 1} needs a positive whole quantity.`);
+      return { lineNumber: index + 1, description: manifestItem.description.trim(), quantity, ...(manifestItem.cargoClass ? { cargoClass: manifestItem.cargoClass } : {}), ...(manifestItem.handlingNote?.trim() ? { handlingNote: manifestItem.handlingNote.trim() } : {}) };
+    });
+    return {
+      deliveryId: item.deliveryId,
+      expectedDeliveryVersion: item.version,
+      expectedStopVersion: item.stop.version,
+      expectedDestinationVersion: item.stop.destinationVersion,
+      expectedManifestVersion: item.manifest.version,
+      ...(item.round ? { expectedRoundVersion: item.round.version } : {}),
+      changes: {
+        recipientName: draft.recipientName.trim(), recipientPhone: draft.recipientPhone.trim(), rawAddress: draft.rawAddress.trim(), latitude, longitude,
+        accessNote: draft.accessNote.trim(), deliveryNote: draft.deliveryNote.trim(), windowStart, windowEnd, manifestItems,
+      },
+    };
+  }
+
+  async function previewEdit() {
+    if (!accessToken) return;
+    setBusy(true); setEditError(""); setPreview(null);
+    try {
+      const response = await fetch(`${roundsApiUrl}/v1/operations/delivery-edits/preview`, {
+        method: "POST", headers: { authorization: `Bearer ${accessToken}`, "content-type": "application/json", "x-rounds-tenant-id": tenant.id, "x-trace-id": crypto.randomUUID() }, body: JSON.stringify(editRequest()),
+      });
+      const body = await response.json() as PrePickupDeliveryEditPreview | ApiError;
+      if (!response.ok) throw new Error((body as ApiError).error?.message ?? `Preview HTTP ${response.status}`);
+      setPreview(body as PrePickupDeliveryEditPreview);
+    } catch (caught) { setEditError(caught instanceof Error ? caught.message : "Delivery edit could not be reviewed"); }
+    finally { setBusy(false); }
+  }
+
+  async function applyEdit() {
+    if (!accessToken || !preview?.applicable) return;
+    setBusy(true); setEditError("");
+    try {
+      const response = await fetch(`${roundsApiUrl}/v1/operations/delivery-edits`, {
+        method: "POST", headers: { authorization: `Bearer ${accessToken}`, "content-type": "application/json", "idempotency-key": `delivery-edit:${idempotencyKey.current}`, "x-rounds-tenant-id": tenant.id, "x-trace-id": crypto.randomUUID() }, body: JSON.stringify(editRequest()),
+      });
+      const body = await response.json() as { status?: string; error?: { message?: string } };
+      if (!response.ok || body.status !== "committed") throw new Error(body.error?.message ?? `Apply HTTP ${response.status}`);
+      onUpdated();
+    } catch (caught) { setEditError(caught instanceof Error ? caught.message : "Delivery edit could not be committed"); }
+    finally { setBusy(false); }
+  }
+
+  if (editing) return <><section className="v45-delivery-editor">
+    <div className="v45-editor-heading"><small>BEFORE PICKUP · AUDITED EDIT</small><h3>Edit delivery</h3><p>{item.round ? "Rounds checks the assigned route, promised arrivals and vehicle capacity before any affected plan can be saved." : "This delivery is not assigned. The saved truth will be used by the route and capacity check when it enters a Round."}</p></div>
+    <div className="v45-editor-grid"><label>Recipient name<input autoFocus value={draft.recipientName} onChange={(event) => updateDraft("recipientName", event.target.value)} /></label><label>Recipient phone<input type="tel" value={draft.recipientPhone} onChange={(event) => updateDraft("recipientPhone", event.target.value)} /></label></div>
+    <label>Delivery address<textarea rows={3} value={draft.rawAddress} onChange={(event) => updateDraft("rawAddress", event.target.value)} /></label>
+    <div className="v45-editor-pin"><span><b>Operational destination pin</b><small>{draft.latitude && draft.longitude ? `${Number(draft.latitude).toFixed(5)}, ${Number(draft.longitude).toFixed(5)}` : "A confirmed pin is required"}</small></span><button type="button" onClick={() => setPinPickerOpen(true)}>Adjust pin</button></div>
+    <label>Entrance / access note<input value={draft.accessNote} onChange={(event) => updateDraft("accessNote", event.target.value)} /></label>
+    <div className="v45-editor-grid"><label>Window starts<input type="datetime-local" value={draft.windowStart} onChange={(event) => updateDraft("windowStart", event.target.value)} /></label><label>Window ends<input type="datetime-local" value={draft.windowEnd} onChange={(event) => updateDraft("windowEnd", event.target.value)} /></label></div>
+    <div className="v45-editor-manifest"><header><span><small>PHYSICAL MANIFEST</small><b>Items carried by the Driver</b></span><button type="button" onClick={() => updateDraft("manifestItems", [...draft.manifestItems, { lineNumber: draft.manifestItems.length + 1, description: "", quantity: 1, quantityText: "1" }])}>+ Add item</button></header>{draft.manifestItems.map((manifestItem, index) => <article key={index}><b>{String(index + 1).padStart(2, "0")}</b><label>Item<input value={manifestItem.description} onChange={(event) => updateDraft("manifestItems", draft.manifestItems.map((entry, entryIndex) => entryIndex === index ? { ...entry, description: event.target.value } : entry))} /></label><label>Qty<input type="number" min="1" value={manifestItem.quantityText} onChange={(event) => updateDraft("manifestItems", draft.manifestItems.map((entry, entryIndex) => entryIndex === index ? { ...entry, quantityText: event.target.value } : entry))} /></label><label>Handling<input value={manifestItem.handlingNote ?? ""} onChange={(event) => updateDraft("manifestItems", draft.manifestItems.map((entry, entryIndex) => entryIndex === index ? { ...entry, handlingNote: event.target.value } : entry))} /></label><button type="button" disabled={draft.manifestItems.length === 1} aria-label={`Remove manifest line ${index + 1}`} onClick={() => updateDraft("manifestItems", draft.manifestItems.filter((_, entryIndex) => entryIndex !== index))}>×</button></article>)}</div>
+    <label>Delivery instruction<textarea rows={2} value={draft.deliveryNote} onChange={(event) => updateDraft("deliveryNote", event.target.value)} /></label>
+    {editError && <div className="v45-editor-error" role="alert">{editError}</div>}
+    {preview && <section className={`v45-editor-preview ${preview.applicable ? "fit" : "blocked"}`}><small>{preview.applicable ? "SAFE TO COMMIT" : "EDIT BLOCKED"}</small><h4>{preview.changedFields.length} field group{preview.changedFields.length === 1 ? "" : "s"} changed</h4><p>{preview.changedFields.map((field) => ({ recipientName: "recipient name", recipientPhone: "recipient phone", rawAddress: "address", latitude: "map pin", longitude: "map pin", accessNote: "access note", deliveryNote: "delivery instruction", windowStart: "window start", windowEnd: "window end", manifestItems: "physical manifest" })[field as "recipientName"] ?? field).filter((field, index, list) => list.indexOf(field) === index).join(" · ")}</p><p>{preview.blockingReasons[0] ?? (preview.impact.routeRecalculated ? `Route recalculated · ${preview.impact.capacityStatus} capacity · ${preview.impact.promiseStatus} promise.` : item.round ? "The current assigned route and capacity remain valid." : "Unplanned delivery · no route or assignment changes yet.")}</p>{preview.impact.routeRecalculated && <dl><div><dt>Distance</dt><dd>{preview.impact.distanceDeltaMeters && preview.impact.distanceDeltaMeters > 0 ? "+" : ""}{((preview.impact.distanceDeltaMeters ?? 0) / 1000).toFixed(1)} km</dd></div><div><dt>Road time</dt><dd>{preview.impact.durationDeltaSeconds && preview.impact.durationDeltaSeconds > 0 ? "+" : ""}{Math.round((preview.impact.durationDeltaSeconds ?? 0) / 60)} min</dd></div><div><dt>Capacity</dt><dd>{preview.impact.capacityStatus}</dd></div></dl>}</section>}
+    <div className="v45-editor-actions"><button type="button" disabled={busy} onClick={() => { setEditing(false); setPreview(null); setEditError(""); }}>Cancel</button>{preview?.applicable ? <button className="primary" type="button" disabled={busy} onClick={() => void applyEdit()}>{busy ? "Saving…" : "Save delivery"}</button> : <button className="primary" type="button" disabled={busy} onClick={() => void previewEdit()}>{busy ? "Checking consequences…" : "Review changes"}</button>}</div>
+  </section>{pinPickerOpen && item.coordinate && <DestinationPinPicker mode="change" initial={{ latitude: Number(draft.latitude) || item.coordinate.latitude, longitude: Number(draft.longitude) || item.coordinate.longitude }} onCancel={() => setPinPickerOpen(false)} onConfirm={(coordinate) => { updateDraft("latitude", String(coordinate.latitude)); updateDraft("longitude", String(coordinate.longitude)); setPinPickerOpen(false); }} />}</>;
+
   const copy = boundary === "plan"
     ? { label: "READY TO PLAN", title: "Place this delivery into a physical Round.", detail: "The saved destination, promise and manifest will be checked against driver, vehicle and route capacity before approval." }
     : boundary === "round-pre-custody"
@@ -876,10 +994,10 @@ function DeliveryRecordDrawer({ item, timezone, onPlan, onOpenRound, onHistory, 
           : { label: "NEEDS ACTION", title: "An Operations decision is required.", detail: "Use the Action queue to resolve the current exception against the latest Stop version." };
   const manifestLocked = item.manifest.state !== "draft" || boundary === "round-live" || boundary === "history";
 
-  return <><section className="v45-decision"><small>{copy.label}</small><h3>{copy.title}</h3><p>{copy.detail}</p><div><span><small>Promise</small><b>{shortTime(item.promise.windowStart, timezone)}–{shortTime(item.promise.windowEnd, timezone)}</b></span><span><small>Stop</small><b>{item.round ? `${item.round.sequence} of ${item.round.reference}` : "Unplanned"}</b></span><span><small>State</small><b>{deliveryStateLabel(item.state)}</b></span></div></section>
+  return <><section className="v45-decision"><small>{copy.label}</small><h3>{copy.title}</h3><p>{copy.detail}</p><div><span><small>Promise</small><b>{shortTime(item.promise.windowStart, tenant.timezone)}–{shortTime(item.promise.windowEnd, tenant.timezone)}</b></span><span><small>Stop</small><b>{item.round ? `${item.round.sequence} of ${item.round.reference}` : "Unplanned"}</b></span><span><small>State</small><b>{deliveryStateLabel(item.state)}</b></span></div></section>
     <section className="v45-detail"><h4>Delivery truth <span>v{item.version}</span></h4><dl><div><dt>Recipient</dt><dd>{item.recipientName}<small>{item.recipientPhone}</small></dd></div><div><dt>Destination</dt><dd>{item.rawAddress}{item.accessNote && <small>{item.accessNote}</small>}</dd></div><div><dt>Pickup</dt><dd>{item.pickupLocationName}</dd></div><div><dt>Service date</dt><dd>{item.serviceDate}</dd></div>{item.round && <><div><dt>Round</dt><dd>{item.round.reference}<small>{item.round.driverName}</small></dd></div><div><dt>Stop version</dt><dd>v{item.stop.version}</dd></div></>}</dl></section>
     <section className="v45-detail v45-record-manifest"><h4>Physical manifest <span>{manifestLocked ? "locked" : "draft"} · v{item.manifest.version}</span></h4>{item.manifest.items.map((manifestItem) => <article key={manifestItem.lineNumber}><b>{String(manifestItem.lineNumber).padStart(2, "0")}</b><span><strong>{manifestItem.description}</strong>{manifestItem.handlingNote && <small>{manifestItem.handlingNote}</small>}</span><em>×{manifestItem.quantity}</em></article>)}{item.deliveryNote && <p><b>Instruction</b>{item.deliveryNote}</p>}</section>
-    <div className="v45-drawer-actions">{boundary === "plan" && <button className="primary" type="button" onClick={onPlan}>Open in planning</button>}{(boundary === "round-pre-custody" || boundary === "round-live") && <button className="primary" type="button" onClick={onOpenRound}>{boundary === "round-live" ? "Open live Stop" : "Open assigned Round"}</button>}{boundary === "history" && <button className="primary" type="button" onClick={onHistory}>Open delivery history</button>}{item.coordinate && <button type="button" onClick={onInspect}>Inspect destination on map</button>}<button type="button" onClick={() => void navigator.clipboard.writeText(item.deliveryId)}>Copy delivery ID</button></div>
+    <div className="v45-drawer-actions">{canEdit && <button className="primary" type="button" onClick={() => setEditing(true)}>Edit delivery</button>}{boundary === "plan" && <button type="button" onClick={onPlan}>Open in planning</button>}{(boundary === "round-pre-custody" || boundary === "round-live") && <button className={canEdit ? "" : "primary"} type="button" onClick={onOpenRound}>{boundary === "round-live" ? "Open live Stop" : "Open assigned Round"}</button>}{boundary === "history" && <button className="primary" type="button" onClick={onHistory}>Open delivery history</button>}{item.coordinate && <button type="button" onClick={onInspect}>Inspect destination on map</button>}<button type="button" onClick={() => void navigator.clipboard.writeText(item.deliveryId)}>Copy delivery ID</button></div>
   </>;
 }
 

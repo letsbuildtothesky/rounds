@@ -248,6 +248,105 @@ export type MoveRoundStopState = RoundStopMovedPayload & {
 
 export type MoveRoundStopResult = CommandResult<MoveRoundStopState, RoundStopMovedEvent>;
 
+export type PrePickupDeliveryManifestItem = {
+  lineNumber: number;
+  description: string;
+  quantity: number;
+  cargoClass?: string;
+  handlingNote?: string;
+};
+
+export type PrePickupDeliveryEditValues = {
+  recipientName?: string;
+  recipientPhone?: string;
+  rawAddress?: string;
+  latitude?: number;
+  longitude?: number;
+  accessNote?: string;
+  deliveryNote?: string;
+  windowStart?: string;
+  windowEnd?: string;
+  manifestItems?: PrePickupDeliveryManifestItem[];
+};
+
+export type PrePickupDeliveryEditRequest = {
+  deliveryId: string;
+  expectedDeliveryVersion: number;
+  expectedStopVersion: number;
+  expectedDestinationVersion: number;
+  expectedManifestVersion: number;
+  expectedRoundVersion?: number;
+  changes: PrePickupDeliveryEditValues;
+};
+
+export type PrePickupDeliveryEditSnapshot = {
+  recipientName: string;
+  recipientPhone: string;
+  rawAddress: string;
+  latitude: number;
+  longitude: number;
+  accessNote?: string;
+  deliveryNote?: string;
+  windowStart: string;
+  windowEnd: string;
+  manifestItems: PrePickupDeliveryManifestItem[];
+};
+
+export type PrePickupDeliveryEditImpact = {
+  assignment: "unplanned" | "assigned";
+  routeRecalculated: boolean;
+  distanceDeltaMeters?: number;
+  durationDeltaSeconds?: number;
+  finishBefore?: string;
+  finishAfter?: string;
+  promiseStatus?: "safe" | "early" | "late";
+  capacityStatus?: CapacityEvaluation["status"];
+  buyerUpdatedWithRecipient: boolean;
+};
+
+export type PrePickupDeliveryEditPreview = {
+  tenantId: string;
+  calculatedAt: string;
+  deliveryId: string;
+  stopId: string;
+  roundId?: string;
+  applicable: boolean;
+  blockingReasons: string[];
+  changedFields: string[];
+  before: PrePickupDeliveryEditSnapshot;
+  after: PrePickupDeliveryEditSnapshot;
+  impact: PrePickupDeliveryEditImpact;
+  routeAfter?: PlanningRoutePreview;
+};
+
+export type ApplyPrePickupDeliveryEditPayload = PrePickupDeliveryEditRequest & {
+  stopId: string;
+  manifestId: string;
+  roundId?: string;
+  before: PrePickupDeliveryEditSnapshot;
+  after: PrePickupDeliveryEditSnapshot;
+  changedFields: string[];
+  impact: PrePickupDeliveryEditImpact;
+  routePlan?: PlanningRouteSnapshot;
+};
+
+export type ApplyPrePickupDeliveryEditCommand = CommandEnvelope<"delivery.edit_before_pickup", ApplyPrePickupDeliveryEditPayload>;
+
+export type PrePickupDeliveryEditedState = {
+  deliveryId: string;
+  deliveryVersion: number;
+  stopId: string;
+  stopVersion: number;
+  destinationVersion: number;
+  manifestId: string;
+  manifestVersion: number;
+  roundId?: string;
+  roundVersion?: number;
+};
+
+export type PrePickupDeliveryEditedEvent = DomainEventEnvelope<"delivery.edited_before_pickup", PrePickupDeliveryEditedState>;
+export type ApplyPrePickupDeliveryEditResult = CommandResult<PrePickupDeliveryEditedState, PrePickupDeliveryEditedEvent>;
+
 export type LiveDeliveryChangeValues = {
   sequence?: number;
   rawAddress?: string;

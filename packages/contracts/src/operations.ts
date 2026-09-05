@@ -377,6 +377,7 @@ export type OperationsDeliveryItem = {
     id: string;
     state: string;
     version: number;
+    destinationVersion: number;
   };
   promise: {
     windowStart: string;
@@ -390,6 +391,7 @@ export type OperationsDeliveryItem = {
       lineNumber: number;
       description: string;
       quantity: number;
+      cargoClass?: string;
       handlingNote?: string;
     }>;
   };
@@ -397,6 +399,7 @@ export type OperationsDeliveryItem = {
     id: string;
     reference: string;
     state: string;
+    version: number;
     sequence: number;
     driverName: string;
   };

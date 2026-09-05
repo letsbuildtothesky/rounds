@@ -29,7 +29,7 @@ const projection: OperationsDeliveriesProjection = {
     isSurprise: false,
     createdAt: observedAt.toISOString(),
     updatedAt: observedAt.toISOString(),
-    stop: { id: "10000000-0000-4000-8000-000000000030", state: "pending", version: 1 },
+    stop: { id: "10000000-0000-4000-8000-000000000030", state: "pending", version: 1, destinationVersion: 1 },
     promise: { windowStart: "2026-09-02T02:00:00.000Z", windowEnd: "2026-09-02T05:00:00.000Z" },
     manifest: { id: "10000000-0000-4000-8000-000000000040", state: "draft", version: 1, items: [{ lineNumber: 1, description: "Bouquet", quantity: 1 }] },
   }],

@@ -21,6 +21,7 @@ import type {
   PlanningRouteContextGateway,
   RoundMoveGateway,
   LiveDeliveryChangeGateway,
+  PrePickupDeliveryEditGateway,
   PodGateway,
 } from "./types.js";
 import type {
@@ -83,6 +84,8 @@ import type {
   SetDriverShiftExceptionResult,
   ApplyLiveDeliveryChangeCommand,
   ApplyLiveDeliveryChangeResult,
+  ApplyPrePickupDeliveryEditCommand,
+  ApplyPrePickupDeliveryEditResult,
   AcknowledgeLiveDeliveryChangeCommand,
   AcknowledgeLiveDeliveryChangeResult,
   DriverLiveDeliveryChange,
@@ -258,7 +261,7 @@ function initials(displayName: string): string {
   return displayName.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]!.toUpperCase()).join("") || "DR";
 }
 
-export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway, RoundGateway, PickupGateway, DriverStopGateway, DriverCommunicationsGateway, DriverShiftGateway, DriverProfileGateway, OperationsCommunicationsGateway, PodGateway, OperationsHistoryGateway, OperationsActionGateway, OperationsDeliveriesGateway, OperationsDriversGateway, OperationsRoundDetailGateway, PlanningRouteContextGateway, RoundMoveGateway, LiveDeliveryChangeGateway {
+export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway, RoundGateway, PickupGateway, DriverStopGateway, DriverCommunicationsGateway, DriverShiftGateway, DriverProfileGateway, OperationsCommunicationsGateway, PodGateway, OperationsHistoryGateway, OperationsActionGateway, OperationsDeliveriesGateway, OperationsDriversGateway, OperationsRoundDetailGateway, PlanningRouteContextGateway, RoundMoveGateway, LiveDeliveryChangeGateway, PrePickupDeliveryEditGateway {
   private readonly admin: SupabaseClient;
 
   constructor(
@@ -425,10 +428,10 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
       recipient_phone: string; destination_raw_address: string; destination_position: unknown; access_note: string | null;
       delivery_note: string | null; is_surprise: boolean; created_at: string; updated_at: string;
     };
-    type DeliveryStopListRow = { id: string; delivery_id: string; state: string; version: number };
+    type DeliveryStopListRow = { id: string; delivery_id: string; state: string; version: number; destination_version: number };
     type ManifestListRow = { id: string; delivery_id: string; state: string; version: number };
     type RoundStopListRow = { round_id: string; stop_id: string; sequence: number };
-    type DeliveryRoundRow = { id: string; reference: string; state: string; driver_id: string | null };
+    type DeliveryRoundRow = { id: string; reference: string; state: string; version: number; driver_id: string | null };
 
     const { data: deliveries, error: deliveriesError } = await this.admin.from("deliveries")
       .select("id, reference, state, version, source_system, service_date, service_timezone, pickup_location_id, buyer_same_as_recipient, buyer_name, buyer_phone, recipient_name, recipient_phone, destination_raw_address, destination_position, access_note, delivery_note, is_surprise, created_at, updated_at")
@@ -441,7 +444,7 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     const deliveryIds = rows.map((delivery) => delivery.id);
     const pickupIds = [...new Set(rows.map((delivery) => delivery.pickup_location_id))];
     const [stopResult, promiseResult, manifestResult, locationResult] = await Promise.all([
-      this.admin.from("delivery_stops").select("id, delivery_id, state, version").eq("tenant_id", actor.tenantId).in("delivery_id", deliveryIds).returns<DeliveryStopListRow[]>(),
+      this.admin.from("delivery_stops").select("id, delivery_id, state, version, destination_version").eq("tenant_id", actor.tenantId).in("delivery_id", deliveryIds).returns<DeliveryStopListRow[]>(),
       this.admin.from("delivery_promises").select("delivery_id, window_start, window_end").eq("tenant_id", actor.tenantId).in("delivery_id", deliveryIds).returns<PromiseRow[]>(),
       this.admin.from("manifests").select("id, delivery_id, state, version").eq("tenant_id", actor.tenantId).in("delivery_id", deliveryIds).order("version", { ascending: false }).returns<ManifestListRow[]>(),
       this.admin.from("tenant_locations").select("id, display_name").eq("tenant_id", actor.tenantId).in("id", pickupIds).returns<{ id: string; display_name: string }[]>(),
@@ -470,7 +473,7 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     let profiles: Array<{ id: string; person_id: string }> = [];
     let people: Array<{ id: string; display_name: string }> = [];
     if (roundIds.length) {
-      const roundResult = await this.admin.from("rounds").select("id, reference, state, driver_id").eq("tenant_id", actor.tenantId).in("id", roundIds).returns<DeliveryRoundRow[]>();
+      const roundResult = await this.admin.from("rounds").select("id, reference, state, version, driver_id").eq("tenant_id", actor.tenantId).in("id", roundIds).returns<DeliveryRoundRow[]>();
       if (roundResult.error) throw roundResult.error;
       rounds = roundResult.data ?? [];
       const driverIds = [...new Set(rounds.flatMap((round) => round.driver_id ? [round.driver_id] : []))];
@@ -529,15 +532,15 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
           isSurprise: delivery.is_surprise,
           createdAt: delivery.created_at,
           updatedAt: delivery.updated_at,
-          stop: { id: stop.id, state: stop.state, version: stop.version },
+          stop: { id: stop.id, state: stop.state, version: stop.version, destinationVersion: stop.destination_version },
           promise: { windowStart: promise.window_start, windowEnd: promise.window_end },
           manifest: {
             id: manifest.id,
             state: manifest.state,
             version: manifest.version,
-            items: (itemResult.data ?? []).filter((item) => item.manifest_id === manifest.id).map((item) => ({ lineNumber: item.line_number, description: item.description, quantity: item.quantity, ...(item.handling_note ? { handlingNote: item.handling_note } : {}) })),
+            items: (itemResult.data ?? []).filter((item) => item.manifest_id === manifest.id).map((item) => ({ lineNumber: item.line_number, description: item.description, quantity: item.quantity, ...(item.cargo_class ? { cargoClass: item.cargo_class } : {}), ...(item.handling_note ? { handlingNote: item.handling_note } : {}) })),
           },
-          ...(round && roundStop ? { round: { id: round.id, reference: round.reference, state: round.state, sequence: roundStop.sequence, driverName: driverName ?? "Team driver" } } : {}),
+          ...(round && roundStop ? { round: { id: round.id, reference: round.reference, state: round.state, version: round.version, sequence: roundStop.sequence, driverName: driverName ?? "Team driver" } } : {}),
         }];
       }),
     };
@@ -938,6 +941,15 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     });
     if (error) throw error;
     return data as ApplyLiveDeliveryChangeResult;
+  }
+
+  async applyPrePickupDeliveryEdit(command: ApplyPrePickupDeliveryEditCommand, actor: ActorContext): Promise<ApplyPrePickupDeliveryEditResult> {
+    const { data, error } = await this.admin.rpc("apply_pre_pickup_delivery_edit_command", {
+      p_command: command,
+      p_actor_person_id: actor.personId,
+    });
+    if (error) throw error;
+    return data as ApplyPrePickupDeliveryEditResult;
   }
 
   async acknowledgeLiveDeliveryChange(command: AcknowledgeLiveDeliveryChangeCommand, identity: AuthenticatedIdentity): Promise<AcknowledgeLiveDeliveryChangeResult> {

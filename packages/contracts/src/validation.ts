@@ -31,6 +31,8 @@ import type {
   LiveDeliveryChangeRequest,
   ApplyLiveDeliveryChangeCommand,
   AcknowledgeLiveDeliveryChangeCommand,
+  PrePickupDeliveryEditRequest,
+  ApplyPrePickupDeliveryEditCommand,
   PlanRoundCommand,
   PlanRoundPayload,
   PlanningRoutePreviewRequest,
@@ -624,6 +626,63 @@ export function validateLiveDeliveryChangeRequest(payload: LiveDeliveryChangeReq
     const end = Date.parse(changes.windowEnd!);
     if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) throw new ContractError("delivery window is invalid");
   }
+}
+
+export function validatePrePickupDeliveryEditRequest(payload: PrePickupDeliveryEditRequest): void {
+  assertUuid(payload.deliveryId, "deliveryId");
+  for (const [name, value] of [
+    ["expectedDeliveryVersion", payload.expectedDeliveryVersion],
+    ["expectedStopVersion", payload.expectedStopVersion],
+    ["expectedDestinationVersion", payload.expectedDestinationVersion],
+    ["expectedManifestVersion", payload.expectedManifestVersion],
+  ] as const) {
+    if (!Number.isInteger(value) || value < 1) throw new ContractError(`${name} must be a positive integer`);
+  }
+  if (payload.expectedRoundVersion !== undefined && (!Number.isInteger(payload.expectedRoundVersion) || payload.expectedRoundVersion < 1)) {
+    throw new ContractError("expectedRoundVersion must be a positive integer");
+  }
+  const changes = payload.changes;
+  if (!changes || Object.keys(changes).length === 0) throw new ContractError("changes cannot be empty");
+  if (changes.recipientName !== undefined && (changes.recipientName.trim().length < 1 || changes.recipientName.trim().length > 160)) throw new ContractError("recipientName must contain 1 to 160 characters");
+  if (changes.recipientPhone !== undefined && (changes.recipientPhone.trim().length < 1 || changes.recipientPhone.trim().length > 40)) throw new ContractError("recipientPhone must contain 1 to 40 characters");
+  if (changes.rawAddress !== undefined && (changes.rawAddress.trim().length < 1 || changes.rawAddress.trim().length > 500)) throw new ContractError("rawAddress must contain 1 to 500 characters");
+  if (changes.accessNote !== undefined && changes.accessNote.trim().length > 1000) throw new ContractError("accessNote exceeds 1000 characters");
+  if (changes.deliveryNote !== undefined && changes.deliveryNote.trim().length > 2000) throw new ContractError("deliveryNote exceeds 2000 characters");
+  if ((changes.latitude === undefined) !== (changes.longitude === undefined)) throw new ContractError("latitude and longitude must be supplied together");
+  if (changes.latitude !== undefined && (!Number.isFinite(changes.latitude) || changes.latitude < -90 || changes.latitude > 90)) throw new ContractError("latitude is invalid");
+  if (changes.longitude !== undefined && (!Number.isFinite(changes.longitude) || changes.longitude < -180 || changes.longitude > 180)) throw new ContractError("longitude is invalid");
+  if ((changes.windowStart === undefined) !== (changes.windowEnd === undefined)) throw new ContractError("windowStart and windowEnd must be supplied together");
+  if (changes.windowStart !== undefined) {
+    const start = Date.parse(changes.windowStart);
+    const end = Date.parse(changes.windowEnd!);
+    if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) throw new ContractError("delivery window is invalid");
+  }
+  if (changes.manifestItems !== undefined) {
+    if (!Array.isArray(changes.manifestItems) || changes.manifestItems.length < 1 || changes.manifestItems.length > 100) throw new ContractError("manifestItems must contain 1 to 100 lines");
+    changes.manifestItems.forEach((item, index) => {
+      if (item.lineNumber !== index + 1) throw new ContractError("manifestItems line numbers must be consecutive from 1");
+      if (item.description.trim().length < 1 || item.description.trim().length > 500) throw new ContractError("manifest item description must contain 1 to 500 characters");
+      if (!Number.isInteger(item.quantity) || item.quantity < 1 || item.quantity > 10000) throw new ContractError("manifest item quantity must be an integer from 1 to 10000");
+      if (item.cargoClass !== undefined && item.cargoClass.trim().length > 80) throw new ContractError("manifest item cargoClass exceeds 80 characters");
+      if (item.handlingNote !== undefined && item.handlingNote.trim().length > 1000) throw new ContractError("manifest item handlingNote exceeds 1000 characters");
+    });
+  }
+}
+
+export function validateApplyPrePickupDeliveryEditCommand(command: ApplyPrePickupDeliveryEditCommand): void {
+  if (command.schemaVersion !== 1 || command.commandType !== "delivery.edit_before_pickup") throw new ContractError("unsupported ApplyPrePickupDeliveryEdit command envelope");
+  assertUuid(command.commandId, "commandId"); assertUuid(command.traceId, "traceId"); assertUuid(command.tenantId, "tenantId"); assertUuid(command.aggregateId, "aggregateId");
+  assertNonEmpty(command.idempotencyKey, "idempotencyKey");
+  if (command.idempotencyKey.length > 200) throw new ContractError("idempotencyKey exceeds 200 characters");
+  if (command.aggregateId !== command.payload.deliveryId || command.expectedVersion !== command.payload.expectedDeliveryVersion) throw new ContractError("command aggregate must match the expected Delivery");
+  assertUuid(command.payload.stopId, "stopId"); assertUuid(command.payload.manifestId, "manifestId");
+  if (command.payload.roundId !== undefined) assertUuid(command.payload.roundId, "roundId");
+  validatePrePickupDeliveryEditRequest(command.payload);
+  if (!command.payload.changedFields.length) throw new ContractError("changedFields cannot be empty");
+  if (command.payload.roundId && (!command.payload.routePlan || command.payload.routePlan.status !== "fits" || command.payload.routePlan.capacity.status !== "fits" || command.payload.routePlan.blockingReasons.length)) {
+    throw new ContractError("an assigned delivery edit requires a server-calculated fitting routePlan");
+  }
+  if (!command.payload.roundId && command.payload.routePlan) throw new ContractError("an unplanned delivery edit cannot include routePlan");
 }
 
 export function validateApplyLiveDeliveryChangeCommand(command: ApplyLiveDeliveryChangeCommand): void {

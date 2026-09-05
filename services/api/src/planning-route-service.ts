@@ -1,4 +1,5 @@
 import type {
+  CargoRequirement,
   OperationsDriverCapacityItem,
   PlanningRoutePreview,
   PlanningRoutePreviewRequest,
@@ -17,7 +18,7 @@ export type PlanningRouteService = {
     allowedRoundIds: string[],
     request: PlanningRoutePreviewRequest,
     now: Date,
-    changes: { stopId: string; coordinate?: { latitude: number; longitude: number }; windowStart?: string; windowEnd?: string },
+    changes: { stopId: string; coordinate?: { latitude: number; longitude: number }; windowStart?: string; windowEnd?: string; cargoRequirements?: CargoRequirement[] },
     origin?: { latitude: number; longitude: number },
   ): Promise<PlanningRoutePreview>;
 };
@@ -158,6 +159,7 @@ export function createPlanningRouteService(
           ...(changes.coordinate ? { coordinate: changes.coordinate } : {}),
           ...(changes.windowStart ? { windowStart: changes.windowStart } : {}),
           ...(changes.windowEnd ? { windowEnd: changes.windowEnd } : {}),
+          ...(changes.cargoRequirements ? { cargoRequirements: changes.cargoRequirements } : {}),
         } : stop),
       });
     },
