@@ -26,6 +26,7 @@ import { RoundDetailWorkspace } from "./round-detail-workspace";
 import { CommunicationsPanel } from "./communications-panel";
 import { useOperationsCommunications } from "./use-operations-communications";
 import { communicationUnreadByRound } from "../src/operations-communications-state";
+import { operationsMapLegendEntries } from "../src/operations-map-legend";
 
 const roundsApiUrl = process.env.NEXT_PUBLIC_ROUNDS_API_URL ?? "http://127.0.0.1:8080";
 
@@ -336,6 +337,13 @@ export function OperationsWorkstation({ accessToken, realtimeClient, tenant, use
     () => planning?.unplannedDeliveries.filter((delivery) => delivery.serviceDate === planningDate) ?? [],
     [planning, planningDate],
   );
+  const mapLegend = useMemo(() => operationsMapLegendEntries({
+    mode: dispatchMode,
+    hasOwnDriverPositions: Boolean(projection?.rounds.some((round) => round.currentPosition)),
+    hasActionStops: Boolean(projection?.exceptions.some((item) => item.coordinate)),
+    hasUnplannedStops: mapPlanningDeliveries.some((item) => item.coordinate),
+    hasProposedRoute: Boolean(routePreview?.geometry.coordinates.length && routePreview.geometry.coordinates.length > 1),
+  }), [dispatchMode, mapPlanningDeliveries, projection?.exceptions, projection?.rounds, routePreview?.geometry.coordinates.length]);
 
   const handleMapCameraChange = useCallback((camera: OperationsMapCamera) => {
     setMapCamera((current) => Math.abs(current.bearing - camera.bearing) < 0.01 && Math.abs(current.pitch - camera.pitch) < 0.01 ? current : camera);
@@ -558,7 +566,7 @@ export function OperationsWorkstation({ accessToken, realtimeClient, tenant, use
           </div>
           {demoMode && <div className="v45-preview-badge"><b>PREVIEW DATA</b><span>Positions shown here are UX samples, not live drivers.</span></div>}
           {mapHint && <div className="v45-map-hint"><strong>{mapHint.split(" · ")[0]}</strong> · {mapHint.split(" · ").slice(1).join(" · ")}</div>}
-          {mapMode !== "street" && <><div className="v45-legend"><span><i className="own" />Own</span><span><i className="network" />Network</span><span><i className="external" />External</span><span><i className="traffic" />Traffic impact</span></div>
+          {mapMode !== "street" && <>{mapLegend.length > 0 && <div className="v45-legend" aria-label="Visible map evidence">{mapLegend.map((entry) => <span key={entry.key}><i className={entry.tone} />{entry.label}</span>)}</div>}
           <button className="v45-focus" type="button" onClick={() => operationsMapRef.current?.control("focus")}><FocusIcon />Focus map</button>
           <div className="v45-camera">
             <button type="button" title="Zoom in" onClick={() => operationsMapRef.current?.control("zoom-in")}>+</button>

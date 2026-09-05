@@ -7,6 +7,14 @@
 
 ## Changelog
 
+- **2026-09-05 · Checkpoint 51:** Reconciles the supplied v45 map-role legend
+  with the evidence actually rendered by the English own-fleet application.
+  Live mode now labels only real own-driver positions and real action Stops;
+  Plan mode labels real unplanned Stops and the proposed route only when those
+  layers exist. Network, external-provider and traffic-impact labels no longer
+  imply disconnected future-slice data. The canonical legend placement and
+  marker language remain intact. Signed-in localhost acceptance covered both
+  Live and Plan modes; all Operations tests, typecheck and production build pass.
 - **2026-09-05 · Checkpoint 50:** Connects own-driver next-capacity truth to the
   saved approved route finish already persisted on each current Round. The API
   returns a future `nextAvailableAt` for active/loading/approved work only when
@@ -320,7 +328,7 @@ Canonical visual source: `ux/operations/rounds-operations-current-v45.html`. The
 |---|---|---|---|---|
 | Authentication, tenant and role projection | Pilot P0 | `VERIFIED` | Supabase session, tenant membership, dispatcher/viewer roles and read-only enforcement exist. | Production account lifecycle, recovery and session security. |
 | v45 workstation shell and navigation | Pilot P1 | `IMPLEMENTED` | React shell follows the canonical Dispatch/Deliveries/Drivers/Communications/History structure. | Full visual comparison and narrow/iPad responsive pass. |
-| Real Operations map | Pilot/Slice 2 P0 | `VERIFIED` | Real Mapbox renderer, Operations/Satellite styles, zoom, north, rotation, pitch, truthful error state, server positions and server route geometry exist. | Complete canonical layer policy, marker semantics, live route/trail distinction and browser/device acceptance. |
+| Real Operations map | Pilot/Slice 2 P0 | `VERIFIED` | Real Mapbox renderer, Operations/Satellite styles, zoom, north, rotation, pitch, truthful error state, server positions and server route geometry exist. The v45 legend is now derived from rendered own-driver, action-Stop, unplanned-Stop and proposed-route evidence; disconnected Network, external and traffic roles are absent. | Complete live route/trail distinction, remaining marker semantics and physical browser/device acceptance. |
 | Live Dispatch / Action queue | Pilot P0 | `VERIFIED` | Server-backed Rounds, exceptions, live positions and freshness states exist. | Remaining edge states, filtering and realtime/polling production policy. |
 | Single delivery intake | Pilot P0 | `VERIFIED` | Canonical internal delivery command, idempotency and drawer UI exist. | Address validation depth and final v45 visual acceptance. |
 | Batch/manual import | Slice 2 P1 | `SPECIFIED` | No batch ingestion UI. | Define file template, row validation, partial failure and reconciliation UX. |
