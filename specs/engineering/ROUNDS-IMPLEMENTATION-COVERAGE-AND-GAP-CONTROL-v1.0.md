@@ -7,6 +7,22 @@
 
 ## Changelog
 
+- **2026-09-05 · Checkpoint 61:** Makes the Driver's offline truth
+  mechanically distinct instead of deriving two claims from one nullable
+  Round. The encrypted session-cache round trip now retains the authenticated
+  user/Team identity, tenant ID/timezone, Delivery ID/instruction/surprise
+  flag, local contact state and the complete server route-plan snapshot rather
+  than dropping those fields. N02's Round-availability sentence is driven by
+  cached assigned work, while its separate `Current route` row remains false
+  after process start until the Google Navigation SDK reports running guidance
+  or successfully starts guidance on D01/E02. A changed Round or destination
+  scope invalidates that in-memory route claim. No N02 geometry or wording was
+  invented; the supplied board's available/unavailable variants remain the
+  presentation contract. All 158 Driver tests, Flutter analysis and the
+  configured Android debug build pass; the APK is installed on the connected
+  Samsung. N02 remains `VERIFIED`, so completion percentages do not change.
+  Physical queued-photo/status recovery, true signal-loss/background recovery
+  and the BS-03 auth-expiry/re-auth ownership gate remain open.
 - **2026-09-05 · Checkpoint 60:** Separates the live Operations map's two
   route truths without promoting Mapbox or Google into the operational system
   of record. A tenant-authorized endpoint calculates the current remaining
@@ -345,6 +361,10 @@ Authority remains:
 - No fake button, fake map marker, fake route, fake provider response or invented committed state may be used to make a surface appear complete.
 - Test fixtures must be visibly and technically isolated from production behavior.
 - Thai and English remain one localized application. The complete English and Thai UX board sets are binding visual/interaction references. English-reference-first construction does not change the Thai-first production requirement.
+- Active build order is English closure first: do not implement additional
+  Thai presentation screens until the complete English Driver/Operations flow
+  has passed its automated and real device/browser acceptance. Shared domain,
+  persistence and service work must remain locale-neutral.
 
 ## 3. Status vocabulary and completion formula
 
@@ -433,7 +453,7 @@ Canonical inventory: `specs/product/ROUNDS-DRIVER-CANONICAL-MANIFEST-v6.md` and 
 | L01 Profile + Language | Pilot/Slice 2 P1 | `IMPLEMENTED` | The measured canonical Team subset shows authenticated Driver identity, active merchant relationship and vehicle truth. Every visible L01 label, the language drawer, sign-out drawer and bottom navigation now use the supplied English/Thai copy; locale changes rerender the open profile immediately. Generated metrics reference both supplied boards and include their distinct Thai and 320 px composition rules. Support opens the existing Round-scoped H01 thread; sign-out requires explicit confirmation. Unsupported verification, identity editing, Network, payout and notification controls remain absent, and the former unsupported `Assigned` vehicle claim is removed. | Complete physical English/Thai visual acceptance. Localize and accept the child H01 surface separately; add account mutation or verification states only after authoritative workflows define them. |
 | M01 Notifications | Slice 2 P2 | `SPECIFIED` | No notification preference surface. | Define channel authority and implement preferences when notifications are promoted. |
 | N01 Permissions | Pilot P1 | `PARTIAL` | The measured canonical Team permission surface reads the real location-service and app-permission state, requests only in-use location, distinguishes denied/permanently blocked/service-disabled states and opens the correct OS settings. English and Thai now use their supplied board copy and generated geometry, including 320 px Thai overrides, across profile/navigation/location recovery and contextual camera-denial paths. Navigation no longer spins indefinitely when location is blocked, and no evidence is claimed on camera denial. The protected APK installs and launches on the connected Samsung; automated English/Thai and recovery coverage passes. | Validate background-navigation permission policy on Android/iOS before requesting it. Add notification permission only with a real promoted push channel, then complete physical denied/permanently-blocked/settings-return and visual acceptance. |
-| N02 Offline/reconnecting | Pilot P0 | `VERIFIED` | The measured canonical N02 surface uses real Android connectivity transitions plus authenticated API reachability, an encrypted assigned-Round cache and live counts from the command, rich-message media, proof/media and telemetry outboxes. Pending and partially uploading attachments contribute to message truth, so `Back online` cannot appear while rich media remains queued. Startup renders the cached Round without waiting for the network. `Back online` appears only after the API responds and every measured retryable queue is empty. Offline and reconnecting states were exercised on the Samsung device with Wi-Fi and mobile data disabled, then restored. File-backed automated recovery proves rich media survives database close/reopen and resumes from its durable TUS offset. Samsung acceptance proves a queued file message remains visible after force-stop/relaunch, then clears and reaches Dispatch exactly once after reconnect. | Complete physical queued-photo/status recovery, extended background recovery and degraded-network road acceptance; iOS device acceptance remains open. |
+| N02 Offline/reconnecting | Pilot P0 | `VERIFIED` | The measured canonical N02 surface uses real Android connectivity transitions plus authenticated API reachability, an encrypted assigned-Round cache and live counts from the command, rich-message media, proof/media and telemetry outboxes. The cache round trip preserves authenticated/tenant identity, every assigned Stop's destination, Delivery instruction, manifest/version/contact truth and the complete non-geometry server route snapshot. Cached assigned work and cached route are separate facts: the Round remains readable after relaunch, but `Current route` is available only after Google reports or starts real guidance in the current Round/destination scope. Pending and partially uploading attachments contribute to message truth, so `Back online` cannot appear while rich media remains queued. `Back online` appears only after the API responds and every measured retryable queue is empty. Offline and reconnecting states were exercised on the Samsung device with Wi-Fi and mobile data disabled, then restored. File-backed automated recovery proves rich media survives database close/reopen and resumes from its durable TUS offset. Samsung acceptance proves a queued file message remains visible after force-stop/relaunch, then clears and reaches Dispatch exactly once after reconnect. | Complete the BS-03 auth-expiry/re-auth owner-validation path, physical queued-photo/status recovery, extended background recovery and degraded-network road acceptance; iOS device acceptance remains open. |
 | N03 GPS unavailable | Pilot P0 | `PARTIAL` | The measured canonical N03 surface is wired to the real operational position stream. A 30-second sample gap or stream error pauses live position/ETA, disabled service or permission is classified separately, and Retry GPS requires a real fix and restarts the stream. Cached-route continuation is shown only when Google guidance was already active. The Android access-off branch is physically verified on Samsung. | Complete true signal-loss field acceptance with location service still enabled, degraded/background recovery, and iOS device acceptance. The Google Navigation SDK may show its own Android location warning before the Rounds recovery surface when global location is switched off during active guidance. |
 
 ## 6. Operations v45 capability coverage
@@ -715,7 +735,17 @@ This sequence does not promote later slices; it orders the already authorized En
   on-road line rendering remains open physical acceptance rather than a
   simulated claim. The next authorized capability is the assigned-Round
   offline read cache and consolidated Driver sync truth.
-- Complete assigned-Round offline read cache and consolidated sync truth.
+- **D28 assigned-Round cache and route/sync truth hardened 2026-09-05:** the
+  encrypted cache now round-trips all operational identity, tenant, Delivery,
+  manifest, Stop and server route-plan fields used by the assigned workflow.
+  N02 no longer equates an assigned Round with an available route: cached work
+  drives the Round copy and actual Google guidance drives the route row. A
+  process restart begins with no route claim until the SDK proves otherwise,
+  and Round/destination changes invalidate the claim. Driver tests, analysis,
+  Android build and Samsung installation pass. The remaining BS-03
+  auth-expiry/re-auth ownership gate and physical recovery matrix stay open.
+- Complete the BS-03 auth-expiry/re-auth ownership gate without inventing an
+  entry-state board.
 - Finish N01/N02/N03 recovery states.
 - Run golden/reference-viewport comparisons for every in-scope board.
 - Run physical multi-stop, degraded-network, background, battery and motorcycle road acceptance.

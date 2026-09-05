@@ -35,6 +35,7 @@ class HarnessAppController extends ChangeNotifier {
   final DriverQueueInspector _queueInspector;
   final FlutterSecureStorage _sessionStorage;
   DriverSessionModel? _driverSession;
+  bool _currentRouteAvailable = false;
   bool _driverLoading = false;
   String? _driverError;
   DriverSyncSnapshot _syncSnapshot = const DriverSyncSnapshot.online();
@@ -104,6 +105,7 @@ class HarnessAppController extends ChangeNotifier {
       );
       if (restored == null) {
         _driverSession = null;
+        _currentRouteAvailable = false;
         await _clearCachedSession();
       } else {
         await _acceptAuthenticatedSession(restored);
@@ -211,6 +213,7 @@ class HarnessAppController extends ChangeNotifier {
 
   Future<void> signOutDriver() async {
     _driverSession = null;
+    _currentRouteAvailable = false;
     _localeSyncRequested = false;
     await _driverApi.signOut();
     _driverError = null;
@@ -409,6 +412,13 @@ class HarnessAppController extends ChangeNotifier {
   }
 
   Future<void> _acceptAuthenticatedSession(DriverSessionModel session) async {
+    final previousNavigationScope = _navigationScope(
+      _driverSession?.currentRound,
+    );
+    final nextNavigationScope = _navigationScope(session.currentRound);
+    if (previousNavigationScope != nextNavigationScope) {
+      _currentRouteAvailable = false;
+    }
     _driverSession = session;
     if (!_hasSelectedLanguage) {
       _locale = HarnessLocaleValue.fromStorage(session.preferredLocale);
@@ -419,6 +429,27 @@ class HarnessAppController extends ChangeNotifier {
       ]);
       return;
     }
+  }
+
+  void reportCurrentRouteAvailability(bool available) {
+    if (_currentRouteAvailable == available) return;
+    _currentRouteAvailable = available;
+    _syncSnapshot = _syncSnapshot.copyWith(
+      assignedRoundAvailable: _driverSession?.currentRound != null,
+      currentRouteAvailable: available,
+    );
+    notifyListeners();
+  }
+
+  String? _navigationScope(DriverRoundModel? round) {
+    if (round == null) return null;
+    final stops = round.stops
+        .map(
+          (stop) =>
+              '${stop.id}:${stop.destinationVersion}:${stop.latitude}:${stop.longitude}',
+        )
+        .join('|');
+    return '${round.id}:${round.pickup.latitude}:${round.pickup.longitude}:$stops';
   }
 
   void _requestLocaleSync() {
@@ -473,6 +504,7 @@ class HarnessAppController extends ChangeNotifier {
   }
 
   Future<void> _restoreCachedSession() async {
+    _currentRouteAvailable = false;
     final raw = await _sessionStorage.read(key: _sessionCacheKey);
     if (raw != null) {
       try {
@@ -488,7 +520,8 @@ class HarnessAppController extends ChangeNotifier {
     );
     _syncSnapshot = DriverSyncSnapshot(
       phase: DriverConnectionPhase.online,
-      currentRouteAvailable: _driverSession?.currentRound != null,
+      assignedRoundAvailable: _driverSession?.currentRound != null,
+      currentRouteAvailable: false,
       pendingProofCount: 0,
       pendingMessageCount: 0,
       pendingStatusCount: 0,
@@ -553,7 +586,8 @@ class HarnessAppController extends ChangeNotifier {
     );
     final inspected = await _queueInspector.inspect(
       phase: phase,
-      currentRouteAvailable: _driverSession?.currentRound != null,
+      assignedRoundAvailable: _driverSession?.currentRound != null,
+      currentRouteAvailable: _currentRouteAvailable,
       lastSyncedAt: syncedNow ? DateTime.now().toUtc() : saved,
     );
     _syncSnapshot =

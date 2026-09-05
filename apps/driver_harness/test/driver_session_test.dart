@@ -39,6 +39,7 @@ void main() {
               'deliveryReference': 'UF-001',
               'recipientName': 'Siriporn',
               'recipientPhone': '+66999999999',
+              'deliveryNote': 'Leave the bouquet upright',
               'rawAddress': 'Wireless Road, Bangkok',
               'latitude': 13.7439,
               'longitude': 100.547,
@@ -52,6 +53,40 @@ void main() {
               ],
             },
           ],
+          'routePlan': {
+            'status': 'fits',
+            'serviceDate': '2026-09-02',
+            'driverId': 'driver-1',
+            'stopIds': ['stop-1'],
+            'calculatedAt': '2026-09-02T01:00:00Z',
+            'departureAt': '2026-09-02T01:30:00Z',
+            'finishAt': '2026-09-02T02:15:00Z',
+            'distanceMeters': 4200,
+            'durationSeconds': 2700,
+            'provider': {
+              'name': 'mapbox',
+              'profile': 'driving-traffic',
+              'freshness': 'current_snapshot',
+            },
+            'stops': [
+              {
+                'stopId': 'stop-1',
+                'sequence': 1,
+                'eta': '2026-09-02T02:00:00Z',
+                'departureAt': '2026-09-02T02:10:00Z',
+                'windowStart': '2026-09-02T02:00:00Z',
+                'windowEnd': '2026-09-02T04:00:00Z',
+                'promiseStatus': 'safe',
+                'waitingSeconds': 0,
+                'latenessSeconds': 0,
+                'legDurationSeconds': 1800,
+                'legDistanceMeters': 4200,
+              },
+            ],
+            'blockingReasons': <String>[],
+            'warnings': ['Bangkok traffic snapshot'],
+            'capacity': {'fits': true},
+          },
         },
         'pendingLiveChange': {
           'id': 'change-1',
@@ -89,13 +124,23 @@ void main() {
       });
 
       expect(session.currentRound?.reference, 'ROUND-001');
+      expect(session.userId, 'auth-user');
       expect(session.version, 7);
+      expect(session.currentRound?.tenantId, 'tenant-1');
+      expect(session.currentRound?.tenantTimezone, 'Asia/Bangkok');
       expect(session.currentRound?.pickup.id, 'pickup-1');
       expect(session.currentRound?.pickup.latitude, 13.7338);
       expect(session.currentRound?.pickup.longitude, 100.5766);
+      expect(session.currentRound?.plannedDistanceMeters, 4200);
       expect(session.pendingLiveChange?.after.accessNote, 'Gate B');
       expect(session.pendingLiveChange?.changeVersion, 2);
       expect(session.currentRound?.stops.single.sequence, 1);
+      expect(session.currentRound?.stops.single.deliveryId, 'delivery-1');
+      expect(session.currentRound?.stops.single.isSurprise, isTrue);
+      expect(
+        session.currentRound?.stops.single.deliveryNote,
+        'Leave the bouquet upright',
+      );
       expect(session.currentRound?.stops.single.latitude, 13.7439);
       expect(
         session.currentRound?.stops.single.manifestItems.single.description,
@@ -106,9 +151,26 @@ void main() {
       expect(cached.userName, session.userName);
       expect(cached.driverId, session.driverId);
       expect(cached.version, 7);
+      expect(cached.userId, 'auth-user');
       expect(cached.currentRound?.reference, 'ROUND-001');
+      expect(cached.currentRound?.tenantId, 'tenant-1');
+      expect(cached.currentRound?.tenantTimezone, 'Asia/Bangkok');
       expect(cached.currentRound?.stops.single.recipientName, 'Siriporn');
+      expect(cached.currentRound?.stops.single.deliveryId, 'delivery-1');
+      expect(cached.currentRound?.stops.single.isSurprise, isTrue);
+      expect(
+        cached.currentRound?.stops.single.deliveryNote,
+        'Leave the bouquet upright',
+      );
       expect(cached.currentRound?.pickup.latitude, 13.7338);
+      expect(
+        (cached.currentRound?.routePlanSnapshot?['provider']
+            as Map<String, dynamic>)['freshness'],
+        'current_snapshot',
+      );
+      expect(cached.currentRound?.routePlanSnapshot?['warnings'], [
+        'Bangkok traffic snapshot',
+      ]);
       expect(cached.pendingLiveChange?.before.accessNote, 'Tower A lobby');
     },
   );

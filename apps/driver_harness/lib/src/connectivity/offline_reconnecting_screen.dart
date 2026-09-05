@@ -161,7 +161,7 @@ class _ConnectionBody extends StatelessWidget {
         ? 'Saved work is synced. Your Round is current again.'
         : reconnecting
         ? 'Connection is back. Saved work is syncing now.'
-        : snapshot.currentRouteAvailable
+        : snapshot.assignedRoundAvailable
         ? 'Your current Round stays available. New work is saved on this phone until Rounds reconnects.'
         : 'New work is saved on this phone until Rounds reconnects.';
 

@@ -121,6 +121,8 @@ class _NavigationHarnessScreenState extends State<NavigationHarnessScreen> {
                         if (!mounted) return;
                         setState(() => _gpsInterruption = interruption);
                       },
+                      onGuidanceAvailabilityChanged:
+                          widget.controller.reportCurrentRouteAvailability,
                       stopId: widget.stop.id,
                       destinationVersion: widget.stop.destinationVersion,
                       destinationTitle:

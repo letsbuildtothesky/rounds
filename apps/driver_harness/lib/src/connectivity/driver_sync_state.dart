@@ -6,6 +6,7 @@ enum DriverConnectionPhase { online, offline, reconnecting }
 class DriverSyncSnapshot {
   const DriverSyncSnapshot({
     required this.phase,
+    required this.assignedRoundAvailable,
     required this.currentRouteAvailable,
     required this.pendingProofCount,
     required this.pendingMessageCount,
@@ -16,6 +17,7 @@ class DriverSyncSnapshot {
 
   const DriverSyncSnapshot.online()
     : phase = DriverConnectionPhase.online,
+      assignedRoundAvailable = false,
       currentRouteAvailable = false,
       pendingProofCount = 0,
       pendingMessageCount = 0,
@@ -24,6 +26,7 @@ class DriverSyncSnapshot {
       lastSyncedAt = null;
 
   final DriverConnectionPhase phase;
+  final bool assignedRoundAvailable;
   final bool currentRouteAvailable;
   final int pendingProofCount;
   final int pendingMessageCount;
@@ -38,10 +41,13 @@ class DriverSyncSnapshot {
 
   DriverSyncSnapshot copyWith({
     DriverConnectionPhase? phase,
+    bool? assignedRoundAvailable,
     bool? currentRouteAvailable,
     DateTime? lastSyncedAt,
   }) => DriverSyncSnapshot(
     phase: phase ?? this.phase,
+    assignedRoundAvailable:
+        assignedRoundAvailable ?? this.assignedRoundAvailable,
     currentRouteAvailable: currentRouteAvailable ?? this.currentRouteAvailable,
     pendingProofCount: pendingProofCount,
     pendingMessageCount: pendingMessageCount,
@@ -54,6 +60,7 @@ class DriverSyncSnapshot {
 abstract interface class DriverQueueInspector {
   Future<DriverSyncSnapshot> inspect({
     required DriverConnectionPhase phase,
+    required bool assignedRoundAvailable,
     required bool currentRouteAvailable,
     DateTime? lastSyncedAt,
   });
@@ -67,6 +74,7 @@ class SqliteDriverQueueInspector implements DriverQueueInspector {
   @override
   Future<DriverSyncSnapshot> inspect({
     required DriverConnectionPhase phase,
+    required bool assignedRoundAvailable,
     required bool currentRouteAvailable,
     DateTime? lastSyncedAt,
   }) async {
@@ -110,6 +118,7 @@ class SqliteDriverQueueInspector implements DriverQueueInspector {
 
     return DriverSyncSnapshot(
       phase: phase,
+      assignedRoundAvailable: assignedRoundAvailable,
       currentRouteAvailable: currentRouteAvailable,
       pendingProofCount: count(queueRows[0]) + count(queueRows[1]),
       pendingMessageCount: pendingMessages + count(queueRows[3]),

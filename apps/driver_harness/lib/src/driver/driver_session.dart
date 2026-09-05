@@ -3,8 +3,11 @@ class DriverSessionModel {
     required this.userName,
     required this.driverId,
     required this.preferredLocale,
+    this.userId,
     this.version = 1,
     this.teamName,
+    this.teamTenantId,
+    this.teamStatus,
     this.vehicleLabel,
     this.vehiclePlate,
     this.shift,
@@ -14,10 +17,13 @@ class DriverSessionModel {
   });
 
   final String userName;
+  final String? userId;
   final String driverId;
   final int version;
   final String preferredLocale;
   final String? teamName;
+  final String? teamTenantId;
+  final String? teamStatus;
   final String? vehicleLabel;
   final String? vehiclePlate;
   final DriverShiftModel? shift;
@@ -32,10 +38,13 @@ class DriverSessionModel {
     final round = json['currentRound'];
     return DriverSessionModel(
       userName: user['displayName'] as String,
+      userId: user['id'] as String?,
       driverId: driver['id'] as String,
       version: driver['version'] as int? ?? 1,
       preferredLocale: driver['preferredLocale'] as String,
       teamName: team?['displayName'] as String?,
+      teamTenantId: team?['tenantId'] as String?,
+      teamStatus: team?['status'] as String?,
       vehicleLabel: driver['vehicleLabel'] as String?,
       vehiclePlate: driver['vehiclePlate'] as String?,
       shift: json['shift'] is Map<String, dynamic>
@@ -60,7 +69,7 @@ class DriverSessionModel {
   }
 
   Map<String, Object?> toJson() => {
-    'user': {'displayName': userName},
+    'user': {if (userId != null) 'id': userId, 'displayName': userName},
     'driver': {
       'id': driverId,
       'version': version,
@@ -68,7 +77,12 @@ class DriverSessionModel {
       if (vehicleLabel != null) 'vehicleLabel': vehicleLabel,
       if (vehiclePlate != null) 'vehiclePlate': vehiclePlate,
     },
-    if (teamName != null) 'team': {'displayName': teamName},
+    if (teamName != null || teamTenantId != null || teamStatus != null)
+      'team': {
+        if (teamTenantId != null) 'tenantId': teamTenantId,
+        if (teamName != null) 'displayName': teamName,
+        if (teamStatus != null) 'status': teamStatus,
+      },
     if (shift != null) 'shift': shift!.toJson(),
     'completedRounds': completedRounds
         .map((round) => round.toJson())
@@ -337,6 +351,9 @@ class DriverRoundModel {
     required this.tenantName,
     required this.pickup,
     required this.stops,
+    this.tenantId,
+    this.tenantTimezone,
+    this.routePlanSnapshot,
     this.plannedDistanceMeters,
     this.plannedDurationSeconds,
     this.plannedStops = const [],
@@ -348,11 +365,14 @@ class DriverRoundModel {
   final String state;
   final int version;
   final String tenantName;
+  final String? tenantId;
+  final String? tenantTimezone;
   final DriverPickupModel pickup;
   final List<DriverRoundStopModel> stops;
   final int? plannedDistanceMeters;
   final int? plannedDurationSeconds;
   final List<DriverPlannedStopModel> plannedStops;
+  final Map<String, dynamic>? routePlanSnapshot;
 
   DriverPlannedStopModel? plannedStop(String stopId) {
     for (final stop in plannedStops) {
@@ -371,6 +391,8 @@ class DriverRoundModel {
       state: json['state'] as String,
       version: json['version'] as int,
       tenantName: tenant['displayName'] as String,
+      tenantId: tenant['id'] as String?,
+      tenantTimezone: tenant['timezone'] as String?,
       pickup: DriverPickupModel.fromJson(
         json['pickup'] as Map<String, dynamic>,
       ),
@@ -388,6 +410,9 @@ class DriverRoundModel {
                 DriverPlannedStopModel.fromJson(item as Map<String, dynamic>),
           )
           .toList(growable: false),
+      routePlanSnapshot: routePlan == null
+          ? null
+          : Map<String, dynamic>.from(routePlan),
     );
   }
 
@@ -397,10 +422,16 @@ class DriverRoundModel {
     'serviceDate': serviceDate,
     'state': state,
     'version': version,
-    'tenant': {'displayName': tenantName},
+    'tenant': {
+      if (tenantId != null) 'id': tenantId,
+      'displayName': tenantName,
+      if (tenantTimezone != null) 'timezone': tenantTimezone,
+    },
     'pickup': pickup.toJson(),
     'stops': stops.map((stop) => stop.toJson()).toList(growable: false),
-    if (plannedDistanceMeters != null ||
+    if (routePlanSnapshot != null)
+      'routePlan': routePlanSnapshot
+    else if (plannedDistanceMeters != null ||
         plannedDurationSeconds != null ||
         plannedStops.isNotEmpty)
       'routePlan': {
@@ -454,6 +485,8 @@ class DriverCompletedRoundModel {
     required this.deliveredStopCount,
     required this.formallyClosedStopCount,
     required this.podCount,
+    this.tenantId,
+    this.tenantTimezone,
     this.plannedDistanceMeters,
     this.plannedDurationSeconds,
   });
@@ -462,6 +495,8 @@ class DriverCompletedRoundModel {
   final String reference;
   final String serviceDate;
   final String tenantName;
+  final String? tenantId;
+  final String? tenantTimezone;
   final DateTime completedAt;
   final int stopCount;
   final int deliveredStopCount;
@@ -488,6 +523,8 @@ class DriverCompletedRoundModel {
       reference: json['reference'] as String,
       serviceDate: json['serviceDate'] as String,
       tenantName: tenant['displayName'] as String,
+      tenantId: tenant['id'] as String?,
+      tenantTimezone: tenant['timezone'] as String?,
       completedAt: DateTime.parse(json['completedAt'] as String),
       stopCount: json['stopCount'] as int,
       deliveredStopCount: json['deliveredStopCount'] as int,
@@ -502,7 +539,11 @@ class DriverCompletedRoundModel {
     'id': id,
     'reference': reference,
     'serviceDate': serviceDate,
-    'tenant': {'displayName': tenantName},
+    'tenant': {
+      if (tenantId != null) 'id': tenantId,
+      'displayName': tenantName,
+      if (tenantTimezone != null) 'timezone': tenantTimezone,
+    },
     'completedAt': completedAt.toUtc().toIso8601String(),
     'stopCount': stopCount,
     'deliveredStopCount': deliveredStopCount,
@@ -574,6 +615,9 @@ class DriverRoundStopModel {
     required this.windowStart,
     required this.windowEnd,
     required this.manifestItems,
+    this.deliveryId = '',
+    this.deliveryNote,
+    this.isSurprise = false,
     this.contactAttempts = const [],
     this.accessNote,
   });
@@ -586,6 +630,9 @@ class DriverRoundStopModel {
   final String manifestId;
   final int manifestVersion;
   final String deliveryReference;
+  final String deliveryId;
+  final String? deliveryNote;
+  final bool isSurprise;
   final String recipientName;
   final String recipientPhone;
   final String rawAddress;
@@ -607,7 +654,10 @@ class DriverRoundStopModel {
     destinationVersion: json['destinationVersion'] as int,
     manifestId: json['manifestId'] as String,
     manifestVersion: json['manifestVersion'] as int,
+    deliveryId: json['deliveryId'] as String? ?? '',
     deliveryReference: json['deliveryReference'] as String,
+    deliveryNote: json['deliveryNote'] as String?,
+    isSurprise: json['isSurprise'] as bool? ?? false,
     recipientName: json['recipientName'] as String,
     recipientPhone: json['recipientPhone'] as String,
     rawAddress: json['rawAddress'] as String,
@@ -638,7 +688,10 @@ class DriverRoundStopModel {
     'destinationVersion': destinationVersion,
     'manifestId': manifestId,
     'manifestVersion': manifestVersion,
+    if (deliveryId.isNotEmpty) 'deliveryId': deliveryId,
     'deliveryReference': deliveryReference,
+    if (deliveryNote != null) 'deliveryNote': deliveryNote,
+    'isSurprise': isSurprise,
     'recipientName': recipientName,
     'recipientPhone': recipientPhone,
     'rawAddress': rawAddress,
@@ -680,6 +733,7 @@ class DriverContactAttemptModel {
         channel: json['channel'] as String,
         outcome: json['outcome'] as String,
         occurredAt: DateTime.parse(json['occurredAt'] as String),
+        savedLocally: json['savedLocally'] as bool? ?? false,
       );
 
   Map<String, Object?> toJson() => {
@@ -688,6 +742,7 @@ class DriverContactAttemptModel {
     'channel': channel,
     'outcome': outcome,
     'occurredAt': occurredAt.toUtc().toIso8601String(),
+    if (savedLocally) 'savedLocally': true,
   };
 }
 

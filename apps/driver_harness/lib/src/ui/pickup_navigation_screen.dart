@@ -107,6 +107,8 @@ class _PickupNavigationScreenState extends State<PickupNavigationScreen> {
                         if (!mounted) return;
                         setState(() => _gpsInterruption = interruption);
                       },
+                      onGuidanceAvailabilityChanged:
+                          widget.controller.reportCurrentRouteAvailability,
                       onArrival: () {
                         if (!mounted) return;
                         setState(() => _nearPickup = true);

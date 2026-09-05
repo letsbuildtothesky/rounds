@@ -80,6 +80,7 @@ void main() {
             databaseFactory: () async => database,
           ).inspect(
             phase: DriverConnectionPhase.offline,
+            assignedRoundAvailable: true,
             currentRouteAvailable: true,
             lastSyncedAt: DateTime.utc(2026, 9, 3, 8),
           );
@@ -89,6 +90,7 @@ void main() {
       expect(snapshot.pendingTelemetryCount, 1);
       expect(snapshot.pendingProofCount, 0);
       expect(snapshot.totalPending, 4);
+      expect(snapshot.assignedRoundAvailable, isTrue);
       expect(snapshot.currentRouteAvailable, isTrue);
     },
   );

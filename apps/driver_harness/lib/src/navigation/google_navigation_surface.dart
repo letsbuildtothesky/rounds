@@ -55,6 +55,7 @@ class GoogleNavigationSurface extends StatefulWidget {
     required this.bottomOverlayInset,
     this.onInstruction,
     this.onGpsInterruptionChanged,
+    this.onGuidanceAvailabilityChanged,
     this.controller,
     this.gpsSignalTimeout = const Duration(seconds: 30),
     this.showNativeNavigationUi = true,
@@ -75,6 +76,7 @@ class GoogleNavigationSurface extends StatefulWidget {
   final double bottomOverlayInset;
   final ValueChanged<NavigationRoadInstruction>? onInstruction;
   final ValueChanged<GpsNavigationInterruption?>? onGpsInterruptionChanged;
+  final ValueChanged<bool>? onGuidanceAvailabilityChanged;
   final GoogleNavigationSurfaceController? controller;
   final Duration gpsSignalTimeout;
   final bool showNativeNavigationUi;
@@ -226,6 +228,7 @@ class _GoogleNavigationSurfaceState extends State<GoogleNavigationSurface>
       }
 
       final guidanceRunning = await GoogleMapsNavigator.isGuidanceRunning();
+      widget.onGuidanceAvailabilityChanged?.call(guidanceRunning);
       if (guidanceRunning) {
         _guidanceActive = true;
         _attemptGate.restoreActiveNavigation();
@@ -455,6 +458,7 @@ class _GoogleNavigationSurfaceState extends State<GoogleNavigationSurface>
       if (travelMode == NavigationTravelMode.twoWheeler) {
         await GoogleMapsNavigator.startGuidance();
         _guidanceActive = true;
+        widget.onGuidanceAvailabilityChanged?.call(true);
         await _events?.record(
           'navigation_started',
           payload: {

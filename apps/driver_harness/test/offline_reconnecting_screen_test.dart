@@ -21,6 +21,7 @@ void main() {
         home: OfflineReconnectingScreen(
           snapshot: DriverSyncSnapshot(
             phase: DriverConnectionPhase.offline,
+            assignedRoundAvailable: true,
             currentRouteAvailable: true,
             pendingProofCount: 1,
             pendingMessageCount: 2,
@@ -62,6 +63,7 @@ void main() {
         home: OfflineReconnectingScreen(
           snapshot: const DriverSyncSnapshot(
             phase: DriverConnectionPhase.online,
+            assignedRoundAvailable: true,
             currentRouteAvailable: true,
             pendingProofCount: 0,
             pendingMessageCount: 0,
@@ -88,6 +90,7 @@ void main() {
         home: OfflineReconnectingScreen(
           snapshot: const DriverSyncSnapshot(
             phase: DriverConnectionPhase.offline,
+            assignedRoundAvailable: true,
             currentRouteAvailable: false,
             pendingProofCount: 0,
             pendingMessageCount: 0,
@@ -102,6 +105,10 @@ void main() {
 
     expect(find.text('No route is cached on this phone'), findsOneWidget);
     expect(find.text('Unavailable'), findsOneWidget);
+    expect(
+      find.textContaining('Your current Round stays available'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('N02 scrolls cleanly on a short 360px Android viewport', (
@@ -117,6 +124,7 @@ void main() {
         home: OfflineReconnectingScreen(
           snapshot: const DriverSyncSnapshot(
             phase: DriverConnectionPhase.offline,
+            assignedRoundAvailable: true,
             currentRouteAvailable: true,
             pendingProofCount: 0,
             pendingMessageCount: 0,

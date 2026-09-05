@@ -39,8 +39,9 @@ probes a real fix and restarts the operational position stream before dismissing
 the interruption.
 
 The pickup screen never claims custody from local button state. Until the API
-commit succeeds it remains unconfirmed; durable offline outbox support is the
-next Driver reliability checkpoint.
+commit succeeds it remains unconfirmed; durable offline outboxes retain the
+pending command and the canonical N02 surface reports it as local work until
+the server commit succeeds.
 
 ## Local setup
 
