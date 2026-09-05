@@ -1,5 +1,6 @@
 "use client";
 
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type {
   CommunicationThreadReadState,
@@ -7,6 +8,11 @@ import type {
   OperationsTenant,
 } from "@rounds/contracts";
 import { applyCommunicationReadState } from "../src/operations-communications-state";
+import {
+  isOperationsCommunicationsHint,
+  operationsCommunicationsEvent,
+  operationsDispatchTopic,
+} from "../src/operations-communications-realtime";
 
 const roundsApiUrl = process.env.NEXT_PUBLIC_ROUNDS_API_URL ?? "http://127.0.0.1:8080";
 type ApiError = { error?: { message?: string } };
@@ -26,6 +32,7 @@ function errorMessage(body: ApiError, fallback: string): string {
 export function useOperationsCommunications(
   accessToken: string | undefined,
   tenant: OperationsTenant,
+  realtimeClient?: SupabaseClient,
 ): OperationsCommunicationsStore {
   const [projection, setProjection] = useState<OperationsCommunicationsProjection | null>(null);
   const [loading, setLoading] = useState(Boolean(accessToken));
@@ -64,9 +71,30 @@ export function useOperationsCommunications(
   useEffect(() => {
     void refresh();
     if (!accessToken) return;
-    const timer = window.setInterval(() => void refresh(true), 5000);
-    return () => window.clearInterval(timer);
-  }, [accessToken, refresh]);
+    const timer = window.setInterval(() => void refresh(true), 30_000);
+    let disposed = false;
+    let channel: ReturnType<SupabaseClient["channel"]> | undefined;
+
+    if (realtimeClient) {
+      void realtimeClient.realtime.setAuth(accessToken).then(() => {
+        if (disposed) return;
+        channel = realtimeClient
+          .channel(operationsDispatchTopic(tenant.id), { config: { private: true } })
+          .on("broadcast", { event: operationsCommunicationsEvent }, (message) => {
+            if (isOperationsCommunicationsHint(message, tenant.id)) void refresh(true);
+          })
+          .subscribe();
+      }).catch(() => {
+        // The authoritative API refresh remains the degraded fallback.
+      });
+    }
+
+    return () => {
+      disposed = true;
+      window.clearInterval(timer);
+      if (channel && realtimeClient) void realtimeClient.removeChannel(channel);
+    };
+  }, [accessToken, realtimeClient, refresh, tenant.id]);
 
   const markRead = useCallback(async (threadId: string) => {
     const current = projectionRef.current;

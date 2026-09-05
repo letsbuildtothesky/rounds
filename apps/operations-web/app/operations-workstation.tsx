@@ -1,5 +1,6 @@
 "use client";
 
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type {
   OperationsActionException,
@@ -32,6 +33,7 @@ type ApiError = { error?: { message?: string } };
 
 type Props = {
   accessToken?: string;
+  realtimeClient?: SupabaseClient;
   tenant: OperationsTenant;
   userName: string;
   demoMode?: boolean;
@@ -159,8 +161,8 @@ function nextRoundReference(deliveries: UnplannedDeliverySummary[]): string {
   return `ROUND-${serviceDate.replaceAll("-", "")}-${time}`;
 }
 
-export function OperationsWorkstation({ accessToken, tenant, userName, demoMode = false, deliveryIntake, deliveryIntakeOpen = false, deliveriesOpen = false, driversOpen = false, historyOpen = false, deliveryRefreshKey = 0, communicationRequest, onCloseDeliveryIntake, onDeliveries, onDrivers, onCloseDeliveries, onCloseDrivers, onCloseHistory, onAddDelivery, onHistory, onCommunications, onSignOut }: Props) {
-  const communications = useOperationsCommunications(accessToken, tenant);
+export function OperationsWorkstation({ accessToken, realtimeClient, tenant, userName, demoMode = false, deliveryIntake, deliveryIntakeOpen = false, deliveriesOpen = false, driversOpen = false, historyOpen = false, deliveryRefreshKey = 0, communicationRequest, onCloseDeliveryIntake, onDeliveries, onDrivers, onCloseDeliveries, onCloseDrivers, onCloseHistory, onAddDelivery, onHistory, onCommunications, onSignOut }: Props) {
+  const communications = useOperationsCommunications(accessToken, tenant, realtimeClient);
   const roundUnread = useMemo(() => communicationUnreadByRound(communications.projection), [communications.projection]);
   const [projection, setProjection] = useState<OperationsActionProjection | null>(null);
   const [planning, setPlanning] = useState<OperationsPlanningProjection | null>(null);

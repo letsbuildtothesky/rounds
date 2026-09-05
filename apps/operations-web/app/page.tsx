@@ -195,6 +195,7 @@ export default function OperationsPage() {
   if (operationsSession && selectedTenant) {
     return <OperationsWorkstation
       accessToken={authSession.access_token}
+      realtimeClient={supabase ?? undefined}
       tenant={selectedTenant}
       userName={operationsSession?.user.displayName ?? authSession.user.email ?? "Operations"}
       deliveryIntakeOpen={deliveryIntakeOpen}
