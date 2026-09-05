@@ -27,7 +27,7 @@ type Props = {
   accessToken: string;
   tenant: OperationsTenant;
   communications: OperationsCommunicationsStore;
-  request?: { threadId: string; nonce: number };
+  request?: { threadId: string; nonce: number; startVoice?: boolean };
   drawerOpen?: boolean;
   onContactHistory: (threadId: string) => void;
   onOpenRound: (roundId: string) => void;
@@ -242,6 +242,7 @@ export function CommunicationsPanel({ accessToken, tenant, communications, reque
   const recordingChunks = useRef<Blob[]>([]);
   const recordingStartedAt = useRef(0);
   const handledRequest = useRef(0);
+  const handledVoiceRequest = useRef(0);
 
   useEffect(() => {
     if (!projection) return;
@@ -425,6 +426,14 @@ export function CommunicationsPanel({ accessToken, tenant, communications, reque
   function stopVoiceRecording() {
     if (mediaRecorder.current?.state === "recording") mediaRecorder.current.stop();
   }
+
+  useEffect(() => {
+    if (!request?.startVoice || request.nonce <= handledVoiceRequest.current || !expanded || !selectedThreadId || recording) return;
+    if (request.threadId && request.threadId !== selectedThreadId) return;
+    handledVoiceRequest.current = request.nonce;
+    const timer = window.setTimeout(() => void startVoiceRecording(), 0);
+    return () => window.clearTimeout(timer);
+  }, [expanded, recording, request?.nonce, request?.startVoice, request?.threadId, selectedThreadId]);
 
   async function send() {
     const body = draft.trim();

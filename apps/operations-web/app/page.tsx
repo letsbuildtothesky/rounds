@@ -61,7 +61,7 @@ export default function OperationsPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState<SubmissionSuccess | null>(null);
   const [section, setSection] = useState<OperationsSectionKey>("action");
-  const [communicationRequest, setCommunicationRequest] = useState({ threadId: "", nonce: 0 });
+  const [communicationRequest, setCommunicationRequest] = useState<{ threadId: string; nonce: number; startVoice?: boolean }>({ threadId: "", nonce: 0 });
   const [developmentPreview, setDevelopmentPreview] = useState(false);
   const [sectionMenuOpen, setSectionMenuOpen] = useState(false);
   const [deliveryIntakeOpen, setDeliveryIntakeOpen] = useState(false);
@@ -128,8 +128,8 @@ export default function OperationsPage() {
     setError("");
   }
 
-  function openCommunicationThread(threadId = "") {
-    setCommunicationRequest((current) => ({ threadId, nonce: current.nonce + 1 }));
+  function openCommunicationThread(threadId = "", startVoice = false) {
+    setCommunicationRequest((current) => ({ threadId, nonce: current.nonce + 1, ...(startVoice ? { startVoice: true } : {}) }));
   }
 
   function updateDraft<K extends keyof DeliveryFormDraft>(key: K, value: DeliveryFormDraft[K]) {
@@ -224,9 +224,9 @@ export default function OperationsPage() {
       />}
       onAddDelivery={() => setDeliveryIntakeOpen(true)}
       onHistory={() => setSection("history")}
-      onCommunications={(threadId) => {
+      onCommunications={(threadId, options) => {
         setDeliveryIntakeOpen(false);
-        openCommunicationThread(threadId);
+        openCommunicationThread(threadId, options?.startVoice);
       }}
       onSignOut={() => void signOut()}
     />;

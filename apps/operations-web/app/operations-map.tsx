@@ -9,7 +9,10 @@ import { operationsMapDriverMarkers } from "../src/operations-map-driver-markers
 export type OperationsMapMode = "operations" | "satellite" | "site" | "street";
 export type OperationsMapCamera = { bearing: number; pitch: number };
 export type OperationsMapControl = "focus" | "zoom-in" | "zoom-out" | "rotate-left" | "rotate-right" | "north" | "pitch-2d" | "pitch-3d";
-export type OperationsMapHandle = { control: (action: OperationsMapControl) => void };
+export type OperationsMapHandle = {
+  control: (action: OperationsMapControl) => void;
+  focusPosition: (position: { latitude: number; longitude: number }) => void;
+};
 
 type Props = {
   mode: "live" | "plan";
@@ -21,6 +24,7 @@ type Props = {
   communicationUnreadByRound: Record<string, RoundCommunicationUnreadState>;
   onCameraChange: (camera: OperationsMapCamera) => void;
   onSelectRound: (round: OperationsRoundSummary) => void;
+  onOpenDriverMenu: (round: OperationsRoundSummary, position: { latitude: number; longitude: number }, point: { x: number; y: number }) => void;
   onSelectException: (exception: OperationsActionException) => void;
   onSelectDelivery: (delivery: UnplannedDeliverySummary) => void;
 };
@@ -54,16 +58,16 @@ function styleConfig(mode: OperationsMapMode) {
   };
 }
 
-export const OperationsMap = forwardRef<OperationsMapHandle, Props>(function OperationsMap({ mode, mapMode, rounds, exceptions, planningDeliveries, routeGeometry, communicationUnreadByRound, onCameraChange, onSelectRound, onSelectException, onSelectDelivery }, ref) {
+export const OperationsMap = forwardRef<OperationsMapHandle, Props>(function OperationsMap({ mode, mapMode, rounds, exceptions, planningDeliveries, routeGeometry, communicationUnreadByRound, onCameraChange, onSelectRound, onOpenDriverMenu, onSelectException, onSelectDelivery }, ref) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MapboxMap | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
   const boundsRef = useRef<mapboxgl.LngLatBounds | null>(null);
   const appliedModeRef = useRef<OperationsMapMode>("operations");
-  const callbacksRef = useRef({ onCameraChange, onSelectRound, onSelectException, onSelectDelivery });
+  const callbacksRef = useRef({ onCameraChange, onSelectRound, onOpenDriverMenu, onSelectException, onSelectDelivery });
   const [state, setState] = useState<"loading" | "ready" | "error">(token ? "loading" : "error");
 
-  callbacksRef.current = { onCameraChange, onSelectRound, onSelectException, onSelectDelivery };
+  callbacksRef.current = { onCameraChange, onSelectRound, onOpenDriverMenu, onSelectException, onSelectDelivery };
 
   useImperativeHandle(ref, () => ({
     control(action) {
@@ -94,6 +98,12 @@ export const OperationsMap = forwardRef<OperationsMapHandle, Props>(function Ope
         if (boundsRef.current) map.fitBounds(boundsRef.current, { padding: { top: 95, right: 90, bottom: 80, left: 90 }, maxZoom: 14.5, duration: 500 });
         else map.easeTo({ center: bangkokCenter as LngLatLike, zoom: 12.55, pitch: 0, bearing: 0, duration: 450 });
       }
+    },
+    focusPosition(position) {
+      const map = mapRef.current;
+      if (!map) return;
+      map.easeTo({ center: [position.longitude, position.latitude], zoom: 15.25, pitch: 0, bearing: 0, duration: 520 });
+      callbacksRef.current.onCameraChange({ bearing: 0, pitch: 0 });
     },
   }), []);
 
@@ -190,7 +200,44 @@ export const OperationsMap = forwardRef<OperationsMapHandle, Props>(function Ope
       const roundContext = roundIds.length > 1 ? `${round.reference} · ${roundIds.length} Rounds on board` : round.reference;
       element.title = `${round.driverName} · ${roundContext} · ${new Date(position.capturedAt).toLocaleTimeString()}${unread.count ? ` · ${unread.count} unread${unread.hasVoice ? " including voice" : ""}` : ""}`;
       element.setAttribute("aria-label", element.title);
-      element.addEventListener("click", () => callbacksRef.current.onSelectRound(round));
+      let longPressTimer: number | undefined;
+      let longPressed = false;
+      const openMenu = (clientX: number, clientY: number) => {
+        const bounds = containerRef.current?.getBoundingClientRect();
+        callbacksRef.current.onOpenDriverMenu(round, position, {
+          x: clientX - (bounds?.left ?? 0),
+          y: clientY - (bounds?.top ?? 0),
+        });
+      };
+      const cancelLongPress = () => {
+        if (longPressTimer != null) window.clearTimeout(longPressTimer);
+        longPressTimer = undefined;
+      };
+      element.addEventListener("click", (event) => {
+        event.stopPropagation();
+        if (longPressed) {
+          longPressed = false;
+          return;
+        }
+        callbacksRef.current.onSelectRound(round);
+      });
+      element.addEventListener("contextmenu", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        openMenu(event.clientX, event.clientY);
+      });
+      element.addEventListener("pointerdown", (event) => {
+        if (event.pointerType === "mouse") return;
+        cancelLongPress();
+        longPressTimer = window.setTimeout(() => {
+          longPressed = true;
+          openMenu(event.clientX, event.clientY);
+          navigator.vibrate?.(12);
+        }, 520);
+      });
+      element.addEventListener("pointerup", cancelLongPress);
+      element.addEventListener("pointercancel", cancelLongPress);
+      element.addEventListener("pointermove", cancelLongPress);
       markersRef.current.push(new mapboxgl.Marker({ element }).setLngLat(coordinate).addTo(map));
     });
 

@@ -32,6 +32,7 @@ const roundsApiUrl = process.env.NEXT_PUBLIC_ROUNDS_API_URL ?? "http://127.0.0.1
 
 type QueueTab = "action" | "ready" | "live" | "done";
 type Selection = { kind: "exception"; item: OperationsActionException } | { kind: "round"; item: OperationsRoundSummary } | { kind: "delivery"; item: UnplannedDeliverySummary } | null;
+type DriverMapMenu = { round: OperationsRoundSummary; position: { latitude: number; longitude: number }; x: number; y: number };
 type ApiError = { error?: { message?: string } };
 
 type Props = {
@@ -46,7 +47,7 @@ type Props = {
   driversOpen?: boolean;
   historyOpen?: boolean;
   deliveryRefreshKey?: number;
-  communicationRequest?: { threadId: string; nonce: number };
+  communicationRequest?: { threadId: string; nonce: number; startVoice?: boolean };
   onCloseDeliveryIntake?: () => void;
   onDeliveries?: () => void;
   onDrivers?: () => void;
@@ -55,7 +56,7 @@ type Props = {
   onCloseHistory?: () => void;
   onAddDelivery: () => void;
   onHistory: () => void;
-  onCommunications: (threadId?: string) => void;
+  onCommunications: (threadId?: string, options?: { startVoice?: boolean }) => void;
   onSignOut: () => void;
 };
 
@@ -199,7 +200,17 @@ export function OperationsWorkstation({ accessToken, realtimeClient, tenant, use
   const [roundDetailId, setRoundDetailId] = useState("");
   const [contactHistoryThreadId, setContactHistoryThreadId] = useState("");
   const [roundsOverviewOpen, setRoundsOverviewOpen] = useState(false);
+  const [driverMapMenu, setDriverMapMenu] = useState<DriverMapMenu | null>(null);
   const contactHistoryThread = communications.projection?.threads.find((thread) => thread.id === contactHistoryThreadId) ?? null;
+  const driverMapThread = driverMapMenu
+    ? communications.projection?.threads.find((thread) => thread.roundId === driverMapMenu.round.id)
+      ?? null
+    : null;
+  const driverMapVehicle = driverMapMenu
+    ? driverCapacity?.drivers.find((driver) => driver.driverId === driverMapMenu.round.driverId)?.vehicleProfile?.displayName
+      ?? driverCapacity?.drivers.find((driver) => driver.driverId === driverMapMenu.round.driverId)?.vehiclePlate
+      ?? "Vehicle not recorded"
+    : "";
 
   useEffect(() => {
     if (selection) {
@@ -218,6 +229,13 @@ export function OperationsWorkstation({ accessToken, realtimeClient, tenant, use
   useEffect(() => {
     if (contactHistoryThreadId) setRoundsOverviewOpen(false);
   }, [contactHistoryThreadId]);
+
+  useEffect(() => {
+    if (!driverMapMenu) return;
+    const close = (event: KeyboardEvent) => { if (event.key === "Escape") setDriverMapMenu(null); };
+    window.addEventListener("keydown", close);
+    return () => window.removeEventListener("keydown", close);
+  }, [driverMapMenu]);
 
   const load = useCallback(async (quiet = false) => {
     if (!quiet) setLoading(true);
@@ -484,9 +502,9 @@ export function OperationsWorkstation({ accessToken, realtimeClient, tenant, use
     }
   }
 
-  function openCommunications(threadId?: string) {
+  function openCommunications(threadId?: string, startVoice = false) {
     if (typeof window !== "undefined" && window.innerWidth <= 1180) setSelection(null);
-    onCommunications(threadId);
+    onCommunications(threadId, startVoice ? { startVoice: true } : undefined);
   }
 
   return <main className="v45-app">
@@ -541,7 +559,7 @@ export function OperationsWorkstation({ accessToken, realtimeClient, tenant, use
 
       <section className="v45-map-wrap">
         <div className="v45-map-header"><strong>Bangkok · {dispatchMode === "live" ? "Live" : "Plan"}</strong><span className="v45-map-context">{dispatchMode === "plan" ? `${planning?.unplannedDeliveries.filter((delivery) => delivery.serviceDate === planningDate).length ?? 0} unplanned · ${selectedStops.length} selected` : `${buckets.action.length} Action · ${buckets.live.length} Live · ${activeRounds} active Rounds · ${buckets.ready.length} planned`}</span><button type="button" aria-haspopup="dialog" aria-expanded={roundsOverviewOpen} onClick={() => { setSelection(null); setContactHistoryThreadId(""); setRoundsOverviewOpen(true); }}>Rounds</button><button type="button" disabled title="Automatic planning is not connected yet"><i />Manual</button><div className="v45-spacer" /><em><i />{stale ? "Connection delayed" : dispatchMode === "plan" ? "Draft only" : "Connected"}</em><span>{dispatchMode === "plan" ? `${selectedStops.length} selected · not approved` : <>Live rounds <b>{activeRounds}</b></>}</span></div>
-        <div className="v45-map-body" onClick={() => setMapMenuOpen(false)}>
+        <div className="v45-map-body" onClick={() => { setMapMenuOpen(false); setDriverMapMenu(null); }}>
           <OperationsMap
             ref={operationsMapRef}
             mode={dispatchMode}
@@ -553,6 +571,7 @@ export function OperationsWorkstation({ accessToken, realtimeClient, tenant, use
             communicationUnreadByRound={roundUnread}
             onCameraChange={handleMapCameraChange}
             onSelectRound={(round) => { setDispatchMode("live"); setTab(round.state === "complete" ? "done" : round.state === "active" ? "live" : "ready"); setSelection({ kind: "round", item: round }); }}
+            onOpenDriverMenu={(round, position, point) => { setSelection(null); setDriverMapMenu({ round, position, ...point }); }}
             onSelectException={(item) => { setDispatchMode("live"); setTab("action"); setSelection({ kind: "exception", item }); }}
             onSelectDelivery={(item) => { setDispatchMode("plan"); setSelection({ kind: "delivery", item }); }}
           />
@@ -564,6 +583,10 @@ export function OperationsWorkstation({ accessToken, realtimeClient, tenant, use
               <button className="v45-map-layer" type="button" disabled><span><b>Network supply</b><small>Requires approved network-capacity data</small></span><em>NOT CONNECTED</em></button>
             </div>
           </div>
+          {driverMapMenu && <div className="v45-driver-context-menu" style={{ left: `min(calc(100% - 256px), max(10px, ${driverMapMenu.x + 8}px))`, top: `min(calc(100% - 304px), max(10px, ${driverMapMenu.y}px))` }} onClick={(event) => event.stopPropagation()}>
+            <header><small>OWN DRIVER</small><strong>{driverMapMenu.round.driverName}</strong><span>{driverMapMenu.round.reference} · {driverMapVehicle} · {driverMapMenu.round.state}</span></header>
+            <div><button className="primary" type="button" disabled={!driverMapThread} onClick={() => { openCommunications(driverMapThread?.id); setDriverMapMenu(null); }}>Message driver <kbd>M</kbd></button><button type="button" disabled title="In-app calling is not connected yet">Call driver <kbd>C</kbd></button><button type="button" disabled={!driverMapThread} onClick={() => { openCommunications(driverMapThread?.id, true); setDriverMapMenu(null); }}>Voice note <kbd>V</kbd></button><i /><button type="button" onClick={() => { operationsMapRef.current?.focusPosition(driverMapMenu.position); setDriverMapMenu(null); }}>Center on driver</button><button type="button" onClick={() => { const round = driverMapMenu.round; setDispatchMode("live"); setTab(round.state === "complete" ? "done" : round.state === "active" ? "live" : "ready"); setSelection({ kind: "round", item: round }); setDriverMapMenu(null); }}>Show full Round</button></div>
+          </div>}
           {demoMode && <div className="v45-preview-badge"><b>PREVIEW DATA</b><span>Positions shown here are UX samples, not live drivers.</span></div>}
           {mapHint && <div className="v45-map-hint"><strong>{mapHint.split(" · ")[0]}</strong> · {mapHint.split(" · ").slice(1).join(" · ")}</div>}
           {mapMode !== "street" && <>{mapLegend.length > 0 && <div className="v45-legend" aria-label="Visible map evidence">{mapLegend.map((entry) => <span key={entry.key}><i className={entry.tone} />{entry.label}</span>)}</div>}
