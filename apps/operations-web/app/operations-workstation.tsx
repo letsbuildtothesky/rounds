@@ -20,6 +20,7 @@ import { OperationsMenuIcon, OperationsSectionSheet, type OperationsSectionKey }
 import { DeliveriesWorkspace } from "./deliveries-workspace";
 import { DriversWorkspace } from "./drivers-workspace";
 import { HistoryPanel } from "./history-panel";
+import { ContactHistoryDrawer } from "./contact-history-drawer";
 import { RoundDetailWorkspace } from "./round-detail-workspace";
 import { CommunicationsPanel } from "./communications-panel";
 import { useOperationsCommunications } from "./use-operations-communications";
@@ -194,6 +195,16 @@ export function OperationsWorkstation({ accessToken, realtimeClient, tenant, use
   const operationsMapRef = useRef<OperationsMapHandle>(null);
   const [mapHint, setMapHint] = useState("");
   const [roundDetailId, setRoundDetailId] = useState("");
+  const [contactHistoryThreadId, setContactHistoryThreadId] = useState("");
+  const contactHistoryThread = communications.projection?.threads.find((thread) => thread.id === contactHistoryThreadId) ?? null;
+
+  useEffect(() => {
+    if (selection) setContactHistoryThreadId("");
+  }, [selection]);
+
+  useEffect(() => {
+    if (deliveriesOpen || driversOpen || historyOpen || deliveryIntakeOpen) setContactHistoryThreadId("");
+  }, [deliveriesOpen, deliveryIntakeOpen, driversOpen, historyOpen]);
 
   const load = useCallback(async (quiet = false) => {
     if (!quiet) setLoading(true);
@@ -582,13 +593,21 @@ export function OperationsWorkstation({ accessToken, realtimeClient, tenant, use
           <div className="v45-drawer-body">{selection?.kind === "exception" ? <ExceptionDrawer item={selection.item} accessToken={accessToken} tenant={tenant} onCommunications={openCommunications} onResolved={() => { setSelection(null); void load(); }} /> : selection?.kind === "round" ? <RoundDrawer item={selection.item} onCommunications={openCommunications} onOpen={() => setRoundDetailId(selection.item.id)} /> : selection?.kind === "delivery" ? <PlanningDrawer item={selection.item} timezone={tenant.timezone} /> : null}</div>
         </aside>
 
+        {contactHistoryThread && <ContactHistoryDrawer
+          thread={contactHistoryThread}
+          timezone={tenant.timezone}
+          onClose={() => setContactHistoryThreadId("")}
+          onMessage={(threadId) => openCommunications(threadId)}
+          onOpenRound={(roundId) => { setContactHistoryThreadId(""); setRoundDetailId(roundId); }}
+        />}
+
         {accessToken && <CommunicationsPanel
           accessToken={accessToken}
           tenant={tenant}
           communications={communications}
           request={communicationRequest}
-          drawerOpen={Boolean(selection)}
-          onHistory={onHistory}
+          drawerOpen={Boolean(selection || contactHistoryThread)}
+          onContactHistory={(threadId) => { setSelection(null); setContactHistoryThreadId(threadId); }}
           onOpenRound={(roundId) => setRoundDetailId(roundId)}
         />}
       </section>

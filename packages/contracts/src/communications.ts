@@ -101,6 +101,7 @@ export type OperationsCommunicationThread = DriverOperationsThread & {
   destinationPosition?: { latitude: number; longitude: number };
   driverId: string;
   driverName: string;
+  contactAttempts: ContactAttempt[];
   updatedAt: string;
 };
 

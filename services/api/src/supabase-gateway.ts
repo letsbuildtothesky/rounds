@@ -1365,7 +1365,7 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     const roundIds = [...new Set(threads.map((thread) => thread.round_id))];
     const stopIds = [...new Set(threads.map((thread) => thread.stop_id))];
     const driverIds = [...new Set(threads.map((thread) => thread.driver_id))];
-    const [roundResult, roundStopResult, stopResult, driverResult, messageResult, cursorResult] = await Promise.all([
+    const [roundResult, roundStopResult, stopResult, driverResult, messageResult, cursorResult, contactResult] = await Promise.all([
       this.admin.from("rounds").select("id, reference").eq("tenant_id", actor.tenantId).in("id", roundIds)
         .returns<{ id: string; reference: string }[]>(),
       this.admin.from("round_stops").select("round_id, stop_id, sequence").eq("tenant_id", actor.tenantId)
@@ -1382,6 +1382,10 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
         .select("thread_id, last_read_message_id, last_read_sent_at")
         .eq("tenant_id", actor.tenantId).eq("reader_person_id", actor.personId).in("thread_id", threadIds)
         .returns<ReadCursorRow[]>(),
+      this.admin.from("contact_attempts")
+        .select("id, stop_id, target, channel, outcome, occurred_from_device_at, recorded_at")
+        .eq("tenant_id", actor.tenantId).in("stop_id", stopIds).order("recorded_at")
+        .returns<{ id: string; stop_id: string; target: "recipient" | "operations"; channel: "native_phone"; outcome: "reached" | "no_answer" | "busy" | "call_failed"; occurred_from_device_at: string | null; recorded_at: string }[]>(),
     ]);
     if (roundResult.error) throw roundResult.error;
     if (roundStopResult.error) throw roundStopResult.error;
@@ -1389,6 +1393,7 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     if (driverResult.error) throw driverResult.error;
     if (messageResult.error) throw messageResult.error;
     if (cursorResult.error) throw cursorResult.error;
+    if (contactResult.error) throw contactResult.error;
 
     const deliveryIds = (stopResult.data ?? []).map((stop) => stop.delivery_id);
     const personIds = (driverResult.data ?? []).map((driver) => driver.person_id);
@@ -1448,6 +1453,13 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
             : { destinationPosition: parseDatabasePoint(delivery.destination_position)! }),
           driverId: thread.driver_id,
           driverName: personById.get(driver.person_id)?.display_name ?? "Team driver",
+          contactAttempts: (contactResult.data ?? []).filter((attempt) => attempt.stop_id === thread.stop_id).map((attempt) => ({
+            id: attempt.id,
+            target: attempt.target,
+            channel: attempt.channel,
+            outcome: attempt.outcome,
+            occurredAt: attempt.occurred_from_device_at ?? attempt.recorded_at,
+          })),
           version: thread.version,
           updatedAt: thread.updated_at,
           unreadCount: unreadMessages.length,

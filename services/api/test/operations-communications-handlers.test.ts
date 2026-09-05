@@ -43,6 +43,7 @@ const thread: OperationsCommunicationThread = {
   destinationPosition: { latitude: 13.744, longitude: 100.54 },
   driverId: "10000000-0000-4000-8000-000000000014",
   driverName: "Driver Demo",
+  contactAttempts: [],
   version: 3,
   unreadCount: 1,
   firstUnreadMessageId: "10000000-0000-4000-8000-000000000031",

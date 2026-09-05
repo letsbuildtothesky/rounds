@@ -29,7 +29,7 @@ type Props = {
   communications: OperationsCommunicationsStore;
   request?: { threadId: string; nonce: number };
   drawerOpen?: boolean;
-  onHistory: () => void;
+  onContactHistory: (threadId: string) => void;
   onOpenRound: (roundId: string) => void;
 };
 type ApiError = { error?: { message?: string }; status?: string };
@@ -223,7 +223,7 @@ function StagedAttachmentPreview({ attachment, onRemove }: { attachment: StagedO
   </div>;
 }
 
-export function CommunicationsPanel({ accessToken, tenant, communications, request, drawerOpen = false, onHistory, onOpenRound }: Props) {
+export function CommunicationsPanel({ accessToken, tenant, communications, request, drawerOpen = false, onContactHistory, onOpenRound }: Props) {
   const { projection, loading, error: loadError, refresh, markRead } = communications;
   const [selectedThreadId, setSelectedThreadId] = useState("");
   const [draft, setDraft] = useState("");
@@ -533,7 +533,7 @@ export function CommunicationsPanel({ accessToken, tenant, communications, reque
 
       {selected && <div className="v45-comms-context">
         <span><strong>{selected.roundReference}</strong><small>#{selected.deliveryReference} · {selected.recipientName}</small></span>
-        <span><button type="button" onClick={onHistory}>History</button><button type="button" onClick={() => onOpenRound(selected.roundId)}>Open Round</button></span>
+        <span><button type="button" onClick={() => onContactHistory(selected.id)}>Contact history</button><button type="button" onClick={() => onOpenRound(selected.roundId)}>Open Round</button></span>
       </div>}
 
       {(error || loadError) && <div className="v45-comms-error" role="alert"><strong>Couldn&apos;t continue</strong><span>{error || loadError}</span><button type="button" onClick={() => { setError(""); void refresh(); }}>Retry</button></div>}

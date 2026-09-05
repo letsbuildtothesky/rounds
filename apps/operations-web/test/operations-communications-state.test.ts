@@ -22,6 +22,7 @@ function thread(id: string, roundId: string, unreadCount: number, hasUnreadVoice
     rawAddress: "Bangkok",
     driverId: `${id.slice(0, -1)}d`,
     driverName: "Johannes",
+    contactAttempts: [],
     updatedAt: "2026-09-05T02:00:00Z",
   };
 }
