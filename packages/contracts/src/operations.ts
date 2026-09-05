@@ -1,4 +1,5 @@
-import type { OperationsRoundSummary } from "./round.js";
+import type { LocationSource } from "./location.js";
+import type { OperationsRoundSummary, PlanningRoutePreview } from "./round.js";
 import type { DeliveryState } from "./delivery.js";
 import type { CommandEnvelope, CommandResult, DomainEventEnvelope } from "./command.js";
 import type { VehicleCargoLimit } from "./capacity.js";
@@ -179,6 +180,39 @@ export type OperationsMapStop = {
   recipientName: string;
   rawAddress: string;
   coordinate: { latitude: number; longitude: number };
+};
+
+export type OperationsMapTrail = {
+  roundId: string;
+  driverId: string;
+  sessionIds: string[];
+  source: "rounds_telemetry";
+  locationSources: LocationSource[];
+  sampleCount: number;
+  truncated: boolean;
+  firstCapturedAt: string;
+  lastCapturedAt: string;
+  geometry: { type: "LineString"; coordinates: [number, number][] };
+};
+
+export type OperationsRemainingRoute = {
+  roundId: string;
+  driverId: string;
+  kind: "operations_remaining_route";
+  calculatedAt: string;
+  status: PlanningRoutePreview["status"];
+  provider: PlanningRoutePreview["provider"];
+  geometry: PlanningRoutePreview["geometry"];
+};
+
+export type OperationsLiveRoundMapProjection = {
+  tenantId: string;
+  roundId: string;
+  observedAt: string;
+  routeStatus: "available" | "unavailable";
+  routeUnavailableReason?: string;
+  remainingRoute?: OperationsRemainingRoute;
+  actualTrail?: OperationsMapTrail;
 };
 
 export type OperationsActionProjection = {

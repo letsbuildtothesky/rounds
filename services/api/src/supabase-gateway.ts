@@ -2316,6 +2316,46 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     };
   }
 
+  async getOperationsRoundTrail(roundId: string, driverId: string, actor: ActorContext) {
+    type TrailSampleRow = {
+      session_id: string;
+      sequence: number;
+      source: "google_nav" | "rounds_os";
+      position: unknown;
+      captured_at: string;
+    };
+    const { data, error } = await this.admin.from("driver_location_samples")
+      .select("session_id, sequence, source, position, captured_at")
+      .eq("tenant_id", actor.tenantId)
+      .eq("round_id", roundId)
+      .eq("driver_id", driverId)
+      .order("captured_at", { ascending: false })
+      .order("sequence", { ascending: false })
+      .limit(501)
+      .returns<TrailSampleRow[]>();
+    if (error) throw error;
+    const rows = (data ?? []).slice(0, 500).flatMap((row) => {
+      const coordinate = parseDatabasePoint(row.position);
+      return coordinate ? [{ ...row, coordinate }] : [];
+    }).sort((left, right) => Date.parse(left.captured_at) - Date.parse(right.captured_at) || left.sequence - right.sequence);
+    if (rows.length < 2) return undefined;
+    return {
+      roundId,
+      driverId,
+      sessionIds: [...new Set(rows.map((row) => row.session_id))],
+      source: "rounds_telemetry" as const,
+      locationSources: [...new Set(rows.map((row) => row.source))],
+      sampleCount: rows.length,
+      truncated: (data?.length ?? 0) > 500,
+      firstCapturedAt: rows[0]!.captured_at,
+      lastCapturedAt: rows.at(-1)!.captured_at,
+      geometry: {
+        type: "LineString" as const,
+        coordinates: rows.map((row): [number, number] => [row.coordinate.longitude, row.coordinate.latitude]),
+      },
+    };
+  }
+
   async resolveOperationsException(command: ResolveOperationsExceptionCommand, actor: ActorContext): Promise<ResolveOperationsExceptionResult> {
     const { data, error } = await this.admin.rpc("resolve_operations_exception_command", {
       p_command: command,

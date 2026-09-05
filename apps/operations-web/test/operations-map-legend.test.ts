@@ -37,3 +37,19 @@ test("map legend is absent when there is no rendered operational evidence", () =
     hasProposedRoute: false,
   }), []);
 });
+
+test("live map names the server remaining route and Rounds-owned trail separately", () => {
+  assert.deepEqual(operationsMapLegendEntries({
+    mode: "live",
+    hasOwnDriverPositions: true,
+    hasActionStops: false,
+    hasUnplannedStops: false,
+    hasProposedRoute: false,
+    hasRemainingRoute: true,
+    hasActualTrail: true,
+  }), [
+    { key: "own", label: "Own driver", tone: "own" },
+    { key: "remaining-route", label: "Remaining route", tone: "live-route" },
+    { key: "actual-trail", label: "Travelled trail", tone: "trail" },
+  ]);
+});

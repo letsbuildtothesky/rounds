@@ -16,6 +16,7 @@ import { markDriverCommunicationThreadReadHandler, markOperationsCommunicationTh
 import { readConfig } from "./config.js";
 import { operationsSessionHandler } from "./operations-session-handler.js";
 import { operationsActionHandler } from "./operations-action-handler.js";
+import { operationsLiveMapHandler } from "./operations-live-map-handler.js";
 import { operationsDeliveriesHandler } from "./operations-deliveries-handler.js";
 import { operationsDriversHandler } from "./operations-drivers-handler.js";
 import { setDriverRecurringScheduleHandler } from "./set-driver-recurring-schedule-handler.js";
@@ -139,6 +140,20 @@ const server = createServer(async (request, response) => {
         now: () => new Date(),
       });
       sendNode(response, addOperationsCors(actionResponse, request.headers.origin));
+      return;
+    }
+    const operationsLiveMapMatch = request.url?.match(/^\/v1\/operations\/rounds\/([0-9a-f-]+)\/live-map$/i);
+    if (request.method === "GET" && operationsLiveMapMatch) {
+      const webRequest = await toWebRequest(request);
+      const liveMapResponse = await operationsLiveMapHandler(webRequest, operationsLiveMapMatch[1]!, {
+        identity: gateway,
+        rounds: gateway,
+        trails: gateway,
+        routes: routeService,
+        uuid: () => crypto.randomUUID(),
+        now: () => new Date(),
+      });
+      sendNode(response, addOperationsCors(liveMapResponse, request.headers.origin));
       return;
     }
     const operationsExceptionResolveMatch = request.url?.match(/^\/v1\/operations\/exceptions\/([0-9a-f-]+)\/resolve$/i);

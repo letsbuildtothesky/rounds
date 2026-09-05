@@ -7,6 +7,27 @@
 
 ## Changelog
 
+- **2026-09-05 · Checkpoint 60:** Separates the live Operations map's two
+  route truths without promoting Mapbox or Google into the operational system
+  of record. A tenant-authorized endpoint calculates the current remaining
+  route on the server from a fresh Rounds position and the exact ordered
+  non-terminal Stops. Provider failure, missing position or a position older
+  than 90 seconds withholds that line and states why. The travelled trail is
+  independently projected from Rounds-owned telemetry samples carrying the
+  exact Round and Driver context; historical unscoped samples are never
+  inferred into a trail, and the bounded 500-sample projection reports when it
+  is truncated. Migration `202609050005` is applied remotely and closes the
+  retired ingest entry point that could otherwise write unscoped samples. The
+  canonical v45 Mapbox surface and legend render the remaining route in navy
+  and the actual trail in green as distinct evidence; no browser-generated
+  line, traffic or weather state is invented. All 211 repository tests
+  (including 39 Operations and 111 API tests) and typecheck pass. Signed-in
+  localhost acceptance confirms the real board remains honest with zero active
+  Rounds, so live-line physical acceptance remains open. Existing completion
+  percentages do not change because the Operations map row was already
+  `VERIFIED`. The next authorized capability is the assigned-Round offline
+  read cache and consolidated Driver sync truth, followed by its N01/N02/N03
+  recovery closure.
 - **2026-09-05 · Checkpoint 59:** Connects the supplied v45 pre-pickup
   **Edit delivery** workflow to one real, atomic command. Dispatcher/admin may
   change recipient contact, explicitly confirmed destination pin/address,
@@ -423,7 +444,7 @@ Canonical visual source: `ux/operations/rounds-operations-current-v45.html`. The
 |---|---|---|---|---|
 | Authentication, tenant and role projection | Pilot P0 | `VERIFIED` | Supabase session, tenant membership, dispatcher/viewer roles and read-only enforcement exist. | Production account lifecycle, recovery and session security. |
 | v45 workstation shell and navigation | Pilot P1 | `VERIFIED` | React shell follows the canonical Dispatch/Drivers/History/Settings navigation; delivery records and communications remain contextual to Dispatch exactly as in v45. Canonical side-by-side browser comparison now passes for the Dispatch rail/map workstation at 1280×720, 1024×768 and 768×1024; the supplied two-row tablet navigation, exact compact rail/map splits and overflow safety are accepted. | Repeat compact reference comparison for every business workspace/open drawer and complete physical iPad/Safari acceptance. |
-| Real Operations map | Pilot/Slice 2 P0 | `VERIFIED` | Real Mapbox renderer, Operations/Satellite styles, zoom, north, rotation, pitch, truthful error state, server positions and server route geometry exist. The v45 legend is now derived from rendered own-driver, action-Stop, unplanned-Stop and proposed-route evidence; disconnected Network, external and traffic roles are absent. Own-driver markers are keyed to the physical Driver rather than Round rows, use the newest hot position, retain one deterministic primary-click Round and aggregate unread state across that Driver's visible Rounds. The supplied driver quick-contact menu is connected: primary click opens the Round, desktop right-click/touch long-press exposes exact-thread Message/Voice, real-coordinate Center and Show full Round; Call remains disabled until real calling exists. Numbered live Stop markers now come from tenant-scoped Round order, Stop state and saved destination pins; terminal, future and current emphasis follows canonical v45 semantics and action exceptions do not create duplicate pins. | Complete live route/trail distinction, physical current-Stop acceptance, physical touch long-press acceptance and responsive/device acceptance. |
+| Real Operations map | Pilot/Slice 2 P0 | `VERIFIED` | Real Mapbox renderer, Operations/Satellite styles, zoom, north, rotation, pitch, truthful error state, server positions and server route geometry exist. The v45 legend is derived only from rendered own-driver, action-Stop, unplanned-Stop, proposed-route, remaining-route and travelled-trail evidence; disconnected Network, external, traffic and weather roles are absent. For each active own Round, the server uses a fresh Rounds position and exact ordered non-terminal Stops to calculate the remaining Mapbox route; missing/stale position or provider failure withholds the line with an explicit reason. The actual green trail is a separate bounded projection of exact Round/Driver-scoped Rounds telemetry and never reclassifies a planned or Google-navigation line as travelled evidence. Historical unscoped samples are not inferred. Own-driver markers are keyed to the physical Driver rather than Round rows, use the newest hot position, retain one deterministic primary-click Round and aggregate unread state across that Driver's visible Rounds. The supplied driver quick-contact menu is connected: primary click opens the Round, desktop right-click/touch long-press exposes exact-thread Message/Voice, real-coordinate Center and Show full Round; Call remains disabled until real calling exists. Numbered live Stop markers come from tenant-scoped Round order, Stop state and saved destination pins; terminal, future and current emphasis follows canonical v45 semantics and action exceptions do not create duplicate pins. | Complete physical active-Round route/trail and current-Stop acceptance, physical touch long-press acceptance and responsive/device acceptance. Configure the final route request/cache budget before production. |
 | Live Dispatch / Action queue | Pilot P0 | `VERIFIED` | Server-backed Rounds, exceptions, live positions and freshness states exist. | Remaining edge states, filtering and realtime/polling production policy. |
 | Single delivery intake | Pilot P0 | `VERIFIED` | The canonical internal command and idempotency path now use the supplied v45 drawer hierarchy without the former invented banner/scrim. Recipient, promise, manifest and inherited pickup retain their connected truth. The operational destination is selected through the shared real Mapbox crosshair workflow and enters the command only as explicitly confirmed `dispatcher_pin` provenance. Signed-in 1280×720 comparison matches the reference drawer width, x-position and header/body padding; no delivery was submitted during acceptance. | Complete the production address/geocoding provider-coherence decision and corresponding validation depth, then physical tablet/Safari acceptance. |
 | Batch/manual import | Slice 2 P1 | `SPECIFIED` | No batch ingestion UI. | Define file template, row validation, partial failure and reconciliation UX. |
@@ -681,6 +702,19 @@ This sequence does not promote later slices; it orders the already authorized En
   applied. The next authorized capability is the Dispatch map's authoritative
   live-route versus driven-trail distinction using persisted route and
   telemetry truth; disconnected traffic/weather claims stay absent.
+- **D27 authoritative live route/trail distinction implemented 2026-09-05:**
+  migration `202609050005` attributes every new telemetry sample to its exact
+  asserted Round/Stop context and leaves historical null context uninferred.
+  The server exposes a bounded actual trail separately from a newly calculated
+  remaining route based on fresh Rounds current position and ordered remaining
+  Stops. Stale or missing position and routing-provider failure withhold only
+  the remaining route while preserving valid trail evidence. The supplied v45
+  Mapbox canvas and evidence legend render these as green travelled truth and
+  navy remaining-route truth, with no fake traffic or weather overlay. All 211
+  tests and typecheck pass; signed-in localhost has no active Round, so exact
+  on-road line rendering remains open physical acceptance rather than a
+  simulated claim. The next authorized capability is the assigned-Round
+  offline read cache and consolidated Driver sync truth.
 - Complete assigned-Round offline read cache and consolidated sync truth.
 - Finish N01/N02/N03 recovery states.
 - Run golden/reference-viewport comparisons for every in-scope board.

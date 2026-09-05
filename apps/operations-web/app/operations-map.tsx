@@ -2,7 +2,7 @@
 
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import mapboxgl, { type LngLatLike, type Map as MapboxMap } from "mapbox-gl";
-import type { OperationsActionException, OperationsMapStop, OperationsRoundSummary, UnplannedDeliverySummary } from "@rounds/contracts";
+import type { OperationsActionException, OperationsLiveRoundMapProjection, OperationsMapStop, OperationsRoundSummary, UnplannedDeliverySummary } from "@rounds/contracts";
 import type { RoundCommunicationUnreadState } from "../src/operations-communications-state";
 import { operationsMapDriverMarkers } from "../src/operations-map-driver-markers";
 import { operationsMapStopMarkers } from "../src/operations-map-stops";
@@ -23,6 +23,7 @@ type Props = {
   exceptions: OperationsActionException[];
   planningDeliveries: UnplannedDeliverySummary[];
   routeGeometry?: { type: "LineString"; coordinates: [number, number][] };
+  liveMapProjections: OperationsLiveRoundMapProjection[];
   communicationUnreadByRound: Record<string, RoundCommunicationUnreadState>;
   onCameraChange: (camera: OperationsMapCamera) => void;
   onSelectRound: (round: OperationsRoundSummary) => void;
@@ -61,7 +62,7 @@ function styleConfig(mode: OperationsMapMode) {
   };
 }
 
-export const OperationsMap = forwardRef<OperationsMapHandle, Props>(function OperationsMap({ mode, mapMode, rounds, mapStops, exceptions, planningDeliveries, routeGeometry, communicationUnreadByRound, onCameraChange, onSelectRound, onSelectStop, onOpenDriverMenu, onSelectException, onSelectDelivery }, ref) {
+export const OperationsMap = forwardRef<OperationsMapHandle, Props>(function OperationsMap({ mode, mapMode, rounds, mapStops, exceptions, planningDeliveries, routeGeometry, liveMapProjections, communicationUnreadByRound, onCameraChange, onSelectRound, onSelectStop, onOpenDriverMenu, onSelectException, onSelectDelivery }, ref) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MapboxMap | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
@@ -178,6 +179,41 @@ export const OperationsMap = forwardRef<OperationsMapHandle, Props>(function Ope
   useEffect(() => {
     const map = mapRef.current;
     if (!map || state !== "ready" || !map.isStyleLoaded()) return;
+    const remainingRouteData = {
+      type: "FeatureCollection" as const,
+      features: liveMapProjections.flatMap((item) => item.remainingRoute ? [{
+        type: "Feature" as const,
+        properties: { roundId: item.roundId, kind: item.remainingRoute.kind },
+        geometry: item.remainingRoute.geometry,
+      }] : []),
+    };
+    const actualTrailData = {
+      type: "FeatureCollection" as const,
+      features: liveMapProjections.flatMap((item) => item.actualTrail ? [{
+        type: "Feature" as const,
+        properties: { roundId: item.roundId, kind: item.actualTrail.source, truncated: item.actualTrail.truncated },
+        geometry: item.actualTrail.geometry,
+      }] : []),
+    };
+    const remainingSource = map.getSource("rounds-remaining-routes") as mapboxgl.GeoJSONSource | undefined;
+    if (remainingSource) remainingSource.setData(remainingRouteData);
+    else {
+      map.addSource("rounds-remaining-routes", { type: "geojson", data: remainingRouteData });
+      map.addLayer({ id: "rounds-remaining-routes-casing", type: "line", source: "rounds-remaining-routes", layout: { "line-cap": "round", "line-join": "round" }, paint: { "line-color": "#ffffff", "line-width": 9, "line-opacity": 0.88 } });
+      map.addLayer({ id: "rounds-remaining-routes", type: "line", source: "rounds-remaining-routes", layout: { "line-cap": "round", "line-join": "round" }, paint: { "line-color": "#17233b", "line-width": 5, "line-opacity": 0.94 } });
+    }
+    const trailSource = map.getSource("rounds-actual-trails") as mapboxgl.GeoJSONSource | undefined;
+    if (trailSource) trailSource.setData(actualTrailData);
+    else {
+      map.addSource("rounds-actual-trails", { type: "geojson", data: actualTrailData });
+      map.addLayer({ id: "rounds-actual-trails-casing", type: "line", source: "rounds-actual-trails", layout: { "line-cap": "round", "line-join": "round" }, paint: { "line-color": "#ffffff", "line-width": 6, "line-opacity": 0.72 } });
+      map.addLayer({ id: "rounds-actual-trails", type: "line", source: "rounds-actual-trails", layout: { "line-cap": "round", "line-join": "round" }, paint: { "line-color": "#12805c", "line-width": 3.25, "line-opacity": 0.96 } });
+    }
+  }, [liveMapProjections, mapMode, state]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || state !== "ready" || !map.isStyleLoaded()) return;
     markersRef.current.forEach((marker) => marker.remove());
     markersRef.current = [];
 
@@ -285,7 +321,11 @@ export const OperationsMap = forwardRef<OperationsMapHandle, Props>(function Ope
     });
 
     const routeCoordinates = routeGeometry?.coordinates ?? [];
-    const focusCoordinates = routeCoordinates.length ? routeCoordinates : coordinates;
+    const liveEvidenceCoordinates = liveMapProjections.flatMap((item) => [
+      ...(item.remainingRoute?.geometry.coordinates ?? []),
+      ...(item.actualTrail?.geometry.coordinates ?? []),
+    ]);
+    const focusCoordinates = routeCoordinates.length ? routeCoordinates : liveEvidenceCoordinates.length ? liveEvidenceCoordinates : coordinates;
     if (focusCoordinates.length) {
       boundsRef.current = focusCoordinates.reduce((bounds, coordinate) => bounds.extend(coordinate), new mapboxgl.LngLatBounds(focusCoordinates[0], focusCoordinates[0]));
       if (mapMode === "site") {
@@ -298,7 +338,7 @@ export const OperationsMap = forwardRef<OperationsMapHandle, Props>(function Ope
       boundsRef.current = null;
       map.easeTo({ center: bangkokCenter as LngLatLike, zoom: mapMode === "site" ? 16.5 : 12.55, pitch: mapMode === "site" ? 52 : 0, duration: 450 });
     }
-  }, [communicationUnreadByRound, exceptions, mapMode, mapStops, mode, planningDeliveries, rounds, routeGeometry, state]);
+  }, [communicationUnreadByRound, exceptions, liveMapProjections, mapMode, mapStops, mode, planningDeliveries, rounds, routeGeometry, state]);
 
   return <>
     <div className="v45-mapbox" ref={containerRef} />

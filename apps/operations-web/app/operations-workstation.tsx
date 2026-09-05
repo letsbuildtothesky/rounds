@@ -10,6 +10,7 @@ import type {
   OperationsDeliveryItem,
   OperationsDriverCapacityItem,
   OperationsDriversProjection,
+  OperationsLiveRoundMapProjection,
   OperationsRoundSummary,
   OperationsTenant,
   PlanRoundResult,
@@ -231,6 +232,7 @@ export function OperationsWorkstation({ accessToken, realtimeClient, tenant, use
   const [roundSuccess, setRoundSuccess] = useState<Extract<PlanRoundResult, { status: "committed" }> | null>(null);
   const [roundIdempotencyKey, setRoundIdempotencyKey] = useState(() => crypto.randomUUID());
   const [routePreview, setRoutePreview] = useState<PlanningRoutePreview | null>(null);
+  const [liveMapProjections, setLiveMapProjections] = useState<Record<string, OperationsLiveRoundMapProjection>>({});
   const [requestedDepartureAt, setRequestedDepartureAt] = useState("");
   const [routeLoading, setRouteLoading] = useState(false);
   const [routeError, setRouteError] = useState("");
@@ -371,6 +373,31 @@ export function OperationsWorkstation({ accessToken, realtimeClient, tenant, use
     }
   }, [accessToken, demoMode, planningDate, tenant.id]);
 
+  const activeRoundKey = useMemo(
+    () => projection?.rounds.filter((round) => round.state === "active").map((round) => round.id).sort().join(",") ?? "",
+    [projection?.rounds],
+  );
+
+  const loadLiveMapEvidence = useCallback(async () => {
+    if (demoMode || dispatchMode !== "live" || !accessToken || !activeRoundKey) {
+      setLiveMapProjections({});
+      return;
+    }
+    const roundIds = activeRoundKey.split(",").filter(Boolean);
+    const entries = await Promise.all(roundIds.map(async (roundId) => {
+      try {
+        const response = await fetch(`${roundsApiUrl}/v1/operations/rounds/${roundId}/live-map`, {
+          headers: { authorization: `Bearer ${accessToken}`, "x-rounds-tenant-id": tenant.id, "x-trace-id": crypto.randomUUID() },
+        });
+        if (!response.ok) return null;
+        return [roundId, await response.json() as OperationsLiveRoundMapProjection] as const;
+      } catch {
+        return null;
+      }
+    }));
+    setLiveMapProjections(Object.fromEntries(entries.filter((entry): entry is readonly [string, OperationsLiveRoundMapProjection] => entry !== null)));
+  }, [accessToken, activeRoundKey, demoMode, dispatchMode, tenant.id]);
+
   useEffect(() => {
     void load();
     const timer = window.setInterval(() => void load(true), 5000);
@@ -384,6 +411,13 @@ export function OperationsWorkstation({ accessToken, realtimeClient, tenant, use
   useEffect(() => {
     if (dispatchMode === "plan") void loadDriverCapacity();
   }, [dispatchMode, loadDriverCapacity]);
+
+  useEffect(() => {
+    void loadLiveMapEvidence();
+    if (demoMode || dispatchMode !== "live" || !activeRoundKey) return;
+    const timer = window.setInterval(() => void loadLiveMapEvidence(), 30_000);
+    return () => window.clearInterval(timer);
+  }, [activeRoundKey, demoMode, dispatchMode, loadLiveMapEvidence]);
 
   useEffect(() => {
     setMapHint(`${mapModeCopy[mapMode].label} · ${mapModeCopy[mapMode].hint}`);
@@ -419,7 +453,10 @@ export function OperationsWorkstation({ accessToken, realtimeClient, tenant, use
     hasActionStops: Boolean(projection?.exceptions.some((item) => item.coordinate)),
     hasUnplannedStops: mapPlanningDeliveries.some((item) => item.coordinate),
     hasProposedRoute: Boolean(routePreview?.geometry.coordinates.length && routePreview.geometry.coordinates.length > 1),
-  }), [dispatchMode, mapPlanningDeliveries, projection?.exceptions, projection?.rounds, routePreview?.geometry.coordinates.length]);
+    hasRemainingRoute: Object.values(liveMapProjections).some((item) => Boolean(item.remainingRoute)),
+    hasActualTrail: Object.values(liveMapProjections).some((item) => Boolean(item.actualTrail)),
+  }), [dispatchMode, liveMapProjections, mapPlanningDeliveries, projection?.exceptions, projection?.rounds, routePreview?.geometry.coordinates.length]);
+  const liveMapRouteWarning = Object.values(liveMapProjections).find((item) => item.routeStatus === "unavailable")?.routeUnavailableReason;
 
   const handleMapCameraChange = useCallback((camera: OperationsMapCamera) => {
     setMapCamera((current) => Math.abs(current.bearing - camera.bearing) < 0.01 && Math.abs(current.pitch - camera.pitch) < 0.01 ? current : camera);
@@ -623,6 +660,7 @@ export function OperationsWorkstation({ accessToken, realtimeClient, tenant, use
             exceptions={projection?.exceptions ?? []}
             planningDeliveries={mapPlanningDeliveries}
             routeGeometry={routePreview?.geometry}
+            liveMapProjections={Object.values(liveMapProjections)}
             communicationUnreadByRound={roundUnread}
             onCameraChange={handleMapCameraChange}
             onSelectRound={(round) => { setDispatchMode("live"); setTab(round.state === "complete" ? "done" : round.state === "active" ? "live" : "ready"); setSelection({ kind: "round", item: round }); }}
@@ -644,6 +682,7 @@ export function OperationsWorkstation({ accessToken, realtimeClient, tenant, use
             <div><button className="primary" type="button" disabled={!driverMapThread} onClick={() => { openCommunications(driverMapThread?.id); setDriverMapMenu(null); }}>Message driver <kbd>M</kbd></button><button type="button" disabled title="In-app calling is not connected yet">Call driver <kbd>C</kbd></button><button type="button" disabled={!driverMapThread} onClick={() => { openCommunications(driverMapThread?.id, true); setDriverMapMenu(null); }}>Voice note <kbd>V</kbd></button><i /><button type="button" onClick={() => { operationsMapRef.current?.focusPosition(driverMapMenu.position); setDriverMapMenu(null); }}>Center on driver</button><button type="button" onClick={() => { const round = driverMapMenu.round; setDispatchMode("live"); setTab(round.state === "complete" ? "done" : round.state === "active" ? "live" : "ready"); setSelection({ kind: "round", item: round }); setDriverMapMenu(null); }}>Show full Round</button></div>
           </div>}
           {demoMode && <div className="v45-preview-badge"><b>PREVIEW DATA</b><span>Positions shown here are UX samples, not live drivers.</span></div>}
+          {!demoMode && dispatchMode === "live" && liveMapRouteWarning && <div className="v45-map-truth"><b>REMAINING ROUTE WITHHELD</b><span>{liveMapRouteWarning}</span></div>}
           {mapHint && <div className="v45-map-hint"><strong>{mapHint.split(" · ")[0]}</strong> · {mapHint.split(" · ").slice(1).join(" · ")}</div>}
           {mapMode !== "street" && <>{mapLegend.length > 0 && <div className="v45-legend" aria-label="Visible map evidence">{mapLegend.map((entry) => <span key={entry.key}><i className={entry.tone} />{entry.label}</span>)}</div>}
           <button className="v45-focus" type="button" onClick={() => operationsMapRef.current?.control("focus")}><FocusIcon />Focus map</button>

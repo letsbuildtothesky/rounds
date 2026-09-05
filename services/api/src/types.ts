@@ -25,6 +25,7 @@ import type {
   OperationsSession,
   OperationsHistoryProjection,
   OperationsActionProjection,
+  OperationsMapTrail,
   OperationsDeliveriesProjection,
   OperationsDriversProjection,
   OperationsRoundDetail,
@@ -266,6 +267,10 @@ export interface OperationsActionGateway {
   confirmDeliveryReturn(command: ConfirmDeliveryReturnCommand, actor: ActorContext): Promise<ConfirmDeliveryReturnResult>;
 }
 
+export interface OperationsMapTrailGateway {
+  getOperationsRoundTrail(roundId: string, driverId: string, actor: ActorContext): Promise<OperationsMapTrail | undefined>;
+}
+
 export interface OperationsDeliveriesGateway {
   getOperationsDeliveries(actor: ActorContext, observedAt: Date): Promise<OperationsDeliveriesProjection>;
 }
@@ -333,6 +338,15 @@ export type OperationsHistoryDependencies = {
 export type OperationsActionDependencies = {
   identity: IdentityGateway;
   action: OperationsActionGateway;
+  uuid: () => string;
+  now: () => Date;
+};
+
+export type OperationsLiveMapDependencies = {
+  identity: IdentityGateway;
+  rounds: OperationsRoundDetailGateway;
+  trails: OperationsMapTrailGateway;
+  routes: PlanningRouteService;
   uuid: () => string;
   now: () => Date;
 };
