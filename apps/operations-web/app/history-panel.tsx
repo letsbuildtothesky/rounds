@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { OperationsHistoryProjection, OperationsTenant } from "@rounds/contracts";
+import { operationsDeliveryHistoryCsv } from "../src/operations-history-export";
 
 const roundsApiUrl = process.env.NEXT_PUBLIC_ROUNDS_API_URL ?? "http://127.0.0.1:8080";
 type Props = { accessToken: string; tenant: OperationsTenant };
@@ -54,8 +55,21 @@ export function HistoryPanel({ accessToken, tenant }: Props) {
   const returned = history?.deliveries.filter((item) => item.outcome === "returned").length ?? 0;
   const podComplete = history?.deliveries.length ? Math.round(history.deliveries.filter((item) => item.verifiedPhotoCount > 0).length / history.deliveries.length * 100) : 0;
 
+  function exportCsv() {
+    if (!history?.deliveries.length) return;
+    const blob = new Blob([operationsDeliveryHistoryCsv(history.deliveries)], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `rounds-delivery-history-${new Intl.DateTimeFormat("en-CA", { timeZone: tenant.timezone }).format(new Date())}.csv`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 0);
+  }
+
   return <div className="v45-history">
-    <header className="v45-history-head"><div><h1>History</h1><p>What happened, why it happened, and what needs attention across your delivery operation.</p></div><button type="button" onClick={() => void load()}>Refresh</button></header>
+    <header className="v45-history-head"><div><h1>History</h1><p>What happened, why it happened, and what needs attention across your delivery operation.</p></div><div className="v45-history-head-actions"><button type="button" disabled={!history?.deliveries.length} onClick={exportCsv}>Export CSV</button><button type="button" onClick={() => void load()}>Refresh</button></div></header>
     <nav className="v45-history-tabs" aria-label="History views"><button type="button" disabled title="Management overview is not connected yet">Overview</button><button type="button" className="on">Deliveries</button><button type="button" disabled title="Driver evidence history is not connected yet">Drivers</button><button type="button" disabled title="Incident history is not connected yet">Incidents</button></nav>
     <main className="v45-history-body">
       <section className="v45-history-intro"><small>DELIVERY RECORDS</small><h2>Every delivery, with the evidence attached.</h2><p>Committed own-fleet outcomes stay in one operational record. Network and external-provider history will appear only after those sources are connected.</p></section>

@@ -7,6 +7,13 @@
 
 ## Changelog
 
+- **2026-09-05 · Checkpoint 49:** Replaces the missing/decorative History export
+  with a real UTF-8 CSV download over authoritative own-fleet terminal delivery
+  records. The machine-readable file includes Round, Driver, outcome, handoff,
+  receiver, verified-photo, manifest and return exception/resolution evidence;
+  quoting preserves commas and embedded quotes. The signed-in v45 History
+  surface exposed an enabled Export CSV action over three real records. Incident
+  export remains outside the connected dataset rather than being fabricated.
 - **2026-09-05 · Checkpoint 48:** Connects the supplied v45 map-header Rounds
   overview to authoritative own-team Round summaries and detail projections.
   Active/loading and approved work are separated into the canonical Own ·
@@ -322,7 +329,7 @@ Canonical visual source: `ux/operations/rounds-operations-current-v45.html`. The
 | Own Drivers capacity view | Slice 2 P0 | `VERIFIED` | Own-team availability, live/stale/unknown presence, current Round and effective shift projection exist. | Route-completion availability estimate and complete vehicle/cargo truth. |
 | Recurring schedules/date exceptions | Slice 2 P0 | `VERIFIED` | Versioned/idempotent drawers and server commands exist. | Driver-side shift lifecycle and overnight/date-policy acceptance. |
 | Vehicle profiles and cargo limits | Slice 2 P0 | `VERIFIED` | Versioned cargo classes/limits are projected and enforced with max Stops/departure pattern by the common planner validator and database approval guard; unknown cargo is `review_required`. | UrbanFlowers must approve production taxonomy/limits; connect the canonical Settings controls for managed edits. |
-| History and POD evidence | Pilot P0 | `VERIFIED` | Completed/returned deliveries, committed evidence metadata and audit-backed history exist. | Rich incident/contact filters, retention behavior and authorized evidence retrieval. |
+| History and POD evidence | Pilot P0 | `VERIFIED` | Completed/returned deliveries, committed evidence metadata and audit-backed history exist. The supplied v45 Export control downloads a real UTF-8 CSV containing every connected terminal delivery, Round/Driver/handoff truth and return exception/resolution evidence. | Rich incident/contact filters, incident export after its durable projection exists, retention behavior and authorized evidence retrieval. |
 | Settings control center | Slice 2 P2 / BS-16 | `SPECIFIED` | Settings is not connected. | Promote only settings required by the active pilot; keep unsaved/version/audit rules. |
 | Customer tracking | Optional Slice 2 | `DEFERRED` | Not promoted. | Requires explicit promotion and BS-11 acceptance criteria. |
 | Network supply/dispatch | Slice 5+ | `DEFERRED` | UI explicitly says it is not connected; no capacity is simulated. | Build only after own-fleet gates and Network promotion. |
