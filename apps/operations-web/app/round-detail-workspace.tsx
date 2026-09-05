@@ -38,10 +38,11 @@ function inputDateTime(value: string): string {
   return shifted.toISOString().slice(0, 16);
 }
 
-export function RoundDetailWorkspace({ accessToken, tenant, roundId, onClose, onCommunications }: {
+export function RoundDetailWorkspace({ accessToken, tenant, roundId, initialStopId = "", onClose, onCommunications }: {
   accessToken: string;
   tenant: OperationsTenant;
   roundId: string;
+  initialStopId?: string;
   onClose: () => void;
   onCommunications: (threadId?: string) => void;
 }) {
@@ -73,13 +74,17 @@ export function RoundDetailWorkspace({ accessToken, tenant, roundId, onClose, on
       if (!response.ok) throw new Error((body as ApiError).error?.message ?? `Round HTTP ${response.status}`);
       const next = body as OperationsRoundDetail;
       setDetail(next);
-      setSelectedStopId((current) => next.stops.some((stop) => stop.stopId === current) ? current : next.stops[0]?.stopId ?? "");
+      setSelectedStopId((current) => next.stops.some((stop) => stop.stopId === current)
+        ? current
+        : next.stops.some((stop) => stop.stopId === initialStopId)
+          ? initialStopId
+          : next.stops[0]?.stopId ?? "");
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Round details could not be loaded");
     } finally {
       setLoading(false);
     }
-  }, [accessToken, roundId, tenant.id]);
+  }, [accessToken, initialStopId, roundId, tenant.id]);
 
   useEffect(() => { void load(); }, [load]);
 

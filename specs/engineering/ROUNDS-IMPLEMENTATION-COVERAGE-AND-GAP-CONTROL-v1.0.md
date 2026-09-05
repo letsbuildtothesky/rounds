@@ -7,6 +7,18 @@
 
 ## Changelog
 
+- **2026-09-05 · Checkpoint 55:** Connects canonical numbered Stop markers to
+  authoritative own-fleet Round data. The Action projection now batches the
+  selected tenant's assigned Stop order, state, delivery identity and saved
+  destination coordinate. Live Mapbox renders the real Round sequence, fades
+  terminal Stops, keeps approved/loading Stops future, and gives only an active
+  Round's first non-terminal Stop the supplied orange current-Stop emphasis.
+  Existing action exceptions reuse the same Stop marker instead of stacking a
+  duplicate. Signed-in localhost acceptance showed five real future Stops and
+  opened B2 Round B directly on its selected Stop 2. The live fixture has no
+  active Round, so current emphasis is automated rather than falsely claimed as
+  live acceptance. API tests/typecheck, 32 Operations tests/typecheck and the
+  production build pass.
 - **2026-09-05 · Checkpoint 54:** Connects the supplied v45 own-driver map
   quick-contact behavior without inventing another communication surface.
   Primary click still opens the authoritative Round; desktop right-click and
@@ -356,7 +368,7 @@ Canonical visual source: `ux/operations/rounds-operations-current-v45.html`. The
 |---|---|---|---|---|
 | Authentication, tenant and role projection | Pilot P0 | `VERIFIED` | Supabase session, tenant membership, dispatcher/viewer roles and read-only enforcement exist. | Production account lifecycle, recovery and session security. |
 | v45 workstation shell and navigation | Pilot P1 | `IMPLEMENTED` | React shell follows the canonical Dispatch/Deliveries/Drivers/Communications/History structure. | Full visual comparison and narrow/iPad responsive pass. |
-| Real Operations map | Pilot/Slice 2 P0 | `VERIFIED` | Real Mapbox renderer, Operations/Satellite styles, zoom, north, rotation, pitch, truthful error state, server positions and server route geometry exist. The v45 legend is now derived from rendered own-driver, action-Stop, unplanned-Stop and proposed-route evidence; disconnected Network, external and traffic roles are absent. Own-driver markers are keyed to the physical Driver rather than Round rows, use the newest hot position, retain one deterministic primary-click Round and aggregate unread state across that Driver's visible Rounds. The supplied driver quick-contact menu is connected: primary click opens the Round, desktop right-click/touch long-press exposes exact-thread Message/Voice, real-coordinate Center and Show full Round; Call remains disabled until real calling exists. | Complete live route/trail distinction, Stop/current-Stop emphasis, physical touch long-press acceptance and responsive/device acceptance. |
+| Real Operations map | Pilot/Slice 2 P0 | `VERIFIED` | Real Mapbox renderer, Operations/Satellite styles, zoom, north, rotation, pitch, truthful error state, server positions and server route geometry exist. The v45 legend is now derived from rendered own-driver, action-Stop, unplanned-Stop and proposed-route evidence; disconnected Network, external and traffic roles are absent. Own-driver markers are keyed to the physical Driver rather than Round rows, use the newest hot position, retain one deterministic primary-click Round and aggregate unread state across that Driver's visible Rounds. The supplied driver quick-contact menu is connected: primary click opens the Round, desktop right-click/touch long-press exposes exact-thread Message/Voice, real-coordinate Center and Show full Round; Call remains disabled until real calling exists. Numbered live Stop markers now come from tenant-scoped Round order, Stop state and saved destination pins; terminal, future and current emphasis follows canonical v45 semantics and action exceptions do not create duplicate pins. | Complete live route/trail distinction, physical current-Stop acceptance, physical touch long-press acceptance and responsive/device acceptance. |
 | Live Dispatch / Action queue | Pilot P0 | `VERIFIED` | Server-backed Rounds, exceptions, live positions and freshness states exist. | Remaining edge states, filtering and realtime/polling production policy. |
 | Single delivery intake | Pilot P0 | `VERIFIED` | Canonical internal delivery command, idempotency and drawer UI exist. | Address validation depth and final v45 visual acceptance. |
 | Batch/manual import | Slice 2 P1 | `SPECIFIED` | No batch ingestion UI. | Define file template, row validation, partial failure and reconciliation UX. |
@@ -566,6 +578,14 @@ This sequence does not promote later slices; it orders the already authorized En
   real microphone start/Stop/remove cycle; the disconnected Call action stays
   disabled and does not simulate a result. Physical touch acceptance remains
   open.
+- **D22 authoritative Stop map emphasis connected 2026-09-05:** the Action
+  projection batches tenant-scoped Round order, Stop state and saved delivery
+  pins. Mapbox renders numbered future/terminal/current Stop roles from those
+  facts, keeps own-driver markers visually strongest and routes a Stop click to
+  the exact selected Stop in the canonical Round workspace. Localhost accepted
+  five real future Stops and exact Stop 2 selection; no active live fixture was
+  available, so current-Stop emphasis remains a deterministic automated proof
+  until physical acceptance.
 - Complete assigned-Round offline read cache and consolidated sync truth.
 - Finish N01/N02/N03 recovery states.
 - Run golden/reference-viewport comparisons for every in-scope board.

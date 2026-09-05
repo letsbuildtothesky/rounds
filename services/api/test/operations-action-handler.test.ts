@@ -28,6 +28,7 @@ const projection: OperationsActionProjection = {
   tenantId,
   observedAt: "2026-09-02T04:00:00.000Z",
   rounds: [],
+  mapStops: [],
   exceptions: [{
     id: "10000000-0000-4000-8000-000000000010",
     deliveryId: "10000000-0000-4000-8000-000000000011",

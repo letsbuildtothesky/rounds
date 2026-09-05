@@ -48,6 +48,7 @@ import type {
   OperationsPlanningProjection,
   OperationsHistoryProjection,
   OperationsActionProjection,
+  OperationsMapStop,
   OperationsDeliveriesProjection,
   OperationsDriversProjection,
   OperationsRoundDetail,
@@ -142,6 +143,15 @@ type DriverHistoryStopRow = { id: string; state: string };
 type DriverHistoryPodRow = { round_id: string; stop_id: string };
 type RoundStopRow = { stop_id: string; sequence: number };
 type PlanningRoundStopRow = { round_id: string; stop_id: string };
+type OperationsMapRoundStopRow = { round_id: string; stop_id: string; sequence: number };
+type OperationsMapDeliveryStopRow = { id: string; delivery_id: string; state: string };
+type OperationsMapDeliveryRow = {
+  id: string;
+  reference: string;
+  recipient_name: string;
+  destination_raw_address: string;
+  destination_position: unknown;
+};
 type PickupVerificationRow = { round_id: string; stop_id: string };
 type DeliveryExceptionRow = { round_id: string };
 type DriverPositionRow = { driver_id: string; position: unknown; captured_at: string };
@@ -2137,10 +2147,61 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     ]);
     if (exceptionResult.error) throw exceptionResult.error;
     const exceptions = exceptionResult.data ?? [];
+    const mapRoundIds = planning.activeRounds.map((round) => round.id);
+    let mapStops: OperationsMapStop[] = [];
+    if (mapRoundIds.length) {
+      const mapRoundStopResult = await this.admin.from("round_stops")
+        .select("round_id, stop_id, sequence")
+        .eq("tenant_id", actor.tenantId)
+        .in("round_id", mapRoundIds)
+        .order("sequence")
+        .returns<OperationsMapRoundStopRow[]>();
+      if (mapRoundStopResult.error) throw mapRoundStopResult.error;
+      const mapRoundStops = mapRoundStopResult.data ?? [];
+      const mapStopIds = [...new Set(mapRoundStops.map((row) => row.stop_id))];
+      if (mapStopIds.length) {
+        const mapStopResult = await this.admin.from("delivery_stops")
+          .select("id, delivery_id, state")
+          .eq("tenant_id", actor.tenantId)
+          .in("id", mapStopIds)
+          .returns<OperationsMapDeliveryStopRow[]>();
+        if (mapStopResult.error) throw mapStopResult.error;
+        const mapDeliveryIds = [...new Set((mapStopResult.data ?? []).map((row) => row.delivery_id))];
+        const mapDeliveryResult = mapDeliveryIds.length
+          ? await this.admin.from("deliveries")
+            .select("id, reference, recipient_name, destination_raw_address, destination_position")
+            .eq("tenant_id", actor.tenantId)
+            .in("id", mapDeliveryIds)
+            .is("deleted_at", null)
+            .returns<OperationsMapDeliveryRow[]>()
+          : { data: [] as OperationsMapDeliveryRow[], error: null };
+        if (mapDeliveryResult.error) throw mapDeliveryResult.error;
+        const mapStopById = new Map((mapStopResult.data ?? []).map((row) => [row.id, row]));
+        const mapDeliveryById = new Map((mapDeliveryResult.data ?? []).map((row) => [row.id, row]));
+        mapStops = mapRoundStops.flatMap((row) => {
+          const stop = mapStopById.get(row.stop_id);
+          const delivery = stop ? mapDeliveryById.get(stop.delivery_id) : undefined;
+          const coordinate = delivery ? parseDatabasePoint(delivery.destination_position) : undefined;
+          if (!stop || !delivery || !coordinate) return [];
+          return [{
+            roundId: row.round_id,
+            stopId: stop.id,
+            sequence: row.sequence,
+            stopState: stop.state,
+            deliveryId: delivery.id,
+            deliveryReference: delivery.reference,
+            recipientName: delivery.recipient_name,
+            rawAddress: delivery.destination_raw_address,
+            coordinate,
+          }];
+        }).sort((left, right) => left.roundId.localeCompare(right.roundId) || left.sequence - right.sequence);
+      }
+    }
     if (!exceptions.length) return {
       tenantId: actor.tenantId,
       observedAt: observedAt.toISOString(),
       rounds: planning.activeRounds,
+      mapStops,
       exceptions: [],
     };
 
@@ -2198,6 +2259,7 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
       tenantId: actor.tenantId,
       observedAt: observedAt.toISOString(),
       rounds: planning.activeRounds,
+      mapStops,
       exceptions: exceptions.flatMap((item) => {
         const delivery = deliveryById.get(item.delivery_id);
         const stop = stopById.get(item.stop_id);

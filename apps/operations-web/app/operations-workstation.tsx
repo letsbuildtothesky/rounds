@@ -70,6 +70,13 @@ function demoProjection(tenantId: string): OperationsActionProjection {
       { id: "demo-round-19", reference: "Round 19", serviceDate: "2026-09-02", state: "active", driverId: "demo-nattawut", driverName: "Nattawut P.", stopCount: 2, custodyStopCount: 1, openExceptionCount: 0, currentPosition: { latitude: 13.7338, longitude: 100.5766, capturedAt: reportedAt } },
       { id: "demo-round-20", reference: "Round 20", serviceDate: "2026-09-02", state: "approved", driverId: "demo-pim", driverName: "Pim T.", stopCount: 3, custodyStopCount: 0, openExceptionCount: 0 },
     ],
+    mapStops: [
+      { roundId: "demo-round-18", stopId: "demo-stop-1", sequence: 1, stopState: "exception", deliveryId: "demo-delivery-10432", deliveryReference: "10432", recipientName: "K. Nattaporn", rawAddress: "The Emporio Place · Sukhumvit 24", coordinate: { latitude: 13.7274, longitude: 100.5663 } },
+      { roundId: "demo-round-18", stopId: "demo-stop-2", sequence: 2, stopState: "arrived", deliveryId: "demo-delivery-10439", deliveryReference: "10439", recipientName: "Pullman Bangkok Hotel G", rawAddress: "Silom Road · Bang Rak", coordinate: { latitude: 13.7215, longitude: 100.5298 } },
+      { roundId: "demo-round-18", stopId: "demo-stop-4", sequence: 3, stopState: "active", deliveryId: "demo-delivery-10421", deliveryReference: "10421", recipientName: "Pullman G", rawAddress: "Pullman Bangkok Hotel G", coordinate: { latitude: 13.7244, longitude: 100.5336 } },
+      { roundId: "demo-round-19", stopId: "demo-stop-3", sequence: 1, stopState: "exception", deliveryId: "demo-delivery-10444", deliveryReference: "10444", recipientName: "Anantara Siam", rawAddress: "Ratchadamri Road · Pathum Wan", coordinate: { latitude: 13.7402, longitude: 100.5417 } },
+      { roundId: "demo-round-19", stopId: "demo-stop-5", sequence: 2, stopState: "active", deliveryId: "demo-delivery-10423", deliveryReference: "10423", recipientName: "Park Hyatt Bangkok", rawAddress: "Wireless Road", coordinate: { latitude: 13.7362, longitude: 100.5612 } },
+    ],
     exceptions: [
       { id: "demo-exception-1", deliveryId: "demo-delivery-10432", deliveryReference: "10432", recipientName: "K. Nattaporn", rawAddress: "The Emporio Place · Sukhumvit 24", coordinate: { latitude: 13.7274, longitude: 100.5663 }, stopId: "demo-stop-1", stopSequence: 1, stopState: "exception", stopVersion: 3, roundId: "demo-round-18", roundReference: "Round 18", roundState: "loading", driverId: "demo-somchai", driverName: "Somchai K.", stage: "pickup", category: "missing_item", note: "One manifest item is not physically present at pickup.", status: "open", manifestVersion: 1, reportedAt, operationsThreadId: "demo-thread-1" },
       { id: "demo-exception-2", deliveryId: "demo-delivery-10439", deliveryReference: "10439", recipientName: "Pullman Bangkok Hotel G", rawAddress: "Silom Road · Bang Rak", coordinate: { latitude: 13.7215, longitude: 100.5298 }, stopId: "demo-stop-2", stopSequence: 2, stopState: "arrived", stopVersion: 6, roundId: "demo-round-18", roundReference: "Round 18", roundState: "active", driverId: "demo-somchai", driverName: "Somchai K.", stage: "delivery", category: "damaged_item", note: "Packaging damage requires an Operations decision before handoff.", status: "open", manifestVersion: 2, reportedAt, operationsThreadId: "demo-thread-2" },
@@ -198,6 +205,7 @@ export function OperationsWorkstation({ accessToken, realtimeClient, tenant, use
   const operationsMapRef = useRef<OperationsMapHandle>(null);
   const [mapHint, setMapHint] = useState("");
   const [roundDetailId, setRoundDetailId] = useState("");
+  const [roundDetailStopId, setRoundDetailStopId] = useState("");
   const [contactHistoryThreadId, setContactHistoryThreadId] = useState("");
   const [roundsOverviewOpen, setRoundsOverviewOpen] = useState(false);
   const [driverMapMenu, setDriverMapMenu] = useState<DriverMapMenu | null>(null);
@@ -507,6 +515,16 @@ export function OperationsWorkstation({ accessToken, realtimeClient, tenant, use
     onCommunications(threadId, startVoice ? { startVoice: true } : undefined);
   }
 
+  function openRoundDetail(roundId: string, stopId = "") {
+    setRoundDetailStopId(stopId);
+    setRoundDetailId(roundId);
+  }
+
+  function closeRoundDetail() {
+    setRoundDetailId("");
+    setRoundDetailStopId("");
+  }
+
   return <main className="v45-app">
     <header className="v45-topbar">
       <div className="v45-wordmark">Rounds<i /></div>
@@ -565,12 +583,14 @@ export function OperationsWorkstation({ accessToken, realtimeClient, tenant, use
             mode={dispatchMode}
             mapMode={mapMode}
             rounds={projection?.rounds ?? []}
+            mapStops={projection?.mapStops ?? []}
             exceptions={projection?.exceptions ?? []}
             planningDeliveries={mapPlanningDeliveries}
             routeGeometry={routePreview?.geometry}
             communicationUnreadByRound={roundUnread}
             onCameraChange={handleMapCameraChange}
             onSelectRound={(round) => { setDispatchMode("live"); setTab(round.state === "complete" ? "done" : round.state === "active" ? "live" : "ready"); setSelection({ kind: "round", item: round }); }}
+            onSelectStop={(round, stop) => { setSelection(null); openRoundDetail(round.id, stop.stopId); }}
             onOpenDriverMenu={(round, position, point) => { setSelection(null); setDriverMapMenu({ round, position, ...point }); }}
             onSelectException={(item) => { setDispatchMode("live"); setTab("action"); setSelection({ kind: "exception", item }); }}
             onSelectDelivery={(item) => { setDispatchMode("plan"); setSelection({ kind: "delivery", item }); }}
@@ -633,7 +653,7 @@ export function OperationsWorkstation({ accessToken, realtimeClient, tenant, use
 
         <aside className={`v45-drawer ${selection ? "open" : ""}`} aria-hidden={!selection}>
           <header><div><small>{selection?.kind === "exception" ? "ORDER DECISION" : selection?.kind === "delivery" ? "PLANNING DELIVERY" : "LIVE ROUND"}</small><h2>{selection?.kind === "exception" ? selection.item.recipientName : selection?.kind === "round" ? selection.item.reference : selection?.kind === "delivery" ? selection.item.recipientName : ""}</h2><p>{selection?.kind === "exception" ? `#${selection.item.deliveryReference} · ${selection.item.rawAddress}` : selection?.kind === "round" ? `${selection.item.driverName} · ${selection.item.stopCount} Stops` : selection?.kind === "delivery" ? `#${selection.item.reference} · ${selection.item.rawAddress}` : ""}</p></div><button type="button" onClick={() => setSelection(null)} aria-label="Close drawer"><CloseIcon /></button></header>
-          <div className="v45-drawer-body">{selection?.kind === "exception" ? <ExceptionDrawer item={selection.item} accessToken={accessToken} tenant={tenant} onCommunications={openCommunications} onResolved={() => { setSelection(null); void load(); }} /> : selection?.kind === "round" ? <RoundDrawer item={selection.item} onCommunications={openCommunications} onOpen={() => setRoundDetailId(selection.item.id)} /> : selection?.kind === "delivery" ? <PlanningDrawer item={selection.item} timezone={tenant.timezone} /> : null}</div>
+          <div className="v45-drawer-body">{selection?.kind === "exception" ? <ExceptionDrawer item={selection.item} accessToken={accessToken} tenant={tenant} onCommunications={openCommunications} onResolved={() => { setSelection(null); void load(); }} /> : selection?.kind === "round" ? <RoundDrawer item={selection.item} onCommunications={openCommunications} onOpen={() => openRoundDetail(selection.item.id)} /> : selection?.kind === "delivery" ? <PlanningDrawer item={selection.item} timezone={tenant.timezone} /> : null}</div>
         </aside>
 
         {contactHistoryThread && <ContactHistoryDrawer
@@ -641,7 +661,7 @@ export function OperationsWorkstation({ accessToken, realtimeClient, tenant, use
           timezone={tenant.timezone}
           onClose={() => setContactHistoryThreadId("")}
           onMessage={(threadId) => openCommunications(threadId)}
-          onOpenRound={(roundId) => { setContactHistoryThreadId(""); setRoundDetailId(roundId); }}
+          onOpenRound={(roundId) => { setContactHistoryThreadId(""); openRoundDetail(roundId); }}
         />}
 
         {roundsOverviewOpen && <RoundsOverviewDrawer
@@ -649,7 +669,7 @@ export function OperationsWorkstation({ accessToken, realtimeClient, tenant, use
           tenant={tenant}
           rounds={projection?.rounds ?? []}
           onClose={() => setRoundsOverviewOpen(false)}
-          onOpenRound={(roundId) => { setRoundsOverviewOpen(false); setRoundDetailId(roundId); }}
+          onOpenRound={(roundId) => { setRoundsOverviewOpen(false); openRoundDetail(roundId); }}
           onPlanNext={() => { setRoundsOverviewOpen(false); setDispatchMode("plan"); setSelection(null); }}
         />}
 
@@ -660,11 +680,11 @@ export function OperationsWorkstation({ accessToken, realtimeClient, tenant, use
           request={communicationRequest}
           drawerOpen={Boolean(selection || contactHistoryThread || roundsOverviewOpen)}
           onContactHistory={(threadId) => { setSelection(null); setRoundsOverviewOpen(false); setContactHistoryThreadId(threadId); }}
-          onOpenRound={(roundId) => { setRoundsOverviewOpen(false); setRoundDetailId(roundId); }}
+          onOpenRound={(roundId) => { setRoundsOverviewOpen(false); openRoundDetail(roundId); }}
         />}
       </section>
 
-      {roundDetailId && accessToken && <RoundDetailWorkspace accessToken={accessToken} tenant={tenant} roundId={roundDetailId} onClose={() => setRoundDetailId("")} onCommunications={(threadId) => { setRoundDetailId(""); openCommunications(threadId); }} />}
+      {roundDetailId && accessToken && <RoundDetailWorkspace accessToken={accessToken} tenant={tenant} roundId={roundDetailId} initialStopId={roundDetailStopId} onClose={closeRoundDetail} onCommunications={(threadId) => { closeRoundDetail(); openCommunications(threadId); }} />}
 
       {deliveriesOpen && accessToken && <DeliveriesWorkspace
         accessToken={accessToken}
@@ -687,7 +707,7 @@ export function OperationsWorkstation({ accessToken, realtimeClient, tenant, use
         tenant={tenant}
         onBackToDispatch={() => { onCloseDrivers?.(); }}
         onHistory={onHistory}
-        onOpenRound={(roundId) => { onCloseDrivers?.(); setRoundDetailId(roundId); }}
+        onOpenRound={(roundId) => { onCloseDrivers?.(); openRoundDetail(roundId); }}
         onCommunications={() => openCommunications()}
       />}
 

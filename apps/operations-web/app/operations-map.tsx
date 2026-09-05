@@ -2,9 +2,10 @@
 
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import mapboxgl, { type LngLatLike, type Map as MapboxMap } from "mapbox-gl";
-import type { OperationsActionException, OperationsRoundSummary, UnplannedDeliverySummary } from "@rounds/contracts";
+import type { OperationsActionException, OperationsMapStop, OperationsRoundSummary, UnplannedDeliverySummary } from "@rounds/contracts";
 import type { RoundCommunicationUnreadState } from "../src/operations-communications-state";
 import { operationsMapDriverMarkers } from "../src/operations-map-driver-markers";
+import { operationsMapStopMarkers } from "../src/operations-map-stops";
 
 export type OperationsMapMode = "operations" | "satellite" | "site" | "street";
 export type OperationsMapCamera = { bearing: number; pitch: number };
@@ -18,12 +19,14 @@ type Props = {
   mode: "live" | "plan";
   mapMode: OperationsMapMode;
   rounds: OperationsRoundSummary[];
+  mapStops: OperationsMapStop[];
   exceptions: OperationsActionException[];
   planningDeliveries: UnplannedDeliverySummary[];
   routeGeometry?: { type: "LineString"; coordinates: [number, number][] };
   communicationUnreadByRound: Record<string, RoundCommunicationUnreadState>;
   onCameraChange: (camera: OperationsMapCamera) => void;
   onSelectRound: (round: OperationsRoundSummary) => void;
+  onSelectStop: (round: OperationsRoundSummary, stop: OperationsMapStop) => void;
   onOpenDriverMenu: (round: OperationsRoundSummary, position: { latitude: number; longitude: number }, point: { x: number; y: number }) => void;
   onSelectException: (exception: OperationsActionException) => void;
   onSelectDelivery: (delivery: UnplannedDeliverySummary) => void;
@@ -58,16 +61,16 @@ function styleConfig(mode: OperationsMapMode) {
   };
 }
 
-export const OperationsMap = forwardRef<OperationsMapHandle, Props>(function OperationsMap({ mode, mapMode, rounds, exceptions, planningDeliveries, routeGeometry, communicationUnreadByRound, onCameraChange, onSelectRound, onOpenDriverMenu, onSelectException, onSelectDelivery }, ref) {
+export const OperationsMap = forwardRef<OperationsMapHandle, Props>(function OperationsMap({ mode, mapMode, rounds, mapStops, exceptions, planningDeliveries, routeGeometry, communicationUnreadByRound, onCameraChange, onSelectRound, onSelectStop, onOpenDriverMenu, onSelectException, onSelectDelivery }, ref) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MapboxMap | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
   const boundsRef = useRef<mapboxgl.LngLatBounds | null>(null);
   const appliedModeRef = useRef<OperationsMapMode>("operations");
-  const callbacksRef = useRef({ onCameraChange, onSelectRound, onOpenDriverMenu, onSelectException, onSelectDelivery });
+  const callbacksRef = useRef({ onCameraChange, onSelectRound, onSelectStop, onOpenDriverMenu, onSelectException, onSelectDelivery });
   const [state, setState] = useState<"loading" | "ready" | "error">(token ? "loading" : "error");
 
-  callbacksRef.current = { onCameraChange, onSelectRound, onOpenDriverMenu, onSelectException, onSelectDelivery };
+  callbacksRef.current = { onCameraChange, onSelectRound, onSelectStop, onOpenDriverMenu, onSelectException, onSelectDelivery };
 
   useImperativeHandle(ref, () => ({
     control(action) {
@@ -241,17 +244,40 @@ export const OperationsMap = forwardRef<OperationsMapHandle, Props>(function Ope
       markersRef.current.push(new mapboxgl.Marker({ element }).setLngLat(coordinate).addTo(map));
     });
 
-    const deliveries = mode === "plan" ? planningDeliveries : exceptions;
+    const visibleStopMarkers = mode === "live" ? operationsMapStopMarkers(mapStops, rounds) : [];
+    const exceptionByStop = new Map(exceptions.map((exception) => [exception.stopId, exception]));
+    visibleStopMarkers.forEach(({ stop, round, emphasis }) => {
+      const coordinate: [number, number] = [stop.coordinate.longitude, stop.coordinate.latitude];
+      coordinates.push(coordinate);
+      const exception = exceptionByStop.get(stop.stopId);
+      const element = document.createElement("button");
+      element.type = "button";
+      element.className = `v45-mapbox-stop ${emphasis}${exception ? " action" : ""}`;
+      element.textContent = String(stop.sequence);
+      element.title = `${round.reference} · Stop ${stop.sequence} · #${stop.deliveryReference} · ${stop.recipientName}${exception ? " · Needs action" : ""}`;
+      element.setAttribute("aria-label", element.title);
+      element.addEventListener("click", (event) => {
+        event.stopPropagation();
+        if (exception) callbacksRef.current.onSelectException(exception);
+        else callbacksRef.current.onSelectStop(round, stop);
+      });
+      markersRef.current.push(new mapboxgl.Marker({ element }).setLngLat(coordinate).addTo(map));
+    });
+
+    const mappedStopIds = new Set(visibleStopMarkers.map(({ stop }) => stop.stopId));
+    const deliveries = mode === "plan" ? planningDeliveries : exceptions.filter((exception) => !mappedStopIds.has(exception.stopId));
     deliveries.forEach((item, index) => {
       if (!item.coordinate) return;
       const coordinate: [number, number] = [item.coordinate.longitude, item.coordinate.latitude];
       coordinates.push(coordinate);
       const element = document.createElement("button");
       element.type = "button";
-      element.className = `v45-mapbox-stop${mode === "plan" ? " planning" : ""}`;
+      element.className = `v45-mapbox-stop ${mode === "plan" ? "planning" : "action"}`;
       element.textContent = String(index + 1);
       element.title = item.recipientName;
-      element.addEventListener("click", () => {
+      element.setAttribute("aria-label", item.recipientName);
+      element.addEventListener("click", (event) => {
+        event.stopPropagation();
         if (mode === "plan") callbacksRef.current.onSelectDelivery(item as UnplannedDeliverySummary);
         else callbacksRef.current.onSelectException(item as OperationsActionException);
       });
@@ -272,7 +298,7 @@ export const OperationsMap = forwardRef<OperationsMapHandle, Props>(function Ope
       boundsRef.current = null;
       map.easeTo({ center: bangkokCenter as LngLatLike, zoom: mapMode === "site" ? 16.5 : 12.55, pitch: mapMode === "site" ? 52 : 0, duration: 450 });
     }
-  }, [communicationUnreadByRound, exceptions, mapMode, mode, planningDeliveries, rounds, routeGeometry, state]);
+  }, [communicationUnreadByRound, exceptions, mapMode, mapStops, mode, planningDeliveries, rounds, routeGeometry, state]);
 
   return <>
     <div className="v45-mapbox" ref={containerRef} />

@@ -17,7 +17,7 @@ class FakeGateway implements IdentityGateway, OperationsActionGateway {
   async authorizeTenant(): Promise<ActorContext | null> { return { ...actor, role: this.role }; }
   async getOperationsSession(): Promise<OperationsSession | null> { return null; }
   async getDriverSession(): Promise<DriverSession | null> { return null; }
-  async getOperationsAction(): Promise<OperationsActionProjection> { return { tenantId, observedAt: "", rounds: [], exceptions: [] }; }
+  async getOperationsAction(): Promise<OperationsActionProjection> { return { tenantId, observedAt: "", rounds: [], mapStops: [], exceptions: [] }; }
   async resolveOperationsException(command: ResolveOperationsExceptionCommand): Promise<ResolveOperationsExceptionResult> { this.command = command; return result; }
   async confirmDeliveryReturn(_command: ConfirmDeliveryReturnCommand): Promise<ConfirmDeliveryReturnResult> { return { status: "rejected", error: { code: "INVALID_STATE", message: "unused" } }; }
 }

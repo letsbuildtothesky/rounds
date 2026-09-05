@@ -169,10 +169,23 @@ export type ConfirmDeliveryReturnState = DeliveryReturnConfirmedPayload & {
 };
 export type ConfirmDeliveryReturnResult = CommandResult<ConfirmDeliveryReturnState, DeliveryReturnConfirmedEvent>;
 
+export type OperationsMapStop = {
+  roundId: string;
+  stopId: string;
+  sequence: number;
+  stopState: string;
+  deliveryId: string;
+  deliveryReference: string;
+  recipientName: string;
+  rawAddress: string;
+  coordinate: { latitude: number; longitude: number };
+};
+
 export type OperationsActionProjection = {
   tenantId: string;
   observedAt: string;
   rounds: OperationsRoundSummary[];
+  mapStops: OperationsMapStop[];
   exceptions: OperationsActionException[];
 };
 
