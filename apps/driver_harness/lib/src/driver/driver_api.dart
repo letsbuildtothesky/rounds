@@ -263,6 +263,22 @@ class DriverApi {
     );
   }
 
+  Future<void> markOperationsThreadRead({
+    required DriverRoundModel round,
+    required DriverRoundStopModel stop,
+    required String lastReadMessageId,
+  }) async {
+    final response = await _authorizedPost(
+      '/v1/driver/rounds/${round.id}/stops/${stop.id}/thread/read',
+      {'lastReadMessageId': lastReadMessageId},
+    );
+    if (response.statusCode != 200) {
+      throw DriverApiException(
+        _message(response, 'Operations messages could not be marked read'),
+      );
+    }
+  }
+
   Future<List<DriverOperationsMessageModel>> pendingOperationsMessages({
     required DriverRoundModel round,
     required DriverRoundStopModel stop,
@@ -1384,6 +1400,32 @@ class DriverApi {
           'x-trace-id': DateTime.now().microsecondsSinceEpoch.toString(),
         },
       );
+    }
+    return response;
+  }
+
+  Future<http.Response> _authorizedPost(
+    String endpoint,
+    Map<String, Object?> body,
+  ) async {
+    var accessToken = await _storage.read(key: _accessTokenKey);
+    if (accessToken == null) {
+      throw const DriverApiException('Sign in again to update Operations');
+    }
+    Future<http.Response> send(String token) => _client.post(
+      Uri.parse('$roundsApiUrl$endpoint'),
+      headers: {
+        'authorization': 'Bearer $token',
+        'content-type': 'application/json',
+        'x-trace-id': DateTime.now().microsecondsSinceEpoch.toString(),
+      },
+      body: jsonEncode(body),
+    );
+    var response = await send(accessToken);
+    if (response.statusCode == 401) {
+      accessToken = await _refresh();
+      if (accessToken == null) throw const _Unauthorized();
+      response = await send(accessToken);
     }
     return response;
   }

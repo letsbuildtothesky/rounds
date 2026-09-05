@@ -46,7 +46,23 @@ export type DriverOperationsThread = {
   roundId: string;
   stopId: string;
   version: number;
+  unreadCount: number;
+  firstUnreadMessageId?: string;
+  hasUnreadVoice: boolean;
+  lastReadMessageId?: string;
   messages: DriverThreadMessage[];
+};
+
+export type MarkCommunicationThreadReadPayload = {
+  lastReadMessageId: string;
+};
+
+export type CommunicationThreadReadState = {
+  threadId: string;
+  lastReadMessageId: string;
+  unreadCount: number;
+  firstUnreadMessageId?: string;
+  hasUnreadVoice: boolean;
 };
 
 export type SendDriverMessagePayload = {
@@ -90,6 +106,7 @@ export type OperationsCommunicationThread = DriverOperationsThread & {
 
 export type OperationsCommunicationsProjection = {
   tenantId: string;
+  totalUnreadCount: number;
   threads: OperationsCommunicationThread[];
 };
 

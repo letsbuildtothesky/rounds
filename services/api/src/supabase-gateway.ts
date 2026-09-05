@@ -36,6 +36,7 @@ import type {
   ConfirmStopArrivalResult,
   CompleteStopPodCommand,
   CompleteStopPodResult,
+  CommunicationThreadReadState,
   DeliveryState,
   DriverRoundStop,
   DriverSession,
@@ -1205,6 +1206,24 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     return { ...thread, messages: await this.withCommunicationMediaUrls(thread.messages) };
   }
 
+  async markDriverOperationsThreadRead(
+    roundId: string,
+    stopId: string,
+    lastReadMessageId: string,
+    identity: AuthenticatedIdentity,
+  ): Promise<CommunicationThreadReadState | null> {
+    const actorPersonId = await this.driverActorPersonId(identity);
+    if (!actorPersonId) return null;
+    const { data, error } = await this.admin.rpc("mark_driver_operations_thread_read", {
+      p_round_id: roundId,
+      p_stop_id: stopId,
+      p_last_read_message_id: lastReadMessageId,
+      p_actor_person_id: actorPersonId,
+    });
+    if (error) throw error;
+    return data as CommunicationThreadReadState | null;
+  }
+
   async sendDriverMessage(
     command: SendDriverMessageCommand,
     identity: AuthenticatedIdentity,
@@ -1330,18 +1349,23 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
       id: string; round_id: string; stop_id: string; driver_id: string;
       version: number; priority: "normal" | "emergency"; updated_at: string;
     };
+    type ReadCursorRow = {
+      thread_id: string;
+      last_read_message_id: string;
+      last_read_sent_at: string;
+    };
     const { data: threads, error: threadsError } = await this.admin.from("operations_threads")
       .select("id, round_id, stop_id, driver_id, version, priority, updated_at")
       .eq("tenant_id", actor.tenantId).order("priority", { ascending: true })
       .order("updated_at", { ascending: false }).returns<ThreadRow[]>();
     if (threadsError) throw threadsError;
-    if (!threads?.length) return { tenantId: actor.tenantId, threads: [] };
+    if (!threads?.length) return { tenantId: actor.tenantId, totalUnreadCount: 0, threads: [] };
 
     const threadIds = threads.map((thread) => thread.id);
     const roundIds = [...new Set(threads.map((thread) => thread.round_id))];
     const stopIds = [...new Set(threads.map((thread) => thread.stop_id))];
     const driverIds = [...new Set(threads.map((thread) => thread.driver_id))];
-    const [roundResult, roundStopResult, stopResult, driverResult, messageResult] = await Promise.all([
+    const [roundResult, roundStopResult, stopResult, driverResult, messageResult, cursorResult] = await Promise.all([
       this.admin.from("rounds").select("id, reference").eq("tenant_id", actor.tenantId).in("id", roundIds)
         .returns<{ id: string; reference: string }[]>(),
       this.admin.from("round_stops").select("round_id, stop_id, sequence").eq("tenant_id", actor.tenantId)
@@ -1352,14 +1376,19 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
       this.admin.from("driver_profiles").select("id, person_id").in("id", driverIds)
         .returns<{ id: string; person_id: string }[]>(),
       this.admin.from("operations_messages").select("id, thread_id, sender, body, attachments, sent_at")
-        .eq("tenant_id", actor.tenantId).in("thread_id", threadIds).order("sent_at")
+        .eq("tenant_id", actor.tenantId).in("thread_id", threadIds).order("sent_at").order("id")
         .returns<{ id: string; thread_id: string; sender: "driver" | "operations" | "system"; body: string; attachments: OperationsCommunicationThread["messages"][number]["attachments"]; sent_at: string }[]>(),
+      this.admin.from("communication_thread_read_cursors")
+        .select("thread_id, last_read_message_id, last_read_sent_at")
+        .eq("tenant_id", actor.tenantId).eq("reader_person_id", actor.personId).in("thread_id", threadIds)
+        .returns<ReadCursorRow[]>(),
     ]);
     if (roundResult.error) throw roundResult.error;
     if (roundStopResult.error) throw roundStopResult.error;
     if (stopResult.error) throw stopResult.error;
     if (driverResult.error) throw driverResult.error;
     if (messageResult.error) throw messageResult.error;
+    if (cursorResult.error) throw cursorResult.error;
 
     const deliveryIds = (stopResult.data ?? []).map((stop) => stop.delivery_id);
     const personIds = (driverResult.data ?? []).map((driver) => driver.person_id);
@@ -1380,15 +1409,29 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     const personById = new Map((peopleResult.data ?? []).map((person) => [person.id, person]));
     const driverById = new Map((driverResult.data ?? []).map((driver) => [driver.id, driver]));
     const messages = messageResult.data ?? [];
+    const cursorByThreadId = new Map((cursorResult.data ?? []).map((cursor) => [cursor.thread_id, cursor]));
 
     const projection: OperationsCommunicationsProjection = {
       tenantId: actor.tenantId,
+      totalUnreadCount: 0,
       threads: threads.flatMap((thread): OperationsCommunicationThread[] => {
         const round = roundById.get(thread.round_id);
         const stop = stopById.get(thread.stop_id);
         const delivery = stop ? deliveryById.get(stop.delivery_id) : undefined;
         const driver = driverById.get(thread.driver_id);
         if (!round || !stop || !delivery || !driver) return [];
+        const threadMessages = messages.filter((message) => message.thread_id === thread.id).map((message) => ({
+          id: message.id,
+          sender: message.sender,
+          body: message.body,
+          attachments: message.attachments ?? [],
+          sentAt: message.sent_at,
+        }));
+        const cursor = cursorByThreadId.get(thread.id);
+        const unreadMessages = threadMessages.filter((message) => message.sender === "driver" && (
+          !cursor || message.sentAt > cursor.last_read_sent_at
+            || (message.sentAt === cursor.last_read_sent_at && message.id > cursor.last_read_message_id)
+        ));
         return [{
           id: thread.id,
           priority: thread.priority,
@@ -1407,16 +1450,15 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
           driverName: personById.get(driver.person_id)?.display_name ?? "Team driver",
           version: thread.version,
           updatedAt: thread.updated_at,
-          messages: messages.filter((message) => message.thread_id === thread.id).map((message) => ({
-            id: message.id,
-            sender: message.sender,
-            body: message.body,
-            attachments: message.attachments ?? [],
-            sentAt: message.sent_at,
-          })),
+          unreadCount: unreadMessages.length,
+          ...(unreadMessages[0] ? { firstUnreadMessageId: unreadMessages[0].id } : {}),
+          hasUnreadVoice: unreadMessages.some((message) => message.attachments?.some((attachment) => attachment.kind === "voice")),
+          ...(cursor ? { lastReadMessageId: cursor.last_read_message_id } : {}),
+          messages: threadMessages,
         }];
       }),
     };
+    projection.totalUnreadCount = projection.threads.reduce((total, thread) => total + thread.unreadCount, 0);
     return {
       ...projection,
       threads: await Promise.all(projection.threads.map(async (thread) => ({
@@ -1432,6 +1474,20 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
   ): Promise<OperationsCommunicationThread | null> {
     const projection = await this.getOperationsCommunications(actor);
     return projection.threads.find((thread) => thread.id === threadId) ?? null;
+  }
+
+  async markOperationsCommunicationThreadRead(
+    threadId: string,
+    lastReadMessageId: string,
+    actor: ActorContext,
+  ): Promise<CommunicationThreadReadState | null> {
+    const { data, error } = await this.admin.rpc("mark_operations_thread_read", {
+      p_thread_id: threadId,
+      p_last_read_message_id: lastReadMessageId,
+      p_actor_person_id: actor.personId,
+    });
+    if (error) throw error;
+    return data as CommunicationThreadReadState | null;
   }
 
   async sendOperationsMessage(

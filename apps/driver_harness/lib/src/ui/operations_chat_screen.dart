@@ -54,6 +54,11 @@ class _OperationsChatScreenState extends State<OperationsChatScreen>
   Timer? _draftTimer;
   Timer? _messageRefreshTimer;
   bool _refreshingMessages = false;
+  bool _initialReadBoundaryCaptured = false;
+  bool _markingRead = false;
+  String? _unreadBoundaryMessageId;
+  String? _lastMarkedMessageId;
+  int _initialUnreadCount = 0;
   late final DriverChatMediaGateway _mediaGateway =
       widget.mediaGateway ?? DriverChatMediaGateway();
 
@@ -151,14 +156,42 @@ class _OperationsChatScreenState extends State<OperationsChatScreen>
       final messagesChanged = previousSignature != nextSignature;
       setState(() {
         _messages = combined;
+        if (!_initialReadBoundaryCaptured && thread != null) {
+          _initialReadBoundaryCaptured = true;
+          _unreadBoundaryMessageId = thread.firstUnreadMessageId;
+          _initialUnreadCount = thread.unreadCount;
+        }
         _loadError = error;
         _loading = false;
       });
+      final latestServerMessage = thread != null && thread.messages.isNotEmpty
+          ? thread.messages.last
+          : null;
+      if ((thread?.unreadCount ?? 0) > 0 && latestServerMessage != null) {
+        unawaited(_markRead(latestServerMessage.id));
+      }
       if (messagesChanged) {
         WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToEnd());
       }
     } finally {
       _refreshingMessages = false;
+    }
+  }
+
+  Future<void> _markRead(String messageId) async {
+    if (_markingRead || _lastMarkedMessageId == messageId) return;
+    _markingRead = true;
+    try {
+      await widget.controller.markOperationsThreadRead(
+        round: widget.round,
+        stop: widget.stop,
+        lastReadMessageId: messageId,
+      );
+      _lastMarkedMessageId = messageId;
+    } catch (_) {
+      // Read metadata is retried by the next five-second thread refresh.
+    } finally {
+      _markingRead = false;
     }
   }
 
@@ -469,11 +502,17 @@ class _OperationsChatScreenState extends State<OperationsChatScreen>
                               const _EmptyThread()
                             else ...[
                               _DayLabel(date: _messages.first.sentAt),
-                              for (final message in _messages)
+                              for (final message in _messages) ...[
+                                if (message.id == _unreadBoundaryMessageId &&
+                                    _initialUnreadCount > 0)
+                                  DriverChatUnreadDivider(
+                                    count: _initialUnreadCount,
+                                  ),
                                 _MessageBubble(
                                   message: message,
                                   compact: compact,
                                 ),
+                              ],
                             ],
                           ],
                         ),
@@ -502,6 +541,47 @@ class _OperationsChatScreenState extends State<OperationsChatScreen>
       ),
     );
   }
+}
+
+class DriverChatUnreadDivider extends StatelessWidget {
+  const DriverChatUnreadDivider({required this.count, super.key});
+
+  final int count;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    key: const Key('h01-unread-divider'),
+    padding: const EdgeInsets.only(
+      top: DriverH01Metrics.unreadMarginTop,
+      bottom: DriverH01Metrics.unreadMarginBottom,
+    ),
+    child: Row(
+      children: [
+        const Expanded(child: Divider(height: 1, color: Color(0xFFFFD5C1))),
+        const SizedBox(width: DriverH01Metrics.unreadGap),
+        Container(
+          width: DriverH01Metrics.unreadDotSize,
+          height: DriverH01Metrics.unreadDotSize,
+          decoration: const BoxDecoration(
+            color: RoundsColors.orange,
+            shape: BoxShape.circle,
+          ),
+        ),
+        const SizedBox(width: DriverH01Metrics.unreadGap),
+        Text(
+          '$count unread'.toUpperCase(),
+          style: const TextStyle(
+            color: RoundsColors.orange,
+            fontSize: DriverH01Metrics.unreadSize,
+            fontWeight: FontWeight.w900,
+            letterSpacing: DriverH01Metrics.unreadTracking,
+          ),
+        ),
+        const SizedBox(width: DriverH01Metrics.unreadGap),
+        const Expanded(child: Divider(height: 1, color: Color(0xFFFFD5C1))),
+      ],
+    ),
+  );
 }
 
 class _DayLabel extends StatelessWidget {

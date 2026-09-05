@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import type {
   DriverOperationsThread,
+  CommunicationThreadReadState,
   DriverSession,
   LogContactAttemptCommand,
   LogContactAttemptResult,
@@ -14,6 +15,7 @@ import { driverOperationsThreadHandler } from "../src/driver-operations-thread-h
 import { logContactAttemptHandler } from "../src/log-contact-attempt-handler.js";
 import { prepareMessageMediaHandler, verifyMessageMediaHandler } from "../src/prepare-message-media-handler.js";
 import { sendDriverMessageHandler } from "../src/send-driver-message-handler.js";
+import { markDriverCommunicationThreadReadHandler } from "../src/mark-communication-thread-read-handler.js";
 import type {
   ActorContext,
   AuthenticatedIdentity,
@@ -73,12 +75,21 @@ class FakeCommunicationsGateway implements IdentityGateway, DriverCommunications
   contactCommand: LogContactAttemptCommand | null = null;
   preparedMedia: { roundId: string; stopId: string; assetId: string; payload: PrepareMessageMediaPayload } | null = null;
   verifiedMediaAssetId: string | null = null;
-  readonly thread: DriverOperationsThread = { id: threadId, roundId, stopId, version: 3, messages: [] };
+  markedReadMessageId: string | null = null;
+  readonly thread: DriverOperationsThread = { id: threadId, roundId, stopId, version: 3, unreadCount: 1, firstUnreadMessageId: "10000000-0000-4000-8000-000000000030", hasUnreadVoice: false, messages: [] };
   async authenticate(): Promise<AuthenticatedIdentity | null> { return { authUserId: "auth-user" }; }
   async authorizeTenant(): Promise<ActorContext | null> { return null; }
   async getOperationsSession(): Promise<OperationsSession | null> { return null; }
   async getDriverSession(): Promise<DriverSession | null> { return this.driverSession; }
   async getDriverOperationsThread(): Promise<DriverOperationsThread | null> { return this.thread; }
+  async markDriverOperationsThreadRead(
+    _roundId: string,
+    _stopId: string,
+    lastReadMessageId: string,
+  ): Promise<CommunicationThreadReadState | null> {
+    this.markedReadMessageId = lastReadMessageId;
+    return { threadId, lastReadMessageId, unreadCount: 0, hasUnreadVoice: false };
+  }
   async prepareMessageMedia(
     requestedRoundId: string,
     requestedStopId: string,
@@ -244,6 +255,18 @@ test("driver cannot read a thread outside the current assignment", async () => {
     headers: { authorization: "Bearer token" },
   }), roundId, stopId, dependencies(gateway));
   assert.equal(response.status, 403);
+});
+
+test("assigned driver marks the visible Operations thread read", async () => {
+  const gateway = new FakeCommunicationsGateway();
+  const lastReadMessageId = "10000000-0000-4000-8000-000000000030";
+  const response = await markDriverCommunicationThreadReadHandler(new Request("http://test/read", {
+    method: "POST",
+    headers: { authorization: "Bearer token", "content-type": "application/json" },
+    body: JSON.stringify({ lastReadMessageId }),
+  }), roundId, stopId, dependencies(gateway));
+  assert.equal(response.status, 200);
+  assert.equal(gateway.markedReadMessageId, lastReadMessageId);
 });
 
 test("assigned driver records a native recipient-call outcome", async () => {

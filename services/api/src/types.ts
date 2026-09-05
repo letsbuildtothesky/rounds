@@ -1,6 +1,7 @@
 import type {
   ConfirmDeliveryReturnCommand,
   ConfirmDeliveryReturnResult,
+  CommunicationThreadReadState,
   ClearDriverShiftExceptionCommand,
   ClearDriverShiftExceptionPayload,
   ClearDriverShiftExceptionResult,
@@ -158,6 +159,12 @@ export interface DriverCommunicationsGateway {
     stopId: string,
     identity: AuthenticatedIdentity,
   ): Promise<DriverOperationsThread | null>;
+  markDriverOperationsThreadRead(
+    roundId: string,
+    stopId: string,
+    lastReadMessageId: string,
+    identity: AuthenticatedIdentity,
+  ): Promise<CommunicationThreadReadState | null>;
   sendDriverMessage(
     command: SendDriverMessageCommand,
     identity: AuthenticatedIdentity,
@@ -197,6 +204,11 @@ export interface DriverProfileGateway {
 export interface OperationsCommunicationsGateway {
   getOperationsCommunications(actor: ActorContext): Promise<OperationsCommunicationsProjection>;
   getOperationsCommunicationThread(threadId: string, actor: ActorContext): Promise<OperationsCommunicationThread | null>;
+  markOperationsCommunicationThreadRead(
+    threadId: string,
+    lastReadMessageId: string,
+    actor: ActorContext,
+  ): Promise<CommunicationThreadReadState | null>;
   sendOperationsMessage(
     command: SendOperationsMessageCommand,
     actor: ActorContext,

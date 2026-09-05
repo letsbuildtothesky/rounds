@@ -1,7 +1,7 @@
 begin;
 
 create extension if not exists pgtap with schema extensions;
-select plan(67);
+select plan(86);
 
 select has_function('public', 'ensure_driver_operations_thread', array['uuid', 'uuid', 'uuid'], 'driver thread projection exists');
 select has_function('public', 'send_driver_message_command', array['jsonb', 'uuid'], 'driver message command exists');
@@ -10,6 +10,12 @@ select ok(has_function_privilege('service_role', 'public.send_driver_message_com
 select ok(has_function_privilege('service_role', 'public.send_operations_message_command(jsonb,uuid)', 'EXECUTE'), 'API service can send Operations replies');
 select ok(not has_table_privilege('authenticated', 'public.operations_threads', 'SELECT'), 'driver cannot read threads directly');
 select ok(not has_table_privilege('authenticated', 'public.operations_messages', 'SELECT'), 'driver cannot read messages directly');
+select has_table('public', 'communication_thread_read_cursors', 'private communication read cursor registry exists');
+select has_function('public', 'mark_operations_thread_read', array['uuid', 'uuid', 'uuid'], 'Operations read cursor function exists');
+select has_function('public', 'mark_driver_operations_thread_read', array['uuid', 'uuid', 'uuid', 'uuid'], 'Driver read cursor function exists');
+select ok(has_function_privilege('service_role', 'public.mark_operations_thread_read(uuid,uuid,uuid)', 'EXECUTE'), 'API service can mark Operations threads read');
+select ok(has_function_privilege('service_role', 'public.mark_driver_operations_thread_read(uuid,uuid,uuid,uuid)', 'EXECUTE'), 'API service can mark Driver threads read');
+select ok(not has_table_privilege('authenticated', 'public.communication_thread_read_cursors', 'SELECT'), 'clients cannot enumerate private read cursors');
 
 insert into public.tenants (id, slug, display_name)
 values ('70000000-0000-4000-8000-000000000001', 'thread-command-test', 'Thread Command Test');
@@ -282,6 +288,67 @@ select is((public.send_operations_message_command((select body from operations_m
 select is((select state::text from public.communication_media_assets where id = '70000000-0000-4000-8000-000000000261'), 'committed', 'Operations message commit also commits private media');
 select is((select attachments -> 0 ->> 'kind' from public.operations_messages where command_id = '70000000-0000-4000-8000-000000000271'), 'voice', 'Operations rich attachment is durable in the shared thread');
 
+select is((public.ensure_driver_operations_thread(
+  '70000000-0000-4000-8000-000000000130',
+  '70000000-0000-4000-8000-000000000110',
+  '70000000-0000-4000-8000-000000000007'
+) ->> 'unreadCount')::integer, 2, 'Driver projection counts unread Operations replies');
+select is((public.ensure_driver_operations_thread(
+  '70000000-0000-4000-8000-000000000130',
+  '70000000-0000-4000-8000-000000000110',
+  '70000000-0000-4000-8000-000000000007'
+) ->> 'firstUnreadMessageId', (select id::text from public.operations_messages where command_id = '70000000-0000-4000-8000-000000000211'), 'Driver projection exposes the first unread boundary');
+select is((public.ensure_driver_operations_thread(
+  '70000000-0000-4000-8000-000000000130',
+  '70000000-0000-4000-8000-000000000110',
+  '70000000-0000-4000-8000-000000000007'
+) ->> 'hasUnreadVoice')::boolean, true, 'Driver projection distinguishes unread voice media');
+
+select is((public.mark_operations_thread_read(
+  (select (body ->> 'id')::uuid from thread_projection),
+  (select id from public.operations_messages where command_id = '70000000-0000-4000-8000-000000000201'),
+  '70000000-0000-4000-8000-000000000009'
+) ->> 'unreadCount')::integer, 2, 'Operations cursor leaves later Driver messages unread');
+select is((public.mark_operations_thread_read(
+  (select (body ->> 'id')::uuid from thread_projection),
+  (select id from public.operations_messages where command_id = '70000000-0000-4000-8000-000000000241'),
+  '70000000-0000-4000-8000-000000000009'
+) ->> 'unreadCount')::integer, 0, 'Operations cursor clears visible Driver messages');
+select is((public.mark_operations_thread_read(
+  (select (body ->> 'id')::uuid from thread_projection),
+  (select id from public.operations_messages where command_id = '70000000-0000-4000-8000-000000000201'),
+  '70000000-0000-4000-8000-000000000009'
+) ->> 'lastReadMessageId', (select id::text from public.operations_messages where command_id = '70000000-0000-4000-8000-000000000241'), 'read cursor cannot move backward');
+select is((public.mark_operations_thread_read(
+  (select (body ->> 'id')::uuid from thread_projection),
+  (select id from public.operations_messages where command_id = '70000000-0000-4000-8000-000000000241'),
+  '70000000-0000-4000-8000-000000000010'
+) ->> 'unreadCount')::integer, 0, 'viewer clears only their own read cursor');
+select is(public.mark_operations_thread_read(
+  (select (body ->> 'id')::uuid from thread_projection),
+  (select id from public.operations_messages where command_id = '70000000-0000-4000-8000-000000000241'),
+  '70000000-0000-4000-8000-000000000008'
+), null::jsonb, 'person outside tenant cannot mark Operations thread read');
+
+select is((public.mark_driver_operations_thread_read(
+  '70000000-0000-4000-8000-000000000130',
+  '70000000-0000-4000-8000-000000000110',
+  (select id from public.operations_messages where command_id = '70000000-0000-4000-8000-000000000211'),
+  '70000000-0000-4000-8000-000000000007'
+) ->> 'unreadCount')::integer, 1, 'Driver cursor leaves a later Operations voice message unread');
+select is((public.mark_driver_operations_thread_read(
+  '70000000-0000-4000-8000-000000000130',
+  '70000000-0000-4000-8000-000000000110',
+  (select id from public.operations_messages where command_id = '70000000-0000-4000-8000-000000000211'),
+  '70000000-0000-4000-8000-000000000007'
+) ->> 'hasUnreadVoice')::boolean, true, 'Driver unread state preserves voice distinction');
+select is((public.mark_driver_operations_thread_read(
+  '70000000-0000-4000-8000-000000000130',
+  '70000000-0000-4000-8000-000000000110',
+  (select id from public.operations_messages where command_id = '70000000-0000-4000-8000-000000000271'),
+  '70000000-0000-4000-8000-000000000007'
+) ->> 'unreadCount')::integer, 0, 'Driver cursor clears visible Operations replies');
+
 set local role authenticated;
 select throws_ok(
   $$select public.ensure_driver_operations_thread('70000000-0000-4000-8000-000000000130', '70000000-0000-4000-8000-000000000110', '70000000-0000-4000-8000-000000000007')$$,
@@ -312,6 +379,16 @@ select throws_ok(
   $$select public.mark_operations_message_media_uploaded('70000000-0000-4000-8000-000000000281', '70000000-0000-4000-8000-000000000009', repeat('d', 64), 1)$$,
   '42501', 'permission denied for function mark_operations_message_media_uploaded',
   'authenticated clients cannot verify Operations message media directly'
+);
+select throws_ok(
+  $$select public.mark_operations_thread_read('70000000-0000-4000-8000-000000000200', '70000000-0000-4000-8000-000000000201', '70000000-0000-4000-8000-000000000009')$$,
+  '42501', 'permission denied for function mark_operations_thread_read',
+  'authenticated clients cannot mark Operations read cursors directly'
+);
+select throws_ok(
+  $$select public.mark_driver_operations_thread_read('70000000-0000-4000-8000-000000000130', '70000000-0000-4000-8000-000000000110', '70000000-0000-4000-8000-000000000201', '70000000-0000-4000-8000-000000000007')$$,
+  '42501', 'permission denied for function mark_driver_operations_thread_read',
+  'authenticated clients cannot mark Driver read cursors directly'
 );
 reset role;
 

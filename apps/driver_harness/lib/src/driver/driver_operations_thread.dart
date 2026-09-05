@@ -197,13 +197,21 @@ class DriverOperationsThreadModel {
     required this.roundId,
     required this.stopId,
     required this.version,
+    required this.unreadCount,
+    required this.hasUnreadVoice,
     required this.messages,
+    this.firstUnreadMessageId,
+    this.lastReadMessageId,
   });
 
   final String id;
   final String roundId;
   final String stopId;
   final int version;
+  final int unreadCount;
+  final String? firstUnreadMessageId;
+  final bool hasUnreadVoice;
+  final String? lastReadMessageId;
   final List<DriverOperationsMessageModel> messages;
 
   factory DriverOperationsThreadModel.fromJson(Map<String, dynamic> json) =>
@@ -212,6 +220,10 @@ class DriverOperationsThreadModel {
         roundId: json['roundId'] as String,
         stopId: json['stopId'] as String,
         version: json['version'] as int,
+        unreadCount: json['unreadCount'] as int? ?? 0,
+        firstUnreadMessageId: json['firstUnreadMessageId'] as String?,
+        hasUnreadVoice: json['hasUnreadVoice'] as bool? ?? false,
+        lastReadMessageId: json['lastReadMessageId'] as String?,
         messages: (json['messages'] as List<dynamic>)
             .map(
               (message) => DriverOperationsMessageModel.fromJson(

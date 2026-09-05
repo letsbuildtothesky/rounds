@@ -3,6 +3,7 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import mapboxgl, { type LngLatLike, type Map as MapboxMap } from "mapbox-gl";
 import type { OperationsActionException, OperationsRoundSummary, UnplannedDeliverySummary } from "@rounds/contracts";
+import type { RoundCommunicationUnreadState } from "../src/operations-communications-state";
 
 export type OperationsMapMode = "operations" | "satellite" | "site" | "street";
 export type OperationsMapCamera = { bearing: number; pitch: number };
@@ -16,6 +17,7 @@ type Props = {
   exceptions: OperationsActionException[];
   planningDeliveries: UnplannedDeliverySummary[];
   routeGeometry?: { type: "LineString"; coordinates: [number, number][] };
+  communicationUnreadByRound: Record<string, RoundCommunicationUnreadState>;
   onCameraChange: (camera: OperationsMapCamera) => void;
   onSelectRound: (round: OperationsRoundSummary) => void;
   onSelectException: (exception: OperationsActionException) => void;
@@ -51,7 +53,7 @@ function styleConfig(mode: OperationsMapMode) {
   };
 }
 
-export const OperationsMap = forwardRef<OperationsMapHandle, Props>(function OperationsMap({ mode, mapMode, rounds, exceptions, planningDeliveries, routeGeometry, onCameraChange, onSelectRound, onSelectException, onSelectDelivery }, ref) {
+export const OperationsMap = forwardRef<OperationsMapHandle, Props>(function OperationsMap({ mode, mapMode, rounds, exceptions, planningDeliveries, routeGeometry, communicationUnreadByRound, onCameraChange, onSelectRound, onSelectException, onSelectDelivery }, ref) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MapboxMap | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
@@ -174,7 +176,15 @@ export const OperationsMap = forwardRef<OperationsMapHandle, Props>(function Ope
       element.type = "button";
       element.className = "v45-mapbox-driver";
       element.textContent = initials(round.driverName);
-      element.title = `${round.reference} · ${round.driverName} · ${new Date(round.currentPosition.capturedAt).toLocaleTimeString()}`;
+      const unread = communicationUnreadByRound[round.id];
+      if (unread) {
+        const badge = document.createElement("i");
+        badge.className = unread.hasVoice ? "voice" : "";
+        badge.textContent = unread.hasVoice ? "●" : String(unread.count);
+        badge.setAttribute("aria-hidden", "true");
+        element.appendChild(badge);
+      }
+      element.title = `${round.reference} · ${round.driverName} · ${new Date(round.currentPosition.capturedAt).toLocaleTimeString()}${unread ? ` · ${unread.count} unread${unread.hasVoice ? " including voice" : ""}` : ""}`;
       element.addEventListener("click", () => callbacksRef.current.onSelectRound(round));
       markersRef.current.push(new mapboxgl.Marker({ element }).setLngLat(coordinate).addTo(map));
     });
@@ -210,7 +220,7 @@ export const OperationsMap = forwardRef<OperationsMapHandle, Props>(function Ope
       boundsRef.current = null;
       map.easeTo({ center: bangkokCenter as LngLatLike, zoom: mapMode === "site" ? 16.5 : 12.55, pitch: mapMode === "site" ? 52 : 0, duration: 450 });
     }
-  }, [exceptions, mapMode, mode, planningDeliveries, rounds, routeGeometry, state]);
+  }, [communicationUnreadByRound, exceptions, mapMode, mode, planningDeliveries, rounds, routeGeometry, state]);
 
   return <>
     <div className="v45-mapbox" ref={containerRef} />

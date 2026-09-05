@@ -12,6 +12,7 @@ import { operationsHistoryHandler } from "./operations-history-handler.js";
 import { operationsCommunicationsHandler } from "./operations-communications-handler.js";
 import { sendOperationsMessageHandler } from "./send-operations-message-handler.js";
 import { prepareOperationsMessageMediaHandler, verifyOperationsMessageMediaHandler } from "./prepare-operations-message-media-handler.js";
+import { markDriverCommunicationThreadReadHandler, markOperationsCommunicationThreadReadHandler } from "./mark-communication-thread-read-handler.js";
 import { readConfig } from "./config.js";
 import { operationsSessionHandler } from "./operations-session-handler.js";
 import { operationsActionHandler } from "./operations-action-handler.js";
@@ -309,6 +310,18 @@ const server = createServer(async (request, response) => {
       sendNode(response, addOperationsCors(messageResponse, request.headers.origin));
       return;
     }
+    const operationsThreadReadMatch = request.url?.match(/^\/v1\/operations\/communications\/([0-9a-f-]+)\/read$/i);
+    if (request.method === "POST" && operationsThreadReadMatch) {
+      const webRequest = await toWebRequest(request);
+      const readResponse = await markOperationsCommunicationThreadReadHandler(webRequest, operationsThreadReadMatch[1]!, {
+        identity: gateway,
+        communications: gateway,
+        uuid: () => crypto.randomUUID(),
+        now: () => new Date(),
+      });
+      sendNode(response, addOperationsCors(readResponse, request.headers.origin));
+      return;
+    }
     const operationsMessageMediaMatch = request.url?.match(/^\/v1\/operations\/communications\/([0-9a-f-]+)\/message-media$/i);
     if (request.method === "POST" && operationsMessageMediaMatch) {
       const webRequest = await toWebRequest(request);
@@ -406,6 +419,18 @@ const server = createServer(async (request, response) => {
         now: () => new Date(),
       });
       sendNode(response, threadResponse);
+      return;
+    }
+    const driverThreadReadMatch = request.url?.match(/^\/v1\/driver\/rounds\/([0-9a-f-]+)\/stops\/([0-9a-f-]+)\/thread\/read$/i);
+    if (request.method === "POST" && driverThreadReadMatch) {
+      const webRequest = await toWebRequest(request);
+      const readResponse = await markDriverCommunicationThreadReadHandler(webRequest, driverThreadReadMatch[1]!, driverThreadReadMatch[2]!, {
+        identity: gateway,
+        communications: gateway,
+        uuid: () => crypto.randomUUID(),
+        now: () => new Date(),
+      });
+      sendNode(response, readResponse);
       return;
     }
     const driverMessageMatch = request.url?.match(/^\/v1\/driver\/rounds\/([0-9a-f-]+)\/stops\/([0-9a-f-]+)\/messages$/i);

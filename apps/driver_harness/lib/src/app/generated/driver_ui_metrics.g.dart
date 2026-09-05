@@ -1521,6 +1521,12 @@ abstract final class DriverH01Metrics {
   static const double daySize = 11.0;
   static const double dayTracking = 0.77;
   static const double dayBottom = 14.0;
+  static const double unreadMarginTop = 17.0;
+  static const double unreadMarginBottom = 6.0;
+  static const double unreadGap = 9.0;
+  static const double unreadSize = 11.0;
+  static const double unreadTracking = 0.77;
+  static const double unreadDotSize = 7.0;
   static const double rowTop = 13.0;
   static const double maxBubbleFraction = 0.79;
   static const double senderSize = 10.5;

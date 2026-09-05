@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import type {
   DriverSession,
+  CommunicationThreadReadState,
   OperationsCommunicationThread,
   OperationsCommunicationsProjection,
   OperationsSession,
@@ -12,6 +13,7 @@ import type {
 import { operationsCommunicationsHandler } from "../src/operations-communications-handler.js";
 import { prepareOperationsMessageMediaHandler, verifyOperationsMessageMediaHandler } from "../src/prepare-operations-message-media-handler.js";
 import { sendOperationsMessageHandler } from "../src/send-operations-message-handler.js";
+import { markOperationsCommunicationThreadReadHandler } from "../src/mark-communication-thread-read-handler.js";
 import type {
   ActorContext,
   AuthenticatedIdentity,
@@ -42,6 +44,9 @@ const thread: OperationsCommunicationThread = {
   driverId: "10000000-0000-4000-8000-000000000014",
   driverName: "Driver Demo",
   version: 3,
+  unreadCount: 1,
+  firstUnreadMessageId: "10000000-0000-4000-8000-000000000031",
+  hasUnreadVoice: false,
   updatedAt: "2026-09-02T03:00:00Z",
   messages: [],
 };
@@ -49,15 +54,24 @@ const thread: OperationsCommunicationThread = {
 class FakeGateway implements IdentityGateway, OperationsCommunicationsGateway {
   role: ActorContext["role"] = "dispatcher";
   command: SendOperationsMessageCommand | null = null;
+  markedReadMessageId: string | null = null;
   async authenticate(): Promise<AuthenticatedIdentity | null> { return { authUserId: "auth-user" }; }
   async authorizeTenant(): Promise<ActorContext | null> { return { ...actor, role: this.role }; }
   async getOperationsSession(): Promise<OperationsSession | null> { return null; }
   async getDriverSession(): Promise<DriverSession | null> { return null; }
   async getOperationsCommunications(): Promise<OperationsCommunicationsProjection> {
-    return { tenantId, threads: [thread] };
+    return { tenantId, totalUnreadCount: thread.unreadCount, threads: [thread] };
   }
   async getOperationsCommunicationThread(id: string): Promise<OperationsCommunicationThread | null> {
     return id === threadId ? thread : null;
+  }
+  async markOperationsCommunicationThreadRead(
+    id: string,
+    lastReadMessageId: string,
+  ): Promise<CommunicationThreadReadState | null> {
+    if (id !== threadId) return null;
+    this.markedReadMessageId = lastReadMessageId;
+    return { threadId, lastReadMessageId, unreadCount: 0, hasUnreadVoice: false };
   }
   async sendOperationsMessage(command: SendOperationsMessageCommand): Promise<SendOperationsMessageResult> {
     this.command = command;
@@ -188,4 +202,22 @@ test("viewer cannot reply to a driver", async () => {
   }), threadId, dependencies(gateway));
   assert.equal(response.status, 403);
   assert.equal(gateway.command, null);
+});
+
+test("viewer can clear only their own Operations unread cursor", async () => {
+  const gateway = new FakeGateway();
+  gateway.role = "viewer";
+  const lastReadMessageId = "10000000-0000-4000-8000-000000000031";
+  const response = await markOperationsCommunicationThreadReadHandler(new Request("http://test/read", {
+    method: "POST",
+    headers: {
+      authorization: "Bearer token",
+      "content-type": "application/json",
+      "x-rounds-tenant-id": tenantId,
+    },
+    body: JSON.stringify({ lastReadMessageId }),
+  }), threadId, dependencies(gateway));
+  assert.equal(response.status, 200);
+  assert.equal(gateway.markedReadMessageId, lastReadMessageId);
+  assert.equal((await response.json() as CommunicationThreadReadState).unreadCount, 0);
 });

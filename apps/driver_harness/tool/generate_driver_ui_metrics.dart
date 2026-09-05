@@ -1729,6 +1729,12 @@ abstract final class DriverH01Metrics {
   static const double daySize = ${_double(h01Messages['daySize'])};
   static const double dayTracking = ${_double(h01Messages['dayTracking'])};
   static const double dayBottom = ${_double(h01Messages['dayBottom'])};
+  static const double unreadMarginTop = ${_double(h01Messages['unreadMarginTop'])};
+  static const double unreadMarginBottom = ${_double(h01Messages['unreadMarginBottom'])};
+  static const double unreadGap = ${_double(h01Messages['unreadGap'])};
+  static const double unreadSize = ${_double(h01Messages['unreadSize'])};
+  static const double unreadTracking = ${_double(h01Messages['unreadTracking'])};
+  static const double unreadDotSize = ${_double(h01Messages['unreadDotSize'])};
   static const double rowTop = ${_double(h01Messages['rowTop'])};
   static const double maxBubbleFraction = ${_double(h01Messages['maxBubbleFraction'])};
   static const double senderSize = ${_double(h01Messages['senderSize'])};

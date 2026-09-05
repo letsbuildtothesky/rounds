@@ -21,6 +21,8 @@ import { DriversWorkspace } from "./drivers-workspace";
 import { HistoryPanel } from "./history-panel";
 import { RoundDetailWorkspace } from "./round-detail-workspace";
 import { CommunicationsPanel } from "./communications-panel";
+import { useOperationsCommunications } from "./use-operations-communications";
+import { communicationUnreadByRound } from "../src/operations-communications-state";
 
 const roundsApiUrl = process.env.NEXT_PUBLIC_ROUNDS_API_URL ?? "http://127.0.0.1:8080";
 
@@ -158,6 +160,8 @@ function nextRoundReference(deliveries: UnplannedDeliverySummary[]): string {
 }
 
 export function OperationsWorkstation({ accessToken, tenant, userName, demoMode = false, deliveryIntake, deliveryIntakeOpen = false, deliveriesOpen = false, driversOpen = false, historyOpen = false, deliveryRefreshKey = 0, communicationRequest, onCloseDeliveryIntake, onDeliveries, onDrivers, onCloseDeliveries, onCloseDrivers, onCloseHistory, onAddDelivery, onHistory, onCommunications, onSignOut }: Props) {
+  const communications = useOperationsCommunications(accessToken, tenant);
+  const roundUnread = useMemo(() => communicationUnreadByRound(communications.projection), [communications.projection]);
   const [projection, setProjection] = useState<OperationsActionProjection | null>(null);
   const [planning, setPlanning] = useState<OperationsPlanningProjection | null>(null);
   const [driverCapacity, setDriverCapacity] = useState<OperationsDriversProjection | null>(null);
@@ -465,7 +469,7 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
       <button className="v45-section-trigger" type="button" aria-haspopup="dialog" aria-expanded={sectionMenuOpen} onClick={() => setSectionMenuOpen(true)}><span>{historyOpen ? "History" : driversOpen ? "Drivers" : deliveriesOpen || deliveryIntakeOpen ? "Deliveries" : "Dispatch"}</span><OperationsMenuIcon /></button>
       <div className="v45-spacer" />
       <button className="v45-network" type="button" disabled title="Network dispatch is outside the connected Own-Team slice"><i /><span>Own Team</span><ChevronIcon /></button>
-      <button className="v45-util" type="button" title="Driver communications" onClick={() => openCommunications()}><MessageIcon /></button>
+      <button className="v45-util" type="button" title="Driver communications" onClick={() => openCommunications()}><MessageIcon />{!!communications.projection?.totalUnreadCount && <b>{communications.projection.totalUnreadCount}</b>}</button>
       <button className="v45-util" type="button" title="Operational alerts" onClick={() => setTab("action")}><BellIcon /></button>
       <div className="v45-profile-wrap"><button className="v45-util" type="button" title="Business settings" onClick={() => setProfileOpen((open) => !open)}><UserIcon /></button>{profileOpen && <div className="v45-profile-menu"><strong>{userName}</strong><span>{tenant.displayName}</span><button type="button" onClick={onSignOut}>Sign out</button></div>}</div>
     </header>
@@ -513,6 +517,7 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
             exceptions={projection?.exceptions ?? []}
             planningDeliveries={mapPlanningDeliveries}
             routeGeometry={routePreview?.geometry}
+            communicationUnreadByRound={roundUnread}
             onCameraChange={handleMapCameraChange}
             onSelectRound={(round) => { setDispatchMode("live"); setTab(round.state === "complete" ? "done" : round.state === "active" ? "live" : "ready"); setSelection({ kind: "round", item: round }); }}
             onSelectException={(item) => { setDispatchMode("live"); setTab("action"); setSelection({ kind: "exception", item }); }}
@@ -578,6 +583,7 @@ export function OperationsWorkstation({ accessToken, tenant, userName, demoMode 
         {accessToken && <CommunicationsPanel
           accessToken={accessToken}
           tenant={tenant}
+          communications={communications}
           request={communicationRequest}
           drawerOpen={Boolean(selection)}
           onHistory={onHistory}

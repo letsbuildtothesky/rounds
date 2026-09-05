@@ -1,10 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, type ClipboardEvent, type DragEvent, type KeyboardEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type ClipboardEvent, type DragEvent, type KeyboardEvent } from "react";
 import type {
   DriverThreadMessage,
   MessageLocationAttachment,
-  OperationsCommunicationsProjection,
   OperationsTenant,
   SendOperationsMessageResult,
 } from "@rounds/contracts";
@@ -20,11 +19,13 @@ import {
   validateMessageFile,
   type StagedOperationsAttachment,
 } from "../src/operations-message-media";
+import type { OperationsCommunicationsStore } from "./use-operations-communications";
 
 const roundsApiUrl = process.env.NEXT_PUBLIC_ROUNDS_API_URL ?? "http://127.0.0.1:8080";
 type Props = {
   accessToken: string;
   tenant: OperationsTenant;
+  communications: OperationsCommunicationsStore;
   request?: { threadId: string; nonce: number };
   drawerOpen?: boolean;
   onHistory: () => void;
@@ -111,11 +112,10 @@ function StagedAttachmentPreview({ attachment, onRemove }: { attachment: StagedO
   </div>;
 }
 
-export function CommunicationsPanel({ accessToken, tenant, request, drawerOpen = false, onHistory, onOpenRound }: Props) {
-  const [projection, setProjection] = useState<OperationsCommunicationsProjection | null>(null);
+export function CommunicationsPanel({ accessToken, tenant, communications, request, drawerOpen = false, onHistory, onOpenRound }: Props) {
+  const { projection, loading, error: loadError, refresh, markRead } = communications;
   const [selectedThreadId, setSelectedThreadId] = useState("");
   const [draft, setDraft] = useState("");
-  const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const [staged, setStaged] = useState<StagedOperationsAttachment[]>([]);
@@ -132,39 +132,23 @@ export function CommunicationsPanel({ accessToken, tenant, request, drawerOpen =
   const recordingStartedAt = useRef(0);
   const handledRequest = useRef(0);
 
-  const load = useCallback(async (quiet = false) => {
-    if (!quiet) setLoading(true);
-    try {
-      const response = await fetch(`${roundsApiUrl}/v1/operations/communications`, {
-        headers: {
-          authorization: `Bearer ${accessToken}`,
-          "x-rounds-tenant-id": tenant.id,
-          "x-trace-id": crypto.randomUUID(),
-        },
-      });
-      const body = await response.json() as OperationsCommunicationsProjection | ApiError;
-      if (!response.ok) throw new Error(messageFrom(body as ApiError, `Communications HTTP ${response.status}`));
-      const next = body as OperationsCommunicationsProjection;
-      setProjection(next);
-      setSelectedThreadId((current) => next.threads.some((thread) => thread.id === current) ? current : next.threads[0]?.id ?? "");
-      setError("");
-    } catch (caught) {
-      if (!quiet) setError(caught instanceof Error ? caught.message : "Communications could not be loaded");
-    } finally {
-      if (!quiet) setLoading(false);
-    }
-  }, [accessToken, tenant.id]);
-
   useEffect(() => {
-    void load();
-    const timer = window.setInterval(() => void load(true), 5000);
-    return () => window.clearInterval(timer);
-  }, [load]);
+    if (!projection) return;
+    setSelectedThreadId((current) => projection.threads.some((thread) => thread.id === current)
+      ? current
+      : projection.threads[0]?.id ?? "");
+    const unreadThreadIds = projection.threads.filter((thread) => thread.unreadCount > 0).map((thread) => thread.id);
+    setActiveThreadIds((current) => [...current, ...unreadThreadIds.filter((threadId) => !current.includes(threadId))]);
+  }, [projection]);
 
   const selected = useMemo(
     () => projection?.threads.find((thread) => thread.id === selectedThreadId) ?? null,
     [projection, selectedThreadId],
   );
+
+  useEffect(() => {
+    if (expanded && selected?.unreadCount) void markRead(selected.id);
+  }, [expanded, markRead, selected]);
 
   useEffect(() => {
     if (!projection || !request?.nonce || request.nonce <= handledRequest.current) return;
@@ -363,10 +347,10 @@ export function CommunicationsPanel({ accessToken, tenant, request, drawerOpen =
       window.localStorage.removeItem(draftKey(tenant.id, selected.id));
       await clearStagedAttachments(staged);
       setStaged([]);
-      await load(true);
+      await refresh(true);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Reply could not be sent");
-      await load(true);
+      await refresh(true);
     } finally {
       setSending(false);
     }
@@ -441,7 +425,7 @@ export function CommunicationsPanel({ accessToken, tenant, request, drawerOpen =
         <span><button type="button" onClick={onHistory}>History</button><button type="button" onClick={() => onOpenRound(selected.roundId)}>Open Round</button></span>
       </div>}
 
-      {error && <div className="v45-comms-error" role="alert"><strong>Couldn&apos;t continue</strong><span>{error}</span><button type="button" onClick={() => { setError(""); void load(); }}>Retry</button></div>}
+      {(error || loadError) && <div className="v45-comms-error" role="alert"><strong>Couldn&apos;t continue</strong><span>{error || loadError}</span><button type="button" onClick={() => { setError(""); void refresh(); }}>Retry</button></div>}
 
       <div className="v45-comms-thread" aria-live="polite">
         {loading ? <div className="v45-comms-empty">Loading driver conversations…</div> : !projection?.threads.length ? <div className="v45-comms-empty"><strong>No driver conversations yet</strong><span>A thread appears when a Team driver opens Contact Operations during an active Round.</span></div> : selected && !selected.messages.length ? <div className="v45-comms-empty">No messages in this thread yet.</div> : selected?.messages.map((message) => message.sender === "system" ? <div className="v45-comms-event" key={message.id}><span>{message.body} · {timeLabel(message.sentAt, tenant.timezone)}</span></div> : <div className={`v45-comms-message ${message.sender}`} key={message.id}>
@@ -466,7 +450,7 @@ export function CommunicationsPanel({ accessToken, tenant, request, drawerOpen =
     </aside>}
 
     {!!activeThreads.length && <div className="v45-comms-tray" aria-label="Active driver conversations">
-      {activeThreads.slice(-4).map((thread) => <button type="button" key={thread.id} className={thread.id === selectedThreadId && expanded ? "active" : ""} onClick={() => activateThread(thread.id)}><span className="v45-comms-tray-avatar">{thread.driverName.slice(0, 2).toUpperCase()}</span><span><strong>{thread.driverName}</strong><small>{messageSummary(thread.messages.at(-1))}</small></span>{thread.priority === "emergency" && <i>!</i>}</button>)}
+      {activeThreads.slice(-4).map((thread) => <button type="button" key={thread.id} className={`${thread.id === selectedThreadId && expanded ? "active" : ""}${thread.unreadCount ? " unread" : ""}`} onClick={() => activateThread(thread.id)}><span className="v45-comms-tray-avatar">{thread.driverName.slice(0, 2).toUpperCase()}</span><span><strong>{thread.driverName}</strong><small>{messageSummary(thread.messages.at(-1))}</small></span>{thread.priority === "emergency" ? <i className="emergency">!</i> : thread.unreadCount ? <i className={thread.hasUnreadVoice ? "voice" : ""} title={thread.hasUnreadVoice ? "Unread voice message" : `${thread.unreadCount} unread`}>{thread.hasUnreadVoice ? "●" : thread.unreadCount}</i> : null}</button>)}
       {activeThreads.length > 4 && <span className="v45-comms-tray-overflow">+{activeThreads.length - 4}</span>}
     </div>}
   </>;
