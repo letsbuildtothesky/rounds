@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
+import '../debug/driver_board_preview_fixtures.dart';
 import '../ui/assigned_round_screen.dart';
 import '../ui/driver_entry_flow_screen.dart';
 import '../driver/driver_entry.dart';
@@ -95,6 +96,32 @@ class _RoundsHarnessAppState extends State<RoundsHarnessApp> {
   }
 
   Widget _home() {
+    if (!kReleaseMode && _previewScreen == 'b00') {
+      return StartShiftScreen(
+        controller: widget.controller,
+        session: DriverBoardPreviewFixtures.startShift,
+        now: DriverBoardPreviewFixtures.startShiftNow,
+        onStartShift: () async => true,
+      );
+    }
+    if (!kReleaseMode && _previewScreen == 'b01') {
+      return TeamHomeScreen(
+        controller: widget.controller,
+        session: DriverBoardPreviewFixtures.waiting,
+        enableNativeNavigation: false,
+        now: DriverBoardPreviewFixtures.waitingNow,
+      );
+    }
+    if (!kReleaseMode && _previewScreen == 'b01b') {
+      return TeamHomeScreen(
+        controller: widget.controller,
+        session: DriverBoardPreviewFixtures.assigned,
+        round: DriverBoardPreviewFixtures.assignedRound,
+        enableNativeNavigation: false,
+        pickupDistanceMeters: 2800,
+        pickupEtaMinutes: 9,
+      );
+    }
     if (!kReleaseMode && _previewScreen.startsWith('entry-a0')) {
       final stage = switch (_previewScreen) {
         'entry-a03' => DriverEntryStage.otp,

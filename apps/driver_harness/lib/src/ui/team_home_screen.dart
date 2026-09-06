@@ -857,25 +857,12 @@ class _PickupAssignmentMap extends StatelessWidget {
     }
     return CustomPaint(
       key: const Key('b01b-map-preview'),
-      painter: const _PickupMapPainter(),
-      child: Stack(
-        children: [
-          Positioned(
-            right: 20,
-            top: 88,
-            child: Text(
-              '${pickup.displayName}\n${thai ? 'จุดรับของ' : 'Pickup'}',
-              textAlign: TextAlign.right,
-              style: const TextStyle(
-                color: RoundsColors.ink,
-                fontSize: 12,
-                height: 1.25,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
+      painter: _PickupMapPainter(
+        pickupName: pickup.displayName,
+        pickupLabel: thai ? 'จุดรับของ' : 'Pickup',
+        youLabel: thai ? 'คุณ' : 'You',
       ),
+      child: const SizedBox.expand(),
     );
   }
 
@@ -903,15 +890,25 @@ class _PickupAssignmentMap extends StatelessWidget {
 }
 
 class _PickupMapPainter extends CustomPainter {
-  const _PickupMapPainter();
+  const _PickupMapPainter({
+    required this.pickupName,
+    required this.pickupLabel,
+    required this.youLabel,
+  });
+
+  final String pickupName;
+  final String pickupLabel;
+  final String youLabel;
 
   @override
   void paint(Canvas canvas, Size size) {
+    canvas.clipRect(Offset.zero & size);
     canvas.drawRect(
       Offset.zero & size,
       Paint()..color = const Color(0xFFF3F6F7),
     );
-    final block = Paint()..color = const Color(0xFFE8EDEF);
+    final block = Paint()
+      ..color = const Color(0xFFE8EDEF).withValues(alpha: .75);
     for (final rect in [
       Rect.fromLTWH(24, 20, 66, 36),
       Rect.fromLTWH(113, 27, 82, 50),
@@ -924,30 +921,26 @@ class _PickupMapPainter extends CustomPainter {
         block,
       );
     }
-    final road = Paint()
-      ..color = Colors.white
-      ..strokeWidth = 12
-      ..strokeCap = StrokeCap.round;
-    canvas.drawLine(
-      Offset(-24, size.height * .45),
-      Offset(size.width + 24, size.height * .36),
-      road,
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(size.width - 98, size.height - 75, 78, 55),
+        const Radius.circular(5),
+      ),
+      Paint()..color = const Color(0xFFE4F0E7),
     );
-    canvas.drawLine(
-      Offset(size.width * .47, -30),
-      Offset(size.width * .78, size.height + 30),
-      road,
-    );
+
+    _drawRoad(canvas, const Rect.fromLTWH(-24, 104, 448, 12), -8);
+    _drawRoad(canvas, const Rect.fromLTWH(168, -33, 330, 12), 78);
+    _drawRoad(canvas, const Rect.fromLTWH(18, 61, 226, 7), 13);
+    _drawRoad(canvas, const Rect.fromLTWH(48, 172, 300, 7), -4);
+    _drawRoad(canvas, const Rect.fromLTWH(279, 3, 242, 7), 88);
+
+    final yScale = size.height / 260;
     final route = Path()
-      ..moveTo(84, size.height * .62)
-      ..cubicTo(
-        145,
-        size.height * .50,
-        240,
-        size.height * .34,
-        size.width - 73,
-        43,
-      );
+      ..moveTo(84, 139 * yScale)
+      ..cubicTo(120, 131 * yScale, 145, 113 * yScale, 175, 96 * yScale)
+      ..cubicTo(208, 77 * yScale, 244, 80 * yScale, 277, 66 * yScale)
+      ..cubicTo(296, 58 * yScale, 309, 50 * yScale, 320, 43 * yScale);
     canvas.drawPath(
       route,
       Paint()
@@ -964,20 +957,150 @@ class _PickupMapPainter extends CustomPainter {
         ..strokeCap = StrokeCap.round
         ..style = PaintingStyle.stroke,
     );
-    canvas.drawCircle(
-      Offset(84, size.height * .62),
-      9,
-      Paint()..color = const Color(0xFF2F6FBD),
+
+    final current = const Offset(84, 132);
+    canvas.drawCircle(current, 9, Paint()..color = Colors.white);
+    canvas.drawCircle(current, 5, Paint()..color = const Color(0xFF2F6FBD));
+
+    const pickupCenter = Offset(306, 64);
+    canvas.drawCircle(pickupCenter, 16, Paint()..color = Colors.white);
+    canvas.drawCircle(pickupCenter, 12, Paint()..color = RoundsColors.orange);
+    _drawHome(canvas, pickupCenter);
+
+    _drawText(
+      canvas,
+      text: youLabel,
+      offset: const Offset(50, 149),
+      color: RoundsColors.muted,
+      fontSize: 11.5,
+      fontWeight: FontWeight.w700,
     );
-    canvas.drawCircle(
-      Offset(size.width - 73, 43),
-      16,
-      Paint()..color = RoundsColors.orange,
+    _drawRightAlignedLabel(
+      canvas,
+      primary: pickupName,
+      secondary: pickupLabel,
+      right: size.width - 20,
+      top: 88,
+    );
+  }
+
+  static void _drawRoad(Canvas canvas, Rect rect, double degrees) {
+    final center = rect.center;
+    canvas.save();
+    canvas.translate(center.dx, center.dy);
+    canvas.rotate(degrees * math.pi / 180);
+    final local = Rect.fromCenter(
+      center: Offset.zero,
+      width: rect.width,
+      height: rect.height,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        local.inflate(.5),
+        Radius.circular(rect.height / 2),
+      ),
+      Paint()..color = const Color(0xFFE1E6E9),
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(local, Radius.circular(rect.height / 2)),
+      Paint()..color = Colors.white,
+    );
+    canvas.restore();
+  }
+
+  static void _drawHome(Canvas canvas, Offset center) {
+    final paint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.1
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    final roof = Path()
+      ..moveTo(center.dx - 6.3, center.dy - .8)
+      ..lineTo(center.dx, center.dy - 6)
+      ..lineTo(center.dx + 6.3, center.dy - .8);
+    final house = Path()
+      ..moveTo(center.dx - 4.9, center.dy - 1.6)
+      ..lineTo(center.dx - 4.9, center.dy + 6)
+      ..lineTo(center.dx + 4.9, center.dy + 6)
+      ..lineTo(center.dx + 4.9, center.dy - 1.6);
+    canvas.drawPath(roof, paint);
+    canvas.drawPath(house, paint);
+  }
+
+  static void _drawText(
+    Canvas canvas, {
+    required String text,
+    required Offset offset,
+    required Color color,
+    required double fontSize,
+    required FontWeight fontWeight,
+  }) {
+    final painter = TextPainter(
+      text: TextSpan(
+        text: text,
+        style: TextStyle(
+          color: color,
+          fontFamily: 'Inter',
+          fontSize: fontSize,
+          fontWeight: fontWeight,
+          height: 1.1,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    painter.paint(canvas, offset);
+  }
+
+  static void _drawRightAlignedLabel(
+    Canvas canvas, {
+    required String primary,
+    required String secondary,
+    required double right,
+    required double top,
+  }) {
+    final primaryPainter = TextPainter(
+      text: TextSpan(
+        text: primary,
+        style: const TextStyle(
+          color: RoundsColors.ink,
+          fontFamily: 'Inter',
+          fontSize: 13,
+          fontWeight: FontWeight.w800,
+          height: 1.1,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.right,
+      maxLines: 1,
+      ellipsis: '…',
+    )..layout(maxWidth: 150);
+    primaryPainter.paint(canvas, Offset(right - primaryPainter.width, top));
+    final secondaryPainter = TextPainter(
+      text: TextSpan(
+        text: secondary,
+        style: const TextStyle(
+          color: RoundsColors.muted,
+          fontFamily: 'Inter',
+          fontSize: 11.5,
+          fontWeight: FontWeight.w600,
+          height: 1.1,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.right,
+    )..layout(maxWidth: 150);
+    secondaryPainter.paint(
+      canvas,
+      Offset(right - secondaryPainter.width, top + primaryPainter.height + 4),
     );
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _PickupMapPainter oldDelegate) =>
+      oldDelegate.pickupName != pickupName ||
+      oldDelegate.pickupLabel != pickupLabel ||
+      oldDelegate.youLabel != youLabel;
 }
 
 class _RoundContext extends StatelessWidget {

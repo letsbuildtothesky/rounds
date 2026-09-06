@@ -4,6 +4,7 @@ import 'package:rounds_driver_harness/src/app/app_strings.dart';
 import 'package:rounds_driver_harness/src/app/driver_design_system.dart';
 import 'package:rounds_driver_harness/src/app/generated/driver_ui_metrics.g.dart';
 import 'package:rounds_driver_harness/src/app/rounds_harness_app.dart';
+import 'package:rounds_driver_harness/src/debug/driver_board_preview_fixtures.dart';
 import 'package:rounds_driver_harness/src/driver/driver_session.dart';
 import 'package:rounds_driver_harness/src/ui/pickup_navigation_screen.dart';
 import 'package:rounds_driver_harness/src/ui/team_home_screen.dart';
@@ -115,6 +116,36 @@ void main() {
     await tester.tap(find.byKey(const Key('b01b-navigate')));
     await tester.pumpAndSettle();
     expect(find.byType(PickupNavigationScreen), findsOneWidget);
+  });
+
+  testWidgets('B01B review fixture matches the canonical English board', (
+    tester,
+  ) async {
+    await _pump(
+      tester,
+      size: const Size(393, 852),
+      locale: 'en',
+      screen: (controller) => TeamHomeScreen(
+        controller: controller,
+        session: DriverBoardPreviewFixtures.assigned,
+        round: DriverBoardPreviewFixtures.assignedRound,
+        enableNativeNavigation: false,
+        pickupDistanceMeters: 2800,
+        pickupEtaMinutes: 9,
+      ),
+    );
+
+    expect(find.text('2.8 km'), findsOneWidget);
+    expect(find.text('9 min'), findsOneWidget);
+    expect(find.byKey(const Key('b01b-map-preview')), findsOneWidget);
+    expect(tester.takeException(), isNull);
+
+    await expectLater(
+      find.byType(MaterialApp),
+      matchesGoldenFile(
+        'goldens/team-home-assigned-board-review-english-393x852.png',
+      ),
+    );
   });
 
   testWidgets('B01B Thai is canonical and usable at compact width', (
