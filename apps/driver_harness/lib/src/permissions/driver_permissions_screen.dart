@@ -417,9 +417,7 @@ class _PermissionTruth extends StatelessWidget {
     child: Column(
       children: [
         _TruthRow(
-          icon: snapshot?.ready ?? false
-              ? Icons.check
-              : Icons.location_searching,
+          icon: Icons.check,
           text: copy.truthLabel(snapshot),
           compact: compact,
           shortViewport: shortViewport,

@@ -214,6 +214,7 @@ String generateDriverUiMetrics(Map<String, dynamic> json) {
   final n03Actions = n03['actions'] as Map<String, dynamic>;
   final n03Compact = n03['compact'] as Map<String, dynamic>;
   final n03Short = n03['short'] as Map<String, dynamic>;
+  final n03Sheet = n03['sheet'] as Map<String, dynamic>;
 
   return '''// GENERATED CODE - DO NOT MODIFY BY HAND.
 // Source: $_sourcePath
@@ -2437,6 +2438,7 @@ abstract final class DriverN03Metrics {
   static const double panelPaddingBottom = ${_double(n03Panel['paddingBottom'])};
   static const double kickerSize = ${_double(n03Panel['kickerSize'])};
   static const double kickerBottom = ${_double(n03Panel['kickerBottom'])};
+  static const double copyMaxWidth = ${_double(n03Panel['copyMaxWidth'])};
   static const double titleSize = ${_double(n03Panel['titleSize'])};
   static const double titleHeight = ${_double(n03Panel['titleHeight'])};
   static const double leadTop = ${_double(n03Panel['leadTop'])};
@@ -2473,6 +2475,32 @@ abstract final class DriverN03Metrics {
   static const double shortTruthRowMinHeight = ${_double(n03Short['truthRowMinHeight'])};
   static const double shortPrimaryHeight = ${_double(n03Short['primaryHeight'])};
   static const double shortSecondaryHeight = ${_double(n03Short['secondaryHeight'])};
+  static const double sheetRadius = ${_double(n03Sheet['radius'])};
+  static const double sheetPaddingTop = ${_double(n03Sheet['paddingTop'])};
+  static const double sheetPaddingHorizontal = ${_double(n03Sheet['paddingHorizontal'])};
+  static const double sheetPaddingBottom = ${_double(n03Sheet['paddingBottom'])};
+  static const double sheetGrabWidth = ${_double(n03Sheet['grabWidth'])};
+  static const double sheetGrabHeight = ${_double(n03Sheet['grabHeight'])};
+  static const double sheetGrabBottom = ${_double(n03Sheet['grabBottom'])};
+  static const double sheetKickerSize = ${_double(n03Sheet['kickerSize'])};
+  static const double sheetKickerLetterSpacing = ${_double(n03Sheet['kickerLetterSpacing'])};
+  static const double sheetKickerBottom = ${_double(n03Sheet['kickerBottom'])};
+  static const double sheetTitleSize = ${_double(n03Sheet['titleSize'])};
+  static const double sheetTitleLetterSpacing = ${_double(n03Sheet['titleLetterSpacing'])};
+  static const double sheetSubtitleTop = ${_double(n03Sheet['subtitleTop'])};
+  static const double sheetSubtitleSize = ${_double(n03Sheet['subtitleSize'])};
+  static const double sheetSubtitleHeight = ${_double(n03Sheet['subtitleHeight'])};
+  static const double settingsPathTop = ${_double(n03Sheet['settingsPathTop'])};
+  static const double settingsRowPaddingVertical = ${_double(n03Sheet['settingsRowPaddingVertical'])};
+  static const double settingsPlatformSize = ${_double(n03Sheet['settingsPlatformSize'])};
+  static const double settingsCopyTop = ${_double(n03Sheet['settingsCopyTop'])};
+  static const double settingsCopySize = ${_double(n03Sheet['settingsCopySize'])};
+  static const double settingsCopyHeight = ${_double(n03Sheet['settingsCopyHeight'])};
+  static const double sheetPrimaryTop = ${_double(n03Sheet['primaryTop'])};
+  static const double sheetPrimaryHeight = ${_double(n03Sheet['primaryHeight'])};
+  static const double sheetPrimarySize = ${_double(n03Sheet['primarySize'])};
+  static const double sheetSecondaryTop = ${_double(n03Sheet['secondaryTop'])};
+  static const double sheetSecondaryHeight = ${_double(n03Sheet['secondaryHeight'])};
 }
 ''';
 }

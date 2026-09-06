@@ -2204,6 +2204,7 @@
         "paddingBottom": 23,
         "kickerSize": 11.5,
         "kickerBottom": 12,
+        "copyMaxWidth": 340,
         "titleSize": 37,
         "titleHeight": 0.98,
         "leadTop": 13,
@@ -2246,6 +2247,34 @@
         "truthRowMinHeight": 46,
         "primaryHeight": 54,
         "secondaryHeight": 40
+      },
+      "sheet": {
+        "radius": 20,
+        "paddingTop": 10,
+        "paddingHorizontal": 20,
+        "paddingBottom": 20,
+        "grabWidth": 38,
+        "grabHeight": 4,
+        "grabBottom": 18,
+        "kickerSize": 11.5,
+        "kickerLetterSpacing": 1.035,
+        "kickerBottom": 10,
+        "titleSize": 28,
+        "titleLetterSpacing": -1.4,
+        "subtitleTop": 9,
+        "subtitleSize": 13,
+        "subtitleHeight": 1.4,
+        "settingsPathTop": 20,
+        "settingsRowPaddingVertical": 14,
+        "settingsPlatformSize": 13.5,
+        "settingsCopyTop": 5,
+        "settingsCopySize": 12.5,
+        "settingsCopyHeight": 1.4,
+        "primaryTop": 18,
+        "primaryHeight": 56,
+        "primarySize": 16,
+        "secondaryTop": 5,
+        "secondaryHeight": 46
       }
     }
   }

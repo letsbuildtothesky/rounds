@@ -183,11 +183,7 @@ class _RecoveryPanel extends StatelessWidget {
         : _cached
         ? 'Retry GPS'
         : 'Back';
-    final primaryAction = _accessOff
-        ? onReviewLocationAccess
-        : _cached
-        ? onContinue
-        : onRetry;
+    final primaryAction = _cached ? onContinue : onRetry;
     final secondaryAction = (_accessOff && _cached)
         ? onContinue
         : _cached
@@ -228,19 +224,29 @@ class _RecoveryPanel extends StatelessWidget {
               ),
             ),
             const SizedBox(height: DriverN03Metrics.kickerBottom),
-            Text(
-              title,
-              key: const Key('n03-title'),
-              style: TextStyle(
-                color: RoundsColors.ink,
-                fontSize: shortViewport
-                    ? DriverN03Metrics.shortTitleSize
-                    : compact
-                    ? DriverN03Metrics.compactTitleSize
-                    : DriverN03Metrics.titleSize,
-                height: DriverN03Metrics.titleHeight,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -2.14,
+            ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: DriverN03Metrics.copyMaxWidth,
+              ),
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  title,
+                  key: const Key('n03-title'),
+                  maxLines: 1,
+                  style: TextStyle(
+                    color: RoundsColors.ink,
+                    fontSize: shortViewport
+                        ? DriverN03Metrics.shortTitleSize
+                        : compact
+                        ? DriverN03Metrics.compactTitleSize
+                        : DriverN03Metrics.titleSize,
+                    height: DriverN03Metrics.titleHeight,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -2.14,
+                  ),
+                ),
               ),
             ),
             SizedBox(
@@ -250,17 +256,22 @@ class _RecoveryPanel extends StatelessWidget {
                   ? DriverN03Metrics.compactLeadTop
                   : DriverN03Metrics.leadTop,
             ),
-            Text(
-              lead,
-              style: TextStyle(
-                color: RoundsColors.inkSecondary,
-                fontSize: shortViewport
-                    ? DriverN03Metrics.shortLeadSize
-                    : compact
-                    ? DriverN03Metrics.compactLeadSize
-                    : DriverN03Metrics.leadSize,
-                height: DriverN03Metrics.leadHeight,
-                fontWeight: FontWeight.w600,
+            ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: DriverN03Metrics.copyMaxWidth,
+              ),
+              child: Text(
+                lead,
+                style: TextStyle(
+                  color: RoundsColors.inkSecondary,
+                  fontSize: shortViewport
+                      ? DriverN03Metrics.shortLeadSize
+                      : compact
+                      ? DriverN03Metrics.compactLeadSize
+                      : DriverN03Metrics.leadSize,
+                  height: DriverN03Metrics.leadHeight,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
             SizedBox(
@@ -286,7 +297,9 @@ class _RecoveryPanel extends StatelessWidget {
                   : DriverN03Metrics.primaryHeight,
               child: FilledButton(
                 key: const Key('n03-primary'),
-                onPressed: primaryAction,
+                onPressed: _accessOff
+                    ? () => _openLocationSettings(context)
+                    : primaryAction,
                 style: FilledButton.styleFrom(
                   backgroundColor: RoundsColors.ink,
                   foregroundColor: Colors.white,
@@ -333,6 +346,17 @@ class _RecoveryPanel extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _openLocationSettings(BuildContext context) async {
+    final shouldReview = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: RoundsColors.ink.withValues(alpha: .30),
+      builder: (_) => const _LocationSettingsSheet(),
+    );
+    if (shouldReview == true) onReviewLocationAccess();
   }
 }
 
@@ -424,6 +448,183 @@ class _TruthRow extends StatelessWidget {
             color: valueColor,
             fontSize: textSize,
             fontWeight: FontWeight.w900,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+class _LocationSettingsSheet extends StatelessWidget {
+  const _LocationSettingsSheet();
+
+  @override
+  Widget build(BuildContext context) => Material(
+    key: const Key('n03-location-settings-sheet'),
+    color: RoundsColors.surface,
+    borderRadius: const BorderRadius.vertical(
+      top: Radius.circular(DriverN03Metrics.sheetRadius),
+    ),
+    child: SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+          DriverN03Metrics.sheetPaddingHorizontal,
+          DriverN03Metrics.sheetPaddingTop,
+          DriverN03Metrics.sheetPaddingHorizontal,
+          DriverN03Metrics.sheetPaddingBottom,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: DriverN03Metrics.sheetGrabWidth,
+                height: DriverN03Metrics.sheetGrabHeight,
+                margin: const EdgeInsets.only(
+                  bottom: DriverN03Metrics.sheetGrabBottom,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFD7DDE2),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
+            ),
+            const Text(
+              'LOCATION SETTINGS',
+              style: TextStyle(
+                color: RoundsColors.orange,
+                fontSize: DriverN03Metrics.sheetKickerSize,
+                height: 1,
+                fontWeight: FontWeight.w900,
+                letterSpacing: DriverN03Metrics.sheetKickerLetterSpacing,
+              ),
+            ),
+            const SizedBox(height: DriverN03Metrics.sheetKickerBottom),
+            const Text(
+              'Turn location back on',
+              style: TextStyle(
+                color: RoundsColors.ink,
+                fontSize: DriverN03Metrics.sheetTitleSize,
+                height: 1,
+                fontWeight: FontWeight.w900,
+                letterSpacing: DriverN03Metrics.sheetTitleLetterSpacing,
+              ),
+            ),
+            const SizedBox(height: DriverN03Metrics.sheetSubtitleTop),
+            const Text(
+              'Use your phone’s settings, then return to Rounds and check again.',
+              style: TextStyle(
+                color: RoundsColors.muted,
+                fontSize: DriverN03Metrics.sheetSubtitleSize,
+                height: DriverN03Metrics.sheetSubtitleHeight,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: DriverN03Metrics.settingsPathTop),
+            const DecoratedBox(
+              decoration: BoxDecoration(
+                border: Border(top: BorderSide(color: RoundsColors.line)),
+              ),
+              child: Column(
+                children: [
+                  _SettingsPathRow(
+                    platform: 'iPhone',
+                    path:
+                        'Settings → Privacy & Security → Location Services → Rounds → While Using the App / Always when required',
+                  ),
+                  _SettingsPathRow(
+                    platform: 'Android',
+                    path:
+                        'Settings → Location → App permissions → Rounds → Allow while using / Allow all the time when required',
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: DriverN03Metrics.sheetPrimaryTop),
+            SizedBox(
+              width: double.infinity,
+              height: DriverN03Metrics.sheetPrimaryHeight,
+              child: FilledButton(
+                key: const Key('n03-check-location-access'),
+                onPressed: () => Navigator.of(context).pop(true),
+                style: FilledButton.styleFrom(
+                  backgroundColor: RoundsColors.ink,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(
+                      DriverN03Metrics.primaryRadius,
+                    ),
+                  ),
+                ),
+                child: const Text(
+                  'Check location access',
+                  style: TextStyle(
+                    fontSize: DriverN03Metrics.sheetPrimarySize,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: DriverN03Metrics.sheetSecondaryTop),
+            SizedBox(
+              width: double.infinity,
+              height: DriverN03Metrics.sheetSecondaryHeight,
+              child: TextButton(
+                key: const Key('n03-close-location-settings'),
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text(
+                  'Not now',
+                  style: TextStyle(
+                    color: RoundsColors.muted,
+                    fontSize: DriverN03Metrics.secondarySize,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+class _SettingsPathRow extends StatelessWidget {
+  const _SettingsPathRow({required this.platform, required this.path});
+
+  final String platform;
+  final String path;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: double.infinity,
+    padding: const EdgeInsets.symmetric(
+      vertical: DriverN03Metrics.settingsRowPaddingVertical,
+    ),
+    decoration: const BoxDecoration(
+      border: Border(bottom: BorderSide(color: RoundsColors.line)),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          platform,
+          style: const TextStyle(
+            color: RoundsColors.ink,
+            fontSize: DriverN03Metrics.settingsPlatformSize,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+        const SizedBox(height: DriverN03Metrics.settingsCopyTop),
+        Text(
+          path,
+          style: const TextStyle(
+            color: RoundsColors.muted,
+            fontSize: DriverN03Metrics.settingsCopySize,
+            height: DriverN03Metrics.settingsCopyHeight,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ],

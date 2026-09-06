@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rounds_driver_harness/src/app/app_strings.dart';
+import 'package:rounds_driver_harness/src/app/driver_design_system.dart';
 import 'package:rounds_driver_harness/src/permissions/driver_permissions_screen.dart';
 import 'package:rounds_driver_harness/src/permissions/location_access.dart';
 
@@ -19,21 +20,44 @@ void main() {
       );
 
       await tester.pumpWidget(
-        MaterialApp(home: DriverPermissionsScreen(gateway: gateway)),
+        MaterialApp(
+          debugShowCheckedModeBanner: false,
+          theme: buildRoundsDriverTheme(),
+          home: DriverPermissionsScreen(gateway: gateway),
+        ),
       );
       await tester.pumpAndSettle();
 
       expect(tester.getSize(find.byKey(const Key('n01-topbar'))).height, 58);
-      expect(tester.getTopLeft(find.byKey(const Key('n01-main'))).dx, 0);
+      expect(
+        tester.getRect(find.byKey(const Key('n01-main'))),
+        const Rect.fromLTWH(0, 58, 393, 794),
+      );
       expect(
         tester.getSize(find.byKey(const Key('n01-icon'))),
         const Size(72, 72),
+      );
+      expect(
+        tester.getRect(find.byKey(const Key('n01-primary'))),
+        const Rect.fromLTWH(20, 709, 353, 62),
       );
       expect(find.text('Allow location'), findsOneWidget);
       expect(find.text('Allow notifications'), findsNothing);
       expect(
         find.text('Used only while working or open for jobs'),
         findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: find.byKey(const Key('n01-truth')),
+          matching: find.byIcon(Icons.check),
+        ),
+        findsOneWidget,
+      );
+      expect(find.byIcon(Icons.location_searching), findsNothing);
+      await expectLater(
+        find.byType(MaterialApp),
+        matchesGoldenFile('goldens/permissions-location-english-393x852.png'),
       );
 
       await tester.tap(find.byKey(const Key('n01-primary')));
@@ -47,6 +71,39 @@ void main() {
       );
     },
   );
+
+  testWidgets('N01 ready state remains truthful in the canonical layout', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(393, 852);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: buildRoundsDriverTheme(),
+        home: DriverPermissionsScreen(
+          gateway: _FakeLocationGateway(
+            state: DriverLocationAccessState.whileInUse,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('1 OF 1'), findsOneWidget);
+    expect(find.text('Done'), findsOneWidget);
+    expect(
+      find.text('Route and arrival access is ready while using Rounds'),
+      findsOneWidget,
+    );
+    await expectLater(
+      find.byType(MaterialApp),
+      matchesGoldenFile('goldens/permissions-ready-english-393x852.png'),
+    );
+  });
 
   testWidgets('N01 sends disabled services to device location settings', (
     tester,

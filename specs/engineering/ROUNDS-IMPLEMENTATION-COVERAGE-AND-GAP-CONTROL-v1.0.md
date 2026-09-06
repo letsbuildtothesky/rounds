@@ -7,6 +7,23 @@
 
 ## Changelog
 
+- **2026-09-06 · Checkpoint 68:** Completes the coded English N03 recovery
+  surface and locks the approved N01 location-permission subset without
+  promoting unsupported permissions. Canonical `393 × 852` comparison found
+  and corrected the N01 benefit icon, N03 access-off title width and the
+  missing N03 **Location settings** bottom drawer. The drawer now reproduces
+  the supplied iPhone/Android guidance, **Check location access** and **Not
+  now** actions; checking enters the existing real permission inspection and
+  retry path. Six English goldens cover denied/ready N01, cached/no-cache GPS
+  loss, access-off with cached guidance and the open settings drawer. N03's
+  map aperture stays transparent over the real Google navigation surface, so
+  no fake map is captured or shipped. The complete 173-test Driver suite,
+  Flutter analysis, repository-wide TypeScript typecheck, all 220 repository
+  tests and the configured Android debug APK build pass. N01 remains
+  `PARTIAL` pending approved background-navigation/notification policy and
+  physical acceptance. N03 moves from `PARTIAL` to `IMPLEMENTED`; true
+  signal-loss, background, degraded-network and iOS field gates remain open.
+  No Thai screen changed.
 - **2026-09-06 · Checkpoint 67:** Locks all three approved English N02
   presentation states at the canonical `393 × 852` reference viewport:
   **You’re offline**, **Reconnecting** and **Back online**. The goldens preserve
@@ -493,10 +510,10 @@ These are evidence-based planning estimates, not release claims. Recalculate the
 
 | Surface | Weighted functional coverage | Production readiness | Full roadmap context |
 |---|---:|---:|---:|
-| Driver · English Pilot business path only | 71.7% (`36.55 / 51`) | gate incomplete | not comparable to the complete board set |
-| Driver · all currently authorized own-fleet depth | 61.4% (`47.30 / 77`) | gate incomplete | approximately 30% of the complete Driver V1 board set; roadmap estimate only |
+| Driver · English Pilot business path only | 73.4% (`37.45 / 51`) | gate incomplete | not comparable to the complete board set |
+| Driver · all currently authorized own-fleet depth | 62.6% (`48.20 / 77`) | gate incomplete | approximately 30% of the complete Driver V1 board set; roadmap estimate only |
 | Operations · currently authorized own-fleet depth | 72.8% (`40.75 / 56`) | gate incomplete | approximately 35% of the complete Operations vision; roadmap estimate only |
-| Combined authorized English own-fleet work | 66.2% (`88.05 / 133`) | **not release-ready** | approximately 20–25% of Slices 1–7; roadmap estimate only |
+| Combined authorized English own-fleet work | 66.9% (`88.95 / 133`) | **not release-ready** | approximately 20–25% of Slices 1–7; roadmap estimate only |
 
 The Driver percentage is higher for the narrow delivery loop than for the complete 47-board product because Network onboarding, offers, earnings and marketplace behavior are deliberately outside the current own-fleet slice.
 
@@ -541,9 +558,9 @@ Canonical inventory: `specs/product/ROUNDS-DRIVER-CANONICAL-MANIFEST-v6.md` and 
 | K01 Network earnings | Network | `DEFERRED` | Intentionally absent. | Slice 5+ payment/settlement scope. |
 | L01 Profile + Language | Pilot/Slice 2 P1 | `IMPLEMENTED` | The measured canonical Team subset shows authenticated Driver identity, active merchant relationship and vehicle truth. Every visible L01 label, the language drawer, sign-out drawer and bottom navigation now use the supplied English/Thai copy; locale changes rerender the open profile immediately. Generated metrics reference both supplied boards and include their distinct Thai and 320 px composition rules. Support opens the existing Round-scoped H01 thread; sign-out requires explicit confirmation. Unsupported verification, identity editing, Network, payout and notification controls remain absent, and the former unsupported `Assigned` vehicle claim is removed. | Complete physical English/Thai visual acceptance. Localize and accept the child H01 surface separately; add account mutation or verification states only after authoritative workflows define them. |
 | M01 Notifications | Slice 2 P2 | `SPECIFIED` | No notification preference surface. | Define channel authority and implement preferences when notifications are promoted. |
-| N01 Permissions | Pilot P1 | `PARTIAL` | The measured canonical Team permission surface reads the real location-service and app-permission state, requests only in-use location, distinguishes denied/permanently blocked/service-disabled states and opens the correct OS settings. English and Thai now use their supplied board copy and generated geometry, including 320 px Thai overrides, across profile/navigation/location recovery and contextual camera-denial paths. Navigation no longer spins indefinitely when location is blocked, and no evidence is claimed on camera denial. The protected APK installs and launches on the connected Samsung; automated English/Thai and recovery coverage passes. | Validate background-navigation permission policy on Android/iOS before requesting it. Add notification permission only with a real promoted push channel, then complete physical denied/permanently-blocked/settings-return and visual acceptance. |
+| N01 Permissions | Pilot P1 | `PARTIAL` | The measured canonical Team permission surface reads the real location-service and app-permission state, requests only in-use location, distinguishes denied/permanently blocked/service-disabled states and opens the correct OS settings. English and Thai now use their supplied board copy and generated geometry, including 320 px Thai overrides, across profile/navigation/location recovery and contextual camera-denial paths. Navigation no longer spins indefinitely when location is blocked, and no evidence is claimed on camera denial. Two English `393 × 852` goldens lock the approved location-denied and ready states against the first supplied N01 board, including the canonical benefit checkmark, 58 px top bar, 72 px icon and 62 px action. The visible sequence remains honestly `1 OF 1`: unapproved background location and notification steps are not presented as available work. The protected APK installs and launches on the connected Samsung; automated English/Thai and recovery coverage passes. | Validate background-navigation permission policy on Android/iOS before requesting it. Add notification permission only with a real promoted push channel, then complete physical denied/permanently-blocked/settings-return and visual acceptance. |
 | N02 Offline/reconnecting | Pilot P0 | `VERIFIED` | The measured canonical N02 surface uses real Android connectivity transitions plus authenticated API reachability, an encrypted assigned-Round cache and live counts from the command, rich-message media, proof/media and telemetry outboxes. The cache round trip preserves authenticated/tenant identity, every assigned Stop's destination, Delivery instruction, manifest/version/contact truth and the complete non-geometry server route snapshot. Cached assigned work and cached route are separate facts: the Round remains readable after relaunch, but `Current route` is available only after Google reports or starts real guidance in the current Round/destination scope. Pending and partially uploading attachments contribute to message truth, so `Back online` cannot appear while rich media remains queued. `Back online` appears only after the API responds and every measured retryable queue is empty. Missing/expired auth preserves the cached Round and every durable queue. Secure aggregate ownership blocks unknown or different Drivers before any queued flush, while correct-owner recovery proceeds. Explicit sign-out retains the owner only while measured work remains. Offline and reconnecting states were exercised on the Samsung device with Wi-Fi and mobile data disabled, then restored. File-backed automated recovery proves rich media survives database close/reopen and resumes from its durable TUS offset. Samsung acceptance proves a queued file message remains visible after force-stop/relaunch, then clears and reaches Dispatch exactly once after reconnect. Three English `393 × 852` goldens now lock the approved offline, reconnecting and back-online states, including the 58 px top bar, 72 px state icon, 67 px rows, 20 px gutters and 62 px action; the visual fixture still uses actual snapshot values rather than substituting static prototype truth. | Define the canonical expired-session re-entry presentation; complete physical auth-expiry and queued-photo/status recovery, extended background recovery and degraded-network road acceptance. iOS device acceptance remains open. |
-| N03 GPS unavailable | Pilot P0 | `PARTIAL` | The measured canonical N03 surface is wired to the real operational position stream. A 30-second sample gap or stream error pauses live position/ETA, disabled service or permission is classified separately, and Retry GPS requires a real fix and restarts the stream. Cached-route continuation is shown only when Google guidance was already active. The Android access-off branch is physically verified on Samsung. | Complete true signal-loss field acceptance with location service still enabled, degraded/background recovery, and iOS device acceptance. The Google Navigation SDK may show its own Android location warning before the Rounds recovery surface when global location is switched off during active guidance. |
+| N03 GPS unavailable | Pilot P0 | `IMPLEMENTED` | The measured canonical N03 surface is wired to the real operational position stream. A 30-second sample gap or stream error pauses live position/ETA, disabled service or permission is classified separately, and Retry GPS requires a real fix and restarts the stream. Cached-route continuation is shown only when Google guidance was already active. The access-off state now opens the supplied Location settings bottom drawer with exact iPhone/Android guidance, cancel and real access-check actions before retry. Four English `393 × 852` goldens lock cached, no-cache, access-off and drawer states while leaving the central aperture transparent over the production Google map; no test map or static route is promoted. The Android access-off branch is physically verified on Samsung. | Complete true signal-loss field acceptance with location service still enabled, degraded/background recovery, and iOS device acceptance. The Google Navigation SDK may show its own Android location warning before the Rounds recovery surface when global location is switched off during active guidance. |
 
 ## 6. Operations v45 capability coverage
 
@@ -859,9 +876,18 @@ This sequence does not promote later slices; it orders the already authorized En
   top bar, 72 px icon, 67 px ledger rows, 20 px gutters and 62 px action while
   retaining real snapshot counts and availability states. N02 remains
   `VERIFIED`; no production transition, percentage or Thai surface changed.
+- **D32 English N01/N03 recovery parity completed 2026-09-06:** two N01 and
+  four N03 `393 × 852` goldens lock the approved permission and GPS recovery
+  states. N01's first truth row now uses the supplied benefit checkmark. N03
+  keeps its live-map aperture transparent, constrains its title to the supplied
+  340 px copy width and opens the canonical Location settings bottom drawer;
+  **Check location access** enters the real permission/retry path and **Not
+  now** dismisses without side effects. N01 remains `PARTIAL`; N03 advances to
+  `IMPLEMENTED`. No Thai surface or unsupported permission was added.
 - Define the canonical auth-expiry/re-auth entry presentation from approved
   English UX before exposing another recovery path.
-- Finish N01/N02/N03 recovery states.
+- Resolve N01 background-location and notification policy only when the real
+  channels are promoted; complete N01/N03 physical recovery acceptance.
 - Run golden/reference-viewport comparisons for every in-scope board.
 - Run physical multi-stop, degraded-network, background, battery and motorcycle road acceptance.
 - Complete physical English/Thai G03 comparison and live subtype acceptance;
