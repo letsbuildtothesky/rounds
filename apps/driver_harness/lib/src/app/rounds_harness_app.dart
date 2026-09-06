@@ -13,6 +13,7 @@ import '../ui/language_screen.dart';
 import '../ui/live_delivery_change_screen.dart';
 import '../ui/operations_chat_screen.dart';
 import '../ui/pickup_confirmation_screen.dart';
+import '../ui/pickup_navigation_screen.dart';
 import '../ui/start_shift_screen.dart';
 import '../ui/team_home_screen.dart';
 import '../ui/shift_end_screen.dart';
@@ -120,6 +121,17 @@ class _RoundsHarnessAppState extends State<RoundsHarnessApp> {
         enableNativeNavigation: false,
         pickupDistanceMeters: 2800,
         pickupEtaMinutes: 9,
+      );
+    }
+    if (!kReleaseMode &&
+        (_previewScreen == 'd01' || _previewScreen == 'd01-near')) {
+      return PickupNavigationScreen(
+        controller: widget.controller,
+        enableNativeNavigation: false,
+        round: DriverBoardPreviewFixtures.assignedRound,
+        reviewState: _previewScreen == 'd01-near'
+            ? PickupNavigationReviewState.near
+            : PickupNavigationReviewState.enRoute,
       );
     }
     if (!kReleaseMode && _previewScreen.startsWith('entry-a0')) {

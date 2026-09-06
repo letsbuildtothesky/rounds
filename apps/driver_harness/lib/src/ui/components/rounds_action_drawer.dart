@@ -63,7 +63,7 @@ class _RoundsActionDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bottomPadding = MediaQuery.paddingOf(context).bottom;
+    final bottomPadding = MediaQuery.viewPaddingOf(context).bottom;
     return Material(
       key: const Key('rounds-action-drawer'),
       color: RoundsColors.surface,

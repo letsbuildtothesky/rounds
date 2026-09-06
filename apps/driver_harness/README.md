@@ -92,7 +92,7 @@ not field evidence; record physical-device results in
 
 ### Canonical board review builds
 
-Non-release builds can open the English B00, B01 or B01B board directly for
+Non-release builds can open an English review board directly for
 HTML-to-Flutter review without mutating a live shift or Round:
 
 ```sh
@@ -100,7 +100,9 @@ flutter run --dart-define-from-file=.env.local \
   --dart-define=ROUNDS_PREVIEW_SCREEN=b01b
 ```
 
-Supported values are `b00`, `b01` and `b01b`. These routes use explicit local
+Supported values are `b00`, `b01`, `b01b`, `d01` and `d01-near`. These routes use explicit local
 review fixtures only when `kReleaseMode` is false. Release builds and normal
 debug builds do not read them. In particular, the canonical B01B `2.8 km` and
-`9 min` values are review evidence, never production route truth.
+`9 min` values and D01 maneuver/ETA/distance values are review evidence, never
+production route truth. Normal D01 continues to use live Google Navigation
+events.

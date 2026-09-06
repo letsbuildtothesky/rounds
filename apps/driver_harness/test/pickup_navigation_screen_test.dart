@@ -83,7 +83,26 @@ void main() {
   testWidgets(
     'D01 arrival continues to canonical D03/D04 pickup confirmation',
     (tester) async {
-      await _pumpScreen(tester, previewNearPickup: true);
+      await _pumpScreen(tester, reviewState: PickupNavigationReviewState.near);
+
+      expect(find.text('80 m'), findsWidgets);
+      expect(find.text('UrbanFlowers entrance ahead'), findsOneWidget);
+      expect(find.text('ALMOST THERE'), findsOneWidget);
+      expect(find.text('Entrance on your left'), findsOneWidget);
+
+      final previousComparator = goldenFileComparator;
+      final localComparator = previousComparator as LocalFileComparator;
+      goldenFileComparator = _TolerantGoldenFileComparator(
+        localComparator.basedir.resolve('pickup_navigation_screen_test.dart'),
+        precisionTolerance: .01,
+      );
+      addTearDown(() => goldenFileComparator = previousComparator);
+      await expectLater(
+        find.byType(PickupNavigationScreen),
+        matchesGoldenFile(
+          'goldens/pickup-navigation-board-review-english-near-393x852.png',
+        ),
+      );
 
       await tester.tap(find.byKey(const Key('pickup-arrival-action')));
       await tester.pumpAndSettle();
@@ -145,6 +164,35 @@ void main() {
       matchesGoldenFile('goldens/pickup-navigation-393x852.png'),
     );
   });
+
+  testWidgets('D01 direct review state matches the English HTML board', (
+    tester,
+  ) async {
+    await _pumpScreen(tester, reviewState: PickupNavigationReviewState.enRoute);
+
+    expect(find.text('320 m'), findsOneWidget);
+    expect(find.text('Turn left into Sukhumvit 39'), findsOneWidget);
+    expect(find.text('PICKUP'), findsOneWidget);
+    expect(find.text('UrbanFlowers'), findsWidgets);
+    expect(find.text('Sukhumvit 39'), findsOneWidget);
+    expect(find.text('6 min'), findsOneWidget);
+    expect(find.text('1.2 km'), findsOneWidget);
+
+    final previousComparator = goldenFileComparator;
+    final localComparator = previousComparator as LocalFileComparator;
+    goldenFileComparator = _TolerantGoldenFileComparator(
+      localComparator.basedir.resolve('pickup_navigation_screen_test.dart'),
+      precisionTolerance: .01,
+    );
+    addTearDown(() => goldenFileComparator = previousComparator);
+
+    await expectLater(
+      find.byType(PickupNavigationScreen),
+      matchesGoldenFile(
+        'goldens/pickup-navigation-board-review-english-393x852.png',
+      ),
+    );
+  });
 }
 
 Future<void> _pumpDock(
@@ -183,6 +231,7 @@ Future<void> _pumpScreen(
   WidgetTester tester, {
   Future<bool> Function(Uri uri)? launcher,
   bool previewNearPickup = false,
+  PickupNavigationReviewState? reviewState,
 }) async {
   _setViewport(tester);
   SharedPreferences.setMockInitialValues({
@@ -196,6 +245,7 @@ Future<void> _pumpScreen(
           enableNativeNavigation: false,
           round: _round,
           previewNearPickup: previewNearPickup,
+          reviewState: reviewState,
         )
       : PickupNavigationScreen(
           controller: controller,
@@ -203,6 +253,7 @@ Future<void> _pumpScreen(
           round: _round,
           launcher: launcher,
           previewNearPickup: previewNearPickup,
+          reviewState: reviewState,
         );
   await tester.pumpWidget(
     MaterialApp(theme: buildRoundsDriverTheme(), home: screen),

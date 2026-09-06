@@ -7,6 +7,19 @@
 
 ## Changelog
 
+- **2026-09-06 · Checkpoint 65:** Adds isolated non-release `d01` and
+  `d01-near` review routes and rebuilds the fallback presentation from the
+  supplied English D01 coordinates, roads, route curve, labels, markers,
+  maneuver and dock states. Separate en-route and near-pickup goldens pass;
+  both states and the pickup action drawer passed on the connected Samsung
+  SM-S928B. Android system-navigation inset handling was corrected so the
+  drawer's last action remains visible. Production continues to use live
+  Google `TWO_WHEELER` navigation and no Thai screen changed. The audit also
+  found that **I'm at pickup** only enters D03/D04: it does not record the
+  locked pickup-arrival event/location evidence. `stop.confirm_arrival` is a
+  delivery-destination command and is not reused. D01 is corrected from
+  `VERIFIED` to `PARTIAL`, `GAP-016` records the missing domain boundary, and
+  completion baselines are recalculated rather than hiding the defect.
 - **2026-09-06 · Checkpoint 64:** Adds non-release-only direct review routes
   for the canonical English B00/B01/B01B Driver boards so supplied HTML and
   Flutter can be compared on the real phone without mutating a live shift or
@@ -452,10 +465,10 @@ These are evidence-based planning estimates, not release claims. Recalculate the
 
 | Surface | Weighted functional coverage | Production readiness | Full roadmap context |
 |---|---:|---:|---:|
-| Driver · English Pilot business path only | 72.8% (`37.15 / 51`) | gate incomplete | not comparable to the complete board set |
-| Driver · all currently authorized own-fleet depth | 62.2% (`47.90 / 77`) | gate incomplete | approximately 30% of the complete Driver V1 board set; roadmap estimate only |
+| Driver · English Pilot business path only | 69.9% (`35.65 / 51`) | gate incomplete | not comparable to the complete board set |
+| Driver · all currently authorized own-fleet depth | 60.3% (`46.40 / 77`) | gate incomplete | approximately 30% of the complete Driver V1 board set; roadmap estimate only |
 | Operations · currently authorized own-fleet depth | 72.8% (`40.75 / 56`) | gate incomplete | approximately 35% of the complete Operations vision; roadmap estimate only |
-| Combined authorized English own-fleet work | 66.7% (`88.65 / 133`) | **not release-ready** | approximately 20–25% of Slices 1–7; roadmap estimate only |
+| Combined authorized English own-fleet work | 65.5% (`87.15 / 133`) | **not release-ready** | approximately 20–25% of Slices 1–7; roadmap estimate only |
 
 The Driver percentage is higher for the narrow delivery loop than for the complete 47-board product because Network onboarding, offers, earnings and marketplace behavior are deliberately outside the current own-fleet slice.
 
@@ -478,7 +491,7 @@ Canonical inventory: `specs/product/ROUNDS-DRIVER-CANONICAL-MANIFEST-v6.md` and 
 | B01D–B01F Shift ending/overtime/end | Slice 2 P1 | `IMPLEMENTED` | The authenticated Driver app now derives the ending-soon, overtime and ready-to-end states from the immutable attendance snapshot, current assigned-Round truth and real stored route-plan timing. English and Thai surfaces use measurements extracted from all six supplied canonical boards. One typed offline-capable end command is authenticated, server-timed, versioned and idempotent; the database rejects an early end or any end while assigned work/custody remains, then records audit and domain-event evidence. Automated contract/API/widget/golden coverage passes and migration `202609040001` is applied. Overtime is factual elapsed time only, with no invented pay claim. | Run the pgTAP suite in a Docker-capable environment and complete physical near-end/overtime/end acceptance. B01F's post-end Network switch target remains deferred; Team Drivers return to the existing own-fleet home without fabricated Network availability. |
 | B02 / B03 Verification + Network home | Network | `DEFERRED` | Intentionally absent. | Slice 5+ only. |
 | C01 / C03 Delivery offers | Network | `DEFERRED` | Team work is assigned, not offered. | Slice 5+ only. |
-| D01 Navigate to pickup | Pilot P0 | `VERIFIED` | An approved assigned Round now routes through the canonical D01 state using the authoritative pickup coordinate, live Google maneuver/ETA/distance events, measured D01 geometry, the canonical bottom action drawer and the D01→D03/D04 arrival transition. Automated/golden checks and a live Samsung provider check pass. | Physically approach the pickup to accept the 100 m/native-arrival reveal, then finish degraded-network/background road gates. |
+| D01 Navigate to pickup | Pilot P0 | `PARTIAL` | An approved assigned Round routes through D01 using the authoritative pickup coordinate and live Google maneuver/ETA/distance events. The supplied English en-route/near geometry, fallback-map composition and action drawer are locked by separate goldens and pass on Samsung. The explicit arrival action enters D03/D04, but it does not yet commit the required pickup-arrival event or optional location evidence. | Resolve GAP-016 with a versioned/idempotent pickup-arrival boundary, then physically accept the real 100 m/native-arrival action and finish degraded-network/background road gates. |
 | D03 / D04 Pickup confirmation | Pilot P0 | `VERIFIED` | Exact manifest checklist, offline command outbox, version/idempotency checks and server custody commit exist. English and Thai now use the canonical D03/D04 copy through the shared locale layer, including manifest handling labels, problem reporting and honest pending/failure states. English geometry/golden coverage and a Thai 393 px no-overflow interaction test pass; the configured APK is installed on the connected Samsung. | Complete final physical multi-item English/Thai acceptance and visual comparison with the phone unlocked. |
 | E01 Active Round overview | Pilot P0 | `VERIFIED` | Real Round data, map, measured UI metrics and golden geometry tests exist. | Final physical-device visual acceptance for supported widths. |
 | E02 Navigate to current Stop | Pilot P0 | `ACCEPTED` | Embedded Google navigation, TWO_WHEELER route, arrival command and physical Samsung bench operation have been exercised. | Motorcycle road, degraded-network, background and battery field gates remain open. |
@@ -557,6 +570,7 @@ Not every unfinished feature is a missing specification. This table contains onl
 | GAP-013 | B00 defines only a pre-shift countdown; it does not define what an unstarted Driver sees after the scheduled start time. | Driver UX/operations | Keep the Start Shift action available and clamp the supplied countdown at zero. Do not claim the Driver started, was late or was excused from client time alone. | Product/UX decision before B00 can leave `PARTIAL`. |
 | GAP-014 | The canonical POD boards illustrate a signature and automatic GPS, while product authority makes photo, signature, name and geofence evidence conditional by order class; the Driver session and POD command currently project no effective POD policy and persist no signature asset. | Product/operations + data contract | Keep the real required manifest, handoff, receiver-name and photo evidence. Record delivery time on the server. Do not draw a fake signature requirement or claim GPS/geofence evidence until an effective policy projection, signature-media contract and location-evidence fields are authorized end to end. | Product/UrbanFlowers operations must define Pilot order-class rules; Engineering then adds the policy projection, immutable signature asset and optional location evidence before those controls ship. |
 | GAP-015 | The Driver A02–A05 board defines consuming a Team invitation, but the canonical v45 Operations board has no merchant-side issue/resend/revoke control and the active specs do not lock its delivery channel, expiry policy or rate limits. | Product/UX/security | Keep invite acceptance phone-bound, expiring and single-use; store only a digest. Do not invent an Operations screen or claim that SMS/link/QR delivery happened. | Product/UX must add the canonical merchant issuing surface and security policy before external beta. |
+| GAP-016 | Locked D01 behavior requires an explicit pickup-arrival event and current-location evidence where available before D03/D04, but the current action only changes screens. The implemented `stop.confirm_arrival` command is destination-Stop-specific and would be semantically wrong at the merchant pickup. | Product/domain + data contract | Do not fabricate a pickup Stop, reuse the delivery-arrival command or claim pickup arrival was recorded. The visual transition may remain an uncommitted partial path, but it cannot be promoted as operational evidence. | Lock the pickup-arrival aggregate/event owner, version/idempotency rule, server timestamp, optional position/tolerance and offline ordering; then implement and physically accept the command before D01 can leave `PARTIAL`. |
 
 ## 8. Gap-handling protocol
 
@@ -590,7 +604,7 @@ This sequence does not promote later slices; it orders the already authorized En
 
 ### Checkpoint C — remaining own-driver operational states
 
-- **Completed C1 2026-09-03:** D01 pickup navigation uses the server pickup pin and live embedded Google guidance, renders the canonical measured instruction/dock states and enters D03/D04 only after the explicit pickup-arrival action.
+- **C1 corrected 2026-09-06:** D01 uses the server pickup pin and live embedded Google guidance; the supplied English en-route/near boards and action drawer now pass golden and Samsung comparison. The explicit action still lacks the locked pickup-arrival event/location boundary, so D01 is `PARTIAL` under GAP-016 and its earlier completion claim is withdrawn.
 - **C2 typed hold implemented 2026-09-03:** canonical G02 captures optional real GPS evidence and durably sends a typed versioned/idempotent command. The server snapshots expected truth, preserves the locked manifest and destination version, opens an audited Operations hold/thread, and projects the comparison into v45. Generic resolution remains blocked until GAP-006 defines the exact exception outcome. The separate C6 command now supplies destination versioning, route consequences and Driver acknowledgement, but it is not allowed to silently clear the hold, so G02 stays `PARTIAL`.
 - **C3 contact evidence implemented 2026-09-03:** canonical H02 and the safe portion of G01 now use the native phone app and a typed durable contact-attempt command. Driver-selected outcomes are visible to Driver and Operations, repeat attempts do not advance Stop versions or custody, and the G01 escalation stops at the real contact channel rather than fabricating an Operations decision. G01 stays `PARTIAL` until GAP-006 defines its hold and resolution outcomes.
 - **C4 contact history implemented 2026-09-03:** canonical H03 is a read-only Driver ledger composed from the real Operations thread and typed contact-attempt evidence. It deduplicates the system projection of typed calls, makes pending/offline evidence explicit and returns to the originating Round. Prototype-only pickup, handoff and POD examples are not fabricated.

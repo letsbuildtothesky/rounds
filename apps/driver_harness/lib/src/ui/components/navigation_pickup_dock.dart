@@ -97,7 +97,9 @@ class NavigationPickupDock extends StatelessWidget {
                           ),
                           const SizedBox(height: DriverD01Metrics.dockTextGap),
                           Text(
-                            showArrivalAction ? 'Entrance ahead' : address,
+                            showArrivalAction
+                                ? 'Entrance on your left'
+                                : address,
                             key: const Key('pickup-navigation-place'),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,

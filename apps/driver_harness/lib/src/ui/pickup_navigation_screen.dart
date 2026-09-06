@@ -1,6 +1,9 @@
 import 'dart:async';
+import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:google_navigation_flutter/google_navigation_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../app/driver_design_system.dart';
@@ -20,6 +23,50 @@ import 'location_problem_screen.dart';
 import 'operations_chat_screen.dart';
 import 'pickup_confirmation_screen.dart';
 
+/// Explicit non-production values for deterministic HTML-to-Flutter review.
+///
+/// Production navigation must continue to use live Google Navigation events;
+/// this state is accepted only while the native navigation surface is off.
+class PickupNavigationReviewState {
+  const PickupNavigationReviewState({
+    required this.instruction,
+    required this.remainingSeconds,
+    required this.remainingMeters,
+    required this.nearPickup,
+    required this.pickupAddress,
+  });
+
+  static const enRoute = PickupNavigationReviewState(
+    instruction: NavigationRoadInstruction(
+      maneuver: Maneuver.turnLeft,
+      text: 'Turn left into Sukhumvit 39',
+      distanceMeters: 320,
+    ),
+    remainingSeconds: 360,
+    remainingMeters: 1200,
+    nearPickup: false,
+    pickupAddress: 'Sukhumvit 39',
+  );
+
+  static const near = PickupNavigationReviewState(
+    instruction: NavigationRoadInstruction(
+      maneuver: Maneuver.destinationLeft,
+      text: 'UrbanFlowers entrance ahead',
+      distanceMeters: 80,
+    ),
+    remainingSeconds: 60,
+    remainingMeters: 80,
+    nearPickup: true,
+    pickupAddress: 'Entrance on your left',
+  );
+
+  final NavigationRoadInstruction instruction;
+  final int remainingSeconds;
+  final int remainingMeters;
+  final bool nearPickup;
+  final String pickupAddress;
+}
+
 class PickupNavigationScreen extends StatefulWidget {
   const PickupNavigationScreen({
     required this.controller,
@@ -27,14 +74,19 @@ class PickupNavigationScreen extends StatefulWidget {
     required this.round,
     this.launcher = _launchExternal,
     this.previewNearPickup = false,
+    this.reviewState,
     super.key,
-  });
+  }) : assert(
+         !enableNativeNavigation || reviewState == null,
+         'Review values must never replace live native navigation events.',
+       );
 
   final HarnessAppController controller;
   final bool enableNativeNavigation;
   final DriverRoundModel round;
   final RoundsExternalLauncher launcher;
   final bool previewNearPickup;
+  final PickupNavigationReviewState? reviewState;
 
   @override
   State<PickupNavigationScreen> createState() => _PickupNavigationScreenState();
@@ -50,10 +102,19 @@ class _PickupNavigationScreenState extends State<PickupNavigationScreen> {
   bool _nearPickup = false;
   GpsNavigationInterruption? _gpsInterruption;
 
+  PickupNavigationReviewState? get _reviewState =>
+      kReleaseMode ? null : widget.reviewState;
+
   @override
   void initState() {
     super.initState();
-    _nearPickup = !widget.enableNativeNavigation && widget.previewNearPickup;
+    final reviewState = _reviewState;
+    _instruction = reviewState?.instruction;
+    _remainingSeconds = reviewState?.remainingSeconds;
+    _remainingMeters = reviewState?.remainingMeters;
+    _nearPickup =
+        !widget.enableNativeNavigation &&
+        (reviewState?.nearPickup ?? widget.previewNearPickup);
   }
 
   @override
@@ -122,7 +183,7 @@ class _PickupNavigationScreenState extends State<PickupNavigationScreen> {
                       bottomOverlayInset: mapBottomInset,
                       showNativeNavigationUi: false,
                     )
-                  : const _PickupNavigationPreview(),
+                  : _PickupNavigationPreview(pickupName: pickup.displayName),
             ),
             if (_gpsInterruption == null)
               Positioned(
@@ -164,7 +225,7 @@ class _PickupNavigationScreenState extends State<PickupNavigationScreen> {
                 bottom: outerMargin,
                 child: NavigationPickupDock(
                   pickupName: pickup.displayName,
-                  address: pickup.rawAddress,
+                  address: _reviewState?.pickupAddress ?? pickup.rawAddress,
                   etaLabel: _etaLabel,
                   distanceLabel: _distanceLabel,
                   showArrivalAction: _showArrivalAction,
@@ -322,69 +383,60 @@ Future<bool> _launchExternal(Uri uri) =>
     launchUrl(uri, mode: LaunchMode.externalApplication);
 
 class _PickupNavigationPreview extends StatelessWidget {
-  const _PickupNavigationPreview();
+  const _PickupNavigationPreview({required this.pickupName});
+
+  final String pickupName;
 
   @override
   Widget build(BuildContext context) => CustomPaint(
     key: const Key('pickup-navigation-map-preview'),
-    painter: const _PickupNavigationPreviewPainter(),
+    painter: _PickupNavigationPreviewPainter(pickupName: pickupName),
     child: const SizedBox.expand(),
   );
 }
 
 class _PickupNavigationPreviewPainter extends CustomPainter {
-  const _PickupNavigationPreviewPainter();
+  const _PickupNavigationPreviewPainter({required this.pickupName});
+
+  final String pickupName;
+
+  static const _referenceSize = Size(393, 824);
 
   @override
   void paint(Canvas canvas, Size size) {
+    canvas.save();
+    canvas.clipRect(Offset.zero & size);
+    canvas.scale(
+      size.width / _referenceSize.width,
+      size.height / _referenceSize.height,
+    );
     canvas.drawRect(
-      Offset.zero & size,
+      Offset.zero & _referenceSize,
       Paint()..color = const Color(0xFFF1F4F5),
     );
-    final block = Paint()..color = const Color(0xFFE3E8EB);
-    for (final rect in [
-      Rect.fromLTWH(size.width * .05, size.height * .17, 82, 52),
-      Rect.fromLTWH(size.width * .38, size.height * .15, 78, 60),
-      Rect.fromLTWH(size.width * .10, size.height * .66, 78, 54),
-      Rect.fromLTWH(size.width * .62, size.height * .59, 84, 62),
-    ]) {
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(rect, const Radius.circular(4)),
-        block,
-      );
-    }
-    final road = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 12;
-    canvas.drawLine(
-      Offset(-30, size.height * .42),
-      Offset(size.width + 30, size.height * .35),
-      road,
+
+    _drawBlock(canvas, const Rect.fromLTWH(18, 155, 82, 52));
+    _drawBlock(canvas, const Rect.fromLTWH(119, 153, 78, 60));
+    _drawBlock(canvas, const Rect.fromLTWH(293, 162, 80, 48));
+    _drawBlock(canvas, const Rect.fromLTWH(25, 600, 78, 54));
+    _drawBlock(
+      canvas,
+      const Rect.fromLTWH(277, 572, 88, 70),
+      color: const Color(0xFFE3EFE6),
     );
-    canvas.drawLine(
-      Offset(size.width * .56, 0),
-      Offset(size.width * .65, size.height),
-      road,
-    );
+    _drawBlock(canvas, const Rect.fromLTWH(143, 606, 78, 60));
+
+    _drawRoad(canvas, const Rect.fromLTWH(-30, 310, 460, 13), -7);
+    _drawRoad(canvas, const Rect.fromLTWH(205, 90, 520, 13), 79);
+    _drawRoad(canvas, const Rect.fromLTWH(6, 222, 360, 7), 10);
+    _drawRoad(canvas, const Rect.fromLTWH(52, 592, 310, 7), -2);
+    _drawRoad(canvas, const Rect.fromLTWH(78, 96, 470, 7), 88);
+
     final route = Path()
-      ..moveTo(size.width * .22, size.height * .72)
-      ..cubicTo(
-        size.width * .31,
-        size.height * .60,
-        size.width * .39,
-        size.height * .54,
-        size.width * .42,
-        size.height * .43,
-      )
-      ..cubicTo(
-        size.width * .47,
-        size.height * .32,
-        size.width * .69,
-        size.height * .30,
-        size.width * .80,
-        size.height * .24,
-      );
+      ..moveTo(86, 610)
+      ..cubicTo(104, 560, 140, 512, 154, 455)
+      ..cubicTo(167, 400, 190, 357, 233, 328)
+      ..cubicTo(267, 305, 300, 276, 322, 234);
     canvas.drawPath(
       route,
       Paint()
@@ -401,16 +453,139 @@ class _PickupNavigationPreviewPainter extends CustomPainter {
         ..strokeCap = StrokeCap.round
         ..style = PaintingStyle.stroke,
     );
-    final pickup = Offset(size.width * .80, size.height * .24);
-    canvas.drawCircle(pickup, 18, Paint()..color = Colors.white);
-    canvas.drawCircle(pickup, 14, Paint()..color = RoundsColors.orange);
-    canvas.drawCircle(
-      Offset(size.width * .22, size.height * .72),
-      13,
-      Paint()..color = RoundsColors.ink,
+
+    _drawMapLabel(canvas, 'PHROM PHONG', const Offset(19, 235));
+    _drawMapLabel(canvas, 'SUKHUMVIT 39', const Offset(292, 285));
+    _drawDriver(canvas);
+    _drawPickup(canvas);
+    canvas.restore();
+  }
+
+  void _drawBlock(Canvas canvas, Rect rect, {Color? color}) {
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(rect, const Radius.circular(4)),
+      Paint()..color = color ?? const Color(0xFFE3E8EB),
+    );
+  }
+
+  void _drawRoad(Canvas canvas, Rect rect, double degrees) {
+    canvas.save();
+    canvas.translate(rect.center.dx, rect.center.dy);
+    canvas.rotate(degrees * math.pi / 180);
+    final centered = Rect.fromCenter(
+      center: Offset.zero,
+      width: rect.width,
+      height: rect.height,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        centered.inflate(1),
+        Radius.circular(rect.height),
+      ),
+      Paint()..color = const Color(0xFFDCE3E8),
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(centered, Radius.circular(rect.height)),
+      Paint()..color = Colors.white,
+    );
+    canvas.restore();
+  }
+
+  void _drawMapLabel(Canvas canvas, String text, Offset offset) {
+    final painter = TextPainter(
+      text: TextSpan(
+        text: text,
+        style: const TextStyle(
+          color: Color(0xFF8792A0),
+          fontFamily: 'Inter',
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          letterSpacing: .22,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    painter.paint(canvas, offset);
+  }
+
+  void _drawDriver(Canvas canvas) {
+    final path = Path()
+      ..moveTo(84, 571.5)
+      ..lineTo(99, 609.5)
+      ..lineTo(84, 603.5)
+      ..lineTo(69, 609.5)
+      ..close();
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = Colors.white
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 6
+        ..strokeJoin = StrokeJoin.round,
+    );
+    canvas.drawPath(path, Paint()..color = RoundsColors.ink);
+  }
+
+  void _drawPickup(Canvas canvas) {
+    const center = Offset(327, 238);
+    canvas.drawCircle(center, 18, Paint()..color = Colors.white);
+    canvas.drawCircle(center, 14, Paint()..color = RoundsColors.orange);
+
+    final home = Path()
+      ..moveTo(319, 237)
+      ..lineTo(327, 230.5)
+      ..lineTo(335, 237)
+      ..moveTo(321, 235.8)
+      ..lineTo(321, 246)
+      ..lineTo(333, 246)
+      ..lineTo(333, 235.8);
+    canvas.drawPath(
+      home,
+      Paint()
+        ..color = Colors.white
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.1
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round,
+    );
+
+    final label = TextPainter(
+      text: TextSpan(
+        text: pickupName,
+        style: const TextStyle(
+          color: RoundsColors.ink,
+          fontFamily: 'Inter',
+          fontSize: 12,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    final labelRect = Rect.fromCenter(
+      center: Offset(center.dx, 275),
+      width: label.width + 16,
+      height: 27,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(labelRect, const Radius.circular(5)),
+      Paint()..color = const Color(0xFFFEFEFE),
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(labelRect, const Radius.circular(5)),
+      Paint()
+        ..color = const Color(0xFFE1E6EA)
+        ..style = PaintingStyle.stroke,
+    );
+    label.paint(
+      canvas,
+      Offset(
+        labelRect.center.dx - label.width / 2,
+        labelRect.center.dy - label.height / 2,
+      ),
     );
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _PickupNavigationPreviewPainter oldDelegate) =>
+      pickupName != oldDelegate.pickupName;
 }
