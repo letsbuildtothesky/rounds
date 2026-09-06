@@ -37,6 +37,10 @@ DriverOperationalHome driverOperationalHome(DriverSessionModel session) {
   return DriverOperationalHome.activeRound;
 }
 
+bool driverNeedsPickupConfirmation(DriverRoundModel round) =>
+    (round.state == 'approved' || round.state == 'loading') &&
+    (round.pickupArrivedAt != null || round.pickupArrivalPendingSync);
+
 class RoundsHarnessApp extends StatefulWidget {
   const RoundsHarnessApp({
     required this.controller,
@@ -221,6 +225,12 @@ class _RoundsHarnessAppState extends State<RoundsHarnessApp> {
           ),
         );
       }
+    }
+    if (round != null && driverNeedsPickupConfirmation(round)) {
+      return PickupConfirmationScreen(
+        controller: widget.controller,
+        round: round,
+      );
     }
     final shift = session?.shift;
     if (session != null &&

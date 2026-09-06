@@ -6,6 +6,7 @@ import 'package:rounds_driver_harness/src/app/driver_design_system.dart';
 import 'package:rounds_driver_harness/src/app/generated/driver_ui_metrics.g.dart';
 import 'package:rounds_driver_harness/src/app/harness_app_controller.dart';
 import 'package:rounds_driver_harness/src/driver/driver_session.dart';
+import 'package:rounds_driver_harness/src/driver/driver_api.dart';
 import 'package:rounds_driver_harness/src/ui/assigned_round_screen.dart';
 import 'package:rounds_driver_harness/src/ui/components/navigation_pickup_dock.dart';
 import 'package:rounds_driver_harness/src/ui/pickup_confirmation_screen.dart';
@@ -111,6 +112,58 @@ void main() {
       expect(find.text('Confirm pickup'), findsWidgets);
     },
   );
+
+  testWidgets('D01 records measured pickup arrival before opening D03', (
+    tester,
+  ) async {
+    DriverRoundModel? recordedRound;
+    Map<String, Object?>? recordedPosition;
+    await _pumpScreen(
+      tester,
+      reviewState: PickupNavigationReviewState.near,
+      arrivalPositionProvider: () async => {
+        'latitude': 13.7338,
+        'longitude': 100.5766,
+        'accuracyMeters': 8.5,
+        'source': 'rounds_os',
+      },
+      arrivalRecorder: (round, position) async {
+        recordedRound = round;
+        recordedPosition = position;
+        return const DriverCommandOutcome(DriverCommandDisposition.committed);
+      },
+    );
+
+    await tester.tap(find.byKey(const Key('pickup-arrival-action')));
+    await tester.pumpAndSettle();
+
+    expect(recordedRound?.id, _round.id);
+    expect(recordedRound?.pickup.id, _round.pickup.id);
+    expect(recordedPosition?['accuracyMeters'], 8.5);
+    expect(recordedPosition?['source'], 'rounds_os');
+    expect(find.byType(PickupConfirmationScreen), findsOneWidget);
+  });
+
+  testWidgets('D01 stays visible when pickup arrival is rejected', (
+    tester,
+  ) async {
+    await _pumpScreen(
+      tester,
+      reviewState: PickupNavigationReviewState.near,
+      arrivalPositionProvider: () async => null,
+      arrivalRecorder: (_, _) async => null,
+    );
+
+    await tester.tap(find.byKey(const Key('pickup-arrival-action')));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(PickupNavigationScreen), findsOneWidget);
+    expect(find.byType(PickupConfirmationScreen), findsNothing);
+    expect(
+      find.text('Pickup arrival could not be saved. Try again.'),
+      findsOneWidget,
+    );
+  });
 
   testWidgets('an approved assigned Round enters D01 before confirmation', (
     tester,
@@ -232,6 +285,8 @@ Future<void> _pumpScreen(
   Future<bool> Function(Uri uri)? launcher,
   bool previewNearPickup = false,
   PickupNavigationReviewState? reviewState,
+  PickupArrivalRecorder? arrivalRecorder,
+  PickupArrivalPositionProvider? arrivalPositionProvider,
 }) async {
   _setViewport(tester);
   SharedPreferences.setMockInitialValues({
@@ -246,6 +301,8 @@ Future<void> _pumpScreen(
           round: _round,
           previewNearPickup: previewNearPickup,
           reviewState: reviewState,
+          arrivalRecorder: arrivalRecorder,
+          arrivalPositionProvider: arrivalPositionProvider ?? () async => null,
         )
       : PickupNavigationScreen(
           controller: controller,
@@ -254,6 +311,8 @@ Future<void> _pumpScreen(
           launcher: launcher,
           previewNearPickup: previewNearPickup,
           reviewState: reviewState,
+          arrivalRecorder: arrivalRecorder,
+          arrivalPositionProvider: arrivalPositionProvider ?? () async => null,
         );
   await tester.pumpWidget(
     MaterialApp(theme: buildRoundsDriverTheme(), home: screen),

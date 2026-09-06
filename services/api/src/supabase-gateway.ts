@@ -35,6 +35,8 @@ import type {
   CreateDeliveryResult,
   ConfirmPickupCommand,
   ConfirmPickupResult,
+  ConfirmPickupArrivalCommand,
+  ConfirmPickupArrivalResult,
   ConfirmStopArrivalCommand,
   ConfirmStopArrivalResult,
   CompleteStopPodCommand,
@@ -1092,6 +1094,23 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
     });
     if (error) throw error;
     return data as ConfirmPickupResult;
+  }
+
+  async confirmPickupArrival(
+    command: ConfirmPickupArrivalCommand,
+    identity: AuthenticatedIdentity,
+  ): Promise<ConfirmPickupArrivalResult> {
+    const actorPersonId = await this.driverActorPersonId(identity);
+    if (!actorPersonId) return {
+      status: "rejected",
+      error: { code: "NOT_AUTHORIZED", message: "Driver identity is not linked" },
+    };
+    const { data, error } = await this.admin.rpc("confirm_round_pickup_arrival_command", {
+      p_command: command,
+      p_actor_person_id: actorPersonId,
+    });
+    if (error) throw error;
+    return data as ConfirmPickupArrivalResult;
   }
 
   async startDriverShift(
@@ -2712,6 +2731,13 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
       }];
     });
     const pickupCoordinate = parseDatabasePoint(pickup.position);
+    const { data: pickupArrival, error: pickupArrivalError } = await this.admin
+      .from("round_pickup_arrival_events")
+      .select("arrived_at")
+      .eq("tenant_id", tenant.id)
+      .eq("round_id", round.id)
+      .maybeSingle<{ arrived_at: string }>();
+    if (pickupArrivalError) throw pickupArrivalError;
     session.currentRound = {
       id: round.id,
       reference: round.reference,
@@ -2729,6 +2755,7 @@ export class SupabaseGateway implements IdentityGateway, DeliveryCommandGateway,
       },
       stops: driverStops,
       ...(round.route_plan_snapshot ? { routePlan: round.route_plan_snapshot } : {}),
+      ...(pickupArrival ? { pickupArrivedAt: pickupArrival.arrived_at } : {}),
     };
     const { data: pendingChange, error: pendingChangeError } = await this.admin.from("live_delivery_changes")
       .select("id, change_version, round_id, stop_id, applied_at, before_state, after_state, route_impact, driver_ack_status, acknowledged_at")

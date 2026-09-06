@@ -8,6 +8,9 @@ import type {
   ConfirmPickupCommand,
   ConfirmPickupPayload,
   ConfirmPickupResult,
+  ConfirmPickupArrivalCommand,
+  ConfirmPickupArrivalPayload,
+  ConfirmPickupArrivalResult,
   ConfirmStopArrivalCommand,
   ConfirmStopArrivalPayload,
   ConfirmStopArrivalResult,
@@ -136,6 +139,10 @@ export interface PlanningRouteContextGateway {
 
 export interface PickupGateway {
   confirmPickup(command: ConfirmPickupCommand, identity: AuthenticatedIdentity): Promise<ConfirmPickupResult>;
+  confirmPickupArrival(
+    command: ConfirmPickupArrivalCommand,
+    identity: AuthenticatedIdentity,
+  ): Promise<ConfirmPickupArrivalResult>;
 }
 
 export interface DriverStopGateway {
@@ -503,6 +510,7 @@ export type ConfirmPickupDependencies = DriverSessionDependencies & {
 };
 
 export type ConfirmPickupRequestBody = ConfirmPickupPayload;
+export type ConfirmPickupArrivalRequestBody = ConfirmPickupArrivalPayload;
 
 export type DriverStopDependencies = DriverSessionDependencies & {
   stops: DriverStopGateway;

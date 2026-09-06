@@ -1,6 +1,7 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { createDeliveryHandler } from "./create-delivery-handler.js";
 import { confirmPickupHandler } from "./confirm-pickup-handler.js";
+import { confirmPickupArrivalHandler } from "./confirm-pickup-arrival-handler.js";
 import { confirmStopArrivalHandler } from "./confirm-stop-arrival-handler.js";
 import { completeStopPodHandler } from "./complete-stop-pod-handler.js";
 import { driverSessionHandler } from "./driver-session-handler.js";
@@ -528,6 +529,18 @@ const server = createServer(async (request, response) => {
         identity: gateway, communications: gateway, uuid: () => crypto.randomUUID(), now: () => new Date(),
       });
       sendNode(response, mediaResponse);
+      return;
+    }
+    const pickupArrivalMatch = request.url?.match(/^\/v1\/driver\/rounds\/([0-9a-f-]+)\/pickup-arrival$/i);
+    if (request.method === "POST" && pickupArrivalMatch) {
+      const webRequest = await toWebRequest(request);
+      const pickupResponse = await confirmPickupArrivalHandler(webRequest, pickupArrivalMatch[1]!, {
+        identity: gateway,
+        pickup: gateway,
+        uuid: () => crypto.randomUUID(),
+        now: () => new Date(),
+      });
+      sendNode(response, pickupResponse);
       return;
     }
     const pickupMatch = request.url?.match(/^\/v1\/driver\/rounds\/([0-9a-f-]+)\/pickup$/i);

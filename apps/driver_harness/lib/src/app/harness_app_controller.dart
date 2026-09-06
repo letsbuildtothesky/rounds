@@ -384,6 +384,25 @@ class HarnessAppController extends ChangeNotifier {
   Future<DriverCommandOutcome?> confirmPickup(DriverRoundModel round) =>
       _runDriverCommand(() => _driverApi.confirmPickup(round));
 
+  Future<DriverCommandOutcome?> confirmPickupArrival(
+    DriverRoundModel round, {
+    Map<String, Object?>? position,
+  }) async {
+    final outcome = await _runDriverCommand(
+      () => _driverApi.confirmPickupArrival(round, position: position),
+    );
+    if (outcome?.pendingSync == true &&
+        _driverSession?.currentRound?.id == round.id) {
+      final session = _driverSession!;
+      _driverSession = session.withCurrentRound(
+        session.currentRound!.withPickupArrivalPendingSync(),
+      );
+      await _saveSession(_driverSession!);
+      notifyListeners();
+    }
+    return outcome;
+  }
+
   Future<DriverCommandOutcome?> reportPickupProblem({
     required DriverRoundStopModel stop,
     required String category,

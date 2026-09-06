@@ -21,6 +21,8 @@ import {
 import type {
   ConfirmPickupCommand,
   ConfirmPickupPayload,
+  ConfirmPickupArrivalCommand,
+  ConfirmPickupArrivalPayload,
   ConfirmStopArrivalCommand,
   ConfirmStopArrivalPayload,
   CompleteStopPodCommand,
@@ -752,6 +754,29 @@ export function validateConfirmPickupCommand(command: ConfirmPickupCommand): voi
     throw new ContractError("ConfirmPickup expectedVersion must be a positive integer");
   }
   validateConfirmPickupPayload(command.payload);
+}
+
+export function validateConfirmPickupArrivalPayload(payload: ConfirmPickupArrivalPayload): void {
+  assertUuid(payload.pickupLocationId, "pickupLocationId");
+  if (payload.position) validateConfirmStopArrivalPayload({ position: payload.position });
+}
+
+export function validateConfirmPickupArrivalCommand(command: ConfirmPickupArrivalCommand): void {
+  if (command.schemaVersion !== 1 || command.commandType !== "round.confirm_pickup_arrival") {
+    throw new ContractError("unsupported ConfirmPickupArrival command envelope");
+  }
+  assertUuid(command.commandId, "commandId");
+  assertUuid(command.traceId, "traceId");
+  assertUuid(command.tenantId, "tenantId");
+  assertUuid(command.aggregateId, "aggregateId");
+  assertNonEmpty(command.idempotencyKey, "idempotencyKey");
+  if (command.idempotencyKey.length > 200) {
+    throw new ContractError("idempotencyKey exceeds 200 characters");
+  }
+  if (!Number.isInteger(command.expectedVersion) || command.expectedVersion < 1) {
+    throw new ContractError("ConfirmPickupArrival expectedVersion must be a positive integer");
+  }
+  validateConfirmPickupArrivalPayload(command.payload);
 }
 
 export function validateReportPickupProblemPayload(payload: ReportPickupProblemPayload): void {

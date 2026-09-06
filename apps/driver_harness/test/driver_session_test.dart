@@ -14,6 +14,8 @@ void main() {
           'serviceDate': '2026-09-02',
           'state': 'approved',
           'version': 1,
+          'pickupArrivedAt': '2026-09-02T01:42:00Z',
+          'pickupArrivalPendingSync': true,
           'tenant': {
             'id': 'tenant-1',
             'displayName': 'UrbanFlowers',
@@ -131,6 +133,11 @@ void main() {
       expect(session.currentRound?.pickup.id, 'pickup-1');
       expect(session.currentRound?.pickup.latitude, 13.7338);
       expect(session.currentRound?.pickup.longitude, 100.5766);
+      expect(
+        session.currentRound?.pickupArrivedAt,
+        DateTime.parse('2026-09-02T01:42:00Z'),
+      );
+      expect(session.currentRound?.pickupArrivalPendingSync, isTrue);
       expect(session.currentRound?.plannedDistanceMeters, 4200);
       expect(session.pendingLiveChange?.after.accessNote, 'Gate B');
       expect(session.pendingLiveChange?.changeVersion, 2);
@@ -163,6 +170,11 @@ void main() {
         'Leave the bouquet upright',
       );
       expect(cached.currentRound?.pickup.latitude, 13.7338);
+      expect(
+        cached.currentRound?.pickupArrivedAt,
+        session.currentRound?.pickupArrivedAt,
+      );
+      expect(cached.currentRound?.pickupArrivalPendingSync, isTrue);
       expect(
         (cached.currentRound?.routePlanSnapshot?['provider']
             as Map<String, dynamic>)['freshness'],

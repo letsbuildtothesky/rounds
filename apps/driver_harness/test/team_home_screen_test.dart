@@ -29,6 +29,23 @@ void main() {
     );
   });
 
+  test(
+    'durably queued pickup arrival resumes at confirmation after restart',
+    () {
+      expect(driverNeedsPickupConfirmation(_round), isFalse);
+      expect(
+        driverNeedsPickupConfirmation(_round.withPickupArrivalPendingSync()),
+        isTrue,
+      );
+      expect(
+        driverNeedsPickupConfirmation(
+          _copyRound(state: 'active').withPickupArrivalPendingSync(),
+        ),
+        isFalse,
+      );
+    },
+  );
+
   testWidgets('B01 waiting home follows the measured English board', (
     tester,
   ) async {

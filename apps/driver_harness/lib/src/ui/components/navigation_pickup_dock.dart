@@ -11,6 +11,7 @@ class NavigationPickupDock extends StatelessWidget {
     required this.distanceLabel,
     required this.showArrivalAction,
     required this.onArrival,
+    this.arrivalPending = false,
     super.key,
   });
 
@@ -20,6 +21,7 @@ class NavigationPickupDock extends StatelessWidget {
   final String distanceLabel;
   final bool showArrivalAction;
   final VoidCallback onArrival;
+  final bool arrivalPending;
 
   @override
   Widget build(BuildContext context) {
@@ -164,7 +166,7 @@ class NavigationPickupDock extends StatelessWidget {
                   width: double.infinity,
                   child: FilledButton(
                     key: const Key('pickup-arrival-action'),
-                    onPressed: onArrival,
+                    onPressed: arrivalPending ? null : onArrival,
                     style: FilledButton.styleFrom(
                       backgroundColor: RoundsColors.green,
                       padding: EdgeInsets.zero,
@@ -174,15 +176,23 @@ class NavigationPickupDock extends StatelessWidget {
                         ),
                       ),
                     ),
-                    child: Text(
-                      "I'm at pickup",
-                      style: _style(
-                        color: Colors.white,
-                        size: DriverD01Metrics.arrivalSize,
-                        height: 1,
-                        weight: DriverD01Metrics.arrivalWeight,
-                      ),
-                    ),
+                    child: arrivalPending
+                        ? const SizedBox.square(
+                            dimension: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 3,
+                              color: Colors.white,
+                            ),
+                          )
+                        : Text(
+                            "I'm at pickup",
+                            style: _style(
+                              color: Colors.white,
+                              size: DriverD01Metrics.arrivalSize,
+                              height: 1,
+                              weight: DriverD01Metrics.arrivalWeight,
+                            ),
+                          ),
                   ),
                 ),
               ),

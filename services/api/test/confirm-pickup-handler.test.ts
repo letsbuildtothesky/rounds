@@ -3,6 +3,8 @@ import test from "node:test";
 import type {
   ConfirmPickupCommand,
   ConfirmPickupResult,
+  ConfirmPickupArrivalCommand,
+  ConfirmPickupArrivalResult,
   DriverSession,
   OperationsSession,
 } from "@rounds/contracts";
@@ -42,6 +44,21 @@ class FakePickupGateway implements IdentityGateway, PickupGateway {
       status: "committed",
       aggregateVersion: 2,
       state: { roundId, roundState: "active", driverId: session.driver.id, stops: [] },
+      events: [],
+    };
+  }
+  async confirmPickupArrival(command: ConfirmPickupArrivalCommand): Promise<ConfirmPickupArrivalResult> {
+    return {
+      status: "committed",
+      aggregateVersion: command.expectedVersion,
+      state: {
+        arrivalId: "10000000-0000-4000-8000-000000000103",
+        roundId,
+        pickupLocationId: session.currentRound!.pickup.id,
+        driverId: session.driver.id,
+        arrivedAt: "2026-09-01T12:00:00Z",
+        hasPositionEvidence: Boolean(command.payload.position),
+      },
       events: [],
     };
   }

@@ -4,12 +4,14 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_navigation_flutter/google_navigation_flutter.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../app/driver_design_system.dart';
 import '../app/generated/driver_ui_metrics.g.dart';
 import '../app/harness_app_controller.dart';
 import '../driver/driver_session.dart';
+import '../driver/driver_api.dart';
 import '../navigation/gps_signal_monitor.dart';
 import '../navigation/gps_unavailable_screen.dart';
 import '../navigation/google_navigation_surface.dart';
@@ -67,6 +69,14 @@ class PickupNavigationReviewState {
   final String pickupAddress;
 }
 
+typedef PickupArrivalRecorder =
+    Future<DriverCommandOutcome?> Function(
+      DriverRoundModel round,
+      Map<String, Object?>? position,
+    );
+typedef PickupArrivalPositionProvider =
+    Future<Map<String, Object?>?> Function();
+
 class PickupNavigationScreen extends StatefulWidget {
   const PickupNavigationScreen({
     required this.controller,
@@ -75,6 +85,8 @@ class PickupNavigationScreen extends StatefulWidget {
     this.launcher = _launchExternal,
     this.previewNearPickup = false,
     this.reviewState,
+    this.arrivalRecorder,
+    this.arrivalPositionProvider = _currentPickupArrivalPosition,
     super.key,
   }) : assert(
          !enableNativeNavigation || reviewState == null,
@@ -87,6 +99,8 @@ class PickupNavigationScreen extends StatefulWidget {
   final RoundsExternalLauncher launcher;
   final bool previewNearPickup;
   final PickupNavigationReviewState? reviewState;
+  final PickupArrivalRecorder? arrivalRecorder;
+  final PickupArrivalPositionProvider arrivalPositionProvider;
 
   @override
   State<PickupNavigationScreen> createState() => _PickupNavigationScreenState();
@@ -101,6 +115,7 @@ class _PickupNavigationScreenState extends State<PickupNavigationScreen> {
   int? _remainingMeters;
   bool _nearPickup = false;
   GpsNavigationInterruption? _gpsInterruption;
+  bool _arrivalPending = false;
 
   PickupNavigationReviewState? get _reviewState =>
       kReleaseMode ? null : widget.reviewState;
@@ -229,7 +244,8 @@ class _PickupNavigationScreenState extends State<PickupNavigationScreen> {
                   etaLabel: _etaLabel,
                   distanceLabel: _distanceLabel,
                   showArrivalAction: _showArrivalAction,
-                  onArrival: _openPickupConfirmation,
+                  arrivalPending: _arrivalPending,
+                  onArrival: _confirmPickupArrival,
                 ),
               ),
             if (_gpsInterruption case final interruption?)
@@ -283,7 +299,34 @@ class _PickupNavigationScreenState extends State<PickupNavigationScreen> {
     return '${kilometers.toStringAsFixed(kilometers >= 10 ? 0 : 1)} km';
   }
 
-  void _openPickupConfirmation() {
+  Future<void> _confirmPickupArrival() async {
+    if (_arrivalPending) return;
+    setState(() => _arrivalPending = true);
+    Map<String, Object?>? position;
+    try {
+      position = await widget.arrivalPositionProvider();
+    } catch (_) {
+      // Arrival remains explicit even when the OS cannot provide a fresh fix.
+    }
+    final outcome =
+        await (widget.arrivalRecorder?.call(widget.round, position) ??
+            widget.controller.confirmPickupArrival(
+              widget.round,
+              position: position,
+            ));
+    if (!mounted) return;
+    if (outcome == null) {
+      setState(() => _arrivalPending = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            widget.controller.driverError ??
+                'Pickup arrival could not be saved. Try again.',
+          ),
+        ),
+      );
+      return;
+    }
     Navigator.of(context).pushReplacement(
       MaterialPageRoute<void>(
         builder: (_) => PickupConfirmationScreen(
@@ -381,6 +424,27 @@ class _PickupNavigationScreenState extends State<PickupNavigationScreen> {
 
 Future<bool> _launchExternal(Uri uri) =>
     launchUrl(uri, mode: LaunchMode.externalApplication);
+
+Future<Map<String, Object?>?> _currentPickupArrivalPosition() async {
+  final permission = await Geolocator.checkPermission();
+  if (permission != LocationPermission.whileInUse &&
+      permission != LocationPermission.always) {
+    return null;
+  }
+  if (!await Geolocator.isLocationServiceEnabled()) return null;
+  final position = await Geolocator.getCurrentPosition(
+    locationSettings: const LocationSettings(
+      accuracy: LocationAccuracy.high,
+      timeLimit: Duration(seconds: 12),
+    ),
+  );
+  return {
+    'latitude': position.latitude,
+    'longitude': position.longitude,
+    'accuracyMeters': position.accuracy,
+    'source': 'rounds_os',
+  };
+}
 
 class _PickupNavigationPreview extends StatelessWidget {
   const _PickupNavigationPreview({required this.pickupName});

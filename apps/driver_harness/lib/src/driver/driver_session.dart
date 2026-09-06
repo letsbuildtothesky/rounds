@@ -91,6 +91,24 @@ class DriverSessionModel {
     if (pendingLiveChange != null)
       'pendingLiveChange': pendingLiveChange!.toJson(),
   };
+
+  DriverSessionModel withCurrentRound(DriverRoundModel round) =>
+      DriverSessionModel(
+        userName: userName,
+        driverId: driverId,
+        preferredLocale: preferredLocale,
+        userId: userId,
+        version: version,
+        teamName: teamName,
+        teamTenantId: teamTenantId,
+        teamStatus: teamStatus,
+        vehicleLabel: vehicleLabel,
+        vehiclePlate: vehiclePlate,
+        shift: shift,
+        completedRounds: completedRounds,
+        currentRound: round,
+        pendingLiveChange: pendingLiveChange,
+      );
 }
 
 class DriverShiftModel {
@@ -354,6 +372,8 @@ class DriverRoundModel {
     this.tenantId,
     this.tenantTimezone,
     this.routePlanSnapshot,
+    this.pickupArrivedAt,
+    this.pickupArrivalPendingSync = false,
     this.plannedDistanceMeters,
     this.plannedDurationSeconds,
     this.plannedStops = const [],
@@ -373,6 +393,8 @@ class DriverRoundModel {
   final int? plannedDurationSeconds;
   final List<DriverPlannedStopModel> plannedStops;
   final Map<String, dynamic>? routePlanSnapshot;
+  final DateTime? pickupArrivedAt;
+  final bool pickupArrivalPendingSync;
 
   DriverPlannedStopModel? plannedStop(String stopId) {
     for (final stop in plannedStops) {
@@ -413,6 +435,11 @@ class DriverRoundModel {
       routePlanSnapshot: routePlan == null
           ? null
           : Map<String, dynamic>.from(routePlan),
+      pickupArrivedAt: json['pickupArrivedAt'] is String
+          ? DateTime.parse(json['pickupArrivedAt'] as String)
+          : null,
+      pickupArrivalPendingSync:
+          json['pickupArrivalPendingSync'] as bool? ?? false,
     );
   }
 
@@ -442,7 +469,29 @@ class DriverRoundModel {
         if (plannedStops.isNotEmpty)
           'stops': plannedStops.map((stop) => stop.toJson()).toList(),
       },
+    if (pickupArrivedAt != null)
+      'pickupArrivedAt': pickupArrivedAt!.toUtc().toIso8601String(),
+    if (pickupArrivalPendingSync) 'pickupArrivalPendingSync': true,
   };
+
+  DriverRoundModel withPickupArrivalPendingSync() => DriverRoundModel(
+    id: id,
+    reference: reference,
+    serviceDate: serviceDate,
+    state: state,
+    version: version,
+    tenantName: tenantName,
+    pickup: pickup,
+    stops: stops,
+    tenantId: tenantId,
+    tenantTimezone: tenantTimezone,
+    routePlanSnapshot: routePlanSnapshot,
+    pickupArrivedAt: pickupArrivedAt,
+    pickupArrivalPendingSync: true,
+    plannedDistanceMeters: plannedDistanceMeters,
+    plannedDurationSeconds: plannedDurationSeconds,
+    plannedStops: plannedStops,
+  );
 }
 
 class DriverPlannedStopModel {

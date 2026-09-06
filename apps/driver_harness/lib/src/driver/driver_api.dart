@@ -536,6 +536,18 @@ class DriverApi {
         },
       );
 
+  Future<DriverCommandOutcome> confirmPickupArrival(
+    DriverRoundModel round, {
+    Map<String, Object?>? position,
+  }) => _queueAndSend(
+    commandType: 'round.confirm_pickup_arrival',
+    aggregateId: round.id,
+    expectedVersion: round.version,
+    idempotencyKey: 'pickup-arrival:${round.id}:v${round.version}',
+    endpoint: '/v1/driver/rounds/${round.id}/pickup-arrival',
+    payload: {'pickupLocationId': round.pickup.id, 'position': ?position},
+  );
+
   Future<DriverCommandOutcome> reportPickupProblem({
     required DriverRoundStopModel stop,
     required String category,

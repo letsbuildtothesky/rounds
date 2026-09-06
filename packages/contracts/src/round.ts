@@ -488,6 +488,35 @@ export type ConfirmPickupState = {
 
 export type ConfirmPickupResult = CommandResult<ConfirmPickupState, PickupConfirmedEvent>;
 
+export type ConfirmPickupArrivalPayload = {
+  pickupLocationId: string;
+  position?: ArrivalPositionEvidence;
+};
+
+export type ConfirmPickupArrivalCommand = CommandEnvelope<
+  "round.confirm_pickup_arrival",
+  ConfirmPickupArrivalPayload
+>;
+
+export type PickupArrivalConfirmedPayload = {
+  arrivalId: string;
+  roundId: string;
+  pickupLocationId: string;
+  driverId: string;
+  arrivedAt: string;
+  hasPositionEvidence: boolean;
+};
+
+export type PickupArrivalConfirmedEvent = DomainEventEnvelope<
+  "round.pickup_arrival_confirmed",
+  PickupArrivalConfirmedPayload
+>;
+
+export type ConfirmPickupArrivalResult = CommandResult<
+  PickupArrivalConfirmedPayload,
+  PickupArrivalConfirmedEvent
+>;
+
 export const pickupProblemCategories = [
   "missing_item",
   "wrong_item",
@@ -833,6 +862,7 @@ export type DriverRound = {
   };
   stops: DriverRoundStop[];
   routePlan?: PlanningRouteSnapshot;
+  pickupArrivedAt?: string;
 };
 
 export type DriverCompletedRound = {

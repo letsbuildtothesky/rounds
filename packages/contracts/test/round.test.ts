@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   ContractError,
   validateConfirmPickupCommand,
+  validateConfirmPickupArrivalCommand,
   validateConfirmPickupPayload,
   validateConfirmStopArrivalCommand,
   validateCompleteStopPodCommand,
@@ -385,6 +386,44 @@ test("validates explicit arrival evidence without requiring GPS", () => {
       },
     },
   }), ContractError);
+});
+
+test("validates explicit pickup arrival with optional measured position", () => {
+  const command = {
+    schemaVersion: 1 as const,
+    commandType: "round.confirm_pickup_arrival" as const,
+    commandId: "10000000-0000-4000-8000-000000000101",
+    traceId: "10000000-0000-4000-8000-000000000102",
+    idempotencyKey: "pickup-arrival:round-1:v4",
+    tenantId: "10000000-0000-4000-8000-000000000001",
+    aggregateId: "10000000-0000-4000-8000-000000000010",
+    expectedVersion: 4,
+    payload: {
+      pickupLocationId: "10000000-0000-4000-8000-000000000020",
+      position: {
+        latitude: 13.7338,
+        longitude: 100.5766,
+        accuracyMeters: 12,
+        source: "rounds_os" as const,
+      },
+    },
+  };
+  assert.doesNotThrow(() => validateConfirmPickupArrivalCommand(command));
+  assert.doesNotThrow(() => validateConfirmPickupArrivalCommand({
+    ...command,
+    payload: { pickupLocationId: command.payload.pickupLocationId },
+  }));
+  assert.throws(() => validateConfirmPickupArrivalCommand({
+    ...command,
+    payload: { ...command.payload, pickupLocationId: "not-a-uuid" },
+  }), /pickupLocationId/);
+  assert.throws(() => validateConfirmPickupArrivalCommand({
+    ...command,
+    payload: {
+      ...command.payload,
+      position: { ...command.payload.position, latitude: 100 },
+    },
+  }), /latitude/);
 });
 
 test("requires bounded immutable photo metadata before POD upload", () => {
