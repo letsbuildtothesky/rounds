@@ -1807,6 +1807,7 @@ abstract final class DriverH03Metrics {
   static const double eventColumnGap = 8.0;
   static const double eventMinHeight = 68.0;
   static const double eventBottom = 18.0;
+  static const double lastEventBottom = 2.0;
   static const double timePaddingTop = 2.0;
   static const double timeSize = 11.5;
   static const double dotSize = 10.0;

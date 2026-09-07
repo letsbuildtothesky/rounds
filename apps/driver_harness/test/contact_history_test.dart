@@ -141,6 +141,48 @@ void main() {
     expect(history.events.single.detail, 'Voice note');
   });
 
+  test('H03 preserves board semantics for system and attachment evidence', () {
+    final history = composeDriverContactHistory(
+      messages: [
+        DriverOperationsMessageModel(
+          id: 'pickup-system',
+          sender: 'system',
+          body: 'Pickup verified\n6 packages confirmed in driver custody',
+          sentAt: DateTime.utc(2026, 9, 7, 5, 4),
+        ),
+        DriverOperationsMessageModel(
+          id: 'driver-text',
+          sender: 'driver',
+          body: 'I’m at Gate B now.',
+          sentAt: DateTime.utc(2026, 9, 7, 7, 19),
+        ),
+        DriverOperationsMessageModel(
+          id: 'driver-location',
+          sender: 'driver',
+          body: '',
+          attachments: [
+            DriverMessageAttachmentModel.location(
+              label: 'Gate B',
+              latitude: 13.7306,
+              longitude: 100.5697,
+              capturedAt: DateTime.utc(2026, 9, 7, 7, 21),
+            ),
+          ],
+          sentAt: DateTime.utc(2026, 9, 7, 7, 21),
+        ),
+      ],
+      contactAttempts: const [],
+      threadUnavailable: false,
+    );
+
+    expect(history.events[0].title, 'Pickup verified');
+    expect(history.events[0].tone, DriverContactHistoryEventTone.green);
+    expect(history.events[1].quoteDetail, isTrue);
+    expect(history.events[2].title, 'Location shared');
+    expect(history.events[2].quoteDetail, isFalse);
+    expect(history.events[2].copyable, isTrue);
+  });
+
   testWidgets('H03 uses canonical regions and only renders real evidence', (
     tester,
   ) async {
@@ -238,4 +280,249 @@ void main() {
     expect(find.text('Pickup verified'), findsNothing);
     expect(find.textContaining('approved'), findsNothing);
   });
+
+  testWidgets('H03 populated ledger visually matches the supplied board', (
+    tester,
+  ) async {
+    final controller = await _pumpCanonicalHistory(tester);
+
+    expect(find.text('STOP 1 OF 4'), findsOneWidget);
+    expect(find.text('K. Nattaporn'), findsOneWidget);
+    expect(find.text('Pickup verified'), findsOneWidget);
+    expect(find.text('POD saved'), findsOneWidget);
+    await expectLater(
+      find.byType(MaterialApp),
+      matchesGoldenFile('goldens/h03-contact-history-english-393x852.png'),
+    );
+
+    controller.dispose();
+  });
+
+  testWidgets('H03 saved-history state visually matches the supplied board', (
+    tester,
+  ) async {
+    final controller = await _pumpCanonicalHistory(tester, saved: true);
+
+    expect(find.text('UrbanFlowers · saved'), findsOneWidget);
+    expect(find.text('Offline · showing saved history'), findsOneWidget);
+    await expectLater(
+      find.byType(MaterialApp),
+      matchesGoldenFile(
+        'goldens/h03-contact-history-offline-english-393x852.png',
+      ),
+    );
+
+    controller.dispose();
+  });
+}
+
+Future<HarnessAppController> _pumpCanonicalHistory(
+  WidgetTester tester, {
+  bool saved = false,
+}) async {
+  tester.view.physicalSize = const Size(
+    DriverReferenceViewport.width,
+    DriverReferenceViewport.height,
+  );
+  tester.view.devicePixelRatio = 1;
+  tester.view.padding = const FakeViewPadding(top: 28);
+  addTearDown(tester.view.resetPhysicalSize);
+  addTearDown(tester.view.resetDevicePixelRatio);
+  addTearDown(tester.view.resetPadding);
+  SharedPreferences.setMockInitialValues({});
+  final controller = await HarnessAppController.create();
+  final round = _canonicalHistoryRound();
+  await tester.pumpWidget(
+    MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: buildRoundsDriverTheme(),
+      home: ContactHistoryScreen(
+        controller: controller,
+        round: round,
+        stop: round.stops.first,
+        historyLoader: () async => DriverContactHistoryModel(
+          events: _canonicalHistoryEvents(saved: saved),
+          savedHistory: saved,
+        ),
+      ),
+    ),
+  );
+  await tester.pumpAndSettle();
+  return controller;
+}
+
+DriverRoundModel _canonicalHistoryRound() => DriverRoundModel(
+  id: 'H03-ROUND',
+  reference: 'H03-ROUND-001',
+  serviceDate: '2026-09-07',
+  state: 'active',
+  version: 1,
+  tenantName: 'UrbanFlowers',
+  pickup: const DriverPickupModel(
+    id: 'H03-PICKUP',
+    displayName: 'UrbanFlowers',
+    rawAddress: 'Sukhumvit 39, Bangkok',
+    contactName: 'Operations',
+    contactPhone: '+66000000000',
+  ),
+  stops: [
+    _historyStop(
+      id: 'H03-STOP-1',
+      sequence: 1,
+      recipient: 'K. Nattaporn',
+      address: 'The Emporio Place · Sukhumvit 24',
+    ),
+    _historyStop(id: 'H03-STOP-2', sequence: 2),
+    _historyStop(id: 'H03-STOP-3', sequence: 3),
+    _historyStop(id: 'H03-STOP-4', sequence: 4),
+  ],
+);
+
+DriverRoundStopModel _historyStop({
+  required String id,
+  required int sequence,
+  String recipient = 'Recipient',
+  String address = 'Bangkok',
+}) => DriverRoundStopModel(
+  id: id,
+  sequence: sequence,
+  state: 'assigned',
+  version: 1,
+  destinationVersion: 1,
+  manifestId: 'H03-MANIFEST-$sequence',
+  manifestVersion: 1,
+  deliveryReference: 'UF-H03-00$sequence',
+  recipientName: recipient,
+  recipientPhone: '+66999999999',
+  rawAddress: address,
+  latitude: 13.7306,
+  longitude: 100.5697,
+  windowStart: '2026-09-07T07:00:00Z',
+  windowEnd: '2026-09-07T09:00:00Z',
+  manifestItems: const [
+    DriverManifestItemModel(
+      lineNumber: 1,
+      description: 'Flower bouquet',
+      quantity: 1,
+    ),
+  ],
+);
+
+List<DriverContactHistoryEventModel> _canonicalHistoryEvents({
+  required bool saved,
+}) {
+  final now = DateTime.now();
+  DateTime at(int hour, int minute) =>
+      DateTime(now.year, now.month, now.day, hour, minute);
+  DriverContactHistoryEventModel event({
+    required String id,
+    required DriverContactHistoryEventKind kind,
+    required String title,
+    required String detail,
+    required int hour,
+    required int minute,
+    String? outcome,
+    DriverContactHistoryEventTone? tone,
+    bool quoteDetail = false,
+    String? detailHighlight,
+  }) => DriverContactHistoryEventModel(
+    id: id,
+    kind: kind,
+    title: title,
+    detail: detail,
+    occurredAt: at(hour, minute),
+    outcome: outcome,
+    savedLocally: saved && id == 'message-driver',
+    tone: tone,
+    quoteDetail: quoteDetail,
+    detailHighlight: detailHighlight,
+  );
+
+  return [
+    event(
+      id: 'pickup-verified',
+      kind: DriverContactHistoryEventKind.system,
+      title: 'Pickup verified',
+      detail: '6 packages confirmed in driver custody',
+      hour: 12,
+      minute: 4,
+      tone: DriverContactHistoryEventTone.green,
+    ),
+    event(
+      id: 'entrance-updated',
+      kind: DriverContactHistoryEventKind.system,
+      title: 'Entrance updated',
+      detail: 'Gate A → Gate B',
+      hour: 13,
+      minute: 58,
+      tone: DriverContactHistoryEventTone.orange,
+    ),
+    event(
+      id: 'update-acknowledged',
+      kind: DriverContactHistoryEventKind.system,
+      title: 'Update acknowledged',
+      detail: 'Driver confirmed Gate B',
+      hour: 13,
+      minute: 59,
+      tone: DriverContactHistoryEventTone.green,
+    ),
+    event(
+      id: 'message-driver',
+      kind: DriverContactHistoryEventKind.driverMessage,
+      title: 'Message to Operations',
+      detail: 'I’m at Gate B now. Security is checking.',
+      hour: 14,
+      minute: 19,
+      tone: DriverContactHistoryEventTone.ink,
+      quoteDetail: true,
+    ),
+    event(
+      id: 'message-operations',
+      kind: DriverContactHistoryEventKind.operationsMessage,
+      title: 'Operations message',
+      detail: 'They’ve confirmed you can leave it at reception.',
+      hour: 14,
+      minute: 20,
+      tone: DriverContactHistoryEventTone.ink,
+      quoteDetail: true,
+    ),
+    event(
+      id: 'location-shared',
+      kind: DriverContactHistoryEventKind.driverMessage,
+      title: 'Location shared',
+      detail: 'Gate B · Current location',
+      hour: 14,
+      minute: 21,
+      tone: DriverContactHistoryEventTone.ink,
+    ),
+    event(
+      id: 'recipient-call',
+      kind: DriverContactHistoryEventKind.recipientCall,
+      title: 'Recipient call',
+      detail: 'No answer',
+      hour: 14,
+      minute: 24,
+      outcome: 'no_answer',
+      tone: DriverContactHistoryEventTone.red,
+    ),
+    event(
+      id: 'handoff-approved',
+      kind: DriverContactHistoryEventKind.system,
+      title: 'Handoff approved',
+      detail: 'Leave with reception · UrbanFlowers approved',
+      hour: 14,
+      minute: 26,
+      tone: DriverContactHistoryEventTone.green,
+      detailHighlight: 'UrbanFlowers approved',
+    ),
+    event(
+      id: 'pod-saved',
+      kind: DriverContactHistoryEventKind.system,
+      title: 'POD saved',
+      detail: 'Proof photo · reception handoff',
+      hour: 14,
+      minute: 31,
+      tone: DriverContactHistoryEventTone.green,
+    ),
+  ];
 }

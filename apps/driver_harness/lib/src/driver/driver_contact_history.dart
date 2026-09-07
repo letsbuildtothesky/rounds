@@ -9,6 +9,8 @@ enum DriverContactHistoryEventKind {
   operationsCall,
 }
 
+enum DriverContactHistoryEventTone { ink, orange, green, red }
+
 class DriverContactHistoryEventModel {
   const DriverContactHistoryEventModel({
     required this.id,
@@ -18,6 +20,9 @@ class DriverContactHistoryEventModel {
     required this.occurredAt,
     this.outcome,
     this.savedLocally = false,
+    this.tone,
+    this.quoteDetail = false,
+    this.detailHighlight,
   });
 
   final String id;
@@ -27,6 +32,9 @@ class DriverContactHistoryEventModel {
   final DateTime occurredAt;
   final String? outcome;
   final bool savedLocally;
+  final DriverContactHistoryEventTone? tone;
+  final bool quoteDetail;
+  final String? detailHighlight;
 
   bool get copyable =>
       kind == DriverContactHistoryEventKind.driverMessage ||
@@ -107,6 +115,8 @@ DriverContactHistoryEventModel _messageEvent(
       detail: humanDetail,
       occurredAt: message.sentAt,
       savedLocally: message.savedLocally,
+      tone: DriverContactHistoryEventTone.ink,
+      quoteDetail: !attachmentOnly,
     );
   }
   if (message.sender == 'operations') {
@@ -119,6 +129,8 @@ DriverContactHistoryEventModel _messageEvent(
       detail: humanDetail,
       occurredAt: message.sentAt,
       savedLocally: message.savedLocally,
+      tone: DriverContactHistoryEventTone.ink,
+      quoteDetail: !attachmentOnly,
     );
   }
   final parsedCall = _parseSystemCall(message.body);
@@ -135,15 +147,12 @@ DriverContactHistoryEventModel _messageEvent(
       outcome: outcome,
       occurredAt: message.sentAt,
       savedLocally: message.savedLocally,
+      tone: outcome == 'reached'
+          ? DriverContactHistoryEventTone.green
+          : DriverContactHistoryEventTone.red,
     );
   }
-  final separator = message.body.indexOf(' · ');
-  final title = separator < 0
-      ? 'Rounds update'
-      : message.body.substring(0, separator);
-  final detail = separator < 0
-      ? message.body
-      : message.body.substring(separator + 3);
+  final (title, detail) = _splitSystemBody(message.body);
   return DriverContactHistoryEventModel(
     id: 'system:${message.id}',
     kind: DriverContactHistoryEventKind.system,
@@ -151,7 +160,30 @@ DriverContactHistoryEventModel _messageEvent(
     detail: detail,
     occurredAt: message.sentAt,
     savedLocally: message.savedLocally,
+    tone: _systemTone(title),
+    detailHighlight: title == 'Handoff approved'
+        ? _detailAfterLastSeparator(detail)
+        : null,
   );
+}
+
+(String, String) _splitSystemBody(String body) {
+  final normalized = body.trim();
+  final newline = normalized.indexOf('\n');
+  if (newline >= 0) {
+    return (
+      normalized.substring(0, newline).trim(),
+      normalized.substring(newline + 1).trim(),
+    );
+  }
+  final separator = normalized.indexOf(' · ');
+  if (separator >= 0) {
+    return (
+      normalized.substring(0, separator).trim(),
+      normalized.substring(separator + 3).trim(),
+    );
+  }
+  return ('Rounds update', normalized);
 }
 
 DriverContactHistoryEventModel _callEvent(DriverContactAttemptModel attempt) =>
@@ -167,7 +199,26 @@ DriverContactHistoryEventModel _callEvent(DriverContactAttemptModel attempt) =>
       outcome: attempt.outcome,
       occurredAt: attempt.occurredAt,
       savedLocally: attempt.savedLocally,
+      tone: attempt.outcome == 'reached'
+          ? DriverContactHistoryEventTone.green
+          : DriverContactHistoryEventTone.red,
     );
+
+DriverContactHistoryEventTone _systemTone(String title) {
+  return switch (title.toLowerCase()) {
+    'pickup verified' ||
+    'update acknowledged' ||
+    'handoff approved' ||
+    'pod saved' => DriverContactHistoryEventTone.green,
+    _ => DriverContactHistoryEventTone.orange,
+  };
+}
+
+String? _detailAfterLastSeparator(String detail) {
+  final separator = detail.lastIndexOf(' · ');
+  if (separator < 0 || separator + 3 >= detail.length) return null;
+  return detail.substring(separator + 3);
+}
 
 (String, String)? _parseSystemCall(String body) {
   final match = RegExp(

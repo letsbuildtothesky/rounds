@@ -136,6 +136,9 @@ class _ContactHistoryScreenState extends State<ContactHistoryScreen> {
   Widget build(BuildContext context) {
     final history = _history;
     final saved = history?.savedHistory ?? false;
+    final groups = history == null
+        ? const <_EventDay>[]
+        : _groupEvents(history.events);
     return Scaffold(
       backgroundColor: RoundsColors.surface,
       body: SafeArea(
@@ -192,11 +195,12 @@ class _ContactHistoryScreenState extends State<ContactHistoryScreen> {
                           if (history == null || history.events.isEmpty)
                             const _EmptyHistory()
                           else
-                            for (final group in _groupEvents(history.events))
+                            for (var index = 0; index < groups.length; index++)
                               _DaySection(
-                                label: group.label,
-                                events: group.events,
+                                label: groups[index].label,
+                                events: groups[index].events,
                                 onCopy: _copy,
+                                isLast: index == groups.length - 1,
                               ),
                         ],
                       ),
@@ -329,6 +333,7 @@ class _HistoryTopBar extends StatelessWidget {
             ],
           ),
         ),
+        const SizedBox(width: DriverH03Metrics.topColumnGap),
         const SizedBox(
           width: DriverH03Metrics.topButtonSize,
           height: DriverH03Metrics.topButtonSize,
@@ -434,15 +439,17 @@ class _DaySection extends StatelessWidget {
     required this.label,
     required this.events,
     required this.onCopy,
+    required this.isLast,
   });
 
   final String label;
   final List<DriverContactHistoryEventModel> events;
   final ValueChanged<DriverContactHistoryEventModel> onCopy;
+  final bool isLast;
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(bottom: 16),
+    padding: EdgeInsets.only(bottom: isLast ? 0 : 16),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -468,8 +475,12 @@ class _DaySection extends StatelessWidget {
               ),
               Column(
                 children: [
-                  for (final event in events)
-                    _HistoryEvent(event: event, onCopy: () => onCopy(event)),
+                  for (var index = 0; index < events.length; index++)
+                    _HistoryEvent(
+                      event: events[index],
+                      isLast: index == events.length - 1,
+                      onCopy: () => onCopy(events[index]),
+                    ),
                 ],
               ),
             ],
@@ -481,24 +492,32 @@ class _DaySection extends StatelessWidget {
 }
 
 class _HistoryEvent extends StatelessWidget {
-  const _HistoryEvent({required this.event, required this.onCopy});
+  const _HistoryEvent({
+    required this.event,
+    required this.isLast,
+    required this.onCopy,
+  });
 
   final DriverContactHistoryEventModel event;
+  final bool isLast;
   final VoidCallback onCopy;
 
   @override
   Widget build(BuildContext context) {
     final color = _eventColor(event);
-    final human = event.copyable;
     return GestureDetector(
       key: Key('contact-history-event-${event.id}'),
-      onLongPress: human ? onCopy : null,
+      onLongPress: event.copyable ? onCopy : null,
       child: ConstrainedBox(
         constraints: const BoxConstraints(
           minHeight: DriverH03Metrics.eventMinHeight,
         ),
         child: Padding(
-          padding: const EdgeInsets.only(bottom: DriverH03Metrics.eventBottom),
+          padding: EdgeInsets.only(
+            bottom: isLast
+                ? DriverH03Metrics.lastEventBottom
+                : DriverH03Metrics.eventBottom,
+          ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -560,30 +579,64 @@ class _HistoryEvent extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: DriverH03Metrics.detailGap),
-                    Text(
-                      '${human ? '“${event.detail}”' : event.detail}'
-                      '${event.savedLocally ? ' · saved on this phone' : ''}',
-                      style: TextStyle(
-                        color: event.outcome == null
-                            ? (human ? RoundsColors.ink : RoundsColors.muted)
-                            : color,
-                        fontSize: human
-                            ? DriverH03Metrics.humanSize
-                            : DriverH03Metrics.detailSize,
-                        height: human
-                            ? DriverH03Metrics.humanHeight
-                            : DriverH03Metrics.detailHeight,
-                        fontWeight: event.outcome == null
-                            ? FontWeight.w600
-                            : FontWeight.w800,
-                      ),
-                    ),
+                    _EventDetail(event: event),
                   ],
                 ),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _EventDetail extends StatelessWidget {
+  const _EventDetail({required this.event});
+
+  final DriverContactHistoryEventModel event;
+
+  @override
+  Widget build(BuildContext context) {
+    final human = event.quoteDetail;
+    final savedSuffix = event.savedLocally ? ' · saved on this phone' : '';
+    final highlight = event.detailHighlight;
+    final style = TextStyle(
+      color: event.outcome == null
+          ? (human ? RoundsColors.ink : RoundsColors.muted)
+          : RoundsColors.inkSecondary,
+      fontSize: human
+          ? DriverH03Metrics.humanSize
+          : DriverH03Metrics.detailSize,
+      height: human
+          ? DriverH03Metrics.humanHeight
+          : DriverH03Metrics.detailHeight,
+      fontWeight: event.outcome == null ? FontWeight.w600 : FontWeight.w800,
+    );
+    if (highlight == null || !event.detail.endsWith(highlight)) {
+      return Text(
+        '${human ? '“${event.detail}”' : event.detail}$savedSuffix',
+        style: style,
+      );
+    }
+    final lead = event.detail.substring(
+      0,
+      event.detail.length - highlight.length,
+    );
+    return Text.rich(
+      TextSpan(
+        style: style,
+        children: [
+          TextSpan(text: lead),
+          TextSpan(
+            text: highlight,
+            style: const TextStyle(
+              color: RoundsColors.green,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          TextSpan(text: savedSuffix),
+        ],
       ),
     );
   }
@@ -661,6 +714,12 @@ String _formatTime(DateTime value) {
 }
 
 Color _eventColor(DriverContactHistoryEventModel event) => switch (event.kind) {
+  _ when event.tone == DriverContactHistoryEventTone.ink => RoundsColors.ink,
+  _ when event.tone == DriverContactHistoryEventTone.orange =>
+    RoundsColors.orange,
+  _ when event.tone == DriverContactHistoryEventTone.green =>
+    RoundsColors.green,
+  _ when event.tone == DriverContactHistoryEventTone.red => RoundsColors.red,
   DriverContactHistoryEventKind.driverMessage ||
   DriverContactHistoryEventKind.operationsMessage => RoundsColors.ink,
   DriverContactHistoryEventKind.system => RoundsColors.orange,

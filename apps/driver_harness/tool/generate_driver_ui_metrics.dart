@@ -2028,6 +2028,7 @@ abstract final class DriverH03Metrics {
   static const double eventColumnGap = ${_double(h03Ledger['columnGap'])};
   static const double eventMinHeight = ${_double(h03Ledger['eventMinHeight'])};
   static const double eventBottom = ${_double(h03Ledger['eventBottom'])};
+  static const double lastEventBottom = ${_double(h03Ledger['lastEventBottom'])};
   static const double timePaddingTop = ${_double(h03Ledger['timePaddingTop'])};
   static const double timeSize = ${_double(h03Ledger['timeSize'])};
   static const double dotSize = ${_double(h03Ledger['dotSize'])};

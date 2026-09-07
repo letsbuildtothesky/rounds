@@ -1734,6 +1734,7 @@
         "columnGap": 8,
         "eventMinHeight": 68,
         "eventBottom": 18,
+        "lastEventBottom": 2,
         "timePaddingTop": 2,
         "timeSize": 11.5,
         "dotSize": 10,
