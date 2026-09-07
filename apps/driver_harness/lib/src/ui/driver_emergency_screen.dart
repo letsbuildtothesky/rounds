@@ -11,6 +11,11 @@ import '../permissions/location_access.dart';
 import 'location_problem_screen.dart';
 
 typedef DriverEmergencyLauncher = Future<bool> Function(Uri uri);
+typedef DriverEmergencySender =
+    Future<DriverCommandOutcome?> Function(
+      String safetyStatus,
+      DriverLocationEvidence? position,
+    );
 
 enum _EmergencyViewState { initial, safe, urgent }
 
@@ -21,6 +26,7 @@ class DriverEmergencyScreen extends StatefulWidget {
     required this.stop,
     this.locationProvider = _currentEmergencyLocation,
     this.launcher = _launchExternal,
+    this.sendEmergency,
     super.key,
   });
 
@@ -29,6 +35,7 @@ class DriverEmergencyScreen extends StatefulWidget {
   final DriverRoundStopModel stop;
   final DriverLocationProvider locationProvider;
   final DriverEmergencyLauncher launcher;
+  final DriverEmergencySender? sendEmergency;
 
   @override
   State<DriverEmergencyScreen> createState() => _DriverEmergencyScreenState();
@@ -62,18 +69,20 @@ class _DriverEmergencyScreenState extends State<DriverEmergencyScreen> {
     if (_submitting) return;
     setState(() => _submitting = true);
     final evidence = _location;
-    final outcome = await widget.controller.reportDriverEmergency(
-      stop: widget.stop,
-      safetyStatus: safetyStatus,
-      position: evidence == null
-          ? null
-          : {
-              'latitude': evidence.latitude,
-              'longitude': evidence.longitude,
-              'accuracyMeters': evidence.accuracyMeters,
-              'source': 'rounds_os',
-            },
-    );
+    final outcome = widget.sendEmergency == null
+        ? await widget.controller.reportDriverEmergency(
+            stop: widget.stop,
+            safetyStatus: safetyStatus,
+            position: evidence == null
+                ? null
+                : {
+                    'latitude': evidence.latitude,
+                    'longitude': evidence.longitude,
+                    'accuracyMeters': evidence.accuracyMeters,
+                    'source': 'rounds_os',
+                  },
+          )
+        : await widget.sendEmergency!(safetyStatus, evidence);
     if (!mounted) return;
     setState(() => _submitting = false);
     if (outcome == null) {
@@ -135,7 +144,7 @@ class _DriverEmergencyScreenState extends State<DriverEmergencyScreen> {
         body: SafeArea(
           child: Column(
             children: [
-              _EmergencyTopBar(pendingSync: _pendingSync, submitted: submitted),
+              const _EmergencyTopBar(),
               Expanded(
                 child: SingleChildScrollView(
                   key: const Key('driver-emergency-content'),
@@ -179,10 +188,7 @@ class _DriverEmergencyScreenState extends State<DriverEmergencyScreen> {
 }
 
 class _EmergencyTopBar extends StatelessWidget {
-  const _EmergencyTopBar({required this.pendingSync, required this.submitted});
-
-  final bool pendingSync;
-  final bool submitted;
+  const _EmergencyTopBar();
 
   @override
   Widget build(BuildContext context) => Container(
@@ -199,13 +205,9 @@ class _EmergencyTopBar extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          !submitted
-              ? 'EMERGENCY'
-              : pendingSync
-              ? 'PENDING SYNC'
-              : 'EMERGENCY HOLD',
-          style: const TextStyle(
+        const Text(
+          'ROUND PAUSED',
+          style: TextStyle(
             color: RoundsColors.red,
             fontSize: DriverG05Metrics.topEyebrowSize,
             height: 1,
@@ -283,7 +285,7 @@ class _InitialEmergencyBody extends StatelessWidget {
               color: RoundsColors.green,
               softColor: const Color(0xFFEAF7EF),
               title: 'I’m safe',
-              detail: 'I can wait safely while Rounds contacts Operations.',
+              detail: 'I can wait safely while the Round is paused.',
               enabled: !submitting,
               onTap: onSafe,
             ),
@@ -292,6 +294,7 @@ class _InitialEmergencyBody extends StatelessWidget {
               icon: Icons.priority_high,
               color: RoundsColors.red,
               softColor: const Color(0xFFFFF0F0),
+              outlinedGlyph: true,
               title: 'I need urgent help',
               detail: 'Accident, injury or unsafe situation.',
               enabled: !submitting,
@@ -304,10 +307,10 @@ class _InitialEmergencyBody extends StatelessWidget {
         title: readingLocation
             ? 'Checking current location'
             : hasLocation
-            ? 'Current location available'
+            ? 'Current location recorded'
             : 'Current location unavailable',
         detail: hasLocation
-            ? 'It will be attached to the emergency event'
+            ? 'Available to Operations with this emergency event'
             : 'You can report the emergency without it',
       ),
       if (submitting) ...[
@@ -352,7 +355,9 @@ class _ReportedEmergencyBody extends StatelessWidget {
       Text(
         pendingSync
             ? 'Saved on this phone. Operations has not received it yet.'
-            : 'Operations has received the emergency event and the Stop is protected by an emergency hold.',
+            : urgent
+            ? 'Operations has been notified and the active Round is paused.'
+            : 'Operations has been notified. The Round remains paused.',
         style: const TextStyle(
           color: RoundsColors.muted,
           fontSize: DriverG05Metrics.subSize,
@@ -412,6 +417,7 @@ class _SafetyChoice extends StatelessWidget {
     required this.detail,
     required this.enabled,
     required this.onTap,
+    this.outlinedGlyph = false,
     super.key,
   });
 
@@ -422,6 +428,7 @@ class _SafetyChoice extends StatelessWidget {
   final String detail;
   final bool enabled;
   final VoidCallback onTap;
+  final bool outlinedGlyph;
 
   @override
   Widget build(BuildContext context) => InkWell(
@@ -446,7 +453,7 @@ class _SafetyChoice extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                icon,
+                outlinedGlyph ? Icons.error_outline : icon,
                 color: color,
                 size: DriverG05Metrics.choiceGlyphSize,
               ),
@@ -482,7 +489,11 @@ class _SafetyChoice extends StatelessWidget {
             ),
           ),
           const SizedBox(width: DriverG05Metrics.choiceArrowColumn),
-          Icon(Icons.chevron_right, color: color, size: 22),
+          Icon(
+            Icons.chevron_right,
+            color: outlinedGlyph ? RoundsColors.red : const Color(0xFF8B96A5),
+            size: 22,
+          ),
         ],
       ),
     ),
@@ -563,7 +574,7 @@ class _EmergencyStateBlock extends StatelessWidget {
         ),
         const SizedBox(height: DriverG05Metrics.stateTitleGap),
         Text(
-          pendingSync ? 'Waiting to sync' : 'Emergency hold active',
+          pendingSync ? 'Waiting to sync' : 'Round paused',
           style: const TextStyle(
             color: RoundsColors.ink,
             fontSize: DriverG05Metrics.stateTitleSize,
@@ -576,7 +587,7 @@ class _EmergencyStateBlock extends StatelessWidget {
         Text(
           pendingSync
               ? 'Keep safe while Rounds retries. Operations cannot act until this event reaches the server.'
-              : 'Operations can see the priority event. No reassignment or next step has been approved yet.',
+              : 'Operations can reassign work or tell you when to continue.',
           style: const TextStyle(
             color: RoundsColors.muted,
             fontSize: DriverG05Metrics.stateDetailSize,
@@ -646,7 +657,7 @@ class _EmergencyFooter extends StatelessWidget {
             key: const Key('driver-emergency-secondary'),
             onPressed: onSecondary,
             child: Text(
-              urgent ? 'Call Operations' : 'Return to Round',
+              urgent ? 'Call Operations' : 'Return to paused Round',
               style: const TextStyle(
                 color: RoundsColors.inkSecondary,
                 fontSize: DriverG05Metrics.secondarySize,
@@ -670,6 +681,7 @@ class _EmergencyAssistanceSheet extends StatelessWidget {
       key: const Key('emergency-assistance-sheet'),
       color: RoundsColors.surface,
       shape: const RoundedRectangleBorder(
+        side: BorderSide(color: RoundsColors.lineStrong),
         borderRadius: BorderRadius.vertical(
           top: Radius.circular(DriverG05Metrics.sheetRadiusTop),
           bottom: Radius.circular(DriverG05Metrics.sheetRadiusBottom),
@@ -711,7 +723,7 @@ class _EmergencyAssistanceSheet extends StatelessWidget {
             ),
             const SizedBox(height: DriverG05Metrics.sheetDetailGap),
             const Text(
-              'Choose the help you need. Your emergency hold stays active.',
+              'Choose the help you need. Your Round stays paused.',
               style: TextStyle(
                 color: RoundsColors.muted,
                 fontSize: DriverG05Metrics.sheetDetailSize,
@@ -722,16 +734,16 @@ class _EmergencyAssistanceSheet extends StatelessWidget {
             const SizedBox(height: 11),
             _EmergencyCallRow(
               key: const Key('emergency-medical'),
-              icon: Icons.medical_services_outlined,
+              icon: Icons.add,
               title: 'Medical emergency',
-              detail: 'Call emergency medical services · 1669',
+              detail: 'Open the device emergency call handoff',
               onTap: () => Navigator.of(context).pop('1669'),
             ),
             _EmergencyCallRow(
               key: const Key('emergency-police'),
               icon: Icons.warning_amber_rounded,
               title: 'Police / immediate danger',
-              detail: 'Call the emergency police line · 191',
+              detail: 'Open the device emergency call handoff',
               onTap: () => Navigator.of(context).pop('191'),
             ),
           ],
