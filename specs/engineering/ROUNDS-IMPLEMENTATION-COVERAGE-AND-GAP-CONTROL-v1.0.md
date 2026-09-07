@@ -1,12 +1,25 @@
 # Rounds · Implementation Coverage and Gap Control
 
 **Version:** 1.0  
-**Date:** 2026-09-06
+**Date:** 2026-09-07
 **Status:** Active implementation-control specification  
 **Applies to:** English own-fleet Pilot / Slice 1 closure and Slice 2 execution
 
 ## Changelog
 
+- **2026-09-07 · Checkpoint 69:** Locks all four approved English E04–E06
+  Team live-change states at the canonical `393 × 852` viewport: entrance,
+  destination, Stop order and promised window. The non-native reference map
+  now follows the supplied clipped street, building, label, old/new route,
+  Driver-marker and entrance-pin geometry; production still uses the real
+  Google navigation map. Real before/after truth drives the approved entrance,
+  next-Stop and earlier/later promise copy. Four goldens plus focused contact
+  and acknowledgement behavior tests pass. The complete 176-test Driver suite,
+  Flutter analysis, repository-wide TypeScript typecheck, all 220 repository
+  tests and the configured Android debug APK build pass. E04–E06 remains
+  `IMPLEMENTED` pending a live Operations apply → physical Driver acknowledge
+  → Operations-observed multi-Stop transition and device/road acceptance. The
+  Network paid add-Stop flow stays deferred and no Thai screen changed.
 - **2026-09-06 · Checkpoint 68:** Completes the coded English N03 recovery
   surface and locks the approved N01 location-permission subset without
   promoting unsupported permissions. Canonical `393 × 852` comparison found
@@ -540,7 +553,7 @@ Canonical inventory: `specs/product/ROUNDS-DRIVER-CANONICAL-MANIFEST-v6.md` and 
 | D03 / D04 Pickup confirmation | Pilot P0 | `VERIFIED` | Exact manifest checklist, offline command outbox, version/idempotency checks and server custody commit exist. English and Thai now use the canonical D03/D04 copy through the shared locale layer, including manifest handling labels, problem reporting and honest pending/failure states. English geometry/golden coverage and a Thai 393 px no-overflow interaction test pass; the configured APK is installed on the connected Samsung. | Complete final physical multi-item English/Thai acceptance and visual comparison with the phone unlocked. |
 | E01 Active Round overview | Pilot P0 | `VERIFIED` | Real Round data, map, measured UI metrics and golden geometry tests exist. | Final physical-device visual acceptance for supported widths. |
 | E02 Navigate to current Stop | Pilot P0 | `ACCEPTED` | Embedded Google navigation, TWO_WHEELER route, arrival command and physical Samsung bench operation have been exercised. | Motorcycle road, degraded-network, background and battery field gates remain open. |
-| E04–E06 Live Round change | Slice 2 P0 | `IMPLEMENTED` | The supplied measured Driver surface now renders server-authored before/after truth and route impact, supports Operations contact, and durably acknowledges one assigned versioned update. Operations previews real route/promise/shift consequences, atomically changes only authorized destination/window/sequence truth, preserves locked custody, exposes awaiting/acknowledged state, and blocks stale versions. The supplied v45 map-pin selector uses a real Mapbox crosshair and requires an explicit new-pin or preserve-existing-pin decision when address text changes. Automated API/widget coverage, remote migration application and Android build/launch pass. | Exercise the complete Operations apply → physical Driver acknowledge → Operations observed transition against a live active multi-Stop Round and finish device visual/road acceptance. Network paid add-Stop consent remains deferred. |
+| E04–E06 Live Round change | Slice 2 P0 | `IMPLEMENTED` | The supplied measured Driver surface renders server-authored before/after truth and route impact, supports Operations contact, and durably acknowledges one assigned versioned update. Four English `393 × 852` goldens now lock the approved entrance, destination, Stop-order and promised-window variants, including the exact 64 px top bar, 370 px map, panel/diff/action geometry and supplied reference-map composition. Real values drive the approved entrance, next-Stop and earlier/later promise copy; production keeps the real Google navigation map. Operations previews real route/promise/shift consequences, atomically changes only authorized destination/window/sequence truth, preserves locked custody, exposes awaiting/acknowledged state, and blocks stale versions. The supplied v45 map-pin selector uses a real Mapbox crosshair and requires an explicit new-pin or preserve-existing-pin decision when address text changes. Automated API/widget/golden coverage, remote migration application and Android build/launch pass. | Exercise the complete Operations apply → physical Driver acknowledge → Operations observed transition against a live active multi-Stop Round and finish device visual/road acceptance. Network paid add-Stop consent remains deferred. |
 | F01 / F02 Drop-off handoff | Pilot P0 | `VERIFIED` | Arrival now enters the separate measured English/Thai handoff surface before POD. Recipient, someone-else and left-at-location choices use real Stop/manifest truth; the latter opens the canonical four-choice bottom drawer. Contact actions reuse the real call, chat and recipient-unavailable flows. Handoff selection is passed into the existing atomic POD command instead of being committed early. English golden, compact Thai and routing/drawer tests pass; the English surface and drawer passed physical Samsung visual acceptance. | Exercise each choice through a live arrived Stop and committed POD, then complete physical Thai acceptance. |
 | F03 / F04 Proof of delivery | Pilot P0 | `ACCEPTED` | Real camera photo, retained draft, resumable upload, server hash/size verification and commit survived Android bench relaunch. The generic form is now replaced by the measured English/Thai canonical structure: explicit delivery-side manifest checks, handoff-derived copy, structured received-by drawer plus the real receiver name required by the server contract, retained-photo preview/retake, honest server-time evidence and a fixed completion action. Only driver-confirmed line numbers enter the POD outbox. Reference geometry, golden parity, compact Thai, receiver-drawer and completion-gate tests pass. | Complete physical English/Thai visual acceptance and road/degraded-network recovery. GAP-014 must project the actual order-class POD policy before conditional signature or GPS/geofence UI is enabled. |
 | F08 Stop complete / next Stop | Pilot P0 | `VERIFIED` | Multi-stop continuation and golden geometry coverage exist. | Physical multi-stop acceptance with real server data. |
@@ -884,10 +897,21 @@ This sequence does not promote later slices; it orders the already authorized En
   **Check location access** enters the real permission/retry path and **Not
   now** dismisses without side effects. N01 remains `PARTIAL`; N03 advances to
   `IMPLEMENTED`. No Thai surface or unsupported permission was added.
+- **D33 English E04–E06 live-change visual lock completed 2026-09-07:** four
+  `393 × 852` goldens cover the approved entrance, destination, Stop-order and
+  promised-window states. The reference painter now reproduces the supplied
+  clipped map geometry while production retains real Google navigation. Copy
+  is derived from authoritative before/after truth, and focused tests exercise
+  the existing Operations contact and durable acknowledgement actions.
+  E04–E06 remains `IMPLEMENTED` until the live multi-Stop cross-surface and
+  device/road gates pass. No Thai or Network presentation was added.
 - Define the canonical auth-expiry/re-auth entry presentation from approved
   English UX before exposing another recovery path.
 - Resolve N01 background-location and notification policy only when the real
   channels are promoted; complete N01/N03 physical recovery acceptance.
+- Continue implementable English board closure with G01 recipient unavailable:
+  lock its supplied states and existing real call/contact behavior, but do not
+  invent the unresolved `GAP-006` custody decision.
 - Run golden/reference-viewport comparisons for every in-scope board.
 - Run physical multi-stop, degraded-network, background, battery and motorcycle road acceptance.
 - Complete physical English/Thai G03 comparison and live subtype acceptance;

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:google_navigation_flutter/google_navigation_flutter.dart';
@@ -16,6 +17,7 @@ class LiveDeliveryChangeScreen extends StatefulWidget {
     required this.enableNativeMap,
     required this.onAcknowledge,
     required this.contactScreenBuilder,
+    this.now,
     super.key,
   });
 
@@ -25,6 +27,7 @@ class LiveDeliveryChangeScreen extends StatefulWidget {
   final bool enableNativeMap;
   final Future<DriverCommandOutcome?> Function() onAcknowledge;
   final WidgetBuilder contactScreenBuilder;
+  final DateTime? now;
 
   @override
   State<LiveDeliveryChangeScreen> createState() =>
@@ -96,6 +99,7 @@ class _LiveDeliveryChangeScreenState extends State<LiveDeliveryChangeScreen> {
                 child: _UpdatePanel(
                   presentation: presentation,
                   impact: widget.change.impact,
+                  now: widget.now ?? DateTime.now(),
                   compact: compact,
                   short: short,
                   acknowledging: _acknowledging,
@@ -182,6 +186,7 @@ class _UpdatePanel extends StatelessWidget {
   const _UpdatePanel({
     required this.presentation,
     required this.impact,
+    required this.now,
     required this.compact,
     required this.short,
     required this.acknowledging,
@@ -192,6 +197,7 @@ class _UpdatePanel extends StatelessWidget {
 
   final _ChangePresentation presentation;
   final DriverLiveDeliveryImpactModel impact;
+  final DateTime now;
   final bool compact;
   final bool short;
   final bool acknowledging;
@@ -287,7 +293,7 @@ class _UpdatePanel extends StatelessWidget {
             ),
           ),
           SizedBox(height: impactTop),
-          _ImpactRow(impact: impact, short: short),
+          _ImpactRow(impact: impact, now: now, short: short),
           if (error != null) ...[
             const SizedBox(height: 8),
             Text(
@@ -435,9 +441,14 @@ class _DiffRow extends StatelessWidget {
 }
 
 class _ImpactRow extends StatelessWidget {
-  const _ImpactRow({required this.impact, required this.short});
+  const _ImpactRow({
+    required this.impact,
+    required this.now,
+    required this.short,
+  });
 
   final DriverLiveDeliveryImpactModel impact;
+  final DateTime now;
   final bool short;
 
   @override
@@ -454,7 +465,7 @@ class _ImpactRow extends StatelessWidget {
             padding: EdgeInsets.symmetric(vertical: short ? 9 : 12),
             child: _ImpactValue(
               label: 'ETA',
-              value: _etaLabel(impact.etaAfter),
+              value: _etaLabel(impact.etaAfter, now),
             ),
           ),
         ),
@@ -475,11 +486,11 @@ class _ImpactRow extends StatelessWidget {
     ),
   );
 
-  static String _etaLabel(String? value) {
+  static String _etaLabel(String? value, DateTime now) {
     if (value == null) return 'Recalculated';
     final eta = DateTime.tryParse(value)?.toLocal();
     if (eta == null) return 'Recalculated';
-    final minutes = eta.difference(DateTime.now()).inMinutes;
+    final minutes = eta.difference(now).inMinutes;
     if (minutes > 0 && minutes < 24 * 60) return '$minutes min';
     final hour = eta.hour.toString().padLeft(2, '0');
     final minute = eta.minute.toString().padLeft(2, '0');
@@ -606,48 +617,310 @@ class _LiveChangeMap extends StatelessWidget {
 class _ChangeMapPreviewPainter extends CustomPainter {
   const _ChangeMapPreviewPainter();
 
+  static const _referenceWidth = 393.0;
+  static const _referenceHeight = 370.0;
+
   @override
   void paint(Canvas canvas, Size size) {
+    canvas.save();
+    canvas.scale(size.width / _referenceWidth, size.height / _referenceHeight);
+    const bounds = Rect.fromLTWH(0, 0, _referenceWidth, _referenceHeight);
+    canvas.clipRect(bounds);
     canvas.drawRect(
-      Offset.zero & size,
-      Paint()..color = const Color(0xFFF1F4F5),
+      bounds,
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFFF8FAFB), Color(0xFFEDF2F4)],
+        ).createShader(bounds),
     );
     final block = Paint()..color = const Color(0xFFE3E8EB);
     for (final rect in <Rect>[
-      Rect.fromLTWH(size.width * .05, 28, size.width * .25, 74),
-      Rect.fromLTWH(size.width * .65, 38, size.width * .28, 62),
-      Rect.fromLTWH(size.width * .37, size.height * .45, size.width * .22, 67),
+      const Rect.fromLTWH(18, 28, 96, 74),
+      const Rect.fromLTWH(267, 38, 104, 62),
+      const Rect.fromLTWH(148, 165, 84, 67),
     ]) {
       canvas.drawRRect(
         RRect.fromRectAndRadius(rect, const Radius.circular(4)),
         block,
       );
     }
-    final road = Paint()
-      ..color = Colors.white
-      ..strokeWidth = 12
-      ..strokeCap = StrokeCap.round;
-    canvas.drawLine(
-      Offset(-20, size.height * .65),
-      Offset(size.width + 20, size.height * .52),
-      road,
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        const Rect.fromLTWH(259, 262, 96, 72),
+        const Radius.circular(4),
+      ),
+      Paint()..color = const Color(0xFFE1EDE4),
     );
-    canvas.drawLine(
-      Offset(size.width * .47, -20),
-      Offset(size.width * .72, size.height + 20),
-      road,
+
+    _drawRoad(canvas, left: -30, top: 237, width: 480, height: 13, degrees: -8);
+    _drawRoad(canvas, left: 174, top: -34, width: 430, height: 13, degrees: 82);
+    _drawRoad(canvas, left: 28, top: 128, width: 330, height: 8, degrees: 3);
+    _drawRoad(canvas, left: 70, top: 313, width: 300, height: 8, degrees: -2);
+    _drawText(
+      canvas,
+      'SUKHUMVIT 24',
+      const Offset(18, 190),
+      size: 10,
+      weight: FontWeight.w700,
+      color: const Color(0xFF8D98A5),
+      letterSpacing: .25,
     );
-    canvas.drawCircle(
-      Offset(size.width * .70, size.height * .28),
-      15,
-      Paint()..color = const Color(0xFFAAB4BE),
+    final phromPhong = _textPainter(
+      'PHROM PHONG',
+      size: 10,
+      weight: FontWeight.w700,
+      color: const Color(0xFF8D98A5),
+      letterSpacing: .25,
     );
-    canvas.drawCircle(
-      Offset(size.width * .80, size.height * .38),
-      20,
-      Paint()..color = RoundsColors.orange,
+    phromPhong.paint(
+      canvas,
+      Offset(_referenceWidth - 16 - phromPhong.width, 287),
     );
+    phromPhong.dispose();
+
+    final newRoute = Path()
+      ..moveTo(74, 282)
+      ..cubicTo(121, 260, 145, 226, 182, 206)
+      ..cubicTo(229, 181, 258, 160, 318, 127);
+    final oldRoute = Path()
+      ..moveTo(74, 282)
+      ..cubicTo(121, 260, 145, 226, 182, 206)
+      ..cubicTo(222, 178, 246, 130, 279, 89);
+    canvas.drawPath(
+      newRoute,
+      Paint()
+        ..color = Colors.white
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 11
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round,
+    );
+    _drawDashedPath(
+      canvas,
+      oldRoute,
+      Paint()
+        ..color = const Color(0xFFA7B2BD)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 4
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round,
+    );
+    canvas.drawPath(
+      newRoute,
+      Paint()
+        ..color = RoundsColors.ink
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 5.5
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round,
+    );
+
+    _drawDriver(canvas);
+    _drawPin(
+      canvas,
+      center: const Offset(279, 89),
+      diameter: 29,
+      borderWidth: 3,
+      fill: Colors.white,
+      border: const Color(0xFFAAB4BE),
+      text: 'A',
+      textColor: const Color(0xFF7F8A96),
+    );
+    _drawMapLabel(
+      canvas,
+      centerX: 279,
+      top: 109.5,
+      text: 'Old entrance',
+      color: RoundsColors.muted,
+      weight: FontWeight.w700,
+    );
+    _drawPin(
+      canvas,
+      center: const Offset(318, 127),
+      diameter: 38,
+      borderWidth: 4,
+      fill: RoundsColors.orange,
+      border: Colors.white,
+      text: 'B',
+      textColor: Colors.white,
+    );
+    _drawMapLabel(
+      canvas,
+      centerX: 318,
+      top: 151,
+      text: 'Gate B',
+      color: RoundsColors.ink,
+      weight: FontWeight.w800,
+    );
+    canvas.restore();
   }
+
+  static void _drawRoad(
+    Canvas canvas, {
+    required double left,
+    required double top,
+    required double width,
+    required double height,
+    required double degrees,
+  }) {
+    canvas.save();
+    canvas.translate(left, top + height / 2);
+    canvas.rotate(degrees * math.pi / 180);
+    final outer = RRect.fromRectAndRadius(
+      Rect.fromLTWH(0, -height / 2 - 1, width, height + 2),
+      const Radius.circular(999),
+    );
+    final inner = RRect.fromRectAndRadius(
+      Rect.fromLTWH(0, -height / 2, width, height),
+      const Radius.circular(999),
+    );
+    canvas.drawRRect(outer, Paint()..color = const Color(0xFFDBE2E7));
+    canvas.drawRRect(inner, Paint()..color = Colors.white);
+    canvas.restore();
+  }
+
+  static void _drawDashedPath(Canvas canvas, Path path, Paint paint) {
+    for (final metric in path.computeMetrics()) {
+      var distance = 0.0;
+      while (distance < metric.length) {
+        canvas.drawPath(
+          metric.extractPath(distance, math.min(distance + 8, metric.length)),
+          paint,
+        );
+        distance += 16;
+      }
+    }
+  }
+
+  static void _drawDriver(Canvas canvas) {
+    const left = 74.0;
+    const top = 274.0;
+    const scaleX = 29 / 36;
+    const scaleY = 35 / 44;
+    final marker = Path()
+      ..moveTo(left + 18 * scaleX, top + 2 * scaleY)
+      ..lineTo(left + 33 * scaleX, top + 40 * scaleY)
+      ..lineTo(left + 18 * scaleX, top + 34 * scaleY)
+      ..lineTo(left + 3 * scaleX, top + 40 * scaleY)
+      ..close();
+    canvas.drawPath(
+      marker,
+      Paint()
+        ..color = Colors.white
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3
+        ..strokeJoin = StrokeJoin.round,
+    );
+    canvas.drawPath(marker, Paint()..color = RoundsColors.ink);
+  }
+
+  static void _drawPin(
+    Canvas canvas, {
+    required Offset center,
+    required double diameter,
+    required double borderWidth,
+    required Color fill,
+    required Color border,
+    required String text,
+    required Color textColor,
+  }) {
+    canvas.drawCircle(center, diameter / 2, Paint()..color = border);
+    canvas.drawCircle(
+      center,
+      diameter / 2 - borderWidth,
+      Paint()..color = fill,
+    );
+    final painter = _textPainter(
+      text,
+      size: diameter == 38 ? 12 : 11,
+      weight: FontWeight.w800,
+      color: textColor,
+    );
+    painter.paint(
+      canvas,
+      Offset(center.dx - painter.width / 2, center.dy - painter.height / 2),
+    );
+    painter.dispose();
+  }
+
+  static void _drawMapLabel(
+    Canvas canvas, {
+    required double centerX,
+    required double top,
+    required String text,
+    required Color color,
+    required FontWeight weight,
+  }) {
+    final painter = _textPainter(
+      text,
+      size: 11.5,
+      weight: weight,
+      color: color,
+    );
+    final rect = Rect.fromLTWH(
+      centerX - (painter.width + 16) / 2,
+      top,
+      painter.width + 16,
+      painter.height + 10,
+    );
+    final shape = RRect.fromRectAndRadius(rect, const Radius.circular(5));
+    canvas.drawRRect(
+      shape.shift(const Offset(0, 3)),
+      Paint()..color = const Color(0x0F172238),
+    );
+    canvas.drawRRect(shape, Paint()..color = const Color(0xFFFDFEFE));
+    canvas.drawRRect(
+      shape,
+      Paint()
+        ..color = RoundsColors.line
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1,
+    );
+    painter.paint(canvas, Offset(rect.left + 8, rect.top + 5));
+    painter.dispose();
+  }
+
+  static void _drawText(
+    Canvas canvas,
+    String text,
+    Offset offset, {
+    required double size,
+    required FontWeight weight,
+    required Color color,
+    double? letterSpacing,
+  }) {
+    final painter = _textPainter(
+      text,
+      size: size,
+      weight: weight,
+      color: color,
+      letterSpacing: letterSpacing,
+    );
+    painter.paint(canvas, offset);
+    painter.dispose();
+  }
+
+  static TextPainter _textPainter(
+    String text, {
+    required double size,
+    required FontWeight weight,
+    required Color color,
+    double? letterSpacing,
+  }) => TextPainter(
+    text: TextSpan(
+      text: text,
+      style: TextStyle(
+        color: color,
+        fontFamily: 'Inter',
+        fontSize: size,
+        fontWeight: weight,
+        letterSpacing: letterSpacing,
+      ),
+    ),
+    textDirection: TextDirection.ltr,
+  )..layout();
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
@@ -729,13 +1002,10 @@ class _ChangePresentation {
         _ => 'Delivery updated',
       },
       subline: switch (single) {
-        'Next stop' => '${stop.recipientName} is now Stop ${after.sequence}.',
+        'Next stop' => '${stop.recipientName} is now your next stop.',
         'Address' => 'Navigate to the new delivery point.',
-        'Entrance' =>
-          after.accessNote?.trim().isNotEmpty == true
-              ? after.accessNote!.trim()
-              : 'The delivery entrance instruction was removed.',
-        'Window' => 'The promised delivery window has changed.',
+        'Entrance' => _entranceSummary(after.accessNote),
+        'Window' => _windowSummary(before.windowStart, after.windowStart),
         _ => 'Review every change before continuing.',
       },
       items: items,
@@ -745,6 +1015,24 @@ class _ChangePresentation {
   static String _instruction(String? value) {
     final result = value?.trim() ?? '';
     return result.isEmpty ? 'No instruction' : result;
+  }
+
+  static String _entranceSummary(String? value) {
+    final instruction = value?.trim() ?? '';
+    if (instruction.isEmpty) {
+      return 'The delivery entrance instruction was removed.';
+    }
+    return 'Use $instruction for this delivery.';
+  }
+
+  static String _windowSummary(String beforeValue, String afterValue) {
+    final before = DateTime.tryParse(beforeValue);
+    final after = DateTime.tryParse(afterValue);
+    if (before != null && after != null) {
+      if (after.isAfter(before)) return 'The promised window is now later.';
+      if (after.isBefore(before)) return 'The promised window is now earlier.';
+    }
+    return 'The promised delivery window has changed.';
   }
 
   static String _window(String startValue, String endValue) {
