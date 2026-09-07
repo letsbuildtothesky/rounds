@@ -7,6 +7,20 @@
 
 ## Changelog
 
+- **2026-09-07 · Checkpoint 71:** Locks the implementable English G04
+  cannot-complete flow at the canonical `393 × 852` viewport. Eight goldens
+  cover initial reason selection, the delivery-problem action drawer,
+  no-access action, call outcome, recorded-call escalation, Other-note entry,
+  committed waiting and locally saved waiting. The supplied top-right More
+  action, initial drawer route, call-first footer logic, reason/manifest truth
+  and inset drawer
+  geometry are restored. Real native dialing, durable contact evidence and
+  durable Operations messaging remain connected; waiting is disabled and
+  distinguishes server-committed from locally saved truth. The complete
+  185-test Driver suite, Flutter analysis and Android debug APK build pass;
+  repository-wide typecheck and all 220 tests remain green. G04 stays
+  `PARTIAL`: the prototype-only resolved state remains absent until `GAP-006`
+  defines an authoritative custody disposition. No Thai screen changed.
 - **2026-09-07 · Checkpoint 70:** Locks the implementable English G01
   recipient-unavailable flow at the canonical `393 × 852` viewport. Four
   goldens cover the initial board, call-outcome bottom drawer, one failed call
@@ -571,7 +585,7 @@ Canonical inventory: `specs/product/ROUNDS-DRIVER-CANONICAL-MANIFEST-v6.md` and 
 | G01 Recipient unavailable | Slice 2 P0 | `PARTIAL` | The measured canonical G01 opens from the delivery issue drawer, launches the real native dialer, retains an authenticated/audited call-attempt ledger, changes to a second-call action after one failed attempt and exposes the real Operations contact channel after two. Four English `393 × 852` goldens lock the initial, call-outcome drawer, one-attempt and two-attempt states; the supplied title measure and compact manifest presentation now match the board. It never invents a waiting or approved decision. | Define GAP-006 custody outcomes, then add a typed recipient-unavailable hold, real Operations decision and recovery state. Complete physical-device visual and native-call evidence acceptance. |
 | G02 Address/pin/entrance problem | Slice 2 P0 | `PARTIAL` | Canonical measured G02 opens from pickup navigation and the delivery issue flow, captures optional real device-location evidence and survives restart/offline through the durable command outbox. A typed versioned/idempotent server command snapshots the authoritative expected location, preserves destination/manifest truth, opens an audited Operations hold and projects the comparison into v45. The separate authorized E04–E06 live-change command now versions destination changes and Driver acknowledgement without weakening the hold. | Define the remaining GAP-006 exception-resolution outcome, then connect an explicit Operations correction decision to the live-change boundary before releasing the hold. Pickup-location mutation authority remains undefined and is not inferred. |
 | G03 Package problem | Pilot/Slice 2 P0 | `VERIFIED` | The English and Thai canonical initial, evidence and waiting states now use generated board measurements, the supplied bottom action drawer and real Stop/manifest truth. Damaged, missing and wrong-package categories are typed end to end; damaged/wrong require retained, verified photo evidence while missing explicitly submits without fabricating a photo. Category/photo drafts survive restart, all three open the existing audited Operations hold, and migration `202609040002` is applied remotely. Automated geometry, localization, contract, API and outbox coverage passes. An English Samsung debug-preview pass covered initial, damage-evidence and action-drawer composition and exposed the now-fixed photo-width defect. | Complete Thai and waiting-state physical visual acceptance plus live damaged/missing/wrong submissions against an arrived Stop. The only defined terminal reconciliation remains the existing physical damaged-item return; no missing/wrong Operations outcome is invented before GAP-006 is closed. |
-| G04 Cannot complete | Slice 2 P0 | `PARTIAL` | The supplied measured G04 now opens from the delivery issue drawer with the canonical no-access/refused/closed/other reasons, real recipient dialing, durable Driver-selected contact evidence and a durable structured Operations message. Its waiting state truthfully preserves Driver custody and never invents a return, continuation or approved decision. | Define GAP-006 custody outcomes, then add a typed cannot-complete hold, real Operations disposition and recovery state. |
+| G04 Cannot complete | Slice 2 P0 | `PARTIAL` | The supplied measured G04 opens from the delivery issue drawer with canonical no-access/refused/closed/other reasons, real recipient dialing, durable Driver-selected contact evidence and a durable structured Operations message/outbox. Eight English `393 × 852` goldens lock reason selection, the exact inset action/call/note drawers, call-first, recorded-call and direct-escalation footers, committed waiting and locally saved waiting. The top More and initial Message Operations actions open the supplied delivery-problem drawer. Waiting truthfully preserves Driver custody, distinguishes server from local truth, disables the action and never invents a return, continuation or approved decision. | Define GAP-006 custody outcomes, then add a typed cannot-complete hold, real Operations disposition and recovery state. Complete physical-device visual, native-call and live Operations-message acceptance. |
 | G05 Emergency | Slice 2 P0 | `PARTIAL` | The canonical measured G05 opens from the issue drawer, requires one explicit safe/urgent status before dismissal, captures optional real position without blocking safety reporting, survives offline through the command outbox and commits an immutable emergency event plus protected priority Operations hold/thread. Urgent help exposes explicit 1669/191 dialer handoffs, while Driver and Operations surfaces never invent acknowledgement, reassignment or release. | GAP-006 must define Operations acknowledgement, escalation ownership, reassignment and audited hold release before the flow can become verified; physical-device and real Driver-to-Operations acceptance remain open. |
 | H01 Operations chat | Pilot P1 | `VERIFIED` | The persistent Team Driver ↔ Operations thread works through the server and offline outboxes. Its English shell uses generated measurements from the supplied H01 board, projects truthful sender/system-event states, keeps queued messages visibly local and restores unsent text and attachments per Stop. HTTP(S)/`www` URLs are actionable ordinary text and human messages support long-press Copy. Location is structured thread data. Camera, Photo, File and Voice stage before Send, retain private local drafts, use resumable private Storage uploads, require server SHA-256/size verification and commit atomically with the message. Voice follows record → stop → preview → explicit send and never auto-sends. Signed private media renders in Driver and Operations and enters H03 evidence. Samsung acceptance now covers live Driver current-location, gallery-photo, file and voice sends through Operations receipt and signed private-media projection. Operations map context and new text reach the already-open H01 thread through a private exact-Driver Broadcast hint followed by authoritative API refetch; a 30-second refresh remains the degraded fallback. A durable per-Driver read cursor now projects the supplied `1 UNREAD` boundary at the first unread Operations message and advances when the visible thread is read, without claiming delivery. The committed-media renderer now follows the exact H01 card variants: 118 px inline photo, 38 px photo/file row and 34 px nine-bar voice play/pause control, with signed-source stability across polling. Operations-originated photo/file cards now pass Samsung acceptance: Driver downloads verified-size HTTPS bytes into an app-private sanitized temporary path before opening the file in Android HTML Viewer or the photo in Google Photos, without exposing the signed URL. A real 31-second signed voice card passes Driver play/pause acceptance, and a signed-in Operations browser capture/explicit-Send pass delivered one real 12-second voice card to Samsung. File-backed tests prove retained attachment/TUS state survives process restart and commits once with the original idempotency key. Samsung acceptance additionally proves an offline file message survives force-stop/relaunch, remains one pending message in N02 and reaches Dispatch exactly once after reconnect. | Complete normal-browser file-popup acceptance. GAP-009 still blocks a production retention claim. |
 | H02 Call/contact | Pilot P1 | `IMPLEMENTED` | Canonical recipient/Operations contact presentation opens the native phone app and records authenticated, tenant-scoped, versioned and idempotent Driver-selected outcomes. Attempts survive offline in the Driver outbox, project into the Stop and Operations thread, and do not pretend to be carrier proof or mutate custody. | Complete physical-device visual acceptance and, if required later, integrate a real masked-call provider with provider-owned connection evidence. |
@@ -923,13 +937,23 @@ This sequence does not promote later slices; it orders the already authorized En
   and Operations contact remain connected. The prototype's synthetic waiting
   and approved transitions stay absent. G01 remains `PARTIAL` until `GAP-006`
   defines the authoritative custody outcome. No Thai screen changed.
+- **D35 English G04 cannot-complete visual lock completed 2026-09-07:** eight
+  `393 × 852` goldens cover reason selection, the delivery-problem action
+  drawer, no-access action, call-outcome drawer, recorded-call escalation,
+  Other-note drawer, committed waiting and locally saved waiting. The supplied
+  More/drawer routing, call-first footer behavior and inset sheet geometry are restored while real
+  native dialing, durable contact evidence and durable Operations messaging
+  stay connected. Waiting remains an honest disabled hold and the unsupported
+  prototype resolution stays absent. G04 remains `PARTIAL` until `GAP-006`
+  defines the authoritative custody outcome. No Thai screen changed.
 - Define the canonical auth-expiry/re-auth entry presentation from approved
   English UX before exposing another recovery path.
 - Resolve N01 background-location and notification policy only when the real
   channels are promoted; complete N01/N03 physical recovery acceptance.
-- Continue implementable English board closure with G04 cannot complete: lock
-  its supplied reason/evidence/waiting presentation and existing real behavior,
-  but do not invent the unresolved `GAP-006` custody decision.
+- Continue implementable English board closure with G05 emergency: lock its
+  supplied status/report/help presentation and existing real safety behavior,
+  but do not invent acknowledgement, reassignment or hold release before
+  `GAP-006` defines that authority.
 - Run golden/reference-viewport comparisons for every in-scope board.
 - Run physical multi-stop, degraded-network, background, battery and motorcycle road acceptance.
 - Complete physical English/Thai G03 comparison and live subtype acceptance;

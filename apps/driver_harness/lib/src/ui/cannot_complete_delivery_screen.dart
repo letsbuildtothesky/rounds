@@ -4,10 +4,17 @@ import 'package:url_launcher/url_launcher.dart';
 import '../app/driver_design_system.dart';
 import '../app/generated/driver_ui_metrics.g.dart';
 import '../app/harness_app_controller.dart';
+import '../driver/driver_api.dart';
 import '../driver/driver_session.dart';
+import 'driver_emergency_screen.dart';
+import 'location_problem_screen.dart';
 import 'operations_chat_screen.dart';
 
 typedef CannotCompleteLauncher = Future<bool> Function(Uri uri);
+typedef CannotCompleteSender =
+    Future<DriverCommandOutcome?> Function(String body);
+typedef CannotCompletePendingAttemptsLoader =
+    Future<List<DriverContactAttemptModel>> Function(DriverRoundStopModel stop);
 
 enum _CannotCompleteState { choose, action, waiting }
 
@@ -39,6 +46,13 @@ extension on _CannotCompleteReason {
       this == _CannotCompleteReason.access ||
       this == _CannotCompleteReason.closed;
 
+  String get reportedLabel => switch (this) {
+    _CannotCompleteReason.access => 'No access reported',
+    _CannotCompleteReason.refused => 'Delivery refused',
+    _CannotCompleteReason.closed => 'Location closed',
+    _CannotCompleteReason.other => 'Other delivery problem',
+  };
+
   String get code => switch (this) {
     _CannotCompleteReason.access => 'no_access',
     _CannotCompleteReason.refused => 'delivery_refused',
@@ -54,6 +68,8 @@ class CannotCompleteDeliveryScreen extends StatefulWidget {
     required this.stop,
     this.initialNote = '',
     this.launcher = _launchExternal,
+    this.sendToOperations,
+    this.pendingAttemptsLoader,
     super.key,
   });
 
@@ -62,6 +78,8 @@ class CannotCompleteDeliveryScreen extends StatefulWidget {
   final DriverRoundStopModel stop;
   final String initialNote;
   final CannotCompleteLauncher launcher;
+  final CannotCompleteSender? sendToOperations;
+  final CannotCompletePendingAttemptsLoader? pendingAttemptsLoader;
 
   @override
   State<CannotCompleteDeliveryScreen> createState() =>
@@ -88,7 +106,9 @@ class _CannotCompleteDeliveryScreenState
   }
 
   Future<void> _loadPendingAttempts() async {
-    final pending = await widget.controller.pendingContactAttempts(widget.stop);
+    final pending = widget.pendingAttemptsLoader == null
+        ? await widget.controller.pendingContactAttempts(widget.stop)
+        : await widget.pendingAttemptsLoader!(widget.stop);
     if (!mounted) return;
     final byId = <String, DriverContactAttemptModel>{
       for (final attempt in [..._attempts, ...pending]) attempt.id: attempt,
@@ -223,11 +243,13 @@ class _CannotCompleteDeliveryScreenState
         'Custody: package remains with driver\n'
         '$contactSummary';
     try {
-      final result = await widget.controller.sendOperationsMessage(
-        round: widget.round,
-        stop: widget.stop,
-        body: message,
-      );
+      final result = widget.sendToOperations == null
+          ? await widget.controller.sendOperationsMessage(
+              round: widget.round,
+              stop: widget.stop,
+              body: message,
+            )
+          : await widget.sendToOperations!(message);
       if (!mounted) return;
       if (result == null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -268,6 +290,47 @@ class _CannotCompleteDeliveryScreenState
     ),
   );
 
+  Future<void> _openActions() async {
+    final action = await showModalBottomSheet<String>(
+      context: context,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: RoundsColors.ink.withValues(alpha: .25),
+      builder: (_) => const _CannotCompleteActionsSheet(),
+    );
+    if (!mounted || action == null) return;
+    if (action == 'message') {
+      await _openOperationsChat();
+      return;
+    }
+    if (action == 'address') {
+      await Navigator.of(context).push<void>(
+        MaterialPageRoute(
+          builder: (_) => LocationProblemScreen(
+            controller: widget.controller,
+            round: widget.round,
+            stop: widget.stop,
+            problemContext: LocationProblemContext.delivery,
+            launcher: widget.launcher,
+          ),
+        ),
+      );
+      return;
+    }
+    if (action == 'emergency') {
+      await Navigator.of(context).push<void>(
+        MaterialPageRoute(
+          builder: (_) => DriverEmergencyScreen(
+            controller: widget.controller,
+            round: widget.round,
+            stop: widget.stop,
+            launcher: widget.launcher,
+          ),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final reason = _reason;
@@ -281,6 +344,7 @@ class _CannotCompleteDeliveryScreenState
               round: widget.round,
               stop: widget.stop,
               onBack: () => Navigator.of(context).pop(false),
+              onMore: _openActions,
             ),
             Expanded(
               child: SingleChildScrollView(
@@ -291,30 +355,40 @@ class _CannotCompleteDeliveryScreenState
                   DriverG04Metrics.contentPaddingHorizontal,
                   DriverG04Metrics.contentPaddingBottom,
                 ),
-                child: _state == _CannotCompleteState.choose
-                    ? _ChooseState(
-                        stop: widget.stop,
-                        item: item,
-                        onChoose: _chooseReason,
-                      )
-                    : _ActionState(
-                        stop: widget.stop,
-                        item: item,
-                        reason: reason!,
-                        note: _note,
-                        attempts: _attempts,
-                        waiting: _state == _CannotCompleteState.waiting,
-                        pendingSync: _messagePendingSync,
-                      ),
+                child: switch (_state) {
+                  _CannotCompleteState.choose => _ChooseState(
+                    stop: widget.stop,
+                    item: item,
+                    onChoose: _chooseReason,
+                  ),
+                  _CannotCompleteState.action => _ActionState(
+                    round: widget.round,
+                    stop: widget.stop,
+                    item: item,
+                    reason: reason!,
+                    note: _note,
+                    attempts: _attempts,
+                  ),
+                  _CannotCompleteState.waiting => _WaitingState(
+                    round: widget.round,
+                    stop: widget.stop,
+                    item: item,
+                    reason: reason!,
+                    attempts: _attempts,
+                    pendingSync: _messagePendingSync,
+                  ),
+                },
               ),
             ),
             _Footer(
               state: _state,
               reason: reason,
               hasAttempts: _attempts.isNotEmpty,
+              pendingSync: _messagePendingSync,
               submitting: _submitting,
               onPrimary: _primaryAction,
-              onMessage: _openOperationsChat,
+              onContactOperations: _sendToOperations,
+              onOpenActions: _openActions,
             ),
           ],
         ),
@@ -328,11 +402,13 @@ class _TopBar extends StatelessWidget {
     required this.round,
     required this.stop,
     required this.onBack,
+    required this.onMore,
   });
 
   final DriverRoundModel round;
   final DriverRoundStopModel stop;
   final VoidCallback onBack;
+  final VoidCallback onMore;
 
   @override
   Widget build(BuildContext context) => Container(
@@ -389,7 +465,19 @@ class _TopBar extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(width: DriverG04Metrics.topButtonSize),
+        SizedBox(
+          width: DriverG04Metrics.topButtonSize,
+          height: DriverG04Metrics.topButtonSize,
+          child: IconButton(
+            key: const Key('cannot-complete-more'),
+            onPressed: onMore,
+            padding: EdgeInsets.zero,
+            icon: const Icon(
+              Icons.more_horiz,
+              size: DriverG04Metrics.topIconSize,
+            ),
+          ),
+        ),
       ],
     ),
   );
@@ -412,14 +500,17 @@ class _ChooseState extends StatelessWidget {
     children: [
       const _Kicker('DELIVERY PROBLEM'),
       const SizedBox(height: DriverG04Metrics.heroGap),
-      const Text(
-        'Can’t complete delivery',
-        style: TextStyle(
-          color: RoundsColors.ink,
-          fontSize: DriverG04Metrics.heroSize,
-          height: DriverG04Metrics.heroHeight,
-          fontWeight: FontWeight.w900,
-          letterSpacing: DriverG04Metrics.heroTracking,
+      ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 335),
+        child: const Text(
+          'Can’t complete delivery',
+          style: TextStyle(
+            color: RoundsColors.ink,
+            fontSize: DriverG04Metrics.heroSize,
+            height: DriverG04Metrics.heroHeight,
+            fontWeight: FontWeight.w900,
+            letterSpacing: DriverG04Metrics.heroTracking,
+          ),
         ),
       ),
       const SizedBox(height: DriverG04Metrics.locationGap),
@@ -467,48 +558,43 @@ class _ChooseState extends StatelessWidget {
 
 class _ActionState extends StatelessWidget {
   const _ActionState({
+    required this.round,
     required this.stop,
     required this.item,
     required this.reason,
     required this.note,
     required this.attempts,
-    required this.waiting,
-    required this.pendingSync,
   });
 
+  final DriverRoundModel round;
   final DriverRoundStopModel stop;
   final DriverManifestItemModel? item;
   final _CannotCompleteReason reason;
   final String note;
   final List<DriverContactAttemptModel> attempts;
-  final bool waiting;
-  final bool pendingSync;
 
   @override
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      _Kicker(
-        waiting
-            ? pendingSync
-                  ? 'SAVED ON THIS PHONE'
-                  : 'SENT TO OPERATIONS'
-            : 'DELIVERY PROBLEM',
-      ),
+      const _Kicker('DELIVERY PROBLEM'),
       const SizedBox(height: DriverG04Metrics.heroGap),
-      Text(
-        waiting ? 'Waiting for decision' : reason.title,
-        style: const TextStyle(
-          color: RoundsColors.ink,
-          fontSize: DriverG04Metrics.heroSize,
-          height: DriverG04Metrics.heroHeight,
-          fontWeight: FontWeight.w900,
-          letterSpacing: DriverG04Metrics.heroTracking,
+      ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 335),
+        child: Text(
+          reason.title,
+          style: const TextStyle(
+            color: RoundsColors.ink,
+            fontSize: DriverG04Metrics.heroSize,
+            height: DriverG04Metrics.heroHeight,
+            fontWeight: FontWeight.w900,
+            letterSpacing: DriverG04Metrics.heroTracking,
+          ),
         ),
       ),
       const SizedBox(height: DriverG04Metrics.locationGap),
       Text(
-        '${stop.recipientName} · Stop ${stop.sequence}',
+        '${stop.recipientName} · Stop ${stop.sequence} of ${round.stops.length}',
         style: const TextStyle(
           color: RoundsColors.muted,
           fontSize: DriverG04Metrics.locationSize,
@@ -518,8 +604,8 @@ class _ActionState extends StatelessWidget {
       ),
       _PackageBlock(
         item: item,
-        label: waiting ? 'PACKAGE IN CUSTODY' : 'PACKAGE WITH YOU',
-        detail: reason.title,
+        label: 'PACKAGE WITH YOU',
+        detail: reason.reportedLabel,
       ),
       const SizedBox(height: DriverG04Metrics.custodyGap),
       Row(
@@ -527,9 +613,7 @@ class _ActionState extends StatelessWidget {
           const Icon(Icons.check, size: 17, color: RoundsColors.green),
           const SizedBox(width: 8),
           Text(
-            waiting
-                ? 'Keep the delivery with you'
-                : 'Keep the package with you',
+            'Keep the package with you',
             style: const TextStyle(
               color: RoundsColors.green,
               fontSize: DriverG04Metrics.custodySize,
@@ -538,11 +622,22 @@ class _ActionState extends StatelessWidget {
           ),
         ],
       ),
-      const SizedBox(height: 24),
-      _TruthRow(label: 'Reason', value: reason.title),
-      if (note.isNotEmpty) _TruthRow(label: 'Note', value: note),
+      Container(
+        margin: const EdgeInsets.only(top: 27),
+        decoration: const BoxDecoration(
+          border: Border.symmetric(
+            horizontal: BorderSide(color: RoundsColors.line),
+          ),
+        ),
+        child: Column(
+          children: [
+            _TruthRow(label: 'Reason', value: reason.title),
+            if (note.isNotEmpty) _TruthRow(label: 'Note', value: note),
+          ],
+        ),
+      ),
       if (attempts.isNotEmpty) ...[
-        const SizedBox(height: 24),
+        const SizedBox(height: 25),
         const Text(
           'CONTACT',
           style: TextStyle(
@@ -556,50 +651,107 @@ class _ActionState extends StatelessWidget {
         for (var index = 0; index < attempts.length; index++)
           _ContactRow(attempt: attempts[index], index: index),
       ],
-      if (waiting) ...[
-        const SizedBox(height: 28),
-        const Divider(height: 1),
-        const SizedBox(height: 20),
-        const Text(
-          'OPERATIONS REVIEW',
-          style: TextStyle(
-            color: RoundsColors.orange,
-            fontSize: 10.5,
-            fontWeight: FontWeight.w800,
-            letterSpacing: .9,
-          ),
-        ),
-        const SizedBox(height: 7),
-        const Text(
-          'No next step has been approved yet',
+    ],
+  );
+}
+
+class _WaitingState extends StatelessWidget {
+  const _WaitingState({
+    required this.round,
+    required this.stop,
+    required this.item,
+    required this.reason,
+    required this.attempts,
+    required this.pendingSync,
+  });
+
+  final DriverRoundModel round;
+  final DriverRoundStopModel stop;
+  final DriverManifestItemModel? item;
+  final _CannotCompleteReason reason;
+  final List<DriverContactAttemptModel> attempts;
+  final bool pendingSync;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      _Kicker(
+        pendingSync ? 'SAVED ON THIS PHONE' : 'SENT TO OPERATIONS',
+        color: RoundsColors.orange,
+      ),
+      const SizedBox(height: DriverG04Metrics.heroGap),
+      ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 335),
+        child: const Text(
+          'Waiting for decision',
           style: TextStyle(
             color: RoundsColors.ink,
-            fontSize: 24,
-            height: 1.05,
+            fontSize: DriverG04Metrics.heroSize,
+            height: DriverG04Metrics.heroHeight,
             fontWeight: FontWeight.w900,
-            letterSpacing: -.8,
+            letterSpacing: DriverG04Metrics.heroTracking,
           ),
         ),
-        const SizedBox(height: 8),
-        Text(
-          pendingSync
-              ? 'The structured reason is waiting to sync. Keep custody; Operations has not received it yet.'
-              : 'The structured reason and contact evidence are in the real Operations thread. Keep custody and open the conversation for a decision.',
-          style: const TextStyle(
-            color: RoundsColors.muted,
-            fontSize: 13.5,
-            height: 1.4,
-            fontWeight: FontWeight.w600,
-          ),
+      ),
+      const SizedBox(height: DriverG04Metrics.locationGap),
+      Text(
+        '${stop.recipientName} · Stop ${stop.sequence} of ${round.stops.length}',
+        style: const TextStyle(
+          color: RoundsColors.muted,
+          fontSize: DriverG04Metrics.locationSize,
+          height: DriverG04Metrics.locationHeight,
+          fontWeight: FontWeight.w700,
         ),
-      ],
+      ),
+      _PackageBlock(
+        item: item,
+        label: 'PACKAGE IN CUSTODY',
+        detail: reason.reportedLabel,
+      ),
+      const SizedBox(height: 29),
+      const Text(
+        'OPERATIONS REVIEW',
+        style: TextStyle(
+          color: RoundsColors.orange,
+          fontSize: 10.5,
+          fontWeight: FontWeight.w800,
+          letterSpacing: .9,
+        ),
+      ),
+      const SizedBox(height: 7),
+      const Text(
+        'Keep the delivery with you',
+        style: TextStyle(
+          color: RoundsColors.ink,
+          fontSize: 24,
+          height: 1.05,
+          fontWeight: FontWeight.w900,
+          letterSpacing: -.8,
+        ),
+      ),
+      const SizedBox(height: 8),
+      Text(
+        pendingSync
+            ? 'Saved locally. It will send when Rounds reconnects.'
+            : attempts.isEmpty
+            ? 'Operations has the structured reason.'
+            : 'Operations has the structured reason and contact history.',
+        style: const TextStyle(
+          color: RoundsColors.muted,
+          fontSize: 13.5,
+          height: 1.4,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
     ],
   );
 }
 
 class _Kicker extends StatelessWidget {
-  const _Kicker(this.label);
+  const _Kicker(this.label, {this.color = RoundsColors.red});
   final String label;
+  final Color color;
 
   @override
   Widget build(BuildContext context) => Row(
@@ -607,16 +759,13 @@ class _Kicker extends StatelessWidget {
       Container(
         width: DriverG04Metrics.issueDotSize,
         height: DriverG04Metrics.issueDotSize,
-        decoration: const BoxDecoration(
-          color: RoundsColors.red,
-          shape: BoxShape.circle,
-        ),
+        decoration: BoxDecoration(color: color, shape: BoxShape.circle),
       ),
       const SizedBox(width: DriverG04Metrics.issueGap),
       Text(
         label,
-        style: const TextStyle(
-          color: RoundsColors.red,
+        style: TextStyle(
+          color: color,
           fontSize: DriverG04Metrics.issueSize,
           fontWeight: FontWeight.w900,
           letterSpacing: DriverG04Metrics.issueTracking,
@@ -854,26 +1003,26 @@ class _Footer extends StatelessWidget {
     required this.state,
     required this.reason,
     required this.hasAttempts,
+    required this.pendingSync,
     required this.submitting,
     required this.onPrimary,
-    required this.onMessage,
+    required this.onContactOperations,
+    required this.onOpenActions,
   });
 
   final _CannotCompleteState state;
   final _CannotCompleteReason? reason;
   final bool hasAttempts;
+  final bool pendingSync;
   final bool submitting;
   final VoidCallback onPrimary;
-  final VoidCallback onMessage;
+  final VoidCallback onContactOperations;
+  final VoidCallback onOpenActions;
 
   @override
   Widget build(BuildContext context) {
     final callFirst = reason?.callFirst == true && !hasAttempts;
-    final label = state == _CannotCompleteState.waiting
-        ? 'Open Operations conversation'
-        : callFirst
-        ? 'Call recipient'
-        : 'Send to Operations';
+    final label = callFirst ? 'Call recipient' : 'Contact Operations';
     return Container(
       key: const Key('cannot-complete-footer'),
       padding: const EdgeInsets.fromLTRB(
@@ -891,8 +1040,39 @@ class _Footer extends StatelessWidget {
               height: DriverG04Metrics.secondaryHeight,
               child: TextButton(
                 key: const Key('cannot-complete-message'),
-                onPressed: onMessage,
-                child: const Text('Message Operations'),
+                onPressed: onOpenActions,
+                style: TextButton.styleFrom(
+                  foregroundColor: RoundsColors.inkSecondary,
+                ),
+                child: const Text(
+                  'Message Operations',
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+                ),
+              ),
+            )
+          : state == _CannotCompleteState.waiting
+          ? SizedBox(
+              width: double.infinity,
+              height: DriverG04Metrics.primaryHeight,
+              child: FilledButton(
+                key: const Key('cannot-complete-primary'),
+                onPressed: null,
+                style: FilledButton.styleFrom(
+                  disabledBackgroundColor: const Color(0xffe0e5e9),
+                  disabledForegroundColor: const Color(0xff8e99a7),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(
+                      DriverG04Metrics.primaryRadius,
+                    ),
+                  ),
+                ),
+                child: Text(
+                  pendingSync ? 'Waiting to sync' : 'Waiting for Operations',
+                  style: const TextStyle(
+                    fontSize: DriverG04Metrics.primarySize,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
               ),
             )
           : Column(
@@ -903,11 +1083,7 @@ class _Footer extends StatelessWidget {
                   height: DriverG04Metrics.primaryHeight,
                   child: FilledButton(
                     key: const Key('cannot-complete-primary'),
-                    onPressed: submitting
-                        ? null
-                        : state == _CannotCompleteState.waiting
-                        ? onMessage
-                        : onPrimary,
+                    onPressed: submitting ? null : onPrimary,
                     style: FilledButton.styleFrom(
                       backgroundColor: RoundsColors.ink,
                       shape: RoundedRectangleBorder(
@@ -925,13 +1101,23 @@ class _Footer extends StatelessWidget {
                     ),
                   ),
                 ),
-                if (state == _CannotCompleteState.action) ...[
+                if (callFirst) ...[
                   const SizedBox(height: DriverG04Metrics.secondaryGap),
                   SizedBox(
                     height: DriverG04Metrics.secondaryHeight,
                     child: TextButton(
-                      onPressed: submitting ? null : onMessage,
-                      child: const Text('Contact Operations'),
+                      key: const Key('cannot-complete-contact-operations'),
+                      onPressed: submitting ? null : onContactOperations,
+                      style: TextButton.styleFrom(
+                        foregroundColor: RoundsColors.inkSecondary,
+                      ),
+                      child: const Text(
+                        'Contact Operations',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -947,47 +1133,67 @@ class _CannotCompleteCallOutcomeSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) => SafeArea(
     top: false,
-    child: Material(
-      color: RoundsColors.surface,
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(18, 10, 18, 18),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Center(
-              child: Container(
-                width: 42,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: RoundsColors.lineStrong,
-                  borderRadius: BorderRadius.circular(2),
+    child: Padding(
+      padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+      child: Material(
+        color: RoundsColors.surface,
+        shape: RoundedRectangleBorder(
+          side: const BorderSide(color: RoundsColors.lineStrong),
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(12),
+            topRight: Radius.circular(12),
+            bottomLeft: Radius.circular(8),
+            bottomRight: Radius.circular(8),
+          ),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(18, 10, 18, 18),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                  width: 42,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: RoundsColors.lineStrong,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 18),
-            const Text(
-              'Call outcome',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
-            ),
-            const SizedBox(height: 12),
-            _OutcomeButton(
-              value: 'resolved',
-              label: 'Issue resolved',
-              icon: Icons.check,
-            ),
-            _OutcomeButton(
-              value: 'blocked',
-              label: 'Reached · still blocked',
-              icon: Icons.add,
-            ),
-            _OutcomeButton(
-              value: 'no_answer',
-              label: 'No answer',
-              icon: Icons.phone_missed_outlined,
-            ),
-          ],
+              const SizedBox(height: 14),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 2),
+                child: Text(
+                  'Call outcome',
+                  style: TextStyle(
+                    fontSize: 22,
+                    height: 1,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -.77,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              _OutcomeButton(
+                value: 'resolved',
+                label: 'Issue resolved',
+                icon: Icons.check,
+              ),
+              _OutcomeButton(
+                value: 'blocked',
+                label: 'Reached · still blocked',
+                icon: Icons.add,
+              ),
+              _OutcomeButton(
+                value: 'no_answer',
+                label: 'No answer',
+                icon: Icons.phone_missed_outlined,
+              ),
+            ],
+          ),
         ),
       ),
     ),
@@ -1025,6 +1231,178 @@ class _OutcomeButton extends StatelessWidget {
   );
 }
 
+class _CannotCompleteActionsSheet extends StatelessWidget {
+  const _CannotCompleteActionsSheet();
+
+  @override
+  Widget build(BuildContext context) => _InsetSheetFrame(
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: const [
+        _SheetHandle(),
+        _SheetHeading(title: 'Delivery problem'),
+        _SheetActionRow(
+          value: 'message',
+          label: 'Message Operations',
+          icon: Icons.chat_bubble_outline,
+        ),
+        _SheetActionRow(
+          value: 'address',
+          label: 'Address / entrance problem',
+          icon: Icons.location_on_outlined,
+        ),
+        _SheetActionRow(
+          value: 'emergency',
+          label: 'Emergency',
+          icon: Icons.warning_amber_rounded,
+          destructive: true,
+          isLast: true,
+        ),
+      ],
+    ),
+  );
+}
+
+class _InsetSheetFrame extends StatelessWidget {
+  const _InsetSheetFrame({required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => SafeArea(
+    top: false,
+    child: Padding(
+      padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+      child: Material(
+        color: RoundsColors.surface,
+        shape: RoundedRectangleBorder(
+          side: const BorderSide(color: RoundsColors.lineStrong),
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(12),
+            topRight: Radius.circular(12),
+            bottomLeft: Radius.circular(8),
+            bottomRight: Radius.circular(8),
+          ),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(18, 8, 18, 14),
+          child: child,
+        ),
+      ),
+    ),
+  );
+}
+
+class _SheetHandle extends StatelessWidget {
+  const _SheetHandle();
+
+  @override
+  Widget build(BuildContext context) => Center(
+    child: Container(
+      width: 42,
+      height: 4,
+      margin: const EdgeInsets.fromLTRB(0, 2, 0, 14),
+      decoration: BoxDecoration(
+        color: RoundsColors.lineStrong,
+        borderRadius: BorderRadius.circular(4),
+      ),
+    ),
+  );
+}
+
+class _SheetHeading extends StatelessWidget {
+  const _SheetHeading({required this.title, this.subtitle});
+  final String title;
+  final String? subtitle;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.fromLTRB(2, 2, 2, 11),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            color: RoundsColors.ink,
+            fontSize: 22,
+            height: 1,
+            fontWeight: FontWeight.w900,
+            letterSpacing: -.77,
+          ),
+        ),
+        if (subtitle != null) ...[
+          const SizedBox(height: 7),
+          Text(
+            subtitle!,
+            style: const TextStyle(
+              color: RoundsColors.muted,
+              fontSize: 13,
+              height: 1.35,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ],
+    ),
+  );
+}
+
+class _SheetActionRow extends StatelessWidget {
+  const _SheetActionRow({
+    required this.value,
+    required this.label,
+    required this.icon,
+    this.destructive = false,
+    this.isLast = false,
+  });
+  final String value;
+  final String label;
+  final IconData icon;
+  final bool destructive;
+  final bool isLast;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = destructive ? RoundsColors.red : RoundsColors.ink;
+    return InkWell(
+      key: Key('cannot-complete-action-$value'),
+      onTap: () => Navigator.of(context).pop(value),
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 62),
+        padding: const EdgeInsets.symmetric(horizontal: 2),
+        decoration: BoxDecoration(
+          border: Border(
+            top: const BorderSide(color: RoundsColors.line),
+            bottom: isLast
+                ? const BorderSide(color: RoundsColors.line)
+                : BorderSide.none,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              size: 22,
+              color: destructive ? color : RoundsColors.inkSecondary,
+            ),
+            const SizedBox(width: 14),
+            Text(
+              label,
+              style: TextStyle(
+                color: color,
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _OtherReasonSheet extends StatefulWidget {
   const _OtherReasonSheet({required this.initialValue});
   final String initialValue;
@@ -1049,49 +1427,92 @@ class _OtherReasonSheetState extends State<_OtherReasonSheet> {
   }
 
   @override
-  Widget build(BuildContext context) => SafeArea(
-    top: false,
-    child: Material(
-      color: RoundsColors.surface,
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(
-          18,
-          18,
-          18,
-          18 + MediaQuery.viewInsetsOf(context).bottom,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Text(
-              'Other reason',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
-            ),
-            const SizedBox(height: 7),
-            const Text(
-              'Only add what Operations needs to decide the next step.',
-              style: TextStyle(color: RoundsColors.muted, fontSize: 13),
-            ),
-            const SizedBox(height: 14),
-            TextField(
+  Widget build(BuildContext context) => Padding(
+    padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+    child: _InsetSheetFrame(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const _SheetHandle(),
+          const _SheetHeading(
+            title: 'Other reason',
+            subtitle: 'Only add what Operations needs to decide the next step.',
+          ),
+          SizedBox(
+            height: 92,
+            child: TextField(
               key: const Key('cannot-complete-other-note'),
               controller: _controller,
               maxLength: 120,
-              maxLines: 3,
+              maxLines: null,
+              expands: true,
+              textAlignVertical: TextAlignVertical.top,
               autofocus: true,
-              decoration: const InputDecoration(hintText: 'Short note'),
+              decoration: InputDecoration(
+                hintText: 'Short note',
+                counterText: '',
+                contentPadding: const EdgeInsets.fromLTRB(13, 12, 13, 12),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(7),
+                  borderSide: const BorderSide(color: RoundsColors.lineStrong),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(7),
+                  borderSide: const BorderSide(color: Color(0xff9aa9b9)),
+                ),
+              ),
             ),
-            const SizedBox(height: 8),
-            FilledButton(
-              key: const Key('cannot-complete-use-other'),
-              onPressed: () =>
-                  Navigator.of(context).pop(_controller.text.trim()),
-              child: const Text('Use this reason'),
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                flex: 42,
+                child: SizedBox(
+                  height: 50,
+                  child: TextButton(
+                    key: const Key('cannot-complete-cancel-other'),
+                    onPressed: () => Navigator.of(context).pop(),
+                    style: TextButton.styleFrom(
+                      backgroundColor: const Color(0xfff3f5f7),
+                      foregroundColor: RoundsColors.inkSecondary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(7),
+                      ),
+                    ),
+                    child: const Text(
+                      'Cancel',
+                      style: TextStyle(fontWeight: FontWeight.w800),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                flex: 58,
+                child: SizedBox(
+                  height: 50,
+                  child: FilledButton(
+                    key: const Key('cannot-complete-use-other'),
+                    onPressed: () =>
+                        Navigator.of(context).pop(_controller.text.trim()),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: RoundsColors.ink,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(7),
+                      ),
+                    ),
+                    child: const Text(
+                      'Use this reason',
+                      style: TextStyle(fontWeight: FontWeight.w800),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     ),
   );
