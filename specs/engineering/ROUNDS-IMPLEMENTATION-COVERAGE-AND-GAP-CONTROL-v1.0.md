@@ -7,6 +7,20 @@
 
 ## Changelog
 
+- **2026-09-07 · Checkpoint 73:** Locks the English H01 Operations chat to the
+  supplied `393 × 852` board. Generated measurements now cover the 138 px
+  staging cards, 10 px inset attachment/voice drawers, 60 px attachment rows,
+  recording waveform and voice preview. The orange idle microphone,
+  paper-plane Send action, 24-hour timestamps and current-location card copy
+  now match the board. Four goldens cover the populated real-message
+  projection, attachment drawer, recording and preview. The server/local
+  thread, unread cursor, drafts, private media, realtime hints, 30-second
+  degraded refresh and explicit composer Send remain connected; canonical
+  messages are test fixtures only. The complete 191-test Driver suite,
+  repository-wide typecheck, all 220 repository tests, Flutter analysis and
+  Android debug APK build pass. Normal-browser file-popup acceptance,
+  `GAP-009` and physical comparison of this visual revision remain open. No
+  Thai screen changed.
 - **2026-09-07 · Checkpoint 72:** Locks every implementable English G05
   Driver-emergency presentation at the canonical `393 × 852` viewport. Five
   goldens cover initial safety choice, committed safe, committed urgent, the
@@ -969,6 +983,13 @@ This sequence does not promote later slices; it orders the already authorized En
   calls remain wired. Offline truth does not claim Operations receipt. G05
   remains `PARTIAL` until `GAP-006` defines acknowledgement, escalation
   ownership, reassignment and audited hold release. No Thai screen changed.
+- **D37 English H01 Operations-chat visual lock completed 2026-09-07:** four
+  canonical goldens now lock the populated thread, inset attachment drawer,
+  voice recording and voice preview. Generated metrics cover the previously
+  generic drawer/staging/voice geometry, and production keeps the real durable
+  thread, unread, private-media, realtime and explicit-Send paths. Canonical
+  thread content remains test-only. Physical comparison, normal-browser file
+  popup acceptance and `GAP-009` remain open. No Thai screen changed.
 - Define the canonical auth-expiry/re-auth entry presentation from approved
   English UX before exposing another recovery path.
 - Resolve N01 background-location and notification policy only when the real

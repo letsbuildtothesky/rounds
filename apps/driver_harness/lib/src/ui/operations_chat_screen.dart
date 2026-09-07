@@ -19,6 +19,12 @@ import '../driver/driver_operations_thread.dart';
 import '../driver/driver_session.dart';
 import '../storage/operations_message_draft_store.dart';
 
+typedef DriverOperationsThreadLoader =
+    Future<DriverOperationsThreadModel?> Function();
+typedef DriverPendingOperationsMessagesLoader =
+    Future<List<DriverOperationsMessageModel>> Function();
+typedef DriverOperationsReadMarker = Future<void> Function(String messageId);
+
 class OperationsChatScreen extends StatefulWidget {
   const OperationsChatScreen({
     required this.controller,
@@ -27,6 +33,11 @@ class OperationsChatScreen extends StatefulWidget {
     this.draftStore,
     this.locationGateway = const GeolocatorDriverChatLocationGateway(),
     this.mediaGateway,
+    this.threadLoader,
+    this.pendingMessagesLoader,
+    this.readMarker,
+    this.refreshInterval = const Duration(seconds: 30),
+    this.realtimeEnabled = true,
     super.key,
   });
 
@@ -36,6 +47,11 @@ class OperationsChatScreen extends StatefulWidget {
   final OperationsMessageDraftStore? draftStore;
   final DriverChatLocationGateway locationGateway;
   final DriverChatMediaGateway? mediaGateway;
+  final DriverOperationsThreadLoader? threadLoader;
+  final DriverPendingOperationsMessagesLoader? pendingMessagesLoader;
+  final DriverOperationsReadMarker? readMarker;
+  final Duration? refreshInterval;
+  final bool realtimeEnabled;
 
   @override
   State<OperationsChatScreen> createState() => _OperationsChatScreenState();
@@ -78,11 +94,14 @@ class _OperationsChatScreenState extends State<OperationsChatScreen>
     _composer.addListener(_composerChanged);
     unawaited(_restoreDraft());
     unawaited(_load());
-    unawaited(_startRealtime());
-    _messageRefreshTimer = Timer.periodic(
-      const Duration(seconds: 30),
-      (_) => unawaited(_refreshFromFallback()),
-    );
+    if (widget.realtimeEnabled) unawaited(_startRealtime());
+    final refreshInterval = widget.refreshInterval;
+    if (refreshInterval != null) {
+      _messageRefreshTimer = Timer.periodic(
+        refreshInterval,
+        (_) => unawaited(_refreshFromFallback()),
+      );
+    }
   }
 
   @override
@@ -182,14 +201,18 @@ class _OperationsChatScreenState extends State<OperationsChatScreen>
     String? error;
     try {
       try {
-        pending = await widget.controller.pendingOperationsMessages(
-          round: widget.round,
-          stop: widget.stop,
-        );
-        thread = await widget.controller.getOperationsThread(
-          round: widget.round,
-          stop: widget.stop,
-        );
+        pending =
+            await (widget.pendingMessagesLoader?.call() ??
+                widget.controller.pendingOperationsMessages(
+                  round: widget.round,
+                  stop: widget.stop,
+                ));
+        thread =
+            await (widget.threadLoader?.call() ??
+                widget.controller.getOperationsThread(
+                  round: widget.round,
+                  stop: widget.stop,
+                ));
       } catch (caught) {
         error = caught.toString();
       }
@@ -233,11 +256,16 @@ class _OperationsChatScreenState extends State<OperationsChatScreen>
     if (_markingRead || _lastMarkedMessageId == messageId) return;
     _markingRead = true;
     try {
-      await widget.controller.markOperationsThreadRead(
-        round: widget.round,
-        stop: widget.stop,
-        lastReadMessageId: messageId,
-      );
+      final readMarker = widget.readMarker;
+      if (readMarker != null) {
+        await readMarker(messageId);
+      } else {
+        await widget.controller.markOperationsThreadRead(
+          round: widget.round,
+          stop: widget.stop,
+          lastReadMessageId: messageId,
+        );
+      }
       _lastMarkedMessageId = messageId;
     } catch (_) {
       // Read metadata is retried by the next authoritative thread refresh.
@@ -316,76 +344,75 @@ class _OperationsChatScreenState extends State<OperationsChatScreen>
 
   Future<void> _showAttachmentSheet() async {
     if (_sending || _capturingLocation || _capturingMedia) return;
+    final compact = MediaQuery.sizeOf(context).width <= 340;
     await showModalBottomSheet<void>(
       context: context,
-      backgroundColor: Colors.white,
-      showDragHandle: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-      ),
-      builder: (sheetContext) => SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
+      backgroundColor: Colors.transparent,
+      barrierColor: RoundsColors.ink.withValues(alpha: .28),
+      isScrollControlled: true,
+      builder: (sheetContext) => _ChatSheetFrame(
+        compact: compact,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const _ChatSheetHandle(),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(
+                DriverH01Metrics.sheetHeadPaddingHorizontal,
+                DriverH01Metrics.sheetHeadPaddingTop,
+                DriverH01Metrics.sheetHeadPaddingHorizontal,
+                DriverH01Metrics.sheetHeadPaddingBottom,
+              ),
+              child: Text(
                 'Add to message',
                 style: TextStyle(
                   color: RoundsColors.ink,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w800,
+                  fontSize: DriverH01Metrics.sheetTitleSize,
+                  height: 1,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -.77,
                 ),
               ),
-              const SizedBox(height: 12),
-              _AttachmentChoice(
-                icon: Icons.camera_alt_outlined,
-                label: 'Camera',
-                keyValue: 'h01-add-camera',
-                onTap: () {
-                  Navigator.of(sheetContext).pop();
-                  unawaited(_pickMedia(_mediaGateway.captureCamera));
-                },
-              ),
-              _AttachmentChoice(
-                icon: Icons.photo_outlined,
-                label: 'Photo',
-                keyValue: 'h01-add-photo',
-                onTap: () {
-                  Navigator.of(sheetContext).pop();
-                  unawaited(_pickMedia(_mediaGateway.pickPhoto));
-                },
-              ),
-              _AttachmentChoice(
-                icon: Icons.insert_drive_file_outlined,
-                label: 'File',
-                keyValue: 'h01-add-file',
-                onTap: () {
-                  Navigator.of(sheetContext).pop();
-                  unawaited(_pickMedia(_mediaGateway.pickFile));
-                },
-              ),
-              ListTile(
-                key: const Key('h01-add-location'),
-                contentPadding: EdgeInsets.zero,
-                leading: const Icon(
-                  Icons.location_on_outlined,
-                  color: RoundsColors.ink,
-                ),
-                title: const Text(
-                  'Location',
-                  style: TextStyle(fontWeight: FontWeight.w800),
-                ),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () {
-                  Navigator.of(sheetContext).pop();
-                  unawaited(_captureLocation());
-                },
-              ),
-            ],
-          ),
+            ),
+            _AttachmentChoice(
+              icon: Icons.camera_alt_outlined,
+              label: 'Camera',
+              keyValue: 'h01-add-camera',
+              onTap: () {
+                Navigator.of(sheetContext).pop();
+                unawaited(_pickMedia(_mediaGateway.captureCamera));
+              },
+            ),
+            _AttachmentChoice(
+              icon: Icons.photo_outlined,
+              label: 'Photo',
+              keyValue: 'h01-add-photo',
+              onTap: () {
+                Navigator.of(sheetContext).pop();
+                unawaited(_pickMedia(_mediaGateway.pickPhoto));
+              },
+            ),
+            _AttachmentChoice(
+              icon: Icons.insert_drive_file_outlined,
+              label: 'File',
+              keyValue: 'h01-add-file',
+              onTap: () {
+                Navigator.of(sheetContext).pop();
+                unawaited(_pickMedia(_mediaGateway.pickFile));
+              },
+            ),
+            _AttachmentChoice(
+              icon: Icons.location_on_outlined,
+              label: 'Location',
+              keyValue: 'h01-add-location',
+              last: true,
+              onTap: () {
+                Navigator.of(sheetContext).pop();
+                unawaited(_captureLocation());
+              },
+            ),
+          ],
         ),
       ),
     );
@@ -415,15 +442,13 @@ class _OperationsChatScreenState extends State<OperationsChatScreen>
 
   Future<void> _recordVoice() async {
     if (_sending || _capturingMedia) return;
+    final compact = MediaQuery.sizeOf(context).width <= 340;
     final attachment = await showModalBottomSheet<DriverMessageAttachmentModel>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
-      showDragHandle: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-      ),
-      builder: (_) => _VoiceNoteSheet(gateway: _mediaGateway),
+      backgroundColor: Colors.transparent,
+      barrierColor: RoundsColors.ink.withValues(alpha: .28),
+      builder: (_) => _VoiceNoteSheet(gateway: _mediaGateway, compact: compact),
     );
     if (attachment == null || !mounted) return;
     final next = [..._stagedMedia, attachment];
@@ -553,15 +578,26 @@ class _OperationsChatScreenState extends State<OperationsChatScreen>
                               const _EmptyThread()
                             else ...[
                               _DayLabel(date: _messages.first.sentAt),
-                              for (final message in _messages) ...[
-                                if (message.id == _unreadBoundaryMessageId &&
+                              for (
+                                var messageIndex = 0;
+                                messageIndex < _messages.length;
+                                messageIndex++
+                              ) ...[
+                                if (_messages[messageIndex].id ==
+                                        _unreadBoundaryMessageId &&
                                     _initialUnreadCount > 0)
                                   DriverChatUnreadDivider(
                                     count: _initialUnreadCount,
                                   ),
                                 _MessageBubble(
-                                  message: message,
+                                  message: _messages[messageIndex],
                                   compact: compact,
+                                  systemIsLast:
+                                      _messages[messageIndex].sender ==
+                                          'system' &&
+                                      (messageIndex == _messages.length - 1 ||
+                                          _messages[messageIndex + 1].sender !=
+                                              'system'),
                                 ),
                               ],
                             ],
@@ -670,21 +706,25 @@ class _DayLabel extends StatelessWidget {
 }
 
 class _SystemEvent extends StatelessWidget {
-  const _SystemEvent({required this.message});
+  const _SystemEvent({required this.message, required this.isLast});
 
   final DriverOperationsMessageModel message;
+  final bool isLast;
 
   @override
   Widget build(BuildContext context) {
-    final time = TimeOfDay.fromDateTime(
-      message.sentAt.toLocal(),
-    ).format(context);
+    final time = _formatChatTime(message.sentAt);
+    final parts = message.body.split('\n');
+    final title = parts.first;
+    final detail = parts.skip(1).join('\n').trim();
     return Container(
-      margin: const EdgeInsets.only(top: DriverH01Metrics.rowTop),
       padding: const EdgeInsets.symmetric(vertical: 10),
-      decoration: const BoxDecoration(
-        border: Border.symmetric(
-          horizontal: BorderSide(color: RoundsColors.line),
+      decoration: BoxDecoration(
+        border: Border(
+          top: const BorderSide(color: RoundsColors.line),
+          bottom: isLast
+              ? const BorderSide(color: RoundsColors.line)
+              : BorderSide.none,
         ),
       ),
       child: Row(
@@ -711,14 +751,31 @@ class _SystemEvent extends StatelessWidget {
             ),
           ),
           Expanded(
-            child: Text(
-              message.body,
-              style: const TextStyle(
-                color: RoundsColors.inkSecondary,
-                fontSize: 12.5,
-                height: 1.25,
-                fontWeight: FontWeight.w800,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: RoundsColors.inkSecondary,
+                    fontSize: 12.5,
+                    height: 1.25,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                if (detail.isNotEmpty) ...[
+                  const SizedBox(height: 3),
+                  Text(
+                    detail,
+                    style: const TextStyle(
+                      color: RoundsColors.muted,
+                      fontSize: 11.8,
+                      height: 1.3,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
         ],
@@ -947,43 +1004,176 @@ class _EmptyThread extends StatelessWidget {
   );
 }
 
+class _ChatSheetFrame extends StatelessWidget {
+  const _ChatSheetFrame({
+    required this.compact,
+    required this.child,
+    this.voice = false,
+  });
+
+  final bool compact;
+  final bool voice;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final inset = compact
+        ? DriverH01Metrics.sheetCompactInset
+        : DriverH01Metrics.sheetInset;
+    final horizontalPadding = compact
+        ? DriverH01Metrics.sheetCompactPaddingHorizontal
+        : DriverH01Metrics.sheetPaddingHorizontal;
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(inset, 0, inset, inset),
+        child: Material(
+          key: const Key('h01-sheet-frame'),
+          color: Colors.white,
+          elevation: 18,
+          shadowColor: RoundsColors.ink.withValues(alpha: .18),
+          shape: RoundedRectangleBorder(
+            side: const BorderSide(
+              color: RoundsColors.lineStrong,
+              width: DriverH01Metrics.sheetBorderWidth,
+            ),
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(DriverH01Metrics.sheetRadiusTop),
+              bottom: Radius.circular(DriverH01Metrics.sheetRadiusBottom),
+            ),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(
+              horizontalPadding,
+              DriverH01Metrics.sheetPaddingTop,
+              horizontalPadding,
+              voice
+                  ? DriverH01Metrics.sheetVoicePaddingBottom
+                  : DriverH01Metrics.sheetPaddingBottom,
+            ),
+            child: child,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ChatSheetHandle extends StatelessWidget {
+  const _ChatSheetHandle();
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(
+      top: DriverH01Metrics.sheetHandleTop,
+      bottom: DriverH01Metrics.sheetHandleBottom,
+    ),
+    child: Center(
+      child: Container(
+        key: const Key('h01-sheet-handle'),
+        width: DriverH01Metrics.sheetHandleWidth,
+        height: DriverH01Metrics.sheetHandleHeight,
+        decoration: BoxDecoration(
+          color: const Color(0xFFD9DFE4),
+          borderRadius: BorderRadius.circular(
+            DriverH01Metrics.sheetHandleHeight,
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
 class _AttachmentChoice extends StatelessWidget {
   const _AttachmentChoice({
     required this.icon,
     required this.label,
     required this.keyValue,
     required this.onTap,
+    this.last = false,
   });
   final IconData icon;
   final String label;
   final String keyValue;
   final VoidCallback onTap;
+  final bool last;
 
   @override
-  Widget build(BuildContext context) => ListTile(
+  Widget build(BuildContext context) => InkWell(
     key: Key(keyValue),
-    contentPadding: EdgeInsets.zero,
-    leading: Icon(icon, color: RoundsColors.ink),
-    title: Text(label, style: const TextStyle(fontWeight: FontWeight.w800)),
-    trailing: const Icon(Icons.chevron_right),
     onTap: onTap,
+    child: Container(
+      constraints: const BoxConstraints(
+        minHeight: DriverH01Metrics.sheetRowMinHeight,
+      ),
+      padding: const EdgeInsets.symmetric(
+        horizontal: DriverH01Metrics.sheetRowPaddingHorizontal,
+      ),
+      decoration: BoxDecoration(
+        border: Border(
+          top: const BorderSide(color: RoundsColors.line),
+          bottom: last
+              ? const BorderSide(color: RoundsColors.line)
+              : BorderSide.none,
+        ),
+      ),
+      child: Row(
+        children: [
+          SizedBox(
+            width: DriverH01Metrics.sheetRowIconColumn,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Icon(
+                icon,
+                size: DriverH01Metrics.sheetRowIconSize,
+                color: RoundsColors.orange,
+              ),
+            ),
+          ),
+          const SizedBox(width: DriverH01Metrics.sheetRowGap),
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(
+                color: RoundsColors.ink,
+                fontSize: DriverH01Metrics.sheetRowTitleSize,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+          const SizedBox(width: DriverH01Metrics.sheetRowGap),
+          const SizedBox(
+            width: DriverH01Metrics.sheetRowArrowColumn,
+            child: Icon(
+              Icons.chevron_right,
+              size: 18,
+              color: Color(0xFF8F99A6),
+            ),
+          ),
+        ],
+      ),
+    ),
   );
 }
 
 class _MessageBubble extends StatelessWidget {
-  const _MessageBubble({required this.message, required this.compact});
+  const _MessageBubble({
+    required this.message,
+    required this.compact,
+    this.systemIsLast = false,
+  });
   final DriverOperationsMessageModel message;
   final bool compact;
+  final bool systemIsLast;
 
   @override
   Widget build(BuildContext context) {
     if (message.sender == 'system') {
-      return _SystemEvent(message: message);
+      return _SystemEvent(message: message, isLast: systemIsLast);
     }
     final mine = message.sender == 'driver';
-    final time = TimeOfDay.fromDateTime(
-      message.sentAt.toLocal(),
-    ).format(context);
+    final time = _formatChatTime(message.sentAt);
     final copyText = [
       if (message.body.trim().isNotEmpty) message.body.trim(),
       ...message.attachments.map((attachment) => attachment.copyReference),
@@ -1156,8 +1346,7 @@ class _LocationAttachmentCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    '${attachment.latitude.toStringAsFixed(4)}, '
-                    '${attachment.longitude.toStringAsFixed(4)}',
+                    'Current location',
                     style: TextStyle(
                       color: mine
                           ? Colors.white.withValues(alpha: .65)
@@ -1620,7 +1809,9 @@ class _Composer extends StatelessWidget {
       children: [
         if (stagedLocation != null || stagedMedia.isNotEmpty)
           SizedBox(
-            height: 64,
+            height:
+                DriverH01Metrics.stagingHeight +
+                DriverH01Metrics.stagingPaddingBottom,
             child: ListView(
               scrollDirection: Axis.horizontal,
               children: [
@@ -1730,7 +1921,9 @@ class _Composer extends StatelessWidget {
                     ? onSend
                     : onRecordVoice,
                 style: IconButton.styleFrom(
-                  backgroundColor: RoundsColors.ink,
+                  backgroundColor: canSend
+                      ? RoundsColors.ink
+                      : RoundsColors.orange,
                   disabledBackgroundColor: RoundsColors.line,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(
@@ -1747,7 +1940,8 @@ class _Composer extends StatelessWidget {
                         ),
                       )
                     : Icon(
-                        canSend ? Icons.arrow_upward : Icons.mic_outlined,
+                        canSend ? Icons.send_outlined : Icons.mic_outlined,
+                        size: 21,
                         color: Colors.white,
                       ),
               ),
@@ -1767,7 +1961,10 @@ class _StagedAttachment extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(bottom: 8),
+    padding: const EdgeInsets.only(
+      right: DriverH01Metrics.stagingGap,
+      bottom: DriverH01Metrics.stagingPaddingBottom,
+    ),
     child: Align(
       alignment: Alignment.centerLeft,
       child: Container(
@@ -1776,22 +1973,24 @@ class _StagedAttachment extends StatelessWidget {
               ? 'h01-staged-location'
               : 'h01-staged-${attachment.kind}',
         ),
-        width: 168,
-        height: 56,
-        padding: const EdgeInsets.all(6),
+        width: DriverH01Metrics.stagingWidth,
+        height: DriverH01Metrics.stagingHeight,
+        padding: const EdgeInsets.all(DriverH01Metrics.stagingPadding),
         decoration: BoxDecoration(
           color: Colors.white,
           border: Border.all(color: RoundsColors.line),
-          borderRadius: BorderRadius.circular(7),
+          borderRadius: BorderRadius.circular(DriverH01Metrics.stagingRadius),
         ),
         child: Row(
           children: [
             Container(
-              width: 34,
-              height: 34,
+              width: DriverH01Metrics.stagingIconSize,
+              height: DriverH01Metrics.stagingIconSize,
               decoration: BoxDecoration(
                 color: const Color(0xFFFFF2EB),
-                borderRadius: BorderRadius.circular(6),
+                borderRadius: BorderRadius.circular(
+                  DriverH01Metrics.stagingIconRadius,
+                ),
               ),
               child: Icon(
                 attachment.kind == 'location'
@@ -1801,11 +2000,11 @@ class _StagedAttachment extends StatelessWidget {
                     : attachment.kind == 'image'
                     ? Icons.photo_outlined
                     : Icons.insert_drive_file_outlined,
-                size: 17,
+                size: DriverH01Metrics.stagingIconGlyphSize,
                 color: RoundsColors.warning,
               ),
             ),
-            const SizedBox(width: 7),
+            const SizedBox(width: DriverH01Metrics.stagingCopyGap),
             Expanded(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -1819,12 +2018,15 @@ class _StagedAttachment extends StatelessWidget {
                         : attachment.kind == 'image'
                         ? 'Photo'
                         : 'File',
-                    style: TextStyle(
-                      fontSize: 11.5,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: DriverH01Metrics.stagingTitleSize,
+                      height: 1.1,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: DriverH01Metrics.stagingDetailGap),
                   Text(
                     attachment.kind == 'location'
                         ? attachment.label
@@ -1833,7 +2035,8 @@ class _StagedAttachment extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       color: RoundsColors.muted,
-                      fontSize: 10.5,
+                      fontSize: DriverH01Metrics.stagingDetailSize,
+                      height: 1.1,
                     ),
                   ),
                 ],
@@ -1847,7 +2050,10 @@ class _StagedAttachment extends StatelessWidget {
               ),
               onPressed: onRemove,
               padding: EdgeInsets.zero,
-              constraints: const BoxConstraints.tightFor(width: 24, height: 24),
+              constraints: const BoxConstraints.tightFor(
+                width: DriverH01Metrics.stagingRemoveSize,
+                height: DriverH01Metrics.stagingRemoveSize,
+              ),
               icon: const Icon(Icons.close, size: 18),
             ),
           ],
@@ -1858,8 +2064,9 @@ class _StagedAttachment extends StatelessWidget {
 }
 
 class _VoiceNoteSheet extends StatefulWidget {
-  const _VoiceNoteSheet({required this.gateway});
+  const _VoiceNoteSheet({required this.gateway, required this.compact});
   final DriverChatMediaGateway gateway;
+  final bool compact;
 
   @override
   State<_VoiceNoteSheet> createState() => _VoiceNoteSheetState();
@@ -1896,6 +2103,7 @@ class _VoiceNoteSheetState extends State<_VoiceNoteSheet> {
         _recording = true;
         _seconds = 0;
         _preview = null;
+        _error = null;
       });
       _timer = Timer.periodic(const Duration(seconds: 1), (_) {
         if (mounted) setState(() => _seconds++);
@@ -1936,101 +2144,301 @@ class _VoiceNoteSheetState extends State<_VoiceNoteSheet> {
   @override
   Widget build(BuildContext context) {
     final preview = _preview;
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(18, 4, 18, 18),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              preview == null ? 'VOICE NOTE' : 'VOICE READY',
-              style: TextStyle(
-                color: preview == null
-                    ? RoundsColors.warning
-                    : RoundsColors.green,
-                fontSize: 11,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 1.1,
-              ),
+    final ready = preview != null;
+    return _ChatSheetFrame(
+      compact: widget.compact,
+      voice: true,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const _ChatSheetHandle(),
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: DriverH01Metrics.voiceStatePaddingHorizontal,
+              vertical: DriverH01Metrics.voiceStatePaddingVertical,
             ),
-            const SizedBox(height: 10),
-            Text(
-              preview == null ? 'Recording' : 'Preview before send',
-              style: const TextStyle(
-                color: RoundsColors.ink,
-                fontSize: 30,
-                height: 1,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -1.2,
-              ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: DriverH01Metrics.voiceKickerDotSize,
+                      height: DriverH01Metrics.voiceKickerDotSize,
+                      decoration: BoxDecoration(
+                        color: ready ? RoundsColors.green : RoundsColors.orange,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: DriverH01Metrics.voiceKickerGap),
+                    Text(
+                      ready ? 'VOICE READY' : 'VOICE NOTE',
+                      style: TextStyle(
+                        color: ready ? RoundsColors.green : RoundsColors.orange,
+                        fontSize: DriverH01Metrics.voiceKickerSize,
+                        height: 1,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: DriverH01Metrics.voiceKickerTracking,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: DriverH01Metrics.voiceTitleTop),
+                Text(
+                  ready ? 'Preview before send' : 'Recording',
+                  style: const TextStyle(
+                    color: RoundsColors.ink,
+                    fontSize: DriverH01Metrics.voiceTitleSize,
+                    height: DriverH01Metrics.voiceTitleHeight,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: DriverH01Metrics.voiceTitleTracking,
+                  ),
+                ),
+                if (_starting) ...[
+                  const SizedBox(height: DriverH01Metrics.voiceTimeTop),
+                  const SizedBox(
+                    height: DriverH01Metrics.voiceWaveHeight,
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                ] else if (_error != null) ...[
+                  const SizedBox(height: DriverH01Metrics.voiceTimeTop),
+                  Text(
+                    _error!,
+                    style: const TextStyle(color: RoundsColors.red),
+                  ),
+                ] else if (!ready) ...[
+                  const SizedBox(height: DriverH01Metrics.voiceTimeTop),
+                  Text(
+                    _durationLabel(_seconds * 1000),
+                    key: const Key('h01-voice-timer'),
+                    style: const TextStyle(
+                      color: RoundsColors.ink,
+                      fontSize: DriverH01Metrics.voiceTimeSize,
+                      height: DriverH01Metrics.voiceTimeHeight,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: DriverH01Metrics.voiceTimeTracking,
+                    ),
+                  ),
+                  const _VoiceWaveform(),
+                ] else ...[
+                  const SizedBox(height: DriverH01Metrics.voicePreviewTop),
+                  Container(
+                    key: const Key('h01-voice-preview'),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: DriverH01Metrics.voicePreviewPaddingVertical,
+                    ),
+                    decoration: const BoxDecoration(
+                      border: Border.symmetric(
+                        horizontal: BorderSide(color: RoundsColors.line),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        SizedBox.square(
+                          dimension: DriverH01Metrics.voicePreviewPlaySize,
+                          child: IconButton.filled(
+                            onPressed: _play,
+                            style: IconButton.styleFrom(
+                              backgroundColor: RoundsColors.ink,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                  DriverH01Metrics.voicePreviewPlayRadius,
+                                ),
+                              ),
+                            ),
+                            icon: const Icon(
+                              Icons.play_arrow_outlined,
+                              size: DriverH01Metrics.voicePreviewIconSize,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: DriverH01Metrics.voicePreviewGap),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Voice note',
+                              style: TextStyle(
+                                color: RoundsColors.ink,
+                                fontSize:
+                                    DriverH01Metrics.voicePreviewTitleSize,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                            const SizedBox(
+                              height: DriverH01Metrics.voicePreviewDetailTop,
+                            ),
+                            Text(
+                              _durationLabel(preview.durationMilliseconds ?? 0),
+                              style: const TextStyle(
+                                color: RoundsColors.muted,
+                                fontSize:
+                                    DriverH01Metrics.voicePreviewDetailSize,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                const SizedBox(height: DriverH01Metrics.voiceActionsTop),
+                if (_recording)
+                  _VoicePrimaryButton(
+                    key: const Key('h01-stop-voice'),
+                    onPressed: _stop,
+                    label: 'Stop recording',
+                  )
+                else if (ready) ...[
+                  _VoicePrimaryButton(
+                    key: const Key('h01-stage-voice'),
+                    onPressed: () => Navigator.of(context).pop(preview),
+                    label: 'Add voice to message',
+                  ),
+                  _VoiceSecondaryButton(
+                    onPressed: _start,
+                    label: 'Record again',
+                  ),
+                ],
+                _VoiceSecondaryButton(
+                  onPressed: _cancel,
+                  label: 'Cancel',
+                  danger: true,
+                ),
+              ],
             ),
-            const SizedBox(height: 14),
-            if (_starting)
-              const Center(child: CircularProgressIndicator())
-            else if (_error != null)
-              Text(_error!, style: const TextStyle(color: RoundsColors.red))
-            else if (preview == null)
-              Text(
-                _durationLabel(_seconds * 1000),
-                key: const Key('h01-voice-timer'),
-                style: const TextStyle(
-                  color: RoundsColors.ink,
-                  fontSize: 48,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -2,
-                ),
-              )
-            else
-              ListTile(
-                key: const Key('h01-voice-preview'),
-                contentPadding: EdgeInsets.zero,
-                leading: IconButton.filled(
-                  onPressed: _play,
-                  icon: const Icon(Icons.play_arrow),
-                ),
-                title: const Text(
-                  'Voice note',
-                  style: TextStyle(fontWeight: FontWeight.w800),
-                ),
-                subtitle: Text(
-                  _durationLabel(preview.durationMilliseconds ?? 0),
-                ),
-              ),
-            const SizedBox(height: 16),
-            if (_recording)
-              FilledButton(
-                key: const Key('h01-stop-voice'),
-                onPressed: _stop,
-                style: FilledButton.styleFrom(
-                  minimumSize: const Size.fromHeight(60),
-                  backgroundColor: RoundsColors.ink,
-                ),
-                child: const Text('Stop recording'),
-              )
-            else if (preview != null) ...[
-              FilledButton(
-                key: const Key('h01-stage-voice'),
-                onPressed: () => Navigator.of(context).pop(preview),
-                style: FilledButton.styleFrom(
-                  minimumSize: const Size.fromHeight(60),
-                  backgroundColor: RoundsColors.ink,
-                ),
-                child: const Text('Add voice to message'),
-              ),
-              TextButton(onPressed: _start, child: const Text('Record again')),
-            ],
-            TextButton(
-              onPressed: _cancel,
-              child: const Text(
-                'Cancel',
-                style: TextStyle(color: RoundsColors.red),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
+}
+
+class _VoiceWaveform extends StatelessWidget {
+  const _VoiceWaveform();
+
+  static const _heights = <double>[
+    15,
+    29,
+    20,
+    43,
+    25,
+    50,
+    21,
+    37,
+    18,
+    46,
+    27,
+    17,
+  ];
+
+  @override
+  Widget build(BuildContext context) => Container(
+    key: const Key('h01-voice-waveform'),
+    height: DriverH01Metrics.voiceWaveHeight,
+    margin: const EdgeInsets.only(top: DriverH01Metrics.voiceWaveTop),
+    decoration: const BoxDecoration(
+      border: Border.symmetric(
+        horizontal: BorderSide(color: RoundsColors.line),
+      ),
+    ),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        for (var index = 0; index < _heights.length; index++) ...[
+          Container(
+            width: DriverH01Metrics.voiceWaveBarWidth,
+            height: _heights[index],
+            decoration: BoxDecoration(
+              color: RoundsColors.ink,
+              borderRadius: BorderRadius.circular(
+                DriverH01Metrics.voiceWaveBarRadius,
+              ),
+            ),
+          ),
+          if (index != _heights.length - 1)
+            const SizedBox(width: DriverH01Metrics.voiceWaveGap),
+        ],
+      ],
+    ),
+  );
+}
+
+class _VoicePrimaryButton extends StatelessWidget {
+  const _VoicePrimaryButton({
+    required this.onPressed,
+    required this.label,
+    super.key,
+  });
+
+  final VoidCallback onPressed;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    height: DriverH01Metrics.voicePrimaryHeight,
+    child: FilledButton(
+      onPressed: onPressed,
+      style: FilledButton.styleFrom(
+        backgroundColor: RoundsColors.ink,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(
+            DriverH01Metrics.voicePrimaryRadius,
+          ),
+        ),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: DriverH01Metrics.voicePrimarySize,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+    ),
+  );
+}
+
+class _VoiceSecondaryButton extends StatelessWidget {
+  const _VoiceSecondaryButton({
+    required this.onPressed,
+    required this.label,
+    this.danger = false,
+  });
+
+  final VoidCallback onPressed;
+  final String label;
+  final bool danger;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(top: DriverH01Metrics.voiceSecondaryTop),
+    child: SizedBox(
+      height: DriverH01Metrics.voiceSecondaryHeight,
+      child: TextButton(
+        onPressed: onPressed,
+        style: TextButton.styleFrom(
+          foregroundColor: danger
+              ? RoundsColors.red
+              : RoundsColors.inkSecondary,
+          shape: const RoundedRectangleBorder(),
+        ),
+        child: Text(
+          label,
+          style: const TextStyle(
+            fontSize: DriverH01Metrics.voiceSecondarySize,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+String _formatChatTime(DateTime value) {
+  final local = value.toLocal();
+  return '${local.hour.toString().padLeft(2, '0')}:'
+      '${local.minute.toString().padLeft(2, '0')}';
 }
