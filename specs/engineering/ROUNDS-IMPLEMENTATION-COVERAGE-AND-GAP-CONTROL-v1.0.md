@@ -7,6 +7,17 @@
 
 ## Changelog
 
+- **2026-09-07 · Checkpoint 70:** Locks the implementable English G01
+  recipient-unavailable flow at the canonical `393 × 852` viewport. Four
+  goldens cover the initial board, call-outcome bottom drawer, one failed call
+  and two failed calls. The supplied 310 px title measure is enforced and the
+  invented manifest quantity prefix is removed. Real native dialing, durable
+  authenticated contact evidence, repeat-call progression and Operations
+  contact remain unchanged. The complete 180-test Driver suite, Flutter
+  analysis and the Android debug APK build pass; repository-wide typecheck and
+  all 220 tests remain green. G01 stays `PARTIAL`: prototype-only waiting and
+  approved states remain absent until `GAP-006` defines the authoritative
+  custody disposition. No Thai screen changed.
 - **2026-09-07 · Checkpoint 69:** Locks all four approved English E04–E06
   Team live-change states at the canonical `393 × 852` viewport: entrance,
   destination, Stop order and promised window. The non-native reference map
@@ -557,7 +568,7 @@ Canonical inventory: `specs/product/ROUNDS-DRIVER-CANONICAL-MANIFEST-v6.md` and 
 | F01 / F02 Drop-off handoff | Pilot P0 | `VERIFIED` | Arrival now enters the separate measured English/Thai handoff surface before POD. Recipient, someone-else and left-at-location choices use real Stop/manifest truth; the latter opens the canonical four-choice bottom drawer. Contact actions reuse the real call, chat and recipient-unavailable flows. Handoff selection is passed into the existing atomic POD command instead of being committed early. English golden, compact Thai and routing/drawer tests pass; the English surface and drawer passed physical Samsung visual acceptance. | Exercise each choice through a live arrived Stop and committed POD, then complete physical Thai acceptance. |
 | F03 / F04 Proof of delivery | Pilot P0 | `ACCEPTED` | Real camera photo, retained draft, resumable upload, server hash/size verification and commit survived Android bench relaunch. The generic form is now replaced by the measured English/Thai canonical structure: explicit delivery-side manifest checks, handoff-derived copy, structured received-by drawer plus the real receiver name required by the server contract, retained-photo preview/retake, honest server-time evidence and a fixed completion action. Only driver-confirmed line numbers enter the POD outbox. Reference geometry, golden parity, compact Thai, receiver-drawer and completion-gate tests pass. | Complete physical English/Thai visual acceptance and road/degraded-network recovery. GAP-014 must project the actual order-class POD policy before conditional signature or GPS/geofence UI is enabled. |
 | F08 Stop complete / next Stop | Pilot P0 | `VERIFIED` | Multi-stop continuation and golden geometry coverage exist. | Physical multi-stop acceptance with real server data. |
-| G01 Recipient unavailable | Slice 2 P0 | `PARTIAL` | The measured canonical G01 opens from the delivery issue drawer, launches the real native dialer, retains an authenticated/audited call-attempt ledger, changes to a second-call action after one failed attempt and exposes the real Operations contact channel after two. It never invents a waiting or approved decision. | Define GAP-006 custody outcomes, then add a typed recipient-unavailable hold, real Operations decision and recovery state. |
+| G01 Recipient unavailable | Slice 2 P0 | `PARTIAL` | The measured canonical G01 opens from the delivery issue drawer, launches the real native dialer, retains an authenticated/audited call-attempt ledger, changes to a second-call action after one failed attempt and exposes the real Operations contact channel after two. Four English `393 × 852` goldens lock the initial, call-outcome drawer, one-attempt and two-attempt states; the supplied title measure and compact manifest presentation now match the board. It never invents a waiting or approved decision. | Define GAP-006 custody outcomes, then add a typed recipient-unavailable hold, real Operations decision and recovery state. Complete physical-device visual and native-call evidence acceptance. |
 | G02 Address/pin/entrance problem | Slice 2 P0 | `PARTIAL` | Canonical measured G02 opens from pickup navigation and the delivery issue flow, captures optional real device-location evidence and survives restart/offline through the durable command outbox. A typed versioned/idempotent server command snapshots the authoritative expected location, preserves destination/manifest truth, opens an audited Operations hold and projects the comparison into v45. The separate authorized E04–E06 live-change command now versions destination changes and Driver acknowledgement without weakening the hold. | Define the remaining GAP-006 exception-resolution outcome, then connect an explicit Operations correction decision to the live-change boundary before releasing the hold. Pickup-location mutation authority remains undefined and is not inferred. |
 | G03 Package problem | Pilot/Slice 2 P0 | `VERIFIED` | The English and Thai canonical initial, evidence and waiting states now use generated board measurements, the supplied bottom action drawer and real Stop/manifest truth. Damaged, missing and wrong-package categories are typed end to end; damaged/wrong require retained, verified photo evidence while missing explicitly submits without fabricating a photo. Category/photo drafts survive restart, all three open the existing audited Operations hold, and migration `202609040002` is applied remotely. Automated geometry, localization, contract, API and outbox coverage passes. An English Samsung debug-preview pass covered initial, damage-evidence and action-drawer composition and exposed the now-fixed photo-width defect. | Complete Thai and waiting-state physical visual acceptance plus live damaged/missing/wrong submissions against an arrived Stop. The only defined terminal reconciliation remains the existing physical damaged-item return; no missing/wrong Operations outcome is invented before GAP-006 is closed. |
 | G04 Cannot complete | Slice 2 P0 | `PARTIAL` | The supplied measured G04 now opens from the delivery issue drawer with the canonical no-access/refused/closed/other reasons, real recipient dialing, durable Driver-selected contact evidence and a durable structured Operations message. Its waiting state truthfully preserves Driver custody and never invents a return, continuation or approved decision. | Define GAP-006 custody outcomes, then add a typed cannot-complete hold, real Operations disposition and recovery state. |
@@ -905,13 +916,20 @@ This sequence does not promote later slices; it orders the already authorized En
   the existing Operations contact and durable acknowledgement actions.
   E04–E06 remains `IMPLEMENTED` until the live multi-Stop cross-surface and
   device/road gates pass. No Thai or Network presentation was added.
+- **D34 English G01 recipient-unavailable visual lock completed 2026-09-07:**
+  four `393 × 852` goldens cover the initial state, call-outcome drawer and
+  one/two failed attempts. The canonical 310 px title measure and manifest
+  summary are corrected while real native dialing, durable contact evidence
+  and Operations contact remain connected. The prototype's synthetic waiting
+  and approved transitions stay absent. G01 remains `PARTIAL` until `GAP-006`
+  defines the authoritative custody outcome. No Thai screen changed.
 - Define the canonical auth-expiry/re-auth entry presentation from approved
   English UX before exposing another recovery path.
 - Resolve N01 background-location and notification policy only when the real
   channels are promoted; complete N01/N03 physical recovery acceptance.
-- Continue implementable English board closure with G01 recipient unavailable:
-  lock its supplied states and existing real call/contact behavior, but do not
-  invent the unresolved `GAP-006` custody decision.
+- Continue implementable English board closure with G04 cannot complete: lock
+  its supplied reason/evidence/waiting presentation and existing real behavior,
+  but do not invent the unresolved `GAP-006` custody decision.
 - Run golden/reference-viewport comparisons for every in-scope board.
 - Run physical multi-stop, degraded-network, background, battery and motorcycle road acceptance.
 - Complete physical English/Thai G03 comparison and live subtype acceptance;

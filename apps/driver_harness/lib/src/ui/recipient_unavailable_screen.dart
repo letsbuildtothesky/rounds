@@ -317,15 +317,18 @@ class _RecipientUnavailableScreenState
                   children: [
                     const _IssueKicker(),
                     const SizedBox(height: DriverG01Metrics.heroGap),
-                    const Text(
-                      'Recipient unavailable',
-                      key: Key('recipient-unavailable-title'),
-                      style: TextStyle(
-                        color: RoundsColors.ink,
-                        fontSize: DriverG01Metrics.heroSize,
-                        height: DriverG01Metrics.heroHeight,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: DriverG01Metrics.heroTracking,
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 310),
+                      child: const Text(
+                        'Recipient unavailable',
+                        key: Key('recipient-unavailable-title'),
+                        style: TextStyle(
+                          color: RoundsColors.ink,
+                          fontSize: DriverG01Metrics.heroSize,
+                          height: DriverG01Metrics.heroHeight,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: DriverG01Metrics.heroTracking,
+                        ),
                       ),
                     ),
                     const SizedBox(height: DriverG01Metrics.locationGap),
@@ -432,7 +435,7 @@ class _RecipientUnavailableScreenState
                                       maxWidth: 120,
                                     ),
                                     child: Text(
-                                      '${item.quantity}× ${item.description}',
+                                      item.description,
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
                                       style: const TextStyle(
