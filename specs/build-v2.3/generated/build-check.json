@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "documents_checked": 40,
+  "local_file_links_checked": 862,
+  "build_specs": 14,
+  "source_files_hash_checked": 207,
+  "source_zip": "CHECKED",
+  "local_checks": "PASS",
+  "application_acceptance": "NOT_RUN",
+  "errors": []
+}

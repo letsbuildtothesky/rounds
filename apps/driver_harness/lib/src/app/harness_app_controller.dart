@@ -13,6 +13,8 @@ import '../driver/driver_entry.dart';
 import '../driver/driver_session.dart';
 import '../driver/driver_operations_thread.dart';
 import '../telemetry/telemetry_uploader.dart';
+import '../storage/legacy_startup_gate.dart';
+import '../v23/driver_storage_startup.dart';
 
 class HarnessAppController extends ChangeNotifier {
   HarnessAppController._(
@@ -22,6 +24,7 @@ class HarnessAppController extends ChangeNotifier {
     this._driverApi,
     this._queueInspector,
     this._sessionStorage,
+    this._storageStartup,
   );
 
   static const _localeKey = 'driver_locale';
@@ -36,6 +39,7 @@ class HarnessAppController extends ChangeNotifier {
   final DriverApi _driverApi;
   final DriverQueueInspector _queueInspector;
   final FlutterSecureStorage _sessionStorage;
+  final DriverStorageStartup? _storageStartup;
   DriverSessionModel? _driverSession;
   String? _pendingWorkOwnerDriverId;
   bool _currentRouteAvailable = false;
@@ -66,7 +70,13 @@ class HarnessAppController extends ChangeNotifier {
   DriverSyncSnapshot get syncSnapshot => _syncSnapshot;
   bool get showConnectionSurface => _showConnectionSurface;
 
-  static Future<HarnessAppController> create() async {
+  static Future<HarnessAppController> create({
+    DriverStorageStartup? storageStartup,
+  }) async {
+    if (storageStartup != null && !storageStartup.auth.lifecycle.ready) {
+      throw StateError('STORAGE_STARTUP_NOT_READY');
+    }
+    LegacyStartupGate.process.claimLegacyUse();
     final preferences = await SharedPreferences.getInstance();
     const secureStorage = FlutterSecureStorage();
     final controller = HarnessAppController._(
@@ -83,9 +93,11 @@ class HarnessAppController extends ChangeNotifier {
           defaultValue: 'http://10.0.2.2:8080',
         ),
         storage: secureStorage,
+        authBoundary: storageStartup?.auth,
       ),
       const SqliteDriverQueueInspector(),
       secureStorage,
+      storageStartup,
     );
     if (controller.driverConfigured) {
       await controller._restoreCachedSession();
@@ -351,6 +363,8 @@ class HarnessAppController extends ChangeNotifier {
   }
 
   Future<void> signOutDriver() async {
+    // Revoke local access before queue inspection/preferences/token awaits.
+    _driverApi.lockAuthentication();
     final ownerDriverId = _pendingWorkOwnerDriverId ?? _driverSession?.driverId;
     var preserveOwner = ownerDriverId != null;
     try {
@@ -818,6 +832,8 @@ class HarnessAppController extends ChangeNotifier {
 
   @override
   void dispose() {
+    _driverApi.lockAuthentication();
+    unawaited(_storageStartup?.dispose());
     _sessionRefreshTimer?.cancel();
     unawaited(_connectivitySubscription?.cancel());
     super.dispose();

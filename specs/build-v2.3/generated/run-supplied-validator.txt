@@ -1,0 +1,12 @@
+PASS JSON syntax, all local OpenAPI/event references and component schemas
+PASS 131 command payload/error mirrors, root names and generic result-state ownership
+PASS 352 finite synthetic result/event instances; structural examples only
+PASS Policy discriminants match all 16 schemas; payment mismatch and missing accepted-work identity rejected
+PASS Unit-selection exclusivity, immutable proposal version and original assignment fence are explicit
+PASS 62 reachable state families; freelance assignment/release edges; synchronous gate; event producers/consumers resolve
+PASS r1 exact command mirrors, no executable pickup-created residual edge, preparation error and bounded retry policy; historical graph reachability is not launch enablement
+PASS Six PostgreSQL files parsed; 131 table inventory and named invariants present (NOT applied)
+PASS Driver SQLite clean schema executed: 14 tables and integrity_check=ok; no encryption/device behavior tested
+PASS Acceptance ownership/feature links and all six journey fact names resolve; cases remain written
+PASS Authored relative document links resolve
+NOT TESTED: actual PostgreSQL/Supabase privileges, triggers or races; API/device/provider execution; generated clients; browser visual parity. This script does not modify files.

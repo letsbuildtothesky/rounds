@@ -47,35 +47,37 @@ void main() {
     expect(find.text("Can't find location"), findsOneWidget);
   });
 
-  testWidgets('a real current-position observation is never called confirmed', (
-    tester,
-  ) async {
-    await _pumpLocationProblem(
-      tester,
-      controller: controller,
-      locationProvider: () async => const DriverLocationEvidence(
-        latitude: 13.730001,
-        longitude: 100.568001,
-        accuracyMeters: 7.6,
-      ),
-    );
+  testWidgets(
+    'unconfigured location submission never claims saved or confirmed',
+    (tester) async {
+      await _pumpLocationProblem(
+        tester,
+        controller: controller,
+        locationProvider: () async => const DriverLocationEvidence(
+          latitude: 13.730001,
+          longitude: 100.568001,
+          accuracyMeters: 7.6,
+        ),
+      );
 
-    await tester.tap(find.byKey(const Key('location-problem-pin-is-wrong')));
-    await tester.pumpAndSettle();
-    expect(
-      find.byKey(const Key('location-problem-pin-evidence')),
-      findsOneWidget,
-    );
-    expect(find.text('Current location · ±8 m'), findsOneWidget);
+      await tester.tap(find.byKey(const Key('location-problem-pin-is-wrong')));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const Key('location-problem-pin-evidence')),
+        findsOneWidget,
+      );
+      expect(find.text('Current location · ±8 m'), findsOneWidget);
 
-    await tester.tap(find.byKey(const Key('location-problem-send-current')));
-    await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('location-problem-send-current')));
+      await tester.pumpAndSettle();
 
-    expect(find.text('Saved locally'), findsOneWidget);
-    expect(find.text('Waiting to sync'), findsNWidgets(2));
-    expect(find.textContaining('confirmed'), findsNothing);
-    expect(find.textContaining('Route update ready'), findsNothing);
-  });
+      expect(find.textContaining('Nothing was sent or saved.'), findsOneWidget);
+      expect(find.text('Saved locally'), findsNothing);
+      expect(find.text('Waiting to sync'), findsNothing);
+      expect(find.textContaining('confirmed'), findsNothing);
+      expect(find.textContaining('Route update ready'), findsNothing);
+    },
+  );
 
   testWidgets('delivery exception entry opens canonical G02', (tester) async {
     final round = AssignedRoundScreen.demoRound;

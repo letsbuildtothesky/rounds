@@ -1,102 +1,188 @@
-import 'dart:typed_data';
+import 'dart:io';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rounds_driver_harness/src/app/driver_design_system.dart';
-import 'package:rounds_driver_harness/src/app/generated/driver_ui_metrics.g.dart';
 import 'package:rounds_driver_harness/src/app/rounds_harness_app.dart';
 import 'package:rounds_driver_harness/src/driver/driver_session.dart';
 import 'package:rounds_driver_harness/src/ui/pickup_confirmation_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+// Source-CSS geometry checks, NOT source-render or physical-device acceptance.
+// The previous pre-v2.3 golden remains in git as historical evidence only.
 void main() {
-  testWidgets('D03/D04 uses exact canonical regions at 393px', (tester) async {
-    await _pumpPickup(tester, const Size(393, 852));
+  setUpAll(() async {
+    // Use the SDK's existing Roboto test font as an explicitly labelled Android
+    // fallback. It is not bundled/copied or claimed to match licensed Arial.
+    final sdk = Platform.environment['ROUNDS_TEST_FLUTTER_SDK'];
+    if (sdk != null) {
+      for (final name in ['Roboto-Regular.ttf', 'Roboto-Medium.ttf']) {
+        final file = File(
+          '$sdk/engine/src/flutter/txt/third_party/fonts/$name',
+        );
+        final loader = FontLoader('Roboto')
+          ..addFont(
+            Future.value(ByteData.sublistView(await file.readAsBytes())),
+          );
+        await loader.load();
+      }
+    }
+  });
 
+  testWidgets('Refresh02 fixed regions use source CSS at 393 logical px', (
+    tester,
+  ) async {
+    await _pumpPickup(tester, const Size(393, 852));
     expect(
       tester.getRect(find.byKey(const Key('pickup-topbar'))),
-      const Rect.fromLTWH(0, 0, 393, 60),
+      const Rect.fromLTWH(0, 0, 393, 64),
+    );
+    expect(
+      tester.getRect(find.byKey(const Key('pickup-hero'))),
+      const Rect.fromLTWH(0, 64, 393, 92),
     );
     expect(
       tester.getRect(find.byKey(const Key('pickup-content'))),
-      const Rect.fromLTWH(0, 60, 393, 792),
+      const Rect.fromLTWH(0, 156, 393, 598),
     );
     expect(
       tester.getRect(find.byKey(const Key('pickup-footer'))),
-      const Rect.fromLTWH(0, 759, 393, 93),
+      const Rect.fromLTWH(0, 754, 393, 98),
     );
     expect(
-      tester.getRect(find.byKey(const Key('pickup-hero'))).topLeft,
-      const Offset(18, 84),
-    );
-    expect(tester.getSize(find.byKey(const Key('pickup-hero'))).width, 357);
-    expect(
-      tester.getSize(find.byKey(const Key('pickup-manifest-head'))).height,
-      DriverD03D04Metrics.manifestHeadHeight,
-    );
-    expect(
-      tester.getSize(find.byKey(const Key('manifest-stop-1-1'))).height,
-      DriverD03D04Metrics.manifestLineHeight,
-    );
-    expect(
-      tester.getSize(find.byKey(const Key('pickup-problem'))).height,
-      DriverD03D04Metrics.problemHeight,
+      tester.getSize(find.byKey(const Key('manifest-stop-1-1-1'))).height,
+      92,
     );
     expect(
       tester.getRect(find.byKey(const Key('confirm-pickup'))),
-      const Rect.fromLTWH(18, 770, 357, 64),
+      const Rect.fromLTWH(92, 767, 283, 68),
     );
+    expect(find.text('0 of 6'), findsOneWidget);
+    expect(find.textContaining('1 of 2'), findsOneWidget);
+    expect(find.textContaining('2 of 2'), findsOneWidget);
+    expect(find.byKey(const Key('pickup-manifest-head')), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('D03/D04 switches to the canonical compact dimensions', (
+  for (final size in [const Size(320, 720), const Size(360, 640)]) {
+    testWidgets('Refresh02 compact/short flow $size remains scrollable', (
+      tester,
+    ) async {
+      await _pumpPickup(tester, size);
+      expect(
+        tester.getSize(find.byKey(const Key('manifest-stop-1-1-1'))).height,
+        88,
+      );
+      expect(
+        tester.getSize(find.byKey(const Key('confirm-pickup'))).height,
+        68,
+      );
+      expect(
+        tester.getRect(find.byKey(const Key('pickup-footer'))).bottom,
+        size.height,
+      );
+      await tester.drag(
+        find.byKey(const Key('pickup-content')),
+        const Offset(0, -400),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const Key('manifest-stop-4-1-2')).hitTestable(),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('enlarged text wraps instead of disabling system text scaling', (
     tester,
   ) async {
-    await _pumpPickup(tester, const Size(320, 720));
-
+    await _pumpPickup(tester, const Size(320, 852), textScale: 1.6);
     expect(
-      tester.getRect(find.byKey(const Key('pickup-footer'))),
-      const Rect.fromLTWH(0, 627, 320, 93),
+      MediaQuery.textScalerOf(
+        tester.element(find.text('Collect packages')),
+      ).scale(10),
+      16,
     );
     expect(
-      tester.getRect(find.byKey(const Key('pickup-hero'))).topLeft,
-      const Offset(16, 84),
+      tester.getSize(find.byKey(const Key('manifest-stop-1-1-1'))).height,
+      greaterThan(92),
     );
-    expect(tester.getSize(find.byKey(const Key('pickup-hero'))).width, 288);
-    expect(
-      tester.getSize(find.byKey(const Key('manifest-stop-1-1'))).height,
-      DriverD03D04Metrics.compactManifestLineHeight,
+    expect(tester.getRect(find.byKey(const Key('pickup-footer'))).bottom, 852);
+    await tester.drag(
+      find.byKey(const Key('pickup-content')),
+      const Offset(0, -700),
     );
-    expect(
-      tester.getRect(find.byKey(const Key('confirm-pickup'))),
-      const Rect.fromLTWH(16, 638, 288, 64),
-    );
-    expect(find.text('Confirm pickup'), findsWidgets);
-    expect(find.text('Confirm\npickup'), findsNothing);
+    await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('D03/D04 visual baseline matches the canonical reference', (
-    tester,
-  ) async {
-    await _pumpPickup(tester, const Size(393, 852));
+  testWidgets(
+    'actual Flutter captures: initial, selected and source action drawer',
+    (tester) async {
+      await _pumpPickup(tester, const Size(393, 852));
+      await _capture(tester, 'pickup-initial.png');
+      for (final key in [
+        'manifest-stop-1-1-1',
+        'manifest-stop-2-1-1',
+        'manifest-stop-3-1-1',
+        'manifest-stop-3-2-1',
+        'manifest-stop-4-1-1',
+        'manifest-stop-4-1-2',
+      ]) {
+        await tester.ensureVisible(find.byKey(Key(key)));
+        await tester.tap(find.byKey(Key(key)));
+        await tester.pump();
+      }
+      expect(find.text('6 of 6'), findsOneWidget);
+      expect(find.text('Confirm 6 packages'), findsOneWidget);
+      await _capture(tester, 'pickup-selected.png');
+      await tester.tap(find.byKey(const Key('pickup-problem')));
+      await tester.pumpAndSettle();
+      expect(find.text('Missing package'), findsOneWidget);
+      expect(find.text('Wrong package'), findsOneWidget);
+      expect(find.text('Damaged package'), findsOneWidget);
+      expect(find.text('Message Operations'), findsOneWidget);
+      expect(
+        find.byType(DropdownButtonFormField<DriverRoundStopModel>),
+        findsNothing,
+      );
+      await _capture(tester, 'pickup-drawer.png');
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('pickup-action-sheet')), findsNothing);
+      expect(find.text('6 of 6'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+}
 
-    final previousComparator = goldenFileComparator;
-    final localComparator = previousComparator as LocalFileComparator;
-    goldenFileComparator = _TolerantGoldenFileComparator(
-      localComparator.basedir.resolve('pickup_confirmation_geometry_test.dart'),
-      precisionTolerance: .05,
-    );
-    addTearDown(() => goldenFileComparator = previousComparator);
-
-    await expectLater(
-      find.byType(PickupConfirmationScreen),
-      matchesGoldenFile('goldens/pickup-confirmation-393x852.png'),
-    );
+Future<void> _capture(WidgetTester tester, String name) async {
+  final output = Platform.environment['ROUNDS_PICKUP_CAPTURE_DIR'];
+  if (output == null) return;
+  final boundary = tester.renderObject<RenderRepaintBoundary>(
+    find.byKey(const Key('pickup-capture')),
+  );
+  await tester.runAsync(() async {
+    final image = await boundary.toImage(pixelRatio: 1);
+    final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+    final directory = Directory(output);
+    await directory.create(recursive: true);
+    await File(
+      '${directory.path}/$name',
+    ).writeAsBytes(bytes!.buffer.asUint8List());
+    image.dispose();
   });
 }
 
-Future<void> _pumpPickup(WidgetTester tester, Size size) async {
+Future<void> _pumpPickup(
+  WidgetTester tester,
+  Size size, {
+  double textScale = 1,
+}) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.resetPhysicalSize);
@@ -106,42 +192,27 @@ Future<void> _pumpPickup(WidgetTester tester, Size size) async {
     'driver_locale_selected': true,
   });
   final controller = await HarnessAppController.create();
+  addTearDown(controller.dispose);
   await tester.pumpWidget(
-    MaterialApp(
-      theme: buildRoundsDriverTheme(),
-      home: PickupConfirmationScreen(
-        controller: controller,
-        round: _canonicalRound,
+    RepaintBoundary(
+      key: const Key('pickup-capture'),
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: buildRoundsDriverTheme(),
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(
+            context,
+          ).copyWith(textScaler: TextScaler.linear(textScale)),
+          child: child!,
+        ),
+        home: PickupConfirmationScreen(
+          controller: controller,
+          round: _canonicalRound,
+        ),
       ),
     ),
   );
   await tester.pumpAndSettle();
-}
-
-class _TolerantGoldenFileComparator extends LocalFileComparator {
-  _TolerantGoldenFileComparator(
-    super.testFile, {
-    required double precisionTolerance,
-  }) : assert(precisionTolerance >= 0 && precisionTolerance <= 1),
-       _precisionTolerance = precisionTolerance;
-
-  final double _precisionTolerance;
-
-  @override
-  Future<bool> compare(Uint8List imageBytes, Uri golden) async {
-    final result = await GoldenFileComparator.compareLists(
-      imageBytes,
-      await getGoldenBytes(golden),
-    );
-    if (result.passed || result.diffPercent <= _precisionTolerance) {
-      result.dispose();
-      return true;
-    }
-
-    final error = await generateFailureOutput(result, golden, basedir);
-    result.dispose();
-    throw FlutterError(error);
-  }
 }
 
 const _canonicalRound = DriverRoundModel(
@@ -257,7 +328,7 @@ const _canonicalRound = DriverRoundModel(
       manifestItems: [
         DriverManifestItemModel(
           lineNumber: 1,
-          description: 'Floral arrangements',
+          description: 'Floral arrangement',
           quantity: 2,
           handlingNote: 'Fragile',
         ),

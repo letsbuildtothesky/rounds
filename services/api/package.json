@@ -6,15 +6,23 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "start": "tsx src/server.ts",
-    "test": "tsx --test test/*.test.ts",
+    "test": "node --import tsx --test test/*.test.ts test/v23/*.test.ts",
+    "test:v23": "node --import tsx --test test/v23/*.test.ts",
+    "test:postgis": "node --import tsx --test --test-concurrency=2 test/v23/*.postgis.ts",
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
     "@rounds/contracts": "0.1.0",
-    "@supabase/supabase-js": "^2.57.4"
+    "@supabase/supabase-js": "^2.57.4",
+    "ajv": "8.20.0",
+    "ajv-formats": "3.0.1",
+    "pg": "8.23.0",
+    "sharp": "0.35.4"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
+    "@types/pg": "8.23.1",
+    "embedded-postgres": "17.10.0-beta.17",
     "tsx": "^4.20.0",
     "typescript": "^5.9.0"
   }

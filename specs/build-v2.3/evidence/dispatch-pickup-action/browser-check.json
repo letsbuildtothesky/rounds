@@ -1,0 +1,37 @@
+{
+  "date": "2026-09-10",
+  "scope": "Compiled production React and controllers; explicitly synthetic HTTP/Auth/map port; no real sends, configured provider, shared database or phone",
+  "sourceArtworkChanged": false,
+  "originalInteractiveParity": "NOT_ACCEPTED: original file browser access denial retained; static source and supplied screenshots only",
+  "checks": {
+    "cardOpensDeliveryDetailBeforeReport": "PASS",
+    "exactSingleReportOpensWithoutDraftOrSend": "PASS",
+    "keepDraftReturnAndReopenExactWhitespace": "PASS on initial implementation; final revision only relocates the settlement observer to the workspace",
+    "finalRevisionEscalateSubmitLostResponseStatusRecovery": "PASS",
+    "confirmedReplyDoesNotClearActionOrHeldReadiness": "PASS",
+    "settlementRefreshesDeliveryReader": "PASS: one initial read and one post-settlement read before failure injection",
+    "failedDeliveryRefreshHidesActionLink": "PASS: last-known detail retained, review link absent",
+    "deniedDeliveryReadClearsPrivateDetailAndMap": "PASS: generic closed access state only; independent Pickup issues entry remains",
+    "narrowBackReturnsToSameDelivery": "PASS",
+    "capturedConsoleErrors": []
+  },
+  "finalFixtureEvidence": {
+    "synthetic": true,
+    "posts": 1,
+    "version": 2,
+    "pendingReceipt": true,
+    "pendingReceiptMeaning": "Server fixture retains the committed receipt; UI pending command was cleared by status recovery",
+    "deliveryReads": [
+      {"serviceDate":"2026-09-10","mode":"ready"},
+      {"serviceDate":"2026-09-10","mode":"ready"},
+      {"serviceDate":"2026-09-10","mode":"offline"},
+      {"serviceDate":"2026-09-10","mode":"denied"}
+    ]
+  },
+  "responsiveChecks": [
+    {"width":1600,"height":1000,"capture":"desktop-action.png","result":"Source-derived shell/detail/footer inspected; synthetic map is not design artwork"},
+    {"width":768,"height":1024,"scrollWidth":768,"dialogWidth":448,"dialogX":160,"dialogHeight":821.4375,"capture":"tablet-reply.png","result":"Settled screenshot inspected; all reply controls usable"},
+    {"width":390,"height":844,"scrollWidth":390,"capture":"narrow-confirmed.png","result":"Settled confirmation screenshot inspected; sticky reply footer and drawer Back usable"}
+  ],
+  "cleanup": "Temporary tab20 closed, viewport override reset, only own local fixture servers stopped"
+}

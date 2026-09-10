@@ -1,0 +1,252 @@
+{
+  "working_revision": "2.3-r1",
+  "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+  "original_archive": "specs/source/archives/Rounds-Complete-Project-v2.3.zip",
+  "original_sha256": "d4eb74b39335d5a97bea9300da4f65612773220ffdadff6465a954b9efedc39e",
+  "source_files": 207,
+  "protected_ui_reference_files": 116,
+  "approved_ui_assets_unchanged": false,
+  "approved_ui_content_unchanged_except_credential_redaction": true,
+  "credential_redacted_reference_files": [
+    "specs/source/Rounds-Complete-Project-v2.3/reference/Dispatch-Original-v45.html",
+    "specs/source/Rounds-Complete-Project-v2.3/ui/dispatch/index.html",
+    "specs/source/Rounds-Complete-Project-v2.3/ui/driver/screens/ROUNDS-B01B-TEAM-HOME-ROUND-ASSIGNED-v3-10OF10.html",
+    "specs/source/Rounds-Complete-Project-v2.3/ui/driver/screens/ROUNDS-D01-NAVIGATE-TO-PICKUP-v5-10OF10.html",
+    "specs/source/Rounds-Complete-Project-v2.3/ui/driver/screens/ROUNDS-E01-ACTIVE-ROUND-OVERVIEW-v5-10OF10.html",
+    "specs/source/Rounds-Complete-Project-v2.3/ui/driver/screens/ROUNDS-E02-NAVIGATE-TO-CURRENT-STOP-v2-10OF10.html",
+    "specs/source/Rounds-Complete-Project-v2.3/ui/driver/screens/ROUNDS-E04-E05-E06-LIVE-ROUND-CHANGE-v3-10OF10.html",
+    "specs/source/Rounds-Complete-Project-v2.3/ui/driver/screens/ROUNDS-F08-STOP-COMPLETE-NEXT-STOP-v4-10OF10.html"
+  ],
+  "changed_files": [
+    {
+      "path": "specs/source/Rounds-Complete-Project-v2.3/PACKAGE-SHA256.txt",
+      "original_sha256": "837adc549afe5c970faf57edcc26268de08ac57fe932d36d6463a6e722862542",
+      "working_sha256": "20c5244ef32207a7aa67820d662e3114523ab7ab43f8006c0ced44b5b87ba0b5"
+    },
+    {
+      "path": "specs/source/Rounds-Complete-Project-v2.3/START-HERE.md",
+      "original_sha256": "1dbd3a56acb6f62580fe26944cbb35833ca3de27b8a286a38d96db01aaaf1dfa",
+      "working_sha256": "56598b4412bb1f54fb4652c032c51b405acdbca4321be9111ec42276a5ab46ea"
+    },
+    {
+      "path": "specs/source/Rounds-Complete-Project-v2.3/reference/Dispatch-Original-v45.html",
+      "original_sha256": "2d969bf8c01307db7a6bb03cd8f9a698c13f96dac29f51831ca00adb5c02268e",
+      "working_sha256": "a6544d5ff65eb556889ee1e1c1d2f84aadaab4770fb830850145a7c8b9c6312e"
+    },
+    {
+      "path": "specs/source/Rounds-Complete-Project-v2.3/specs/README.md",
+      "original_sha256": "39fd5658b9879870c8f48b9dd8b670f433c2b783e08dfd565515b425fdfbb0b2",
+      "working_sha256": "7d5451141063f8693725ba68fd15cef11ea117a2d18ed1b495e5d5e4d81d6ed2"
+    },
+    {
+      "path": "specs/source/Rounds-Complete-Project-v2.3/specs/contracts/COMMAND-CATALOG.json",
+      "original_sha256": "ad09dd5cc7bfdb5b85ada24fbd7a715cc20e8d7b36646c63609582976be8bf7f",
+      "working_sha256": "35b75c1b7d36e67403a2981ed0f0f927548f017db8aeffe40a4c297a0b1de7ff"
+    },
+    {
+      "path": "specs/source/Rounds-Complete-Project-v2.3/specs/contracts/COMMANDS.md",
+      "original_sha256": "3d1ec034ccbf83fbe4939ad4ab58f63ce14d2fc97f5ce3bd68dbcd1f3f18e071",
+      "working_sha256": "d65ff18e536f50058f4462b783c6a8cd7b59ddc4029ee73c43ff940ad9ede907"
+    },
+    {
+      "path": "specs/source/Rounds-Complete-Project-v2.3/specs/contracts/DOMAIN-RULES.json",
+      "original_sha256": "213bb45b633bdb25dc4b4dfb891a3c9f695aae34e265fe69ef939cef64dbd740",
+      "working_sha256": "aace4ddd30cd442836ee0c081ab0fdd729cbe1928ada2f1a4083a7451b35620c"
+    },
+    {
+      "path": "specs/source/Rounds-Complete-Project-v2.3/specs/contracts/ERROR-BINDINGS.json",
+      "original_sha256": "8a4c40045d06f768887957f90c7e7a1e12fd914cf88ac1fc36520cbe77dca3a5",
+      "working_sha256": "d3a9c4b20ada11ff744315760481370883758b84aeafcb7f83704cd072f05028"
+    },
+    {
+      "path": "specs/source/Rounds-Complete-Project-v2.3/specs/contracts/EVENT-CATALOG.json",
+      "original_sha256": "a1f7c1b1135e10db7642f83c134ae8309ddd6e60c503070dd0a3823f1a42a039",
+      "working_sha256": "fd36d55c7e7a9a9096eee02cf3b038d117f20c5eeda6a0303e2947c18f8dfabf"
+    },
+    {
+      "path": "specs/source/Rounds-Complete-Project-v2.3/specs/contracts/QUERY-ERRORS.json",
+      "original_sha256": "6e838525484644fda610212e392e600e9ba2ddaae382a26080608c52738ecc2e",
+      "working_sha256": "7424c211511fa87f4438cd0d525eb1241317e6eec2209602fe9944d7b9aa04eb"
+    },
+    {
+      "path": "specs/source/Rounds-Complete-Project-v2.3/specs/contracts/SERVICE-ACTIONS.json",
+      "original_sha256": "5d7f9ce5c2bc290504242bc4d35f43e8452952eddaa476c973920aab952a8338",
+      "working_sha256": "02cebb96a9a67ce76ab1ea41b58979c055682deb78bd872dcbb21c4674e16ebe"
+    },
+    {
+      "path": "specs/source/Rounds-Complete-Project-v2.3/specs/contracts/STATE-MACHINES.md",
+      "original_sha256": "4234ecdbd08db4abddd85e80c33c57c745c59dc4dc8bb081a61f7c41c031091d",
+      "working_sha256": "659b603a3f9bd968b04b15f559b8739f0f4db3f571e7c6193f5873430b5d5729"
+    },
+    {
+      "path": "specs/source/Rounds-Complete-Project-v2.3/specs/contracts/TRANSITIONS.json",
+      "original_sha256": "48809832f4d67c26869d4a69ace531b044bf52951f35dfae9a4bfbed35647150",
+      "working_sha256": "7bc4c7104435c665bae581492e2bc68fd255adaaf3ca4bc63d9f29eb5a1f86f8"
+    },
+    {
+      "path": "specs/source/Rounds-Complete-Project-v2.3/specs/contracts/events.json",
+      "original_sha256": "d2683f03e04caaf5bcccb5d73c4bbb7ccc9eb60564e15ed778ced547c1651387",
+      "working_sha256": "90a457ab67ec8ac6e85ce2ff04c881a313a4ff1ea3624ac7fc4306eb656bd1b0"
+    },
+    {
+      "path": "specs/source/Rounds-Complete-Project-v2.3/specs/contracts/openapi.json",
+      "original_sha256": "3bd5cba2a08f65bd07d771ba91b0939950eaad3ab7a24be21a545ff8ddaa152f",
+      "working_sha256": "f83ab902f68d19b4f9a7f1cf8fc16dd23e2634a55f89b6216b3f12b3a5a3c830"
+    },
+    {
+      "path": "specs/source/Rounds-Complete-Project-v2.3/specs/database/DICTIONARY.md",
+      "original_sha256": "c9fe24f6018c93caa48bc703462e40515da86b05453c8423ecdffdb8752226db",
+      "working_sha256": "dc26a15c737d62d2d83fe447028d078c64aa37d6abb60c35885505522917d41c"
+    },
+    {
+      "path": "specs/source/Rounds-Complete-Project-v2.3/specs/database/MIGRATION-BOUNDARY.md",
+      "original_sha256": "fee840dd393a9791bb6d99b1a7b521643c65ddc2c0b1716fe2da69fcd62bcc38",
+      "working_sha256": "fd674391a73eb6ef600774d0911b3093440795e9603b3061d3f5efa18c82ef2e"
+    },
+    {
+      "path": "specs/source/Rounds-Complete-Project-v2.3/specs/database/ROLE-POLICIES.sql",
+      "original_sha256": "85c081a32b0b23da1f8a8138d17a08d93ab37dc28a38dc96aa2a65ecc38b91e8",
+      "working_sha256": "82dfd9c77be97547e521cfeb2fa43d00f411d4063dca49b44f917b7afaddfc89"
+    },
+    {
+      "path": "specs/source/Rounds-Complete-Project-v2.3/specs/database/ROUNDS-REVIEW-SCHEMA.sql",
+      "original_sha256": "27e67a119a0ac6083e8e5836142cc8f25fe1d24b55d73b13e236672b095de5e5",
+      "working_sha256": "3d68fbca12d2858e6379d3de29265ce7b7e1e4a09c68c867e741ec0e5688c85e"
+    },
+    {
+      "path": "specs/source/Rounds-Complete-Project-v2.3/specs/database/TABLE-CATALOG.json",
+      "original_sha256": "0119cd3d124c65510a42f32672ad373976c604d81976a99ada5e0e2f9d935842",
+      "working_sha256": "39ff4576ace67308d649635de0969b2d10b7c2c52aa88423e9f4cbc4a74aa880"
+    },
+    {
+      "path": "specs/source/Rounds-Complete-Project-v2.3/specs/database/V23-COMPLETE-ORDER.sql",
+      "original_sha256": "cbce2e1df78c3f5cb88927c221e6be67e14b4a9377c84e8dccd848fcada08be1",
+      "working_sha256": "52c1de46f68ef99d130d92b5ff2e1fc4258d1d274a2d27c262876eb5ab64bef9"
+    },
+    {
+      "path": "specs/source/Rounds-Complete-Project-v2.3/specs/decisions/01-OPERATING-DECISIONS.md",
+      "original_sha256": "33eb11e1170b3ecc36104113309187eb224e4f8ad412db541c523fc0e57480a6",
+      "working_sha256": "04f83db9185df561fecf08d469184245fac431dd74177f7bf924b99c8b4240b4"
+    },
+    {
+      "path": "specs/source/Rounds-Complete-Project-v2.3/specs/decisions/02-TRANSACTION-AND-PROVIDER-ADR.md",
+      "original_sha256": "996c6992acd4793e4fb532f59f0e9d42a550a108e7f8d14e21ae8a13ef17a7fb",
+      "working_sha256": "b0f9911068672222401a3c04fc1c649171e2f8d7fe932d1645b09b7845d947b0"
+    },
+    {
+      "path": "specs/source/Rounds-Complete-Project-v2.3/specs/decisions/03-DEFAULTS-AND-OPEN-GATES.md",
+      "original_sha256": "bdde8797051a2d81b5afb7da724d15ae3964bb3f9e16787aacedb30011cd7bdf",
+      "working_sha256": "5fe13219e243a275d49a392ff2b0f68ec55736e6836562495834ab775ef8f374"
+    },
+    {
+      "path": "specs/source/Rounds-Complete-Project-v2.3/specs/engineering/E02-DATABASE-DESIGN-AND-INVARIANTS.md",
+      "original_sha256": "2e2e8f328dba0ce85e23577c0a9fe063d0d86f06a7e8d3a6377b4b372e6d5710",
+      "working_sha256": "16a2531e0224b7107598a36614807e5f06507916a411c2d60f056ba78dd37029"
+    },
+    {
+      "path": "specs/source/Rounds-Complete-Project-v2.3/specs/engineering/E03-HTTP-API-AND-READ-PROJECTIONS.md",
+      "original_sha256": "01b86922d56b28050e5a2a7806af8128e35861729d20bc2e3c27ee420496b591",
+      "working_sha256": "debdd6fcd9fcf2ab1edb459dadac8cc6b19c37c757df497bf454358ceb7f8a56"
+    },
+    {
+      "path": "specs/source/Rounds-Complete-Project-v2.3/specs/engineering/E04-COMMANDS-TRANSACTIONS-EVENTS-AND-CONCURRENCY.md",
+      "original_sha256": "a1ce5dec4ce7830942a610fdd78c489a10df99ac65d1a68aca0846dbed154ad9",
+      "working_sha256": "60c7f2d702eac7f8705b12c5f21b45cb16b14ae0a72d63fa540c466f160fbb98"
+    },
+    {
+      "path": "specs/source/Rounds-Complete-Project-v2.3/specs/engineering/E05-DRIVER-OFFLINE-STORAGE-AND-EVIDENCE.md",
+      "original_sha256": "693c36517522814e9b604d4ed61b4e57b845000e7d2407099c413459e159335e",
+      "working_sha256": "0dec282599b8346afcd1277622adabea2c651123caa5604e8e4f21e6812ef5fc"
+    },
+    {
+      "path": "specs/source/Rounds-Complete-Project-v2.3/specs/engineering/E06-TELEMETRY-REALTIME-AND-NATIVE-LIFECYCLE.md",
+      "original_sha256": "e48560c7a6d6c55d11ef6b49482231560f4075b5302e856bb80f6ab05ac0ca29",
+      "working_sha256": "7da7c5792de38d3032c7826d9ca52f68a9cbd102d917f40fc48598d5033b4c4b"
+    },
+    {
+      "path": "specs/source/Rounds-Complete-Project-v2.3/specs/engineering/E07-BACKGROUND-JOBS-ADAPTERS-AND-RECOVERY.md",
+      "original_sha256": "64af8963d57559a10a8a7fca623e8869b0d9cb24eca9d63bb4d75f2aa21250ca",
+      "working_sha256": "286dc61563823724097b0327db20bc3a953a2ddce1dcfd156bb5fb431eda0de4"
+    },
+    {
+      "path": "specs/source/Rounds-Complete-Project-v2.3/specs/engineering/E08-SECURITY-PERMISSIONS-AND-DATA-LIFECYCLE.md",
+      "original_sha256": "8eea535e8c56cc1a0873fc2014012d768ae99d5a25cafb47c3b0fcb165a3f0c6",
+      "working_sha256": "06a7a7ef52080f9afc76142d376c703f376e33c16931c83ab51951dec7f293ce"
+    },
+    {
+      "path": "specs/source/Rounds-Complete-Project-v2.3/specs/engineering/E10-PROVIDER-DECISIONS-SOURCES-AND-OPEN-GATES.md",
+      "original_sha256": "1063bb3f9a153c05784323380f629fd6bac97f7775da71ff18bc37d0ece1997b",
+      "working_sha256": "18b5b9be9d127b02aff9fbae1eb54e2cdb093bc3fb485b6f346f34c497d520e9"
+    },
+    {
+      "path": "specs/source/Rounds-Complete-Project-v2.3/specs/product/P01-PRODUCT-TENANCY-AND-AUTHORITY.md",
+      "original_sha256": "d52292e355d073a6f502ac87d65ef29163abdf5b166e72c32d5b831e6173e4cc",
+      "working_sha256": "d1cfaa3073344b989a2d1420c1aab31c4964b1e2cb9ce241048e70bd44e8a6df"
+    },
+    {
+      "path": "specs/source/Rounds-Complete-Project-v2.3/specs/product/P02-DELIVERY-INTAKE-AND-ADDRESS-REVIEW.md",
+      "original_sha256": "6941ed60bd8833d8c26c9df1d0934193ea86ee987eaac6b709e2448dd43d517e",
+      "working_sha256": "b331860a625b97ed6b1e714818aa7d219259c63b0aa78f72a765a3473880b695"
+    },
+    {
+      "path": "specs/source/Rounds-Complete-Project-v2.3/specs/product/P05-EXECUTION-CUSTODY-PROOF-AND-EXCEPTIONS.md",
+      "original_sha256": "f661c0e3501ad5527f2aa42687963d26209110f793a1b2b38004a8e06c9c413e",
+      "working_sha256": "0388328fe6c96808d92c73604cb4ecea378c59608b2324bd6eda7577c7fdbfcc"
+    },
+    {
+      "path": "specs/source/Rounds-Complete-Project-v2.3/specs/review/ACCEPTANCE-REGISTER.csv",
+      "original_sha256": "0fbaf6a6c5601a5ddd9db74ab7d0278711b0f3d0cbc7955dcd7e7191b441295a",
+      "working_sha256": "4bfe2b794648d5c7b1d0e644338c5fa5b758ecfbc011a4f062fdb36464cbd283"
+    },
+    {
+      "path": "specs/source/Rounds-Complete-Project-v2.3/specs/review/CONTRACT-EXAMPLES.json",
+      "original_sha256": "5a3ca1c0c008bfeed932495bec9fdc04dafcccbabc34a63ed04f45edccdec9c0",
+      "working_sha256": "e9d794ccba9657f486e4c5f2e77f0626890d29b364707ad638efa334ab05f0c2"
+    },
+    {
+      "path": "specs/source/Rounds-Complete-Project-v2.3/specs/review/PACKAGE-SHA256.txt",
+      "original_sha256": "4aaa7ce274d21511f1d272a6f755e94080160fb756ac19361f1585abb45d6aa1",
+      "working_sha256": "06915c1db9d268fd7cb62808b5b6347a3501fddc122ae435fdfc96644c2c051a"
+    },
+    {
+      "path": "specs/source/Rounds-Complete-Project-v2.3/specs/review/validate_package.py",
+      "original_sha256": "8234705be217e2de143160aedb601d78ab79c5adc7736f92bcd398dbe464451b",
+      "working_sha256": "0e3513a0e2d1a07107b49e300852f6974f8a88399cb559638dfae54b4806190e"
+    },
+    {
+      "path": "specs/source/Rounds-Complete-Project-v2.3/ui/dispatch/index.html",
+      "original_sha256": "6a0019ec88cdaa422c5d56831d42f78745665de30681769a0d3515047fd1663c",
+      "working_sha256": "6db3c0e663cc84a4df88e5c18ebffed1e76d6d4f67a00556c1fa1df4a5693de3"
+    },
+    {
+      "path": "specs/source/Rounds-Complete-Project-v2.3/ui/driver/screens/ROUNDS-B01B-TEAM-HOME-ROUND-ASSIGNED-v3-10OF10.html",
+      "original_sha256": "22b80ca67d6a4a2b2aa4db6e786bc69b00dea5df45fa2773125cf7b6197241e0",
+      "working_sha256": "3c728c9045068893f07a786d583c2650a403070e7c25db93bf88ad4ce0c430c7"
+    },
+    {
+      "path": "specs/source/Rounds-Complete-Project-v2.3/ui/driver/screens/ROUNDS-D01-NAVIGATE-TO-PICKUP-v5-10OF10.html",
+      "original_sha256": "80f2eff131a8acb350099b6ccb7b565f9ce12556937dd55401810b94e1b605d5",
+      "working_sha256": "d1d853b20dc5b32756b7aef59a29e6912e1f8e366df5987e1105cb4afface729"
+    },
+    {
+      "path": "specs/source/Rounds-Complete-Project-v2.3/ui/driver/screens/ROUNDS-E01-ACTIVE-ROUND-OVERVIEW-v5-10OF10.html",
+      "original_sha256": "51aaf220650176a085a3325926d0bbc90e4fcfe5f890da7c38445e9a8ca8179f",
+      "working_sha256": "451772a491ca9d92a0f8d4a41ad1457d081af1de4a417abe55634082bc659883"
+    },
+    {
+      "path": "specs/source/Rounds-Complete-Project-v2.3/ui/driver/screens/ROUNDS-E02-NAVIGATE-TO-CURRENT-STOP-v2-10OF10.html",
+      "original_sha256": "6b58308a5e574c27520d684342060f9f960a340fbc65bdce4f75a70a7a914d7e",
+      "working_sha256": "f4cd84b2920393cbe967b4d9880c1428b74a6d00278a8ea68fd29f39eebba59d"
+    },
+    {
+      "path": "specs/source/Rounds-Complete-Project-v2.3/ui/driver/screens/ROUNDS-E04-E05-E06-LIVE-ROUND-CHANGE-v3-10OF10.html",
+      "original_sha256": "b7a21ccfa214754c1914be7f7d17a606488a6aa3654e6cb6663039f2c2748770",
+      "working_sha256": "3d5c12ab113dfd95d491865871dd8e2ef622358b7df14ceeb8f508b9cc7660b3"
+    },
+    {
+      "path": "specs/source/Rounds-Complete-Project-v2.3/ui/driver/screens/ROUNDS-F08-STOP-COMPLETE-NEXT-STOP-v4-10OF10.html",
+      "original_sha256": "0ff06d6bc957fd10296c17e832492ede470c5544ae2c9ab014b3849309e3a8ef",
+      "working_sha256": "136f4e0eb570ae59d142c55bd8ad4b31ab5e71a7f2637e6b8fad473e42432670"
+    }
+  ]
+}

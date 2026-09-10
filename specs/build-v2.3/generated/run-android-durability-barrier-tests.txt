@@ -1,0 +1,6 @@
+{"/Users/imac2022/Library/Android/sdk/platforms/android-36/android.jar": "d9eb9da824d9e247a352f570f01e1169e725b2954bca9e283a71786c59b59f9a", "/Users/imac2022/.gradle/caches/modules-2/files-2.1/io.flutter/flutter_embedding_debug/1.0.0-a804b261645ef8c13eb3d5c44a5c2fb0340c5539/5f353ff5bc0622f6e443a2a2e8c28be39c1e3841/flutter_embedding_debug-1.0.0-a804b261645ef8c13eb3d5c44a5c2fb0340c5539.jar": "7e32ce0eeede5a5ac49cdde3d0b98f4743d13586da5c79d4cd519fbd7bb20dac"}
+PASS 5 Android barrier ordering/failure cases (JVM; disk operations mocked)
+PASS native directory contract + five invalid-root cases; not Android OS execution
+openjdk version "21.0.12.1" 2026-08-18 LTS
+OpenJDK Runtime Environment Temurin-21.0.12.1+1 (build 21.0.12.1+1-LTS)
+OpenJDK 64-Bit Server VM Temurin-21.0.12.1+1 (build 21.0.12.1+1-LTS, mixed mode)

@@ -1,0 +1,680 @@
+{
+  "schemas": {
+    "OwnFleetPolicy": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "own_fleet"
+        },
+        "automatic": {
+          "$ref": "#/components/schemas/boolean"
+        },
+        "safe_insert": {
+          "$ref": "#/components/schemas/boolean"
+        },
+        "max_added_seconds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 7200
+        },
+        "timing_mode": {
+          "enum": [
+            "warn",
+            "block"
+          ]
+        },
+        "protected_handling_review": {
+          "$ref": "#/components/schemas/boolean"
+        }
+      },
+      "required": [
+        "kind",
+        "automatic",
+        "safe_insert",
+        "max_added_seconds",
+        "timing_mode",
+        "protected_handling_review"
+      ],
+      "additionalProperties": false
+    },
+    "BroadcastPolicy": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "broadcast"
+        },
+        "waves": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 10,
+          "items": {
+            "type": "object",
+            "properties": {
+              "radius_m": {
+                "type": "integer",
+                "minimum": 100,
+                "maximum": 100000
+              },
+              "response_seconds": {
+                "type": "integer",
+                "minimum": 10,
+                "maximum": 300
+              }
+            },
+            "required": [
+              "radius_m",
+              "response_seconds"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "freshness_seconds": {
+          "type": "integer",
+          "minimum": 5,
+          "maximum": 300
+        },
+        "max_search_seconds": {
+          "type": "integer",
+          "minimum": 30,
+          "maximum": 3600
+        }
+      },
+      "required": [
+        "kind",
+        "waves",
+        "freshness_seconds",
+        "max_search_seconds"
+      ],
+      "additionalProperties": false
+    },
+    "ProofPolicy": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "proof"
+        },
+        "recipient_required": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "manifest",
+              "photo",
+              "signature",
+              "receiver",
+              "note",
+              "location"
+            ]
+          },
+          "maxItems": 1000
+        },
+        "alternate_required": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "manifest",
+              "photo",
+              "signature",
+              "receiver",
+              "note",
+              "location"
+            ]
+          },
+          "maxItems": 1000
+        },
+        "unattended_required": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "manifest",
+              "photo",
+              "signature",
+              "receiver",
+              "note",
+              "location"
+            ]
+          },
+          "maxItems": 1000
+        },
+        "unattended_allowed": {
+          "$ref": "#/components/schemas/boolean"
+        },
+        "gps_override_allowed": {
+          "$ref": "#/components/schemas/boolean"
+        }
+      },
+      "required": [
+        "kind",
+        "recipient_required",
+        "alternate_required",
+        "unattended_required",
+        "unattended_allowed",
+        "gps_override_allowed"
+      ],
+      "additionalProperties": false
+    },
+    "CustomerPolicy": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "customer"
+        },
+        "tracking_enabled": {
+          "$ref": "#/components/schemas/boolean"
+        },
+        "surprise_protection": {
+          "$ref": "#/components/schemas/boolean"
+        },
+        "buyer_enabled": {
+          "$ref": "#/components/schemas/boolean"
+        },
+        "recipient_enabled": {
+          "$ref": "#/components/schemas/boolean"
+        },
+        "channels": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "email",
+              "sms",
+              "line"
+            ]
+          },
+          "maxItems": 3
+        },
+        "event_routes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "event": {
+                "enum": [
+                  "scheduled",
+                  "out_for_delivery",
+                  "eta_changed",
+                  "action_required",
+                  "delivered",
+                  "failed",
+                  "retry",
+                  "returned"
+                ]
+              },
+              "buyer": {
+                "$ref": "#/components/schemas/boolean"
+              },
+              "recipient": {
+                "$ref": "#/components/schemas/boolean"
+              }
+            },
+            "required": [
+              "event",
+              "buyer",
+              "recipient"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 8
+        }
+      },
+      "required": [
+        "kind",
+        "tracking_enabled",
+        "surprise_protection",
+        "buyer_enabled",
+        "recipient_enabled",
+        "channels",
+        "event_routes"
+      ],
+      "additionalProperties": false
+    },
+    "TimingPolicy": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "timing"
+        },
+        "service_seconds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 86400
+        },
+        "max_wait_seconds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 86400
+        },
+        "promise_metric": {
+          "enum": [
+            "arrival",
+            "handoff"
+          ]
+        },
+        "early_shift_start_seconds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 14400
+        }
+      },
+      "required": [
+        "kind",
+        "service_seconds",
+        "max_wait_seconds",
+        "promise_metric",
+        "early_shift_start_seconds"
+      ],
+      "additionalProperties": false
+    },
+    "CommercialPolicy": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "commercial"
+        },
+        "currency": {
+          "$ref": "#/components/schemas/currency"
+        },
+        "terms_reference": {
+          "$ref": "#/components/schemas/string"
+        },
+        "network_fee_trigger": {
+          "enum": [
+            "accepted",
+            "fulfilled"
+          ]
+        },
+        "network_fee_minor": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000000
+        },
+        "cancellation_terms_reference": {
+          "$ref": "#/components/schemas/string"
+        },
+        "waiting_terms_reference": {
+          "$ref": "#/components/schemas/string"
+        },
+        "return_terms_reference": {
+          "$ref": "#/components/schemas/string"
+        },
+        "adjustment_mode": {
+          "const": "explicit_authorized_amount"
+        }
+      },
+      "required": [
+        "kind",
+        "currency",
+        "terms_reference",
+        "network_fee_trigger",
+        "network_fee_minor",
+        "cancellation_terms_reference",
+        "waiting_terms_reference",
+        "return_terms_reference",
+        "adjustment_mode"
+      ],
+      "additionalProperties": false,
+      "description": "V2 never computes wait/return/cancellation charges from free-text references. Operator supplies explicit amount plus authority; only configured network fee trigger/amount may calculate a fee. Execution of bank payouts is deferred."
+    },
+    "RetentionPolicy": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "retention"
+        },
+        "class_key": {
+          "$ref": "#/components/schemas/string"
+        },
+        "retention_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 315360000
+        },
+        "hold_review_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 31536000
+        },
+        "approved_reference": {
+          "$ref": "#/components/schemas/string"
+        },
+        "raw_gps_seconds": {
+          "type": "integer",
+          "minimum": 3600,
+          "maximum": 2592000
+        }
+      },
+      "required": [
+        "kind",
+        "class_key",
+        "retention_seconds",
+        "hold_review_seconds",
+        "approved_reference",
+        "raw_gps_seconds"
+      ],
+      "additionalProperties": false
+    },
+    "MapPolicy": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "map"
+        },
+        "routing_provider": {
+          "$ref": "#/components/schemas/string"
+        },
+        "geocoding_provider": {
+          "$ref": "#/components/schemas/string"
+        },
+        "allowed_profiles": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/string"
+          },
+          "maxItems": 1000
+        },
+        "coherence_review_reference": {
+          "$ref": "#/components/schemas/string"
+        },
+        "telemetry_stale_seconds": {
+          "type": "integer",
+          "minimum": 5,
+          "maximum": 300
+        }
+      },
+      "required": [
+        "kind",
+        "routing_provider",
+        "geocoding_provider",
+        "allowed_profiles",
+        "coherence_review_reference",
+        "telemetry_stale_seconds"
+      ],
+      "additionalProperties": false
+    },
+    "LocalePolicy": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "locale"
+        },
+        "country": {
+          "$ref": "#/components/schemas/country"
+        },
+        "timezone": {
+          "$ref": "#/components/schemas/string"
+        },
+        "currency": {
+          "$ref": "#/components/schemas/currency"
+        },
+        "primary_locale": {
+          "$ref": "#/components/schemas/string"
+        },
+        "supported_locales": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/string"
+          },
+          "maxItems": 1000
+        }
+      },
+      "required": [
+        "kind",
+        "country",
+        "timezone",
+        "currency",
+        "primary_locale",
+        "supported_locales"
+      ],
+      "additionalProperties": false
+    },
+    "SlotPolicy": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "slot"
+        },
+        "hold_seconds": {
+          "type": "integer",
+          "minimum": 60,
+          "maximum": 1800
+        },
+        "materialization_days": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 366
+        },
+        "maximum_window_seconds": {
+          "type": "integer",
+          "minimum": 60,
+          "maximum": 86400
+        },
+        "overcommit_action": {
+          "const": "block_new_admissions"
+        },
+        "late_admission_override_allowed": {
+          "$ref": "#/components/schemas/boolean"
+        },
+        "maximum_hold_lifetime_seconds": {
+          "type": "integer",
+          "minimum": 60,
+          "maximum": 1800
+        }
+      },
+      "required": [
+        "kind",
+        "hold_seconds",
+        "materialization_days",
+        "maximum_window_seconds",
+        "overcommit_action",
+        "late_admission_override_allowed",
+        "maximum_hold_lifetime_seconds"
+      ],
+      "additionalProperties": false
+    },
+    "IntakePolicy": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "intake"
+        },
+        "ai_enabled": {
+          "$ref": "#/components/schemas/boolean"
+        },
+        "address_changes_require_review": {
+          "const": true
+        },
+        "max_source_bytes": {
+          "type": "integer",
+          "minimum": 1024,
+          "maximum": 20971520
+        },
+        "max_pdf_pages": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "max_batch_drafts": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 500
+        },
+        "duplicate_resolution_required": {
+          "const": true
+        }
+      },
+      "required": [
+        "kind",
+        "ai_enabled",
+        "address_changes_require_review",
+        "max_source_bytes",
+        "max_pdf_pages",
+        "max_batch_drafts",
+        "duplicate_resolution_required"
+      ],
+      "additionalProperties": false
+    },
+    "IntercityPolicy": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "intercity"
+        },
+        "enabled": {
+          "$ref": "#/components/schemas/boolean"
+        },
+        "receipt_required_before_local_release": {
+          "const": true
+        },
+        "allow_partial_departure_with_approval": {
+          "$ref": "#/components/schemas/boolean"
+        },
+        "receiver_offline_capture_allowed": {
+          "$ref": "#/components/schemas/boolean"
+        },
+        "minimum_transfer_seconds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 86400
+        }
+      },
+      "required": [
+        "kind",
+        "enabled",
+        "receipt_required_before_local_release",
+        "allow_partial_departure_with_approval",
+        "receiver_offline_capture_allowed",
+        "minimum_transfer_seconds"
+      ],
+      "additionalProperties": false
+    },
+    "MessagingPolicy": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "messaging"
+        },
+        "max_attachments": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10
+        },
+        "max_attachment_bytes": {
+          "type": "integer",
+          "minimum": 1024,
+          "maximum": 20971520
+        },
+        "relationship_chat_enabled": {
+          "$ref": "#/components/schemas/boolean"
+        }
+      },
+      "required": [
+        "kind",
+        "max_attachments",
+        "max_attachment_bytes",
+        "relationship_chat_enabled"
+      ],
+      "additionalProperties": false
+    },
+    "EscalationPolicy": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "escalation"
+        },
+        "unsuccessful_contact_attempts": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5
+        },
+        "pickup_wait_reminder_seconds": {
+          "type": "integer",
+          "minimum": 30,
+          "maximum": 1800
+        },
+        "allow_early_help": {
+          "$ref": "#/components/schemas/boolean"
+        }
+      },
+      "required": [
+        "kind",
+        "unsuccessful_contact_attempts",
+        "pickup_wait_reminder_seconds",
+        "allow_early_help"
+      ],
+      "additionalProperties": false
+    },
+    "AccountPolicy": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "account"
+        },
+        "otp_attempts": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10
+        },
+        "otp_window_seconds": {
+          "type": "integer",
+          "minimum": 60,
+          "maximum": 3600
+        },
+        "availability_request_ttl_seconds": {
+          "type": "integer",
+          "minimum": 60,
+          "maximum": 86400
+        }
+      },
+      "required": [
+        "kind",
+        "otp_attempts",
+        "otp_window_seconds",
+        "availability_request_ttl_seconds"
+      ],
+      "additionalProperties": false
+    },
+    "WeatherPolicy": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "weather"
+        },
+        "mode": {
+          "enum": [
+            "auto",
+            "on",
+            "off"
+          ]
+        },
+        "provider": {
+          "$ref": "#/components/schemas/optional_string"
+        },
+        "maximum_age_seconds": {
+          "type": "integer",
+          "minimum": 60,
+          "maximum": 3600
+        },
+        "maximum_independent_buffer_seconds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3600
+        },
+        "require_buffer_reason": {
+          "const": true
+        },
+        "prevent_traffic_double_count": {
+          "const": true
+        }
+      },
+      "required": [
+        "kind",
+        "mode",
+        "provider",
+        "maximum_age_seconds",
+        "maximum_independent_buffer_seconds",
+        "require_buffer_reason",
+        "prevent_traffic_double_count"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "reference_resolution": "Resolve refs against openapi.json"
+}

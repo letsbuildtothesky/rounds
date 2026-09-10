@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Rounds — A02–A05 Driver Entry Flow v6</title>
+<style>
+:root{
+  --canvas:#eef1f4;--paper:#fff;--ink:#172238;--ink2:#3d4a5d;--muted:#748094;
+  --line:#e1e6ea;--line2:#cbd4dc;--orange:#ff6420;--green:#168b50;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--canvas);color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible{outline:3px solid rgba(255,100,32,.16);outline-offset:2px}
+body{padding:28px}
+.frame{width:393px;height:852px;margin:0 auto;background:var(--paper);position:relative;overflow:hidden;border:1px solid rgba(23,34,56,.09);border-radius:28px;box-shadow:0 18px 42px rgba(23,34,56,.14)}
+.statusbar{height:28px;padding:0 20px 4px;display:flex;align-items:flex-end;justify-content:space-between;font-size:12px;font-weight:760;background:#fff;position:relative;z-index:40}
+.sb-right{display:flex;align-items:center;gap:6px}.signal{display:flex;align-items:flex-end;gap:1.5px;height:9px}.signal i{display:block;width:2px;background:currentColor;border-radius:1px}.signal i:nth-child(1){height:3px}.signal i:nth-child(2){height:5px}.signal i:nth-child(3){height:7px}.signal i:nth-child(4){height:9px}.battery{width:20px;height:9px;border:1.5px solid currentColor;border-radius:2px;padding:1px;position:relative}.battery:after{content:"";position:absolute;right:-3px;top:1.5px;width:2px;height:4px;background:currentColor;border-radius:0 1px 1px 0}.battery b{display:block;width:78%;height:100%;background:currentColor;border-radius:1px}
+.screen{position:absolute;inset:28px 0 0;background:#fff;display:none}.screen.active{display:flex;flex-direction:column}
+.top{height:68px;padding:0 20px;display:flex;align-items:center;gap:12px;background:#fff;flex:0 0 auto}.brand{display:flex;align-items:flex-end;font-size:24px;line-height:1;font-weight:920;letter-spacing:-.055em}.brand-dot{width:7px;height:7px;border-radius:50%;background:var(--orange);margin-left:3px;margin-bottom:2px}.back{width:40px;height:40px;border:0;border-radius:7px;background:#fff;color:var(--ink);display:grid;place-items:center;margin-left:-7px}.back:active{background:#f6f8f9}.back svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.body{padding:42px 20px 120px;overflow-y:auto;scrollbar-width:none}.body::-webkit-scrollbar{display:none}.body.tight{padding-top:28px}.eyebrow{font-size:11.5px;line-height:1;font-weight:900;letter-spacing:.11em;text-transform:uppercase;color:var(--orange);margin-bottom:16px}h1{margin:0;font-size:46px;line-height:.94;font-weight:885;letter-spacing:-.065em;max-width:340px}.lead{margin:18px 0 0;font-size:17px;line-height:1.42;font-weight:650;color:var(--ink2);max-width:330px}
+.footer{position:absolute;left:0;right:0;bottom:0;padding:14px 20px calc(18px + env(safe-area-inset-bottom));background:#fff}
+.primary{width:100%;height:62px;border:0;border-radius:7px;background:var(--ink);color:#fff;font-size:17px;font-weight:860;letter-spacing:-.02em}.primary:disabled{background:#dce1e5;color:#9aa4ae;cursor:default}.primary:not(:disabled):active{transform:translateY(1px)}
+/* PHONE — open typography, not a form card */
+.phone-line{margin-top:58px;height:88px;border-bottom:2px solid var(--ink);display:flex;align-items:flex-end;padding:0 0 15px}.country{font-size:27px;font-weight:850;letter-spacing:-.035em;flex:0 0 auto;margin-right:18px}.phone-line input{min-width:0;flex:1;border:0;outline:0;background:transparent;padding:0;color:var(--ink);font-size:31px;line-height:1;font-weight:820;letter-spacing:-.025em}.phone-line input::placeholder{color:#c1c8cf}.trust{margin-top:19px;display:flex;align-items:center;gap:10px;font-size:13.5px;line-height:1.3;font-weight:730;color:var(--muted)}.trust svg{width:18px;height:18px;stroke:var(--green);fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
+/* OTP — digits as one instrument, not four cards */
+.sent{margin-top:14px;font-size:14.5px;font-weight:730;color:var(--muted)}.otp{margin-top:60px;display:grid;grid-template-columns:repeat(4,1fr);gap:17px}.otp-slot{height:72px;border-bottom:2px solid var(--line2);display:grid;place-items:center;font-size:40px;line-height:1;font-weight:900;color:var(--ink);transition:.15s}.otp-slot.filled{border-color:var(--ink)}.otp-slot.current{border-color:var(--orange)}.hidden-otp{position:absolute;opacity:0;pointer-events:none}.resend{margin-top:26px;border:0;background:#fff;padding:0;color:var(--muted);font-size:14px;font-weight:720}.resend strong{color:var(--ink);font-weight:850}
+/* PATH — two large operational lanes */
+.path-list{margin-top:44px;border-top:1px solid var(--line)}.path-row{width:100%;min-height:162px;border:0;border-bottom:1px solid var(--line);background:#fff;padding:23px 0;display:grid;grid-template-columns:1fr 54px;gap:20px;align-items:center;text-align:left;color:inherit;position:relative}.path-row:active{background:#fafbfb}.path-index{font-size:11px;font-weight:900;letter-spacing:.1em;color:var(--orange);margin-bottom:11px}.path-row b{display:block;font-size:27px;line-height:1.02;font-weight:875;letter-spacing:-.045em;max-width:245px}.path-row span{display:block;margin-top:10px;font-size:14px;line-height:1.4;font-weight:690;color:var(--muted);max-width:245px}.path-icon{width:54px;height:54px;border:1px solid var(--line);border-radius:7px;display:grid;place-items:center;color:var(--ink2)}.path-icon svg{width:27px;height:27px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}.path-row:after{content:"";position:absolute;left:0;top:0;bottom:0;width:0;background:var(--orange);transition:.12s}.path-row:active:after{width:4px}
+/* INVITE — merchant identity is a real surface, not a floating card */
+.invite-hero{margin-top:34px;padding:25px 0 24px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.merchant{display:flex;align-items:center;gap:17px}.merchant-mark{width:66px;height:66px;background:var(--ink);color:#fff;border-radius:8px;display:grid;place-items:center;font-size:22px;font-weight:900;letter-spacing:-.04em;flex:0 0 auto}.merchant b{display:block;font-size:24px;line-height:1.05;font-weight:875;letter-spacing:-.04em}.merchant span{display:block;margin-top:7px;color:var(--muted);font-size:13.5px;font-weight:720}.verified{margin-top:23px;padding-top:19px;border-top:1px solid var(--line);display:flex;align-items:flex-start;gap:12px}.verified-icon{width:28px;height:28px;color:var(--green);display:grid;place-items:center;flex:0 0 auto}.verified-icon svg{width:23px;height:23px;stroke:currentColor;fill:none;stroke-width:2.35;stroke-linecap:round;stroke-linejoin:round}.verified b{display:block;font-size:15px;font-weight:860}.verified span{display:block;margin-top:5px;color:var(--muted);font-size:13px;line-height:1.4;font-weight:690}.alt{margin-top:18px;border:0;background:#fff;padding:0;color:var(--ink2);font-size:13.5px;font-weight:820}
+/* SHEET */
+.scrim{position:absolute;inset:0;background:rgba(10,18,31,.30);opacity:0;pointer-events:none;transition:.18s;z-index:70}.scrim.show{opacity:1;pointer-events:auto}.sheet{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:20px 20px 0 0;transform:translateY(105%);transition:.22s ease;z-index:80;padding:10px 20px calc(20px + env(safe-area-inset-bottom));box-shadow:0 -18px 42px rgba(23,34,56,.15)}.sheet.show{transform:none}.grab{width:38px;height:4px;border-radius:999px;background:#d7dde2;margin:0 auto 18px}.sheet-kicker{font-size:11.5px;line-height:1;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:var(--orange);margin-bottom:10px}.sheet h2{margin:0;font-size:30px;line-height:1;font-weight:875;letter-spacing:-.05em}.sheet-sub{margin-top:9px;font-size:13.5px;line-height:1.4;font-weight:690;color:var(--muted)}.code-line{margin-top:28px;height:72px;border-bottom:2px solid var(--ink)}.code-line input{width:100%;height:100%;border:0;outline:0;background:#fff;padding:0;font-size:34px;font-weight:870;letter-spacing:.18em;color:var(--ink)}.code-line input::placeholder{color:#c4cbd2}.sheet-primary{width:100%;height:56px;margin-top:24px;border:0;border-radius:7px;background:var(--ink);color:#fff;font-size:16px;font-weight:850}.sheet-primary:disabled{background:#dce1e5;color:#9aa4ae}.sheet-secondary{width:100%;height:46px;margin-top:5px;border:0;background:#fff;color:var(--muted);font-size:14px;font-weight:790}.toast{position:absolute;left:18px;right:18px;bottom:90px;background:var(--ink);color:#fff;padding:13px 14px;border-radius:8px;font-size:13.5px;font-weight:760;opacity:0;transform:translateY(8px);transition:.18s;pointer-events:none;z-index:90}.toast.show{opacity:1;transform:none}
+@media(max-width:520px){body{padding:0;background:#fff}.frame{width:100vw;height:100dvh;border:0;border-radius:0;box-shadow:none}}
+@media(max-width:340px){.top{height:62px;padding:0 16px}.brand{font-size:22px}.body{padding:31px 16px 110px}.body.tight{padding-top:21px}h1{font-size:40px}.lead{font-size:15.5px;margin-top:15px}.phone-line{margin-top:44px;height:78px;padding-bottom:13px}.country{font-size:23px;margin-right:13px}.phone-line input{font-size:27px}.otp{margin-top:47px;gap:12px}.otp-slot{height:64px;font-size:35px}.path-list{margin-top:31px}.path-row{min-height:143px;padding:19px 0;grid-template-columns:1fr 48px;gap:14px}.path-row b{font-size:24px}.path-row span{font-size:13px}.path-icon{width:48px;height:48px}.invite-hero{margin-top:27px}.merchant-mark{width:58px;height:58px}.merchant b{font-size:21px}.primary{height:58px}.sheet{padding-left:16px;padding-right:16px}.sheet h2{font-size:27px}}
+@media(max-height:720px){.body{padding-top:27px}.body.tight{padding-top:18px}h1{font-size:38px}.lead{font-size:15px;margin-top:12px}.phone-line{margin-top:35px;height:72px}.otp{margin-top:37px}.otp-slot{height:58px}.path-list{margin-top:24px}.path-row{min-height:124px;padding:15px 0}.path-row b{font-size:22px}.path-row span{margin-top:7px;font-size:12.5px}.invite-hero{margin-top:20px;padding:19px 0}.footer{padding-top:10px}.primary{height:54px}}
+</style>
+</head>
+<body>
+<div class="frame" id="frame">
+  <div class="statusbar"><div>17:08</div><div class="sb-right"><div class="signal"><i></i><i></i><i></i><i></i></div><div>5G</div><div class="battery"><b></b></div></div></div>
+
+  <!-- A02 PHONE -->
+  <section class="screen active" id="phoneScreen">
+    <header class="top"><div class="brand">Rounds<span class="brand-dot"></span></div></header>
+    <main class="body">
+      <div class="eyebrow" data-t="welcome">Welcome</div>
+      <h1 data-t="phoneTitle">Your phone number</h1>
+      <p class="lead" data-t="phoneLead">Use the number you drive with.</p>
+      <div class="phone-line"><span class="country">+66</span><input id="phoneInput" type="tel" inputmode="numeric" maxlength="11" placeholder="81 234 5678" autocomplete="tel-national" /></div>
+      <div class="trust"><svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg><span data-t="phoneTrust">One number for every Rounds business.</span></div>
+    </main>
+    <footer class="footer"><button class="primary" id="phoneContinue" disabled data-t="continue">Continue</button></footer>
+  </section>
+
+  <!-- A03 OTP -->
+  <section class="screen" id="otpScreen">
+    <header class="top"><button class="back" data-back="phone" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button><div class="brand">Rounds<span class="brand-dot"></span></div></header>
+    <main class="body">
+      <div class="eyebrow" data-t="verify">Verify</div>
+      <h1 data-t="otpTitle">Enter the code</h1>
+      <div class="sent" id="sentTo"></div>
+      <div class="otp" id="otpTap"><div class="otp-slot"></div><div class="otp-slot"></div><div class="otp-slot"></div><div class="otp-slot"></div></div>
+      <input class="hidden-otp" id="otpInput" inputmode="numeric" maxlength="4" autocomplete="one-time-code" />
+      <button class="resend" id="resend"><span data-t="didnt">Didn't get it?</span> <strong data-t="sendAgain">Send again</strong></button>
+    </main>
+    <footer class="footer"><button class="primary" id="otpContinue" disabled data-t="continue">Continue</button></footer>
+  </section>
+
+  <!-- A04 PATH -->
+  <section class="screen" id="pathScreen">
+    <header class="top"><button class="back" data-back="otp" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button><div class="brand">Rounds<span class="brand-dot"></span></div></header>
+    <main class="body tight">
+      <div class="eyebrow" data-t="newDriver">New driver</div>
+      <h1 data-t="pathTitle">How do you drive?</h1>
+      <div class="path-list">
+        <button class="path-row" data-path="team">
+          <div><div class="path-index">01</div><b data-t="teamTitle">I drive for a business</b><span data-t="teamSub">I’m part of their delivery team.</span></div>
+          <div class="path-icon"><svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M6 21V7h12v14"/><path d="M9 11h2M13 11h2M9 15h2M13 15h2"/></svg></div>
+        </button>
+        <button class="path-row" data-path="network">
+          <div><div class="path-index">02</div><b data-t="networkTitle">I drive independently</b><span data-t="networkSub">Get jobs from businesses on Rounds.</span></div>
+          <div class="path-icon"><svg viewBox="0 0 24 24"><path d="M12 21s6-4.35 6-10a6 6 0 1 0-12 0c0 5.65 6 10 6 10Z"/><circle cx="12" cy="11" r="2"/></svg></div>
+        </button>
+      </div>
+    </main>
+  </section>
+
+  <!-- A05 INVITE -->
+  <section class="screen" id="inviteScreen">
+    <header class="top"><button class="back" data-back="path" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button><div class="brand">Rounds<span class="brand-dot"></span></div></header>
+    <main class="body tight">
+      <div class="eyebrow" data-t="teamInvite">Team invite</div>
+      <h1 data-t="inviteTitle">Join UrbanFlowers</h1>
+      <section class="invite-hero">
+        <div class="merchant"><div class="merchant-mark">UF</div><div><b>UrbanFlowers</b><span data-t="merchantMeta">Bangkok · Delivery team</span></div></div>
+        <div class="verified"><span class="verified-icon"><svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg></span><div><b data-t="verifiedTitle">Invite verified</b><span data-t="verifiedSub">UrbanFlowers invited you to its delivery team.</span></div></div>
+      </section>
+      <button class="alt" id="manualInvite" data-t="anotherCode">Use another invite code</button>
+    </main>
+    <footer class="footer"><button class="primary" id="joinBtn" data-t="join">Join UrbanFlowers</button></footer>
+  </section>
+
+  <div class="scrim" id="scrim"></div>
+  <section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <div class="grab"></div><div class="sheet-kicker" data-t="businessInvite">Business invite</div><h2 id="sheetTitle" data-t="codeTitle">Enter invite code</h2><div class="sheet-sub" data-t="codeSub">Use the six-digit code from your business.</div>
+    <div class="code-line"><input id="codeInput" inputmode="numeric" maxlength="6" placeholder="000000" aria-label="Invite code" /></div>
+    <button class="sheet-primary" id="useCode" disabled data-t="useCode">Use code</button><button class="sheet-secondary" id="cancelSheet" data-t="cancel">Cancel</button>
+  </section>
+  <div class="toast" id="toast"></div>
+</div>
+<script>
+const c={
+ en:{welcome:'Welcome',phoneTitle:'Your phone number',phoneLead:'Use the number you drive with.',phoneTrust:'One number for every Rounds business.',continue:'Continue',verify:'Verify',otpTitle:'Enter the code',sent:'Sent to',didnt:"Didn't get it?",sendAgain:'Send again',newDriver:'New driver',pathTitle:'How do you drive?',teamTitle:'I drive for a business',teamSub:'I’m part of their delivery team.',networkTitle:'I drive independently',networkSub:'Get jobs from businesses on Rounds.',teamInvite:'Team invite',inviteTitle:'Join UrbanFlowers',merchantMeta:'Bangkok · Delivery team',verifiedTitle:'Invite verified',verifiedSub:'UrbanFlowers invited you to its delivery team.',anotherCode:'Use another invite code',join:'Join UrbanFlowers',businessInvite:'Business invite',codeTitle:'Enter invite code',codeSub:'Use the six-digit code from your business.',useCode:'Use code',cancel:'Cancel',resent:'Code sent again',applied:'Invite code applied'},
+ th:{welcome:'ยินดีต้อนรับ',phoneTitle:'หมายเลขโทรศัพท์ของคุณ',phoneLead:'ใช้หมายเลขที่คุณใช้ทำงาน',phoneTrust:'หมายเลขเดียวใช้กับทุกธุรกิจบน Rounds',continue:'ดำเนินการต่อ',verify:'ยืนยัน',otpTitle:'กรอกรหัส',sent:'ส่งไปที่',didnt:'ไม่ได้รับรหัส?',sendAgain:'ส่งอีกครั้ง',newDriver:'คนขับใหม่',pathTitle:'คุณขับงานแบบไหน?',teamTitle:'ฉันขับรถให้กับธุรกิจ',teamSub:'ฉันเป็นส่วนหนึ่งของทีมจัดส่ง',networkTitle:'ฉันขับอิสระ',networkSub:'รับงานจากธุรกิจบน Rounds',teamInvite:'คำเชิญเข้าทีม',inviteTitle:'เข้าร่วม UrbanFlowers',merchantMeta:'กรุงเทพฯ · ทีมจัดส่ง',verifiedTitle:'ยืนยันคำเชิญแล้ว',verifiedSub:'UrbanFlowers เชิญคุณเข้าร่วมทีมจัดส่ง',anotherCode:'ใช้รหัสเชิญอื่น',join:'เข้าร่วม UrbanFlowers',businessInvite:'คำเชิญจากธุรกิจ',codeTitle:'กรอกรหัสเชิญ',codeSub:'ใช้รหัส 6 หลักจากธุรกิจของคุณ',useCode:'ใช้รหัส',cancel:'ยกเลิก',resent:'ส่งรหัสอีกครั้งแล้ว',applied:'ใช้รหัสเชิญแล้ว'}
+};
+const qs=new URLSearchParams(location.search);
+function getSavedLanguage(){try{return localStorage.getItem('rounds.language')}catch(e){return null}}
+function saveLanguage(v){try{localStorage.setItem('rounds.language',v)}catch(e){}}
+let lang=(qs.get('lang')||getSavedLanguage()||'en')==='th'?'th':'en',current='phone';
+saveLanguage(lang);
+const screens={phone:document.getElementById('phoneScreen'),otp:document.getElementById('otpScreen'),path:document.getElementById('pathScreen'),invite:document.getElementById('inviteScreen')};
+const phone=document.getElementById('phoneInput'),phoneContinue=document.getElementById('phoneContinue'),otpInput=document.getElementById('otpInput'),slots=[...document.querySelectorAll('.otp-slot')],otpContinue=document.getElementById('otpContinue'),sentTo=document.getElementById('sentTo'),toast=document.getElementById('toast'),scrim=document.getElementById('scrim'),sheet=document.getElementById('sheet'),codeInput=document.getElementById('codeInput'),useCode=document.getElementById('useCode');
+function flash(t){toast.textContent=t;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1000)}
+function applyLang(){document.documentElement.lang=lang==='th'?'th':'en';document.querySelectorAll('[data-t]').forEach(el=>{const k=el.dataset.t;if(c[lang][k])el.textContent=c[lang][k]});updateSent()}
+function show(name){current=name;Object.entries(screens).forEach(([k,v])=>v.classList.toggle('active',k===name));if(name==='otp')setTimeout(()=>otpInput.focus(),100)}
+function updateSent(){if(current==='otp')sentTo.textContent=`${c[lang].sent} +66 ${phone.value||'81 234 5678'}`}
+
+document.querySelectorAll('[data-back]').forEach(b=>b.addEventListener('click',()=>show(b.dataset.back)));
+phone.addEventListener('input',()=>{const d=phone.value.replace(/\D/g,'').slice(0,9);phone.value=d.replace(/(\d{2})(\d{3})(\d{0,4})/,(m,a,b,c2)=>[a,b,c2].filter(Boolean).join(' '));phoneContinue.disabled=d.length!==9});
+phoneContinue.addEventListener('click',()=>{show('otp');updateSent()});
+document.getElementById('otpTap').addEventListener('click',()=>otpInput.focus());
+otpInput.addEventListener('input',()=>{const v=otpInput.value.replace(/\D/g,'').slice(0,4);otpInput.value=v;slots.forEach((s,i)=>{s.textContent=v[i]||'';s.classList.toggle('filled',!!v[i]);s.classList.toggle('current',i===v.length&&v.length<4)});otpContinue.disabled=v.length!==4});
+document.getElementById('resend').addEventListener('click',()=>flash(c[lang].resent));
+otpContinue.addEventListener('click',()=>show('path'));
+document.querySelectorAll('[data-path]').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.path==='team'){show('invite')}else{flash(lang==='th'?'เลือกคนขับอิสระแล้ว':'Independent driver selected');setTimeout(()=>location.href='ROUNDS-A06B-INDEPENDENT-ABOUT-YOU-v3-10OF10.html',380)}}));
+function openSheet(on){scrim.classList.toggle('show',on);sheet.classList.toggle('show',on);if(on)setTimeout(()=>codeInput.focus(),120)}
+document.getElementById('manualInvite').addEventListener('click',()=>openSheet(true));scrim.addEventListener('click',()=>openSheet(false));document.getElementById('cancelSheet').addEventListener('click',()=>openSheet(false));document.addEventListener('keydown',e=>{if(e.key==='Escape')openSheet(false)});
+codeInput.addEventListener('input',()=>{codeInput.value=codeInput.value.replace(/\D/g,'').slice(0,6);useCode.disabled=codeInput.value.length!==6});useCode.addEventListener('click',()=>{openSheet(false);flash(c[lang].applied)});
+document.getElementById('joinBtn').addEventListener('click',()=>location.href='ROUNDS-A06-ABOUT-YOU-v3-10OF10.html');
+if(qs.get('screen')&&screens[qs.get('screen')])show(qs.get('screen'));applyLang();
+</script>
+</body>
+</html>

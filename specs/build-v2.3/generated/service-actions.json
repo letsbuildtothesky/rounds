@@ -1,0 +1,1187 @@
+[
+  {
+    "name": "worker:membership_revoke",
+    "execution": "durable worker",
+    "trigger": "ChangeMemberAccess with revoke decision after current membership lock",
+    "domains": [
+      "memberships.status"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:subscription_receipt",
+    "execution": "durable worker",
+    "trigger": "Verified billing invoice/subscription webhook matching current provider subscription ID",
+    "domains": [
+      "tenant_subscriptions.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:subscription_due",
+    "execution": "durable worker",
+    "trigger": "Server timer at stored subscription paid_through/grace deadline",
+    "domains": [
+      "tenant_subscriptions.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:subscription_cancel",
+    "execution": "durable worker",
+    "trigger": "Verified subscription cancellation receipt with effective date",
+    "domains": [
+      "tenant_subscriptions.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:verification_check",
+    "execution": "durable worker",
+    "trigger": "SubmitVerification committed for a current evidence revision",
+    "domains": [
+      "verification_applications.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:verification_correction_request",
+    "execution": "durable worker",
+    "trigger": "Verified provider correction-required result for current application revision",
+    "domains": [
+      "verification_applications.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:verification_upload",
+    "execution": "durable worker",
+    "trigger": "Authenticated resumable-upload completion for reserved verification asset",
+    "domains": [
+      "verification_evidence.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:verification_evidence_check",
+    "execution": "durable worker",
+    "trigger": "Scan/hash verification result for uploaded verification evidence",
+    "domains": [
+      "verification_evidence.state",
+      "verification_evidence.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:payout_method_receipt",
+    "execution": "durable worker",
+    "trigger": "Verified payout-method verification callback for saved intent ID",
+    "domains": [
+      "payout_methods.verification_state",
+      "payout_methods.verification_state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:vehicle_verification",
+    "execution": "durable worker",
+    "trigger": "Approved current vehicle-evidence decision from verification service",
+    "domains": [
+      "freelance_vehicles.status",
+      "freelance_vehicles.status"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:vehicle_unavailable",
+    "execution": "durable worker",
+    "trigger": "Owner vehicle edit invalidating approved capabilities or verification expiry timer",
+    "domains": [
+      "freelance_vehicles.status"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:slot_materialize",
+    "execution": "durable worker",
+    "trigger": "SaveSlotTemplate or SetSlotOverride event for affected dates; midnight city-local horizon extension",
+    "domains": [
+      "slot_occurrences.admission_state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "derive:slot_admission",
+    "execution": "synchronous domain function",
+    "trigger": "SaveSlotTemplate/SetSlotOverride/RemoveSlotOverride or reservation changes recompute admission under occurrence locks.",
+    "domains": [
+      "slot_occurrences.admission_state",
+      "slot_occurrences.admission_state"
+    ],
+    "dedupe_key": "original command_id + derivation name + affected root version",
+    "retry": "No independent retry; original transaction retries atomically",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "derive:slot_revision",
+    "execution": "synchronous domain function",
+    "trigger": "New slot-template revision supersedes future unpromised materializations; retain existing reservation promises.",
+    "domains": [
+      "slot_occurrences.admission_state"
+    ],
+    "dedupe_key": "original command_id + derivation name + affected root version",
+    "retry": "No independent retry; original transaction retries atomically",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:hold_expire",
+    "execution": "durable worker",
+    "trigger": "Server timer reaches held reservation expires_at; re-read hold state under slot lock before release",
+    "domains": [
+      "slot_reservations.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:connection_check",
+    "execution": "durable worker",
+    "trigger": "SaveConnection validation request or scheduled credential health check",
+    "domains": [
+      "source_connections.state",
+      "source_connections.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:connection_disconnect",
+    "execution": "durable worker",
+    "trigger": "SetConnectionState(disconnected) committed or provider revocation receipt",
+    "domains": [
+      "source_connections.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:source_ingress",
+    "execution": "durable worker",
+    "trigger": "Enabled adapter receives authenticated provider webhook with unique provider event ID",
+    "domains": [
+      "source_events.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:source_normalize",
+    "execution": "durable worker",
+    "trigger": "source.received event with raw immutable payload and adapter schema version",
+    "domains": [
+      "source_events.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:source_apply",
+    "execution": "durable worker",
+    "trigger": "source.normalized event; compare source revision to current delivery/draft snapshot",
+    "domains": [
+      "source_events.state",
+      "source_events.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:source_reject",
+    "execution": "durable worker",
+    "trigger": "Adapter normalization rejects required fields/signature/envelope; retain reason",
+    "domains": [
+      "source_events.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:source_conflict",
+    "execution": "durable worker",
+    "trigger": "Existing provider event ID presented with different raw payload hash",
+    "domains": [
+      "source_events.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:batch_extract",
+    "execution": "durable worker",
+    "trigger": "CreateIntakeBatch committed with immutable input asset/text references",
+    "domains": [
+      "intake_batches.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:batch_extracted",
+    "execution": "durable worker",
+    "trigger": "All batch extraction children have deterministic extraction outcomes",
+    "domains": [
+      "intake_batches.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:batch_committed",
+    "execution": "durable worker",
+    "trigger": "All approved child commit command receipts are terminal",
+    "domains": [
+      "intake_batches.state",
+      "intake_batches.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:batch_failed",
+    "execution": "durable worker",
+    "trigger": "Extraction job exhausts retry budget or every approved child commit fails",
+    "domains": [
+      "intake_batches.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:draft_extracted",
+    "execution": "durable worker",
+    "trigger": "ExtractDraft provider result bound to requested draft revision and source hash",
+    "domains": [
+      "intake_drafts.review_state",
+      "address_suggestions.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:suggestion_superseded",
+    "execution": "durable worker",
+    "trigger": "SaveDeliveryDraft advances address revision beyond outstanding suggestion base",
+    "domains": [
+      "address_suggestions.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:observation_review",
+    "execution": "durable worker",
+    "trigger": "Location observation enters authorized reviewer queue; reviewer begins inspection",
+    "domains": [
+      "location_observations.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:observation_reject",
+    "execution": "durable worker",
+    "trigger": "Authorized location reviewer rejects observation with recorded evidence reason",
+    "domains": [
+      "location_observations.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:legacy_quarantine",
+    "execution": "durable worker",
+    "trigger": "Explicit migration import of records lacking required intake verification",
+    "domains": [
+      "deliveries.readiness"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:delivery_review_required",
+    "execution": "durable worker",
+    "trigger": "Source revision introduces material address/cargo change requiring human review",
+    "domains": [
+      "deliveries.readiness"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:local_evidence_observed",
+    "execution": "durable worker",
+    "trigger": "Authenticated retained observation receipt; never infer local phone state from GPS",
+    "domains": [
+      "deliveries.evidence_state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:plan_result",
+    "execution": "durable worker",
+    "trigger": "Optimizer returns proposal for exact source plan version/input hash/policy hash",
+    "domains": [
+      "plans.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:plan_failed",
+    "execution": "durable worker",
+    "trigger": "Optimizer job exhausts retry budget; preserve previous saved plan",
+    "domains": [
+      "plans.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:plan_supersede",
+    "execution": "durable worker",
+    "trigger": "GeneratePlan explicitly replaces current plan revision for city/service date",
+    "domains": [
+      "plans.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "derive:round_completion",
+    "execution": "synchronous domain function",
+    "trigger": "CompleteDelivery, ReceiveReturn, ConfirmTransferReceipt or authorized obligation resolution checks this Round’s own unit/return/proof duties in the same transaction.",
+    "domains": [
+      "rounds.state",
+      "assignments.state",
+      "driver_commitments.state",
+      "freelance_agreements.state"
+    ],
+    "dedupe_key": "original command_id + derivation name + affected root version",
+    "retry": "No independent retry; original transaction retries atomically",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "derive:departure_gate",
+    "execution": "synchronous domain function",
+    "trigger": "SetPickupReadiness, ReceiveTrip, ResolveIssue, ReviewAddress, ApplyPlanProposal, PauseRound, RespondChange, ReleasePlan and ConfirmPickup invoke this function inside their transaction after locking affected Rounds and inputs. No queue authorization.",
+    "domains": [
+      "rounds.departure_gate",
+      "rounds.departure_gate",
+      "rounds.departure_gate",
+      "rounds.departure_gate",
+      "rounds.departure_gate"
+    ],
+    "dedupe_key": "original command_id + derivation name + affected root version",
+    "retry": "No independent retry; original transaction retries atomically",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:assignment_device_receipt",
+    "execution": "durable worker",
+    "trigger": "Authenticated assigned driver device acknowledges receiving assignment revision",
+    "domains": [
+      "assignments.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:commitment_proposal",
+    "execution": "durable worker",
+    "trigger": "PreviewPlanMove produces provisional driver range; no exclusive reservation yet",
+    "domains": [
+      "driver_commitments.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:asset_upload_started",
+    "execution": "durable worker",
+    "trigger": "Authenticated resumable-upload session first accepted byte",
+    "domains": [
+      "assets.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:asset_upload_received",
+    "execution": "durable worker",
+    "trigger": "Storage reports complete reserved object byte count and hash",
+    "domains": [
+      "assets.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:asset_verify",
+    "execution": "durable worker",
+    "trigger": "Starts the configured asynchronous scan, or records its verified/rejected result for the current uploaded object hash/MIME/purpose; pending scanning never emits asset.verified",
+    "domains": [
+      "assets.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:asset_expire",
+    "execution": "durable worker",
+    "trigger": "Server timer reaches reserved asset/session expires_at before complete upload",
+    "domains": [
+      "assets.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:proof_item_verify",
+    "execution": "durable worker",
+    "trigger": "Referenced asset becomes verified or scan-rejected for current proof policy",
+    "domains": [
+      "proof_items.state",
+      "proof_items.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:proof_item_invalidate",
+    "execution": "durable worker",
+    "trigger": "Receiver attribution or required evidence binding changes through authorized correction",
+    "domains": [
+      "proof_items.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:issue_review",
+    "execution": "durable worker",
+    "trigger": "Authorized operator opens issue investigation and claims reviewer responsibility",
+    "domains": [
+      "issues.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:issue_effect_complete",
+    "execution": "durable worker",
+    "trigger": "Required decision effects all have committed receipts and physical obligations resolved",
+    "domains": [
+      "issues.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:return_start",
+    "execution": "durable worker",
+    "trigger": "Assigned driver confirms actual return collection in ResolveIssue approved return action",
+    "domains": [
+      "return_tasks.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:change_expire",
+    "execution": "durable worker",
+    "trigger": "Server timer reaches current pending proposal expires_at",
+    "domains": [
+      "change_proposals.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:broadcast_expire",
+    "execution": "durable worker",
+    "trigger": "Server timer reaches searching broadcast expires_at",
+    "domains": [
+      "broadcasts.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:broadcast_exhaust",
+    "execution": "durable worker",
+    "trigger": "Last configured wave closes with no acceptance and no scheduled expansion remains",
+    "domains": [
+      "broadcasts.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:wave_deadline",
+    "execution": "durable worker",
+    "trigger": "Server timer reaches current active wave closes_at",
+    "domains": [
+      "broadcast_waves.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:offer_issue",
+    "execution": "durable worker",
+    "trigger": "Current searching broadcast wave activates with nearest eligible opted-in candidate set",
+    "domains": [
+      "offers.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:offer_expire",
+    "execution": "durable worker",
+    "trigger": "Server timer reaches offered offer expires_at",
+    "domains": [
+      "offers.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:message_device_receipt",
+    "execution": "durable worker",
+    "trigger": "Authenticated recipient device acknowledges exact server message ID",
+    "domains": [
+      "messages.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:message_failure",
+    "execution": "durable worker",
+    "trigger": "Delivery attempt has permanent recipient/device rejection; server message remains stored",
+    "domains": [
+      "messages.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:call_provider_receipt",
+    "execution": "durable worker",
+    "trigger": "Authenticated provider event with current call session/provider reference",
+    "domains": [
+      "call_sessions.state",
+      "call_sessions.state",
+      "call_sessions.state",
+      "call_sessions.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:call_deadline",
+    "execution": "durable worker",
+    "trigger": "Server timer reaches ringing deadline without a connected receipt",
+    "domains": [
+      "call_sessions.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:notification_enqueue",
+    "execution": "durable worker",
+    "trigger": "Enabled consumer receives eligible fact event and computes recipient/channel/kind",
+    "domains": [
+      "notification_deliveries.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:notification_send",
+    "execution": "durable worker",
+    "trigger": "Due queued notification intent leased by notification worker",
+    "domains": [
+      "notification_deliveries.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:notification_receipt",
+    "execution": "durable worker",
+    "trigger": "Authenticated provider delivered/failed receipt matching stored send identity",
+    "domains": [
+      "notification_deliveries.state",
+      "notification_deliveries.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:notification_timeout",
+    "execution": "durable worker",
+    "trigger": "Provider call deadline expires after send with no authoritative outcome",
+    "domains": [
+      "notification_deliveries.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:notification_reconcile",
+    "execution": "durable worker",
+    "trigger": "Due unknown notification queried by original provider/idempotency reference",
+    "domains": [
+      "notification_deliveries.state",
+      "notification_deliveries.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:writeback_enqueue",
+    "execution": "durable worker",
+    "trigger": "Canonical delivery milestone consumed by enabled source writeback adapter",
+    "domains": [
+      "writeback_tasks.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:writeback_send",
+    "execution": "durable worker",
+    "trigger": "Due queued writeback for current source revision is leased",
+    "domains": [
+      "writeback_tasks.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:writeback_timeout",
+    "execution": "durable worker",
+    "trigger": "Writeback provider request loses response after potential acceptance",
+    "domains": [
+      "writeback_tasks.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:writeback_reconcile",
+    "execution": "durable worker",
+    "trigger": "Provider status query or matching webhook resolves original writeback intent",
+    "domains": [
+      "writeback_tasks.state",
+      "writeback_tasks.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:navigation_device_receipt",
+    "execution": "durable worker",
+    "trigger": "Authenticated driver app opens or fails exact current navigation intent ID",
+    "domains": [
+      "navigation_intents.state",
+      "navigation_intents.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:navigation_expire",
+    "execution": "durable worker",
+    "trigger": "Server timer reaches navigation intent expires_at",
+    "domains": [
+      "navigation_intents.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "internal:command_admit",
+    "execution": "command gateway internal",
+    "trigger": "Command gateway command admit step in the original request/transaction; never a scheduled job.",
+    "domains": [
+      "command_receipts.state"
+    ],
+    "dedupe_key": "original command_id + derivation name + affected root version",
+    "retry": "No independent retry; original transaction retries atomically",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "internal:command_async_admit",
+    "execution": "command gateway internal",
+    "trigger": "Command gateway command async admit step in the original request/transaction; never a scheduled job.",
+    "domains": [
+      "command_receipts.state"
+    ],
+    "dedupe_key": "original command_id + derivation name + affected root version",
+    "retry": "No independent retry; original transaction retries atomically",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "internal:command_commit",
+    "execution": "command gateway internal",
+    "trigger": "Command gateway command commit step in the original request/transaction; never a scheduled job.",
+    "domains": [
+      "command_receipts.state"
+    ],
+    "dedupe_key": "original command_id + derivation name + affected root version",
+    "retry": "No independent retry; original transaction retries atomically",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "internal:command_reject",
+    "execution": "command gateway internal",
+    "trigger": "Command gateway command reject step in the original request/transaction; never a scheduled job.",
+    "domains": [
+      "command_receipts.state"
+    ],
+    "dedupe_key": "original command_id + derivation name + affected root version",
+    "retry": "No independent retry; original transaction retries atomically",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "internal:command_retain",
+    "execution": "command gateway internal",
+    "trigger": "Command gateway command retain step in the original request/transaction; never a scheduled job.",
+    "domains": [
+      "command_receipts.state"
+    ],
+    "dedupe_key": "original command_id + derivation name + affected root version",
+    "retry": "No independent retry; original transaction retries atomically",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:outbox_enqueue",
+    "execution": "durable worker",
+    "trigger": "Domain transaction commits fact and required durable consumer destinations",
+    "domains": [
+      "outbox_events.state",
+      "account_outbox.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:outbox_claim",
+    "execution": "durable worker",
+    "trigger": "Due queued/retry outbox row acquired by conditional lease update",
+    "domains": [
+      "outbox_events.state",
+      "account_outbox.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:outbox_confirm",
+    "execution": "durable worker",
+    "trigger": "Durable consumer receipt confirms that event/effect completed",
+    "domains": [
+      "outbox_events.state",
+      "account_outbox.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:outbox_retry",
+    "execution": "durable worker",
+    "trigger": "Lease expires or transient consumer failure occurs within retry budget",
+    "domains": [
+      "outbox_events.state",
+      "account_outbox.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:outbox_exhaust",
+    "execution": "durable worker",
+    "trigger": "Retry budget reached with no authoritative successful consumer receipt",
+    "domains": [
+      "outbox_events.state",
+      "account_outbox.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:job_enqueue",
+    "execution": "durable worker",
+    "trigger": "A named source event or scheduled occurrence produces a unique job key",
+    "domains": [
+      "job_runs.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:job_claim",
+    "execution": "durable worker",
+    "trigger": "Due queued/retry job acquired by conditional lease update",
+    "domains": [
+      "job_runs.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:job_retry",
+    "execution": "durable worker",
+    "trigger": "Transient job failure or expired lease below maximum attempt count",
+    "domains": [
+      "job_runs.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:job_complete",
+    "execution": "durable worker",
+    "trigger": "Required durable effects recorded for leased job key",
+    "domains": [
+      "job_runs.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:job_exhaust",
+    "execution": "durable worker",
+    "trigger": "Configured retry budget exhausted; create recovery issue without inventing success",
+    "domains": [
+      "job_runs.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:job_cancel",
+    "execution": "durable worker",
+    "trigger": "Authorized owner cancels queued/retry job with no ambiguous external effect",
+    "domains": [
+      "job_runs.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:export_start",
+    "execution": "durable worker",
+    "trigger": "RequestExport committed; worker revalidates requester scope before query",
+    "domains": [
+      "export_jobs.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:export_complete",
+    "execution": "durable worker",
+    "trigger": "Private export object stored and verified with requested scope and hash",
+    "domains": [
+      "export_jobs.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:export_failure",
+    "execution": "durable worker",
+    "trigger": "Export job permanent failure or retry exhaustion",
+    "domains": [
+      "export_jobs.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:export_expire",
+    "execution": "durable worker",
+    "trigger": "Server timer reaches export expires_at",
+    "domains": [
+      "export_jobs.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:privacy_review",
+    "execution": "durable worker",
+    "trigger": "Verified subject request assigned to authorized privacy reviewer",
+    "domains": [
+      "privacy_requests.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:privacy_decision",
+    "execution": "durable worker",
+    "trigger": "Authorized privacy reviewer records approve/reject for verified scope",
+    "domains": [
+      "privacy_requests.state",
+      "privacy_requests.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:privacy_execute",
+    "execution": "durable worker",
+    "trigger": "Approved request has no blocking holds and configured retention rules",
+    "domains": [
+      "privacy_requests.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:privacy_complete",
+    "execution": "durable worker",
+    "trigger": "All approved deletion/anonymization effects have durable completion receipts",
+    "domains": [
+      "privacy_requests.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:privacy_hold",
+    "execution": "durable worker",
+    "trigger": "Active legal/operational hold overlaps requested records",
+    "domains": [
+      "privacy_requests.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:privacy_release_hold",
+    "execution": "durable worker",
+    "trigger": "Authorized hold release; re-review request and current retention policy",
+    "domains": [
+      "privacy_requests.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:transfer_expire",
+    "execution": "durable worker",
+    "trigger": "Server timer reaches pending zero-receipt transfer expires_at",
+    "domains": [
+      "custody_transfers.state"
+    ],
+    "dedupe_key": "service action + tenant/principal scope + source event ID OR persisted scheduled resource ID/deadline/revision",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "derive:obligation_resolution",
+    "execution": "synchronous domain function",
+    "trigger": "Recorded exception return/disposition recomputes its linked remaining obligation synchronously. Launch pickup never creates a residual unit or separately routable remainder.",
+    "domains": [
+      "remaining_obligations.state"
+    ],
+    "dedupe_key": "original command_id + derivation name + affected root version",
+    "retry": "No independent retry; original transaction retries atomically",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "derive:settlement_close",
+    "execution": "synchronous domain function",
+    "trigger": "Any earning/payment/dispute resolution recomputes final zero-balance closure synchronously.",
+    "domains": [
+      "settlement_records.state"
+    ],
+    "dedupe_key": "original command_id + derivation name + affected root version",
+    "retry": "No independent retry; original transaction retries atomically",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "derive:settlement_earning",
+    "execution": "synchronous domain function",
+    "trigger": "Round completion or authorized compensable cancellation establishes current agreement entitlement in that transaction.",
+    "domains": [
+      "settlement_records.earning_state"
+    ],
+    "dedupe_key": "original command_id + derivation name + affected root version",
+    "retry": "No independent retry; original transaction retries atomically",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "derive:settlement_payment",
+    "execution": "synchronous domain function",
+    "trigger": "RecordSettlement or an authorized fare/dispute adjustment recomputes payment totals in the same transaction.",
+    "domains": [
+      "settlement_records.payment_state",
+      "settlement_records.payment_state",
+      "settlement_records.payment_state",
+      "settlement_records.payment_state"
+    ],
+    "dedupe_key": "original command_id + derivation name + affected root version",
+    "retry": "No independent retry; original transaction retries atomically",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "derive:delivery_outcome",
+    "execution": "synchronous domain function",
+    "trigger": "Fulfillment unit completion, return or authorized cancellation recomputes the original delivery’s conserved quantities in the same transaction.",
+    "domains": [
+      "deliveries.outcome"
+    ],
+    "dedupe_key": "original command_id + derivation name + affected root version",
+    "retry": "No independent retry; original transaction retries atomically",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "derive:dispute_review",
+    "execution": "synchronous domain function",
+    "trigger": "Authorized reviewer begins examining the specific dispute; this is a recorded operator action, not automatic evidence acceptance.",
+    "domains": [
+      "dispute_cases.state"
+    ],
+    "dedupe_key": "original command_id + derivation name + affected root version",
+    "retry": "No independent retry; original transaction retries atomically",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "derive:dispute_effects",
+    "execution": "synchronous domain function",
+    "trigger": "DecideDispute closes the case only after its typed financial/evidence effects have committed in that same transaction.",
+    "domains": [
+      "dispute_cases.state"
+    ],
+    "dedupe_key": "original command_id + derivation name + affected root version",
+    "retry": "No independent retry; original transaction retries atomically",
+    "authorization": "Authenticated service identity, explicit tenant/principal scope and domain-specific eligibility; provider jobs require enabled verified adapter."
+  },
+  {
+    "name": "worker:raw_gps_purge",
+    "execution": "durable worker",
+    "trigger": "Hourly UTC scheduled occurrence; call purge_expired_gps with stable run UUID and configured batch size until eligible batch exhausted",
+    "domains": [],
+    "dedupe_key": "UTC scheduled occurrence + batch ordinal; SQL run_id audit prevents repeating a committed batch",
+    "retry": "Lease 60s with heartbeat every 20s. For safe transient failures, schedule at most five retries after the initial attempt: delays of 5, 30, 120, 600 and 1800 seconds, measured from the failed attempt. After the sixth failed attempt total, enter recovery. No random jitter in the default policy. Stop at the job deadline. Use max(schedule delay, valid Retry-After); if beyond deadline, expire/recover without sending. Permanent validation or revoked-authority failures require correction, not automatic retries. Unknown/provider-accepted effects reconcile the original identity and never follow the resend schedule. Synchronous derive/internal actions do not use worker retries. ADR-J01 owns this engineering default; tenant configuration cannot turn unknown effects into resendable work.",
+    "authorization": "rounds_retention_runner only; SQL uses server clock, scoped hold serialization and dedicated definer owner. No application role membership."
+  }
+]

@@ -1,0 +1,560 @@
+{
+  "version": "V2.2",
+  "current_dispatch": {
+    "path": "ui/dispatch/index.html",
+    "source_filename": "Rounds-Fresh-Phase39-Blue-Workspace.html",
+    "sha256": "6a0019ec88cdaa422c5d56831d42f78745665de30681769a0d3515047fd1663c",
+    "unchanged": true
+  },
+  "driver_source_archive": "ROUNDS-REFRESH-26-SCREEN-PACK(1).zip",
+  "driver_files": [
+    {
+      "path": "ui/driver/DESIGN-NOTES.md",
+      "bytes": 6746,
+      "sha256": "cc04feb7120703796c32fb854bf31a23c12357330a43fdba0af7345d9e7eddb4"
+    },
+    {
+      "path": "ui/driver/ROUNDS-DRIVER-SCREEN-COVERAGE-v1.md",
+      "bytes": 13111,
+      "sha256": "f28d1116e40cd1f3115118dcd2c401919aac8b4a0a0587f71f42355361830953"
+    },
+    {
+      "path": "ui/driver/ROUNDS-DRIVER-SCREEN-COVERAGE-v2.md",
+      "bytes": 8778,
+      "sha256": "bf309cf748da995b066384af24f348f1cec765e047614feacf9d60ee0194ecf5"
+    },
+    {
+      "path": "ui/driver/ROUNDS-DRIVER-STYLE-GUIDE.md",
+      "bytes": 10876,
+      "sha256": "1c5263a51da0d58b1f23ccad30c85aa7855f8db865cd77fd076e852e05233493"
+    },
+    {
+      "path": "ui/driver/assets/vehicle-icons/car.svg",
+      "bytes": 313,
+      "sha256": "682593cae2fcb6de829ba7080cdc8608cabbe0176f0643fe3531865a013926f1"
+    },
+    {
+      "path": "ui/driver/assets/vehicle-icons/motorbike-box.svg",
+      "bytes": 343,
+      "sha256": "78446fed87ee365254a93c4e3c9fe1509bd731b06940033c6234be8af7eee49b"
+    },
+    {
+      "path": "ui/driver/assets/vehicle-icons/pickup.svg",
+      "bytes": 306,
+      "sha256": "0fad352fe2d303258b95b9087bafaa0b4e16b4a006e62a2148ba327d9fd7afc1"
+    },
+    {
+      "path": "ui/driver/assets/vehicle-icons/tuk-tuk.svg",
+      "bytes": 320,
+      "sha256": "ae4226efd14b2f85172bb1a90395e57d8f88ae76fa9357b3ef6a62bd17dff488"
+    },
+    {
+      "path": "ui/driver/assets/vehicle-icons/van.svg",
+      "bytes": 332,
+      "sha256": "74384baef9f325931f4722d8c3357dbcb9c47282d8feea1864ed34cc17714fbb"
+    },
+    {
+      "path": "ui/driver/design-tokens.css",
+      "bytes": 753,
+      "sha256": "fd3e4b1940cf77c657345924338416e26a3f49badf22b98d1d45a3399d601b3d"
+    },
+    {
+      "path": "ui/driver/index.html",
+      "bytes": 8552,
+      "sha256": "c01c6da32dd1ff10e17179dc811d7bda17b1cef56f98c6d1944baa54146f0e42"
+    },
+    {
+      "path": "ui/driver/notes/NETWORK-16-MAP-FIXTURES.json",
+      "bytes": 662,
+      "sha256": "25a34b7c4f44d7bdfb6f4b7e3ff667c283288a356dd9e9eb4508364a081eee3b"
+    },
+    {
+      "path": "ui/driver/notes/REFRESH-01.md",
+      "bytes": 3802,
+      "sha256": "d62902859548ef4b961198a3bb6b269fb761ac73ebb65893ff0fe8b8ac4e7cae"
+    },
+    {
+      "path": "ui/driver/notes/REFRESH-02.md",
+      "bytes": 3773,
+      "sha256": "5d3a10411976dd36d4138572c556904b84d435f15f81f61a9c8c09654bebb1ec"
+    },
+    {
+      "path": "ui/driver/notes/REFRESH-03.md",
+      "bytes": 4634,
+      "sha256": "b533a6b5eeb6dc23cb9c820745a9b88ac5e11c1f6ddcbaa9ff695f23b9a0a8b0"
+    },
+    {
+      "path": "ui/driver/notes/REFRESH-04.md",
+      "bytes": 5267,
+      "sha256": "b92181291e6b7485dcc42a381306c3677fba9758e691c0a3e4e673905e5b0f6f"
+    },
+    {
+      "path": "ui/driver/notes/REFRESH-05.md",
+      "bytes": 3894,
+      "sha256": "09cb0568f0ea7bf6a9663646bddf967b0c9684a945cdbdcf56ee083855177827"
+    },
+    {
+      "path": "ui/driver/notes/REFRESH-06.md",
+      "bytes": 5997,
+      "sha256": "25c92145eeca4dfce058cbb5f33c9a619983e574e6bfda4e3641fa6a2d396b02"
+    },
+    {
+      "path": "ui/driver/notes/REFRESH-07.md",
+      "bytes": 6549,
+      "sha256": "d8ff54255fb0e2530d9256d09f422466e46a4e1d5213bd5ee94269c28edfebfd"
+    },
+    {
+      "path": "ui/driver/notes/REFRESH-08.md",
+      "bytes": 7019,
+      "sha256": "572d41aba85008ed575bbd91e4ca9a9deda856f5a1ebde852c9e2c2af4e0ae6b"
+    },
+    {
+      "path": "ui/driver/notes/REFRESH-09.md",
+      "bytes": 6334,
+      "sha256": "e32f6fa9daeef19db952865c9f807d47a3c4864e07d86358a8615f805380b3da"
+    },
+    {
+      "path": "ui/driver/notes/REFRESH-10.md",
+      "bytes": 7019,
+      "sha256": "5ebcf37b1c16163fecf3e6ff009fd794760d2bb2ea0288dd4d394cd8448ad1c4"
+    },
+    {
+      "path": "ui/driver/notes/REFRESH-11.md",
+      "bytes": 5448,
+      "sha256": "bca968e8170f6068ccec1cd81bda595c450201a336b5ef0617359410aa4193a1"
+    },
+    {
+      "path": "ui/driver/notes/REFRESH-12.md",
+      "bytes": 5115,
+      "sha256": "85a0f92659acffd2821f4ea1aa9cabf46a7d42d57fbbfccbb00afeffa581d5fe"
+    },
+    {
+      "path": "ui/driver/notes/REFRESH-13.md",
+      "bytes": 5437,
+      "sha256": "7a7100b150793f76e39b0daa10fd598acc7ae15ba0b96ab15eeb8dc859711aba"
+    },
+    {
+      "path": "ui/driver/notes/REFRESH-14.md",
+      "bytes": 7843,
+      "sha256": "52edc30a576bc0569aea123e2b9361ae8bcd6ef33826bf1ed7a5acf1223cd8a5"
+    },
+    {
+      "path": "ui/driver/notes/REFRESH-15.md",
+      "bytes": 9366,
+      "sha256": "1bc353264c6f8b38d6a756d5283210f8c6b86263e795974091418181d0a83c0b"
+    },
+    {
+      "path": "ui/driver/notes/REFRESH-16.md",
+      "bytes": 7592,
+      "sha256": "246c5625640a0d9992489980c4b548db54053115f3e5833a843872bf2f17322f"
+    },
+    {
+      "path": "ui/driver/notes/REFRESH-17.md",
+      "bytes": 6877,
+      "sha256": "5bac37bbbac5cfcd322743bed550121684257c1eaae8a838edf0ec85210ff46f"
+    },
+    {
+      "path": "ui/driver/notes/REFRESH-18.md",
+      "bytes": 4900,
+      "sha256": "064ec22684cece9d7e91f3936f4c1fab0142c64c8a00f9b5d66e5078a1dfc26b"
+    },
+    {
+      "path": "ui/driver/notes/REFRESH-19.md",
+      "bytes": 4929,
+      "sha256": "9428a22a3785b19e38942cc83174177e27eee5e69dc41319270f0fae32b99d7f"
+    },
+    {
+      "path": "ui/driver/notes/REFRESH-20.md",
+      "bytes": 5740,
+      "sha256": "2090b5d595dbae7b31bac3a0bb1b91d0e045ed72f67a18866c340423d3282594"
+    },
+    {
+      "path": "ui/driver/notes/REFRESH-21.md",
+      "bytes": 4586,
+      "sha256": "96d0519dee82c81b0ac86c641902b25cbcd58237f1b5dcdfbf81c8e5780536c5"
+    },
+    {
+      "path": "ui/driver/notes/REFRESH-22.md",
+      "bytes": 5179,
+      "sha256": "153cab35d38adad1213bed4536e2640f291e7f523831ea102e7aa89a82901956"
+    },
+    {
+      "path": "ui/driver/notes/REFRESH-23.md",
+      "bytes": 7746,
+      "sha256": "37cbd0a2dfe4366eb95fdd8b11071e3f6974f1e48612c5234e5611ed877d14b3"
+    },
+    {
+      "path": "ui/driver/notes/REFRESH-24.md",
+      "bytes": 4764,
+      "sha256": "5fed4176ca0e5f08007f74a844998cd27db7624ba1f13473d00bc38949d51dad"
+    },
+    {
+      "path": "ui/driver/notes/REFRESH-25.md",
+      "bytes": 5753,
+      "sha256": "da59a57d426ee13bedcd52ed38c9ec7d4c96d1c59847d4d21ab1690d8f42e35e"
+    },
+    {
+      "path": "ui/driver/pair-01.html",
+      "bytes": 1867,
+      "sha256": "e8992f376271d93d2bc7e44e4006ba811d27c9c39206de68441cabff837a4216"
+    },
+    {
+      "path": "ui/driver/pair-02.html",
+      "bytes": 2638,
+      "sha256": "48bce782025bedd882aad411ba7d545275807f1b04577e4646d072e0049e9d7b"
+    },
+    {
+      "path": "ui/driver/pair-03.html",
+      "bytes": 3526,
+      "sha256": "63550f4461628ca5535d3a08fc3e8128902d32bcf158627e1052c4607bf87fda"
+    },
+    {
+      "path": "ui/driver/pair-04.html",
+      "bytes": 65088,
+      "sha256": "3187eee57699d30930dff885842d79a5b9ea44038a9b7af199425ec2450d3a95"
+    },
+    {
+      "path": "ui/driver/pair-05.html",
+      "bytes": 3309,
+      "sha256": "0edeee0cfdcded4e3c897a4c75f6a687a21208500294ac84d590ad20136869c1"
+    },
+    {
+      "path": "ui/driver/pair-06.html",
+      "bytes": 4773,
+      "sha256": "0ecd1372183d4be37376bc1aa5a8982e7c3a91485c709f3421004e924d5a95c1"
+    },
+    {
+      "path": "ui/driver/pair-07.html",
+      "bytes": 4937,
+      "sha256": "211fd0ee2df7af6b330d0fe4400cf4d96854357315819b95c9d64f7974620758"
+    },
+    {
+      "path": "ui/driver/pair-08.html",
+      "bytes": 5674,
+      "sha256": "55c3712aa21aff490c401360cd59f5f2e6366c3902ea55d2728c3b29ff0333af"
+    },
+    {
+      "path": "ui/driver/pair-09.html",
+      "bytes": 5880,
+      "sha256": "f1b9f8a1e578b707d7ecdcdbed5794418e33f24ad4b7fd8d7d3d70bc6c915593"
+    },
+    {
+      "path": "ui/driver/pair-10.html",
+      "bytes": 5338,
+      "sha256": "38253515547a3e8cd1d30bbc1327615b8147d56adcba11529d76cedc1c75315f"
+    },
+    {
+      "path": "ui/driver/pair-11.html",
+      "bytes": 8149,
+      "sha256": "0480891c39a13d9640d9f270c3943ecf554261a7f6eb3efa42ec5c943cee56f3"
+    },
+    {
+      "path": "ui/driver/pair-12.html",
+      "bytes": 7045,
+      "sha256": "5fde0c2de8af5f6e607776ece9294776915e77c6c63f67f734d2f6309981c028"
+    },
+    {
+      "path": "ui/driver/pair-13.html",
+      "bytes": 7072,
+      "sha256": "6c22094653e8b53e3d844e52f69904d7574948d2e8db7d0ae8cfdf8cae323a7c"
+    },
+    {
+      "path": "ui/driver/pair-14.html",
+      "bytes": 8408,
+      "sha256": "f4896ecc3f28172158b0ff926538e6f0666ce86a62c490330bb5e9dc04f4cb37"
+    },
+    {
+      "path": "ui/driver/pair-15.html",
+      "bytes": 8753,
+      "sha256": "f8d2bceb79a755cad35daa83bb6c5fcbd2a3b33675c1496d8a8660641e586a5e"
+    },
+    {
+      "path": "ui/driver/pair-16.html",
+      "bytes": 8493,
+      "sha256": "97bf2282dae487ad23358aa2459c18bc9abcf04ee43df798b080a5cdb60bdf87"
+    },
+    {
+      "path": "ui/driver/pair-17.html",
+      "bytes": 8498,
+      "sha256": "dc615f8000b3161f07706342141e00ab954783591d56ca5cbb63a61f51af1cdf"
+    },
+    {
+      "path": "ui/driver/pair-18.html",
+      "bytes": 7334,
+      "sha256": "536bc768254e4fccfa54e633c8264855453fe848e4fc88f1353893a315cf4a30"
+    },
+    {
+      "path": "ui/driver/pair-19.html",
+      "bytes": 7308,
+      "sha256": "c97f990e6d4e67007e95c2526ca49e1ea84720ba37a07cbea0bcd40b63434522"
+    },
+    {
+      "path": "ui/driver/pair-20.html",
+      "bytes": 7432,
+      "sha256": "b4f9d8b94ae52485025c866f5aa70dbe55ed0fff7a725247db10ccd117314b5c"
+    },
+    {
+      "path": "ui/driver/pair-21.html",
+      "bytes": 7307,
+      "sha256": "cdeb3247ec754773e9c00c4623d0570547c3233f72d651b8481580094142e132"
+    },
+    {
+      "path": "ui/driver/pair-22.html",
+      "bytes": 8524,
+      "sha256": "223469a2a309f2d138272514490ce3b23f6b80fa6ca5a7b77e6ce87829aae0da"
+    },
+    {
+      "path": "ui/driver/pair-23.html",
+      "bytes": 8708,
+      "sha256": "81cf2712be27229f040e0752d51cba8575f45e777fb88a373918bb1d699392aa"
+    },
+    {
+      "path": "ui/driver/pair-24.html",
+      "bytes": 8409,
+      "sha256": "c4d088db0418d013f2b517de75ee759aecc79f97e46214a78d0bf3ea6af2f331"
+    },
+    {
+      "path": "ui/driver/pair-25.html",
+      "bytes": 8562,
+      "sha256": "a9cffb097dddb6780d397e1505b0f59988ec652dfeb4ba561fe0f6c10186536b"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-A01-SPLASH-LIGHT-v5.html",
+      "bytes": 6724,
+      "sha256": "9ff5382471999667182648f24d3305ee814a705949efefd40f838a9b13c44e1c"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-A01B-CHOOSE-LANGUAGE-v1-10OF10.html",
+      "bytes": 9755,
+      "sha256": "4261d490c1bca27e7e8d710ba81c796e678d8f1e2ed58f8cdeb9900e4c82592e"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-A02-A05-DRIVER-ENTRY-FLOW-v6-10OF10.html",
+      "bytes": 22219,
+      "sha256": "d8759d58f4fc9a81ab0d13a67d70e99f81f9a13b5c811c7b4c273f242c3d4826"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-A06-ABOUT-YOU-v3-10OF10.html",
+      "bytes": 25741,
+      "sha256": "1fc1ef52724d31b167ec637b19dc2aa9b5b226b9272c7c548ac352ec3452a3e0"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-A06B-INDEPENDENT-ABOUT-YOU-v3-10OF10.html",
+      "bytes": 19985,
+      "sha256": "149bf05aca890fe8ff72c5af83dbb0a47e56d6b7b551dfa6114d71a929dc24ca"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-A07-YOUR-VEHICLE-v4-10OF10.html",
+      "bytes": 24611,
+      "sha256": "346ca655b7f14e089001d3a86905d64c73dc641c1015683215818253722dddea"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-A08-VERIFY-IDENTITY-v3-10OF10.html",
+      "bytes": 22204,
+      "sha256": "c8baf4b0f226735cc43858e14b804937206d3969ffd4815201034603baf17134"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-A09-LIVE-FACE-CHECK-v5-10OF10.html",
+      "bytes": 27005,
+      "sha256": "96ce368cf8df5bab34dc560f502013c94f233aec96194354135c3c198d5f5038"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-A10-GET-PAID-v4-10OF10.html",
+      "bytes": 30910,
+      "sha256": "7ed395b1c0bfb9f711151bf1969a35a57893a6b038c065457dc8ef64c81b5c6e"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-A11-VERIFICATION-SUBMITTED-v4-10OF10.html",
+      "bytes": 15970,
+      "sha256": "96b2a4cb8a24a7cca05db0db7de5a70d260334f07ffc2d278907f36a3bff5e86"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-A12-VERIFICATION-NEEDS-ATTENTION-v1-10OF10.html",
+      "bytes": 25392,
+      "sha256": "ab5172a9dcf4e283d23ca718c9229de3b9621f1592cdf5d53b59e766480af6a2"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-B00-START-SHIFT-v1-10OF10.html",
+      "bytes": 22992,
+      "sha256": "4916648fe8e7a35f72d5b68278278c16315665d797cc96c9e26fd04d3ce53d25"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-B01-TEAM-DRIVER-HOME-v4-10OF10.html",
+      "bytes": 14400,
+      "sha256": "8e2d03ce975e7a46b75bcf3a3e9b203d6a1b3d653cab594a1af2f3fc8991d24e"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-B01B-TEAM-HOME-ROUND-ASSIGNED-v3-10OF10.html",
+      "bytes": 167908,
+      "sha256": "22b80ca67d6a4a2b2aa4db6e786bc69b00dea5df45fa2773125cf7b6197241e0"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-B01C-SHIFT-ENDED-SWITCH-TO-NETWORK-v2-10OF10.html",
+      "bytes": 20075,
+      "sha256": "5fa916bfbd61e4d8bd9ede2cc37e9b843183a477320546ce17d5c1ee99a36303"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-B01D-SHIFT-ENDING-SOON-v3-10OF10.html",
+      "bytes": 252097,
+      "sha256": "f92f68c8a39c74441c70f8cf8900be9da004cebc31ad3e15537bee8ad4885ae3"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-B01E-SHIFT-OVERTIME-v3-10OF10.html",
+      "bytes": 252082,
+      "sha256": "f6ad5bc628304c91a3a83a754c5052a8b04da297ecef291fcd74947c2d66b031"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-B01F-END-SHIFT-CONFIRM-v2-10OF10.html",
+      "bytes": 20057,
+      "sha256": "33d8edabb44c7188596fe23e2940afa2b5136f9ce07f44ee51e5eead46861121"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-B02-HOME-VERIFICATION-PENDING-v5-10OF10.html",
+      "bytes": 24174,
+      "sha256": "20882cde5f42d65f3203ea7f723718e0adb053710803166440f1abe045cbc3b0"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-B03-HOME-NETWORK-AVAILABLE-v8-10OF10.html",
+      "bytes": 1509601,
+      "sha256": "a4e9e287f2e3862fb846e1d1a1a819472558939efda839e1afad5dd306c9d2a6"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-C01-SINGLE-DELIVERY-OFFER-v4-10OF10.html",
+      "bytes": 416344,
+      "sha256": "3da987fab48072beb9a04d5276869304e27eba02f58d61f6e5605181fcc3d18c"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-C03-MULTISTOP-OFFER-v5-10OF10.html",
+      "bytes": 572228,
+      "sha256": "a9be8cc312f289f569d4bddf26044923b6faab73b2b8f4c254905642635d30bf"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-D01-NAVIGATE-TO-PICKUP-v5-10OF10.html",
+      "bytes": 501536,
+      "sha256": "80f2eff131a8acb350099b6ccb7b565f9ce12556937dd55401810b94e1b605d5"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-D03-D04-PICKUP-CONFIRM-v6-10OF10.html",
+      "bytes": 17328,
+      "sha256": "ae682dcd0c2f25d214261da2c939776f2b5180e57671f04ab5d956939d076b02"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-E01-ACTIVE-ROUND-OVERVIEW-v5-10OF10.html",
+      "bytes": 324126,
+      "sha256": "51aaf220650176a085a3325926d0bbc90e4fcfe5f890da7c38445e9a8ca8179f"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-E02-NAVIGATE-TO-CURRENT-STOP-v2-10OF10.html",
+      "bytes": 494990,
+      "sha256": "6b58308a5e574c27520d684342060f9f960a340fbc65bdce4f75a70a7a914d7e"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-E04-E05-E06-LIVE-ROUND-CHANGE-v3-10OF10.html",
+      "bytes": 20585,
+      "sha256": "b7a21ccfa214754c1914be7f7d17a606488a6aa3654e6cb6663039f2c2748770"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-F01-F02-DROPOFF-HANDOFF-v3-10OF10.html",
+      "bytes": 25201,
+      "sha256": "462cf0f1ca3262719ff6f49881ef99c2bdf354ffdd25c51c6f64d1333c678b95"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-F03-F04-PROOF-OF-DELIVERY-v6-10OF10.html",
+      "bytes": 34920,
+      "sha256": "f5e7500c6b7bf3537eedef0efd27fa7fde75c4c44aa9188c0eaed11f8a894864"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-F08-STOP-COMPLETE-NEXT-STOP-v4-10OF10.html",
+      "bytes": 327177,
+      "sha256": "0ff06d6bc957fd10296c17e832492ede470c5544ae2c9ab014b3849309e3a8ef"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-G01-RECIPIENT-UNAVAILABLE-v2-10OF10.html",
+      "bytes": 25140,
+      "sha256": "a3c0b5b81b375288649d38b6096cd63d1813ab7327c8f749909f223653502090"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-G02-ADDRESS-PROBLEM-v2-10OF10.html",
+      "bytes": 31867,
+      "sha256": "4a4182601fca5b2fa796535ed47a5438c19be4c8d49241ab486b451cade550ef"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-G03-PACKAGE-PROBLEM-v3-10OF10.html",
+      "bytes": 36452,
+      "sha256": "317a140e1d5c1da74bd6eccc2a4856bb0ba7386b36617d5359ec3ae9d6ac0407"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-G04-CANNOT-COMPLETE-DELIVERY-v2-10OF10.html",
+      "bytes": 38796,
+      "sha256": "dac2a23b42a1be21219115051bd4dbdade3622bebf8370fbbb4e67d291769852"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-G05-DRIVER-EMERGENCY-v2-10OF10.html",
+      "bytes": 30797,
+      "sha256": "5a2c7c158e8a7194cb9f2a79eb477eec637542813df41b721c614b6ae91edfa8"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-H01-OPERATOR-CHAT-v4-10OF10.html",
+      "bytes": 44657,
+      "sha256": "9516d21e168015b24aed3eedadc64c4917aa7b960cbb0cedad5be9172d2b8c68"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-H02-CALL-CONTACT-v2-10OF10.html",
+      "bytes": 27278,
+      "sha256": "c448e5485b3992acff076e8664d4da675829d5cec4f3a89a5a090eac10ba2ada"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-H03-CONTACT-HISTORY-v2-10OF10.html",
+      "bytes": 26362,
+      "sha256": "d6ae48262a384abe99c2fcb2c65114879831e3391c02187e9c1214af8544f712"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-I01-ROUND-COMPLETE-v3-10OF10.html",
+      "bytes": 24188,
+      "sha256": "fbe4e64980d54177495145099a66202db99effed62032c634ef1878fd4fd2abc"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-J01-MY-ROUNDS-v7-10OF10.html",
+      "bytes": 27025,
+      "sha256": "1bb596ea314fd306a8ace24295c64abfd7e01dacef1c6987911ffe95518abd85"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-K00-TEAM-HOURS-v5-10OF10.html",
+      "bytes": 31412,
+      "sha256": "94b21b0e9635084347c0e8f7239317e2246d74c21c5a810e3521238f67479f86"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-K01-EARNINGS-v3-10OF10.html",
+      "bytes": 29273,
+      "sha256": "70deab42901066e0e636965032a7c1839a39d137cfcb2c832081eec596732cd8"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-L01-DRIVER-PROFILE-v3-10OF10.html",
+      "bytes": 37374,
+      "sha256": "489c3a810b475334b09723f7eb6ceb9af488f9d1fff20f0272a27ad1c49367a8"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-M01-NOTIFICATIONS-v2-10OF10.html",
+      "bytes": 36649,
+      "sha256": "c4e97d3448b5802712e001da2f3eef5a29b1558989ea5ba51e65ef2bddb7a417"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-N01-PERMISSIONS-v3-10OF10.html",
+      "bytes": 35305,
+      "sha256": "ef7f93c088aeaefe6683b747daebcacd17e7260f3431a47b231c219ee18e94d8"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-N02-OFFLINE-RECONNECTING-v1-10OF10.html",
+      "bytes": 28946,
+      "sha256": "af79d47179e530dc36cc9063fe39106c34b9054b82f3487f258fef20f5105aa6"
+    },
+    {
+      "path": "ui/driver/screens/ROUNDS-N03-GPS-UNAVAILABLE-v3-10OF10.html",
+      "bytes": 600168,
+      "sha256": "e241472edd489d86281bec621babb8ef736d3f61f36962e7339307757b10161d"
+    }
+  ],
+  "screen_files": 47,
+  "presentation_pages": 26,
+  "notes": "Byte parity with supplied design sources; not browser/runtime certification."
+}

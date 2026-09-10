@@ -48,8 +48,12 @@ import { endDriverShiftHandler } from "./end-driver-shift-handler.js";
 import { updateDriverPreferredLocaleHandler } from "./update-driver-preferred-locale-handler.js";
 import { logContactAttemptHandler } from "./log-contact-attempt-handler.js";
 import { SupabaseGateway } from "./supabase-gateway.js";
+import { createV23Runtime } from './v23/runtime.js';
+import { createV23NodeBoundary, isV23Path } from './v23/node-boundary.js';
 
 const config = readConfig();
+const v23 = createV23Runtime(process.env,config.operationsWebOrigin);
+const v23Boundary = createV23NodeBoundary({handler:v23?.handler,origin:config.operationsWebOrigin});
 const gateway = new SupabaseGateway(
   config.supabaseUrl,
   config.supabasePublishableKey,
@@ -97,8 +101,10 @@ async function toWebRequest(request: IncomingMessage): Promise<Request> {
 
 const server = createServer(async (request, response) => {
   const startedAt = performance.now();
-  const traceId = request.headers["x-trace-id"] ?? crypto.randomUUID();
+  const isV23 = isV23Path((request.url??'').split('?')[0]!);
+  const traceId = isV23 ? crypto.randomUUID() : request.headers["x-trace-id"] ?? crypto.randomUUID();
   try {
+    if (await v23Boundary(request,response)) return;
     if (!authorizedHealth(request) && request.url?.startsWith("/health/")) {
       response.writeHead(401).end();
       return;
@@ -683,7 +689,7 @@ const server = createServer(async (request, response) => {
       event: "api.request_failed",
       trace_id: traceId,
       method: request.method,
-      path: request.url,
+      path: isV23 ? request.url?.split('?')[0] : request.url,
       message: error instanceof Error ? error.message : typeof failure.message === "string" ? failure.message : String(error),
       ...(typeof failure.code === "string" ? { code: failure.code } : {}),
       ...(typeof failure.details === "string" ? { details: failure.details } : {}),
@@ -702,9 +708,9 @@ const server = createServer(async (request, response) => {
     console.log(JSON.stringify({
       level: "info",
       event: "api.request",
-      trace_id: traceId,
+      trace_id: isV23 ? response.getHeader('x-trace-id')??traceId : traceId,
       method: request.method,
-      path: request.url,
+      path: isV23 ? request.url?.split('?')[0] : request.url,
       status: response.statusCode,
       duration_ms: Math.round(performance.now() - startedAt),
     }));

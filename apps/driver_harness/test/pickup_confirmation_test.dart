@@ -67,35 +67,84 @@ void main() {
 
     expect(find.text('UrbanFlowers'), findsOneWidget);
     expect(find.text('Studio'), findsNothing);
-    expect(find.text('1 delivery'), findsOneWidget);
+    expect(find.text('1 stop'), findsOneWidget);
     expect(find.text('Confirm pickup'), findsWidgets);
     expect(find.text('Confirm\npickup'), findsNothing);
-    expect(find.text('2 packages · physical manifest'), findsOneWidget);
-    expect(find.text('0 / 2'), findsOneWidget);
+    expect(find.text('Collect packages'), findsOneWidget);
+    expect(find.text('0 of 2'), findsOneWidget);
     expect(
       tester
           .widget<FilledButton>(find.byKey(const Key('confirm-pickup')))
           .onPressed,
       isNull,
     );
-    await tester.tap(find.byKey(const Key('manifest-stop-1-1')));
+    await tester.tap(find.byKey(const Key('manifest-stop-1-1-1')));
     await tester.pump();
-    expect(find.text('1 / 2'), findsOneWidget);
+    expect(find.text('1 of 2'), findsOneWidget);
     expect(
       tester
           .widget<FilledButton>(find.byKey(const Key('confirm-pickup')))
           .onPressed,
       isNull,
     );
-    await tester.tap(find.byKey(const Key('manifest-stop-1-2')));
+    await tester.tap(find.byKey(const Key('manifest-stop-1-2-1')));
     await tester.pump();
-    expect(find.text('2 / 2'), findsOneWidget);
+    expect(find.text('2 of 2'), findsOneWidget);
     expect(
       tester
           .widget<FilledButton>(find.byKey(const Key('confirm-pickup')))
           .onPressed,
       isNotNull,
     );
+
+    // An unavailable real transport must not copy the prototype's timed success.
+    await tester.tap(find.byKey(const Key('confirm-pickup')));
+    await tester.pumpAndSettle();
+    expect(find.byType(PickupConfirmationScreen), findsOneWidget);
+    expect(find.text('Pickup confirmed'), findsNothing);
+    expect(find.textContaining('Nothing was sent or saved'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 5));
+    await tester.pumpAndSettle();
+
+    // Toggling back removes readiness without changing the manifest quantity.
+    await tester.tap(find.byKey(const Key('manifest-stop-1-2-1')));
+    await tester.pump();
+    expect(find.text('1 of 2'), findsOneWidget);
+    expect(
+      tester
+          .widget<FilledButton>(find.byKey(const Key('confirm-pickup')))
+          .onPressed,
+      isNull,
+    );
+
+    // The new first-level drawer feeds the existing pickup issue command,
+    // not the dropoff damage command or a prototype fake success.
+    await tester.tap(find.byKey(const Key('pickup-problem')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Damaged package'));
+    await tester.pumpAndSettle();
+    expect(find.text('Damaged item'), findsOneWidget);
+    expect(
+      tester
+          .widget<FilledButton>(find.byKey(const Key('send-pickup-problem')))
+          .onPressed,
+      isNotNull,
+    );
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.text('1 of 2'), findsOneWidget);
+
+    // A new manifest/assignment snapshot cannot inherit checked packages.
+    await tester.pumpWidget(
+      MaterialApp(
+        home: PickupConfirmationScreen(
+          controller: controller,
+          round: DriverRoundModel.fromJson({...round.toJson(), 'version': 2}),
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(find.text('0 of 2'), findsOneWidget);
   });
 
   testWidgets('pickup and its problem drawer use the canonical Thai copy', (

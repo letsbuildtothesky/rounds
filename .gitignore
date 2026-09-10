@@ -5,12 +5,20 @@
 **/local.properties
 **/GoogleService-Info.plist
 **/google-services.json
+# Private, byte-identical design archive includes an account-specific map token.
+# Publish the credential-redacted working references, not this original ZIP.
+/specs/source/archives/Rounds-Complete-Project-v2.3.zip
+__pycache__/
 
 # Flutter / Dart
 .dart_tool/
 .flutter-plugins*
 .packages
 build/
+# Preserve the legacy authority redirect without tracking generated build output.
+!/specs/build/
+/specs/build/*
+!/specs/build/BUILD-SPEC-INDEX.md
 coverage/
 **/ios/Pods/
 **/ios/.symlinks/

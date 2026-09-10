@@ -1,0 +1,121 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content"><title>Rounds — Shift complete / Network availability</title><style>
+:root{--ink:#17283f;--blue:#1754a6;--blue-deep:#14488d;--blue-soft:#edf4fd;--orange:#ff6420;--muted:#526278;--line:#dce4ed;--green:#167344;--red:#a22f2f;font-family:Arial,Helvetica,sans-serif;color:var(--ink);background:#e9edf2;font-synthesis:none}*{box-sizing:border-box}body{margin:0;padding:28px}a,button{font:inherit;-webkit-tap-highlight-color:transparent;touch-action:manipulation}a{color:inherit;text-decoration:none}button{cursor:pointer}button:disabled{cursor:default}svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}button:focus-visible,a:focus-visible{outline:3px solid var(--orange);outline-offset:3px}[hidden]{display:none!important}.frame{width:393px;height:852px;margin:auto;border:1px solid #cbd5df;border-radius:24px;overflow:hidden;position:relative;background:#fff;box-shadow:0 16px 50px #17223810;display:flex;flex-direction:column}.statusbar{height:28px;flex:none;padding:7px 20px 0;font-size:12px;font-weight:700;display:flex;justify-content:space-between}.phone-status{display:flex;align-items:center;gap:7px}.phone-status i{display:block;width:19px;height:9px;border:1px solid var(--ink);border-radius:2px;background:linear-gradient(to right,var(--ink) 75%,transparent 75%)}.app{flex:1;min-height:0;display:flex;flex-direction:column;position:relative}.topbar{height:64px;flex:none;display:grid;grid-template-columns:52px minmax(0,1fr) 52px;align-items:center;gap:12px;padding:0 14px;background:#fff;border-bottom:1px solid var(--line)}.square{height:52px;width:52px;background:white;border:1px solid var(--line);border-radius:7px;display:grid;place-items:center;color:var(--ink)}.square:hover{background:var(--blue-soft)}.top-copy{min-width:0}.top-copy span{font-size:13px;color:var(--blue);display:block;line-height:1.2}.top-copy strong{display:block;font-size:17px;font-weight:600;line-height:1.2;margin-top:4px}.primary{width:100%;min-height:64px;background:var(--blue);color:#fff;border:0;border-radius:7px;display:flex;justify-content:center;align-items:center;gap:12px;font-size:18px;font-weight:600;padding:12px 16px}.primary:hover{background:var(--blue-deep)}.primary:disabled{background:#e2e8ee;color:#566477}.primary.ready{background:var(--green)}.primary svg{width:23px;height:23px}.panel-backdrop{position:absolute;inset:0;background:#132c4f55;z-index:80}.sheet{position:absolute;left:8px;right:8px;bottom:8px;z-index:81;border:1px solid var(--line);border-radius:12px 12px 8px 8px;background:#fff;padding:6px 16px 16px;box-shadow:0 -8px 40px #142f4a22;max-height:calc(100% - 36px);overflow:auto}.sheet-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:6px 0 8px}.sheet-head h2{font-size:23px;letter-spacing:-.5px;margin:0}.sheet-head .square{border:0;flex:none}.sheet-action{min-height:68px;display:flex;align-items:center;gap:14px;border:0;border-top:1px solid var(--line);width:100%;background:#fff;text-align:left;font-size:17px;color:var(--ink);padding:12px 4px}.sheet-action:hover{background:var(--blue-soft)}.sheet-action.issue{color:var(--red)}.sheet-action .end{margin-left:auto}.sheet-action svg{width:24px;flex:none}.sheet-action .end svg{width:18px}.sheet .cancel{min-height:60px;border:0;background:var(--blue-soft);color:var(--blue);border-radius:6px;width:100%;font-size:17px;font-weight:600;margin-top:8px}
+/* Rounds driver — shared design tokens, style guide v1. */
+:root {
+  --blue: #1754a6;
+  --blue-deep: #14488d;
+  --blue-soft: #edf4fd;
+  --orange: #ff6420;
+  --orange-soft: #fff2e8;
+  --ink: #17283f;
+  --muted: #526278;
+  --line: #dce4ed;
+  --paper: #ffffff;
+  --canvas: #e9edf2;
+  --green: #167344;
+  --green-soft: #edf7f1;
+  --red: #a22f2f;
+  --route-later: #668ebc;
+  --care-ink: #98400f;
+  --font-ui: Arial, Helvetica, sans-serif;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --content-inset: 18px;
+  --content-inset-narrow: 14px;
+  --radius-control: 7px;
+  --target-icon: 52px;
+  --target-contact: 60px;
+  --target-primary: 64px;
+  --target-confirm: 68px;
+}
+.frame{isolation:isolate}.app{overflow:hidden}.content{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;display:flex;flex-direction:column}.brandbar{min-height:64px;flex:none;padding:6px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}.brand{display:flex;align-items:baseline;font-size:24px;font-weight:800;line-height:1;letter-spacing:-1.1px;color:var(--blue)}.brand i{width:6px;height:6px;background:var(--orange);margin-left:3px}.brandbar .square{border:0}.sample-note{flex:none;font-size:13px;line-height:1.35;color:var(--muted);background:#f6f8fb;border-bottom:1px solid var(--line);padding:8px 18px;margin:0}
+.complete-hero{flex:none;padding:24px 22px}.state-label{display:flex;align-items:center;gap:9px;font-size:14px;line-height:1.4;color:var(--green);font-weight:600;margin:0 0 14px}.state-label svg{width:20px;height:20px;flex:none}.complete-hero h1{font-size:40px;font-weight:700;line-height:1.1;letter-spacing:-1px;margin:0;overflow-wrap:anywhere}.merchant{font-size:18px;line-height:1.4;color:var(--muted);margin:10px 0 0}.shift-summary{display:block;margin-top:24px;background:var(--blue-soft);border:1px solid #d2e0f0;border-left:4px solid var(--orange);padding:18px 18px 20px 15px;border-radius:0 7px 7px 0;color:var(--blue)}.shift-summary:hover{background:#e5effc}.summary-top{display:flex;align-items:center;justify-content:space-between;gap:16px;font-size:14px;line-height:1.4}.hours-link{display:flex;align-items:center;gap:4px;font-weight:600;white-space:nowrap}.hours-link svg{width:16px;height:16px}.shift-range{display:block;font-size:36px;line-height:1.12;font-weight:600;letter-spacing:-.9px;font-variant-numeric:tabular-nums;margin-top:10px;white-space:nowrap}.spacer{flex:1;min-height:24px}
+.dispatch{flex:none;padding:0 22px 24px}.dispatch-heading{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}.dispatch-heading h2{font-size:14px;line-height:1.4;color:var(--muted);font-weight:400;margin:0}.dispatch-heading p{font-size:16px;line-height:1.4;font-weight:600;margin:0}.contact-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.contact-action{min-height:60px;display:flex;align-items:center;justify-content:center;gap:9px;border:1px solid #bacbdd;border-radius:7px;background:white;color:var(--blue);padding:12px 8px;font-size:17px;font-weight:600}.contact-action svg{width:22px;height:22px;flex:none}.contact-action:hover{background:var(--blue-soft)}
+.network-footer{flex:none;padding:18px 18px 16px;border-top:1px solid #cbdcf0;background:var(--blue-soft)}.network-label{font-size:14px;line-height:1.4;color:var(--blue);font-weight:600;margin:0 0 6px}.network-footer h2{font-size:28px;line-height:1.15;letter-spacing:-.6px;font-weight:700;margin:0;overflow-wrap:anywhere}.network-lead{font-size:16px;line-height:1.4;color:var(--muted);margin:8px 0 0}.network-footer .primary{margin-top:18px;min-height:68px;font-size:19px;line-height:1.35}.secondary{min-height:60px;width:100%;padding:12px 16px;background:white;color:var(--blue);border:1px solid #bacbdd;border-radius:7px;font-size:18px;line-height:1.35;font-weight:600;display:flex;align-items:center;justify-content:center;gap:10px}.secondary:hover{background:var(--blue-soft)}.network-footer .secondary{margin-top:10px}.primary:disabled,.secondary:disabled{background:#e5eaf0;color:var(--muted)}.state-open .network-footer{background:var(--green-soft);border-top-color:#cce2d5}.state-open .network-footer h2{color:var(--green)}.state-offline .network-footer,.state-unknown .network-footer,.state-unavailable .network-footer{background:var(--orange-soft);border-top-color:#efdbc9}.state-offline .network-footer h2,.state-unavailable .network-footer h2{color:var(--care-ink)}
+.bottomnav{flex:none;min-height:76px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid var(--line);padding:5px 8px 8px;background:#fff}.nav-item{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:62px;gap:6px;font-size:13px;font-weight:400;color:var(--muted);position:relative}.nav-item.active{color:var(--blue);font-weight:600}.nav-item.active:before{content:'';position:absolute;top:-6px;width:26px;height:3px;background:var(--orange)}.nav-item:hover{background:var(--blue-soft)}.sheet-copy{font-size:17px;line-height:1.45;color:var(--muted);margin:16px 0 22px}.sheet .primary{margin-top:20px;min-height:68px}.sheet .secondary{margin-top:10px;min-height:68px}.sheet-merchant{font-size:22px;line-height:1.3;font-weight:600;margin:18px 0 8px}.status-announcement{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+@media(max-width:460px){body{padding:0}.frame{width:100%;height:100dvh;border:0;border-radius:0;box-shadow:none}.statusbar{height:calc(28px + env(safe-area-inset-top));padding-top:calc(7px + env(safe-area-inset-top))}.bottomnav{padding-bottom:calc(8px + env(safe-area-inset-bottom));min-height:calc(76px + env(safe-area-inset-bottom))}.sheet{bottom:calc(8px + env(safe-area-inset-bottom))}}
+@media(max-width:350px){.brandbar,.complete-hero,.dispatch,.network-footer{padding-left:14px;padding-right:14px}.shift-summary{padding-left:11px;padding-right:14px}.sheet{padding-left:14px;padding-right:14px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style></head><body data-state="" data-review="0"><div class="frame" id="frame"><div class="statusbar" aria-hidden="true"><span>17:04</span><span class="phone-status">5G <i></i></span></div><main class="app" id="app"><header class="brandbar"><div class="brand">Rounds<i></i></div><a class="square" href="ROUNDS-M01-NOTIFICATIONS-v2-10OF10.html?context=team" aria-label="Notifications"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 7h18s-3 0-3-7M10 21h4"/></svg></a></header><p class="sample-note" id="sampleNotice">Preview · Sample shift</p><div class="status-announcement" id="statusAnnouncement" role="status" aria-live="polite"></div><div class="content" id="content"><header class="complete-hero"><p class="state-label"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>Shift complete</span></p><h1 id="pageTitle" tabindex="-1">Done for today</h1><p class="merchant">UrbanFlowers</p><a class="shift-summary" href="ROUNDS-K00-TEAM-HOURS-v5-10OF10.html" aria-label="View Team hours, scheduled shift 08:00 to 17:00"><span class="summary-top"><span>Scheduled shift</span><span class="hours-link">View hours<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></span></span><strong class="shift-range">08:00–17:00</strong></a></header><div class="spacer" aria-hidden="true"></div><section class="dispatch" aria-labelledby="dispatchTitle"><div class="dispatch-heading"><h2 id="dispatchTitle">Team dispatch</h2><p>UrbanFlowers</p></div><div class="contact-actions"><button class="contact-action" id="messageDispatch" aria-label="Message UrbanFlowers dispatch" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a3 3 0 0 1-3 3H9l-6 4V6a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3Z"/></svg>Message</button><button class="contact-action" id="callDispatch" aria-label="Call UrbanFlowers dispatch" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 3 4 1 1 5-3 2a15 15 0 0 0 6 6l2-3 5 1 1 4c-1 4-7 2-11-1S1 7 5 3Z"/></svg>Call</button></div></section></div><section class="network-footer" aria-labelledby="networkTitle"><p class="network-label">Rounds Network</p><h2 id="networkTitle">Offers paused</h2><p class="network-lead" id="networkLead" hidden></p><button class="primary" id="primary">Open for jobs</button><button class="secondary" id="pauseOffers" hidden>Pause offers</button></section><nav class="bottomnav" aria-label="Primary"><a class="nav-item active" href="#content" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7M5 9v12h14V9M10 21v-7h4v7"/></svg><span>Home</span></a><a class="nav-item " href="ROUNDS-J01-MY-ROUNDS-v7-10OF10.html?context=team" ><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg><span>Jobs</span></a><a class="nav-item " href="ROUNDS-K00-TEAM-HOURS-v5-10OF10.html" ><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Hours</span></a><a class="nav-item " href="ROUNDS-L01-DRIVER-PROFILE-v3-10OF10.html?context=team" ><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 22v-3a8 8 0 0 1 16 0v3"/></svg><span>Profile</span></a></nav></main><div class="panel-backdrop" id="backdrop" hidden></div><section class="sheet" id="statusSheet" role="dialog" aria-modal="true" aria-labelledby="statusSheetTitle" hidden><div class="sheet-head"><h2 id="statusSheetTitle">Availability preview</h2><button class="square" data-close-sheet aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg></button></div><p class="sheet-copy">Choose a sample result.</p><button class="primary" data-result="paused">Offers paused</button><button class="secondary" data-result="open">Open for jobs</button><button class="secondary" data-result="unavailable">Network unavailable</button><button class="cancel" data-close-sheet>Keep checking</button></section><section class="sheet" id="contactSheet" role="dialog" aria-modal="true" aria-labelledby="contactSheetTitle" hidden><div class="sheet-head"><h2 id="contactSheetTitle">Team dispatch</h2><button class="square" data-close-sheet aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg></button></div><h3 class="sheet-merchant">UrbanFlowers</h3><p class="sheet-copy" id="contactPreview"></p><button class="cancel" data-close-sheet>Close</button></section></div><script>(()=>{'use strict';
+const $=id=>document.getElementById(id),app=$('app'),backdrop=$('backdrop');let activeSheet=null,returnFocus=null,onSheetClosed=()=>{},canCloseSheet=()=>true;
+function focusable(s){return [...s.querySelectorAll('button:not([disabled]),a[href],textarea,input,select,[tabindex="0"]')].filter(el=>!el.closest('[hidden]'))}
+function closeSheet(){if(!activeSheet||!canCloseSheet())return;const id=activeSheet.id;activeSheet.hidden=true;activeSheet=null;onSheetClosed(id);backdrop.hidden=true;app.inert=false;if(returnFocus&&!returnFocus.closest('[hidden]'))returnFocus.focus()}
+function openSheet(id,trigger){if(!activeSheet)returnFocus=trigger;else{const previous=activeSheet.id;activeSheet.hidden=true;onSheetClosed(previous)}activeSheet=$(id);activeSheet.hidden=false;backdrop.hidden=false;app.inert=true;activeSheet.scrollTop=0;focusable(activeSheet)[0]?.focus()}
+document.querySelectorAll('[data-close-sheet]').forEach(b=>b.addEventListener('click',closeSheet));backdrop.addEventListener('click',closeSheet);document.querySelectorAll('.sheet').forEach(s=>s.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();closeSheet()}if(e.key==='Tab'){const items=focusable(s),first=items[0],last=items[items.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus()}}}));
+
+const params=new URLSearchParams(location.search),review=document.body.dataset.review==='1'||params.get('review')==='1',fixture=document.body.dataset.state||params.get('state')||'';
+const offline=()=>params.get('offline')==='1'||fixture==='offline'||navigator.onLine===false;
+function text(el,value){el.textContent=value}
+function focusPage(){if($('content'))$('content').scrollTop=0;$('pageTitle')?.focus()}
+function make(tag,cls,value){const el=document.createElement(tag);if(cls)el.className=cls;if(value!==undefined)el.textContent=value;return el}
+function facts(id,rows){$(id).replaceChildren(...rows.map(([label,value,tone])=>{const row=make('div','fact');row.append(make('dt','',label),make('dd',tone||'',value));return row}))}
+function duration(minutes){return Math.floor(minutes/60)+'h '+String(minutes%60).padStart(2,'0')+'m'}
+if(review||document.body.dataset.standalone==='1')document.addEventListener('click',e=>{if(e.defaultPrevented)return;const a=e.target.closest('a[href]');if(a&&/^ROUNDS-/.test(a.getAttribute('href'))){e.preventDefault();parent.postMessage({type:'rounds-19-companion',href:a.getAttribute('href')},'*')}});
+
+function navigateLocal(href){if(review||document.body.dataset.standalone==='1')parent.postMessage({type:'rounds-19-companion',href},'*');else location.href=href;}
+// Design fixtures only. No shift, availability, message, call or GPS request is sent.
+const initial=['paused','open','unavailable','offline','unknown'].includes(fixture)?fixture:'paused';
+let availability=initial==='open'?'open':'paused',eligible=initial!=='unavailable';
+let disconnected=initial==='offline'||navigator.onLine===false,needsStatus=initial==='unknown';
+function shown(){return disconnected?'offline':needsStatus?'unknown':!eligible?'unavailable':availability;}
+function render(){
+ if(navigator.onLine===false)disconnected=true;
+ const state=shown();
+ const d={
+  paused:['Offers paused','','Open for jobs'],
+  open:['Open for jobs','','View Network map'],
+  unavailable:['Network unavailable','Not enabled for this account.','Open for jobs'],
+  offline:['You’re offline','Network status not confirmed.','Open for jobs'],
+  unknown:['Check availability','','Check status']
+ }[state];
+ $('frame').className='frame state-'+state;
+ $('networkTitle').textContent=d[0];$('networkLead').textContent=d[1];$('networkLead').hidden=!d[1];
+ $('primary').textContent=d[2];$('primary').disabled=['offline','unavailable'].includes(state);
+ $('pauseOffers').hidden=state!=='open';
+ document.querySelectorAll('[data-result]').forEach(b=>b.disabled=disconnected);
+ $('statusAnnouncement').textContent='Team shift complete. Network: '+d[0]+'.';
+}
+function setResult(result){
+ eligible=result!=='unavailable';availability=result==='open'?'open':'paused';needsStatus=false;
+ render();
+}
+$('sampleNotice').hidden=review;
+$('primary').addEventListener('click',()=>{
+ if(disconnected||navigator.onLine===false){disconnected=true;render();return;}
+ const state=shown();
+ if(state==='unknown'){openSheet('statusSheet',$('primary'));return;}
+ if(state==='unavailable')return;
+ if(state==='open'){navigateLocal('ROUNDS-B03-HOME-NETWORK-AVAILABLE-v8-10OF10.html?state=open');return;}
+ setResult('open');
+});
+$('pauseOffers').addEventListener('click',()=>{
+ if(disconnected||navigator.onLine===false){disconnected=true;render();return;}
+ if(shown()!=='open')return;
+ setResult('paused');$('primary').focus();
+});
+document.querySelectorAll('[data-result]').forEach(b=>b.addEventListener('click',()=>{
+ if(activeSheet?.id!=='statusSheet')return;
+ if(disconnected||navigator.onLine===false){disconnected=true;closeSheet();render();return;}
+ const result=b.dataset.result;
+ if(!['open','paused','unavailable'].includes(result))return;
+ closeSheet();setResult(result);
+}));
+for(const mode of ['message','call'])$(''+mode+'Dispatch').addEventListener('click',()=>{
+ $('contactPreview').textContent=mode==='message'?'Message preview. No message is sent.':'Call preview. No call is placed.';
+ openSheet('contactSheet',$(mode+'Dispatch'));
+});
+window.addEventListener('offline',()=>{
+ disconnected=true;if(activeSheet?.id==='statusSheet')closeSheet();render();
+});
+window.addEventListener('online',()=>{
+ if(!disconnected)return;
+ disconnected=false;needsStatus=true;render();
+});
+render();
+
+})();</script></body></html>

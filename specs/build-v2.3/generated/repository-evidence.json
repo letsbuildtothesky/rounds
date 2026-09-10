@@ -1,0 +1,554 @@
+{
+  "services/api/src/server.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "066f87b7547b068bb74539790fe75792a0fabc73902dbe91d9d68d4aaaf9dd9a",
+    "inspected_working_sha256": "8254a33bcf3b62a1fc4959155153d12a78bf31d180dc3cc6b86263262d49a20a",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "services/api/src/http.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "6e2c413bf0c25b0c8cb9216550dec3073f2317de6fe55a2f15311cffa1272d5c",
+    "inspected_working_sha256": "6e2c413bf0c25b0c8cb9216550dec3073f2317de6fe55a2f15311cffa1272d5c",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "services/api/src/types.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "8965631b3af64049749b8a8b086370571d9779385a3b9c4af57cc9d1d24c294d",
+    "inspected_working_sha256": "8965631b3af64049749b8a8b086370571d9779385a3b9c4af57cc9d1d24c294d",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "services/api/src/supabase-gateway.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "20af320f8cd8b69203d931cfed93c12382e49ece82c2e147ac3935b8912f1606",
+    "inspected_working_sha256": "20af320f8cd8b69203d931cfed93c12382e49ece82c2e147ac3935b8912f1606",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "packages/contracts/src/command.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "7d7aa3ef497a15b9373e8d3a9ca55681b0a4b4c509df45a7ecb2937d03f19a99",
+    "inspected_working_sha256": "7d7aa3ef497a15b9373e8d3a9ca55681b0a4b4c509df45a7ecb2937d03f19a99",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "packages/domain-ts/src/command.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "83b59a0247736663167c4f8c59f9e959e45bfd373b4b9128a71a5ca920335621",
+    "inspected_working_sha256": "83b59a0247736663167c4f8c59f9e959e45bfd373b4b9128a71a5ca920335621",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "services/api/test/operations-session-handler.test.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "4d8c79193bb70288facd0f3e1f1a376bcb3876ebc05dc507d13f783f9da50d66",
+    "inspected_working_sha256": "4d8c79193bb70288facd0f3e1f1a376bcb3876ebc05dc507d13f783f9da50d66",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "services/api/test/supabase-gateway.test.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "88236859111ff6665abf0063cc804d1181c81ef84b8760ebed51f0bb49badde8",
+    "inspected_working_sha256": "88236859111ff6665abf0063cc804d1181c81ef84b8760ebed51f0bb49badde8",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "services/api/src/operations-session-handler.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "caa80420def9f9ec505639eb5276253da766d49ff1c79021301cd9b7c7dd7d25",
+    "inspected_working_sha256": "caa80420def9f9ec505639eb5276253da766d49ff1c79021301cd9b7c7dd7d25",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/operations-web/app/operations-workstation.tsx": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "c3e24ffd6739fbe9dd06c419ed57e64e02a0d74274a0b47b2819a1ece196a691",
+    "inspected_working_sha256": "c3e24ffd6739fbe9dd06c419ed57e64e02a0d74274a0b47b2819a1ece196a691",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/operations-web/app/delivery-intake.tsx": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "112fdb9b986cef0dc8bd994b34e1cd6c706595fc9d7559a82af2f8814c96c187",
+    "inspected_working_sha256": "112fdb9b986cef0dc8bd994b34e1cd6c706595fc9d7559a82af2f8814c96c187",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/operations-web/src/delivery-form.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "da130570e5923db8eff486f95426b9a8e6d80a9afefe4914f8d973b7a39cab91",
+    "inspected_working_sha256": "da130570e5923db8eff486f95426b9a8e6d80a9afefe4914f8d973b7a39cab91",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "services/api/src/create-delivery-handler.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "c95d73ddb8e1dc5cc3541c748b98a3e7c824689c6a6cf1b98b6962b695bb9daa",
+    "inspected_working_sha256": "c95d73ddb8e1dc5cc3541c748b98a3e7c824689c6a6cf1b98b6962b695bb9daa",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "packages/contracts/src/delivery.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "dd1c6008708f491f13e58e08c7eb445215eaaf66fd21cecfee77db70eebf9842",
+    "inspected_working_sha256": "dd1c6008708f491f13e58e08c7eb445215eaaf66fd21cecfee77db70eebf9842",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/operations-web/test/delivery-form.test.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "23275370e12c195f175ca6b936ae8825cbed2a2c3f1663ed37930db02b70e341",
+    "inspected_working_sha256": "23275370e12c195f175ca6b936ae8825cbed2a2c3f1663ed37930db02b70e341",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "services/api/test/create-delivery-handler.test.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "3c5c1247d3a0947f3d465445cdbab615387fbca30b773e13aa53576fbef86e5d",
+    "inspected_working_sha256": "3c5c1247d3a0947f3d465445cdbab615387fbca30b773e13aa53576fbef86e5d",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "services/api/src/operations-planning-handler.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "36d2391aeadd723518da7a4fa3764b669fb002af8edb264b0aa01e9b33be448d",
+    "inspected_working_sha256": "36d2391aeadd723518da7a4fa3764b669fb002af8edb264b0aa01e9b33be448d",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "services/api/src/plan-round-handler.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "1493c79a2b67b86cc5aab9a26536b25cc29ff11cadbf2caba426e62a461b0a42",
+    "inspected_working_sha256": "1493c79a2b67b86cc5aab9a26536b25cc29ff11cadbf2caba426e62a461b0a42",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "services/api/src/round-move-handler.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "1a260fbd9c2cc69dadb906f18eb5cdf7a54025eff27cd13dd4b77f82c6d2df22",
+    "inspected_working_sha256": "1a260fbd9c2cc69dadb906f18eb5cdf7a54025eff27cd13dd4b77f82c6d2df22",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "services/api/src/capacity-validator.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "df15bd79bbb18bbf1ef3c16ac7bbfb162c69abbef1a138bfe2d9858bd1a7d885",
+    "inspected_working_sha256": "df15bd79bbb18bbf1ef3c16ac7bbfb162c69abbef1a138bfe2d9858bd1a7d885",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "services/api/src/planning-route-service.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "3ad8d78535484827774fe56dc2a88a3a7c6f64214939e4c26c6db450420bacb8",
+    "inspected_working_sha256": "3ad8d78535484827774fe56dc2a88a3a7c6f64214939e4c26c6db450420bacb8",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/operations-web/app/dispatch-panel.tsx": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "22fda7e5ed253b27f6da5ccd1daab8d5993fc475b69e4b8869fa26b3584436d4",
+    "inspected_working_sha256": "22fda7e5ed253b27f6da5ccd1daab8d5993fc475b69e4b8869fa26b3584436d4",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/operations-web/src/live-change-policy.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "3c301f79bf13dd6f57ede3c6995aa259c44b1c7678f569c39be557cdb240db91",
+    "inspected_working_sha256": "3c301f79bf13dd6f57ede3c6995aa259c44b1c7678f569c39be557cdb240db91",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "services/api/test/capacity-validator.test.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "d40365b2faeaa34141107d3351705c80f42283f135345747e3d7ea0ec385941e",
+    "inspected_working_sha256": "d40365b2faeaa34141107d3351705c80f42283f135345747e3d7ea0ec385941e",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "services/api/test/planning-route.test.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "7258d85e2a07bbaeaece70dc4c99ee623999fb429933681b4dab8b068d1fcd7d",
+    "inspected_working_sha256": "7258d85e2a07bbaeaece70dc4c99ee623999fb429933681b4dab8b068d1fcd7d",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "services/api/test/round-move-handler.test.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "4515177ee1b8c444bcfe8f57dcefb77af67149d7961b42d4d69a63116cccfb47",
+    "inspected_working_sha256": "4515177ee1b8c444bcfe8f57dcefb77af67149d7961b42d4d69a63116cccfb47",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/operations-web/test/live-change-policy.test.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "d75a2b3d50c48b773489cf403c8386933d17117b6b155fa037bc4fd53706a205",
+    "inspected_working_sha256": "d75a2b3d50c48b773489cf403c8386933d17117b6b155fa037bc4fd53706a205",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "services/api/src/confirm-pickup-handler.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "fc0fdf8ab54f5bb283ac1b48221559f3d89d1f96ecd86efd7d6687079f495fb0",
+    "inspected_working_sha256": "fc0fdf8ab54f5bb283ac1b48221559f3d89d1f96ecd86efd7d6687079f495fb0",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "services/api/src/complete-stop-pod-handler.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "a33ef4ac32c77ad373edb42ee6f79f6e335a7eb19cb234002cae6cb24d5544eb",
+    "inspected_working_sha256": "a33ef4ac32c77ad373edb42ee6f79f6e335a7eb19cb234002cae6cb24d5544eb",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "services/api/src/prepare-pod-media-handler.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "9d7c8993e06e599f028df0e7cfbb4a02186dd965fd10d3b48464d0cc43e794b3",
+    "inspected_working_sha256": "9d7c8993e06e599f028df0e7cfbb4a02186dd965fd10d3b48464d0cc43e794b3",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "services/api/src/report-delivery-problem-handler.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "018cd4b3a84dfffa3eb83e234a6c6d7c09c5488d65cf7e06b4cc8b00f7dc35a8",
+    "inspected_working_sha256": "018cd4b3a84dfffa3eb83e234a6c6d7c09c5488d65cf7e06b4cc8b00f7dc35a8",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "services/api/src/confirm-delivery-return-handler.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "90922ec8438a20d00a108b94a8bb564f2a70a453af97ec1d90357888d3fa89bf",
+    "inspected_working_sha256": "90922ec8438a20d00a108b94a8bb564f2a70a453af97ec1d90357888d3fa89bf",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/driver_harness/lib/src/ui/pickup_confirmation_screen.dart": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "9a3a815b699fc554bd368fc8774f9f68bb8d0297b1ccdf5cb00c5c4f1983e80a",
+    "inspected_working_sha256": "e170240faec2bb498379aacc4962f99d9615f412257aa9adcb3e19a2b9b8ffac",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/driver_harness/lib/src/ui/dropoff_handoff_screen.dart": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "96c840d15f7aeffb05b085e03bb37163ace931f23fde41be8f4595779bf7277a",
+    "inspected_working_sha256": "96c840d15f7aeffb05b085e03bb37163ace931f23fde41be8f4595779bf7277a",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/driver_harness/lib/src/ui/proof_of_delivery_screen.dart": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "b63c372de02703a5dbbf4cc0d84b4e20829c9d292e2f292cccd2de7e2460cee4",
+    "inspected_working_sha256": "72aba48c181b76b8ab38595ef2702a890fc88d41d6321701b478fe4b7e16c281",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "services/api/test/confirm-pickup-handler.test.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "784046817975996a81a87cab318e8224a88d5a68d333c7936913d0f770c53f53",
+    "inspected_working_sha256": "784046817975996a81a87cab318e8224a88d5a68d333c7936913d0f770c53f53",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "services/api/test/pod-handlers.test.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "2448f76824b00b5345dc3abe78f9616bc369918171adecf28ee1dad1dcd4aaea",
+    "inspected_working_sha256": "2448f76824b00b5345dc3abe78f9616bc369918171adecf28ee1dad1dcd4aaea",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "services/api/test/confirm-delivery-return-handler.test.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "7c83d845013d862130f03e63ef2e2b205eea30e43cb449fc33e15df2ece89d26",
+    "inspected_working_sha256": "7c83d845013d862130f03e63ef2e2b205eea30e43cb449fc33e15df2ece89d26",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/driver_harness/test/pickup_confirmation_geometry_test.dart": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "681d57fd822eb2138ab3385b763436b41af0ae271389779c51a48059db1cf90f",
+    "inspected_working_sha256": "397bc3f349411905ee5c61c68d3ef4f7d53bbb47e137dd44dc3da403f25237d0",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/driver_harness/test/dropoff_handoff_screen_test.dart": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "3a9e56c263a9ebe94ce30fe4c051b6bd88bc3ff20a9e235c68cd049c6612ca88",
+    "inspected_working_sha256": "3a9e56c263a9ebe94ce30fe4c051b6bd88bc3ff20a9e235c68cd049c6612ca88",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/driver_harness/lib/src/storage/harness_database.dart": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "f2c9c730e26f6472470b12cc5dd52821718c15697223eec4bcd11972ec6f0ffa",
+    "inspected_working_sha256": "f90ac3b778513d90f1e4f2e7c549c78985cb0cc55b7b87252e569e541de210ba",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/driver_harness/lib/src/storage/driver_command_outbox.dart": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "ed253109a0c3c935d50b0a35f2e95346e4b9ea7551994359c80ca13abdd46246",
+    "inspected_working_sha256": "ed253109a0c3c935d50b0a35f2e95346e4b9ea7551994359c80ca13abdd46246",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/driver_harness/lib/src/storage/pod_evidence_outbox.dart": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "d92e80f9bab1c1c3092c86e601c350d32395f21f059983dcc1df6bc8bbc2a131",
+    "inspected_working_sha256": "d92e80f9bab1c1c3092c86e601c350d32395f21f059983dcc1df6bc8bbc2a131",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/driver_harness/lib/src/storage/message_media_outbox.dart": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "5e723cab122ef489fa4c7070b42495a5ee2f49d36b2b3ca77549324673a60aec",
+    "inspected_working_sha256": "5e723cab122ef489fa4c7070b42495a5ee2f49d36b2b3ca77549324673a60aec",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/driver_harness/lib/src/driver/driver_api.dart": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "b5ed530db5cffc218a2851fc6190974d8f6218b1da6e8537dcdc5c0669d33cee",
+    "inspected_working_sha256": "d4d31db7d1317264b35e2bb436856d32b37fccb245255abd997a2a8b6dfa6bcd",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/driver_harness/test/driver_command_outbox_test.dart": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "25c407f9b54b38b20d08363d9c991c2cce745e9bc1a48224b4f7c05355431e3c",
+    "inspected_working_sha256": "25c407f9b54b38b20d08363d9c991c2cce745e9bc1a48224b4f7c05355431e3c",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/driver_harness/test/pod_evidence_outbox_test.dart": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "1577838069272dec6a4938bb839f2b41eb85e803a7bcdbd7a6f9669ef6196a2b",
+    "inspected_working_sha256": "1577838069272dec6a4938bb839f2b41eb85e803a7bcdbd7a6f9669ef6196a2b",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/driver_harness/test/message_media_outbox_test.dart": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "b7ba03eb756f630bba29b6f5403185570ac07aa07852809fd78c263effe4e4ce",
+    "inspected_working_sha256": "b7ba03eb756f630bba29b6f5403185570ac07aa07852809fd78c263effe4e4ce",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "services/api/src/driver-team-invite-handler.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "76004bb431250ae43fafd11d8bfca7d3e1a1ca02122b2f10ff7a365b7662035f",
+    "inspected_working_sha256": "76004bb431250ae43fafd11d8bfca7d3e1a1ca02122b2f10ff7a365b7662035f",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "services/api/src/start-driver-shift-handler.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "98d13330fc9c44291831776802a7c0434e33bc81667cedac94646b7d47dfd7d1",
+    "inspected_working_sha256": "98d13330fc9c44291831776802a7c0434e33bc81667cedac94646b7d47dfd7d1",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "services/api/src/end-driver-shift-handler.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "59eabc73bc51ec41bc9e2aed2e3942b88a6af299092cb38bec55006c943c5fc5",
+    "inspected_working_sha256": "59eabc73bc51ec41bc9e2aed2e3942b88a6af299092cb38bec55006c943c5fc5",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "services/api/src/operations-driver-availability.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "3115820e4e83810d0b1367bad68781386989beee488de15bd4b5f489d86b76d0",
+    "inspected_working_sha256": "3115820e4e83810d0b1367bad68781386989beee488de15bd4b5f489d86b76d0",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/driver_harness/lib/src/ui/driver_entry_flow_screen.dart": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "9233f5b0dc3e11b6f95c0d30876625c459a76afd4f3d58cc5aae9a449b4f3935",
+    "inspected_working_sha256": "9233f5b0dc3e11b6f95c0d30876625c459a76afd4f3d58cc5aae9a449b4f3935",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/driver_harness/lib/src/ui/team_home_screen.dart": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "5eaf0a46df382ad76743ab02a7a9ad01030d1ba23c830af3a45ad4e6867da723",
+    "inspected_working_sha256": "5eaf0a46df382ad76743ab02a7a9ad01030d1ba23c830af3a45ad4e6867da723",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/driver_harness/lib/src/permissions/driver_permissions_screen.dart": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "5fb928d5909fd65f23ada2bac4653cd8ab748d0121de285d966792d4b0e79ccb",
+    "inspected_working_sha256": "5fb928d5909fd65f23ada2bac4653cd8ab748d0121de285d966792d4b0e79ccb",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "services/api/test/driver-team-invite-handler.test.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "c066ada1a46fad9aa8c07ae2f377c2506a5a96ae15d7a3594ce794cb3fc3f5ad",
+    "inspected_working_sha256": "c066ada1a46fad9aa8c07ae2f377c2506a5a96ae15d7a3594ce794cb3fc3f5ad",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "services/api/test/start-driver-shift-handler.test.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "72ad22a177689eac198f20723f0c7ce53bb6ca5a96e40e3c67255f4291c218e0",
+    "inspected_working_sha256": "72ad22a177689eac198f20723f0c7ce53bb6ca5a96e40e3c67255f4291c218e0",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "services/api/test/end-driver-shift-handler.test.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "52cbc0ac17ba7e64506288b890132641832fc99eed8eb3768d5d7274dfee1fc1",
+    "inspected_working_sha256": "52cbc0ac17ba7e64506288b890132641832fc99eed8eb3768d5d7274dfee1fc1",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/driver_harness/test/driver_entry_api_test.dart": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "095de2fd7909087e0773a1fcbd7d63be285e4a7e66342d9e628084d9d7bf8db4",
+    "inspected_working_sha256": "095de2fd7909087e0773a1fcbd7d63be285e4a7e66342d9e628084d9d7bf8db4",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/driver_harness/test/team_home_screen_test.dart": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "177a0c6559bb281a6977e5a3d034220c2d549f0251a3960ad25def69d4d56f89",
+    "inspected_working_sha256": "177a0c6559bb281a6977e5a3d034220c2d549f0251a3960ad25def69d4d56f89",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "services/api/src/send-operations-message-handler.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "21a81920e3f4a5c4c5284dd5dedb5586dfb56c282f601284e4d74966d0afc61a",
+    "inspected_working_sha256": "21a81920e3f4a5c4c5284dd5dedb5586dfb56c282f601284e4d74966d0afc61a",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "services/api/src/send-driver-message-handler.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "40f8a33967c62ee5ba54c56bb8356fad2519e4b0f53db7dcdaee5e2d8f82450d",
+    "inspected_working_sha256": "40f8a33967c62ee5ba54c56bb8356fad2519e4b0f53db7dcdaee5e2d8f82450d",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/operations-web/src/operations-message-media.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "9e3a45924ce2738249a9f4aa8e1f733799bbd45c818f5ddd475d212e55606d7d",
+    "inspected_working_sha256": "9e3a45924ce2738249a9f4aa8e1f733799bbd45c818f5ddd475d212e55606d7d",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/operations-web/app/use-operations-communications.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "8180fbd158c312a6e0fd029496ab698b0e9df3e463558332b75899fa9d3251bc",
+    "inspected_working_sha256": "8180fbd158c312a6e0fd029496ab698b0e9df3e463558332b75899fa9d3251bc",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/driver_harness/lib/src/driver/driver_operations_realtime.dart": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "018c947c5aeafec5e49efd55bf75a91a348c2de23ec597f85c8a461adaddfe63",
+    "inspected_working_sha256": "018c947c5aeafec5e49efd55bf75a91a348c2de23ec597f85c8a461adaddfe63",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/driver_harness/lib/src/ui/operations_chat_screen.dart": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "5006f9e4e3e02f0e5fa9124cd568fd960df2c2aec7fc6f784828fa3ea991b895",
+    "inspected_working_sha256": "5006f9e4e3e02f0e5fa9124cd568fd960df2c2aec7fc6f784828fa3ea991b895",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "services/api/test/operations-communications-handlers.test.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "827bd1778830fc5b82ab0bc73c3388d2b0ee4397fb33d2ebdf39238390cb3261",
+    "inspected_working_sha256": "827bd1778830fc5b82ab0bc73c3388d2b0ee4397fb33d2ebdf39238390cb3261",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/operations-web/test/operations-message-media.test.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "69c9b3317983563b12af58db63cca4923347ae128236de1140df1109ca376b0c",
+    "inspected_working_sha256": "69c9b3317983563b12af58db63cca4923347ae128236de1140df1109ca376b0c",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/operations-web/test/operations-communications-realtime.test.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "889bd9bca136a411890ce5c36fc613592b7dad47601e8be4b0feb46c20993161",
+    "inspected_working_sha256": "889bd9bca136a411890ce5c36fc613592b7dad47601e8be4b0feb46c20993161",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/operations-web/app/operations-map.tsx": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "2fcc6f888f43c4cc2bd34bef961254b2bf999d9ef685a35c1022664634ebbc3d",
+    "inspected_working_sha256": "2fcc6f888f43c4cc2bd34bef961254b2bf999d9ef685a35c1022664634ebbc3d",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "services/api/src/routing-provider.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "22bc7cb1ceb45d83669532803a210adf16f2776cca248dc7f21ddbad6c31d69b",
+    "inspected_working_sha256": "22bc7cb1ceb45d83669532803a210adf16f2776cca248dc7f21ddbad6c31d69b",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "services/location_ingest/src/ingest_service.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "86fd97edd123458574d3934198e30c07562f469b7c5ce73ddcc6406650de21b6",
+    "inspected_working_sha256": "86fd97edd123458574d3934198e30c07562f469b7c5ce73ddcc6406650de21b6",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/driver_harness/lib/src/navigation/google_navigation_surface.dart": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "79acb6905929f2b75d45b8a0d98b12318e1222ef098265489cf220f0d1386001",
+    "inspected_working_sha256": "79acb6905929f2b75d45b8a0d98b12318e1222ef098265489cf220f0d1386001",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/driver_harness/lib/src/telemetry/operational_location_recorder.dart": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "0f2e50f6a6fd32790edaa6a209cf3de8878058d7733b24685052333b5006ca45",
+    "inspected_working_sha256": "0f2e50f6a6fd32790edaa6a209cf3de8878058d7733b24685052333b5006ca45",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "services/location_ingest/test/ingest_service.test.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "93814e85a90ebcb28f61eb0bf090b7c4086f6d9cbad3658e3d65075bde19d772",
+    "inspected_working_sha256": "93814e85a90ebcb28f61eb0bf090b7c4086f6d9cbad3658e3d65075bde19d772",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/operations-web/test/operations-map-driver-markers.test.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "7f7d4cf86197f09d49be72a587feb6e5668f20489849276a365d57431ebc7088",
+    "inspected_working_sha256": "7f7d4cf86197f09d49be72a587feb6e5668f20489849276a365d57431ebc7088",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/driver_harness/test/route_attempt_gate_test.dart": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "27d5fe5960251590be687b649fbf51d40cd8577a28b96eb234227df5ce948e67",
+    "inspected_working_sha256": "27d5fe5960251590be687b649fbf51d40cd8577a28b96eb234227df5ce948e67",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "services/api/src/operations-history-handler.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "8cbbbc052f409b34d85658bbfd5e0c7dcaaf7ac7b9f1076e81409cb300bdf503",
+    "inspected_working_sha256": "8cbbbc052f409b34d85658bbfd5e0c7dcaaf7ac7b9f1076e81409cb300bdf503",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/operations-web/app/history-panel.tsx": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "7506af0ad427fc736162e17cbb2cd618e3ac0d93fceac389b577abae5482d755",
+    "inspected_working_sha256": "7506af0ad427fc736162e17cbb2cd618e3ac0d93fceac389b577abae5482d755",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/operations-web/src/operations-history-export.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "f9e941c156b1127c5e67085c606ebb6ae67e3df868e11716b8516603fb3697c1",
+    "inspected_working_sha256": "f9e941c156b1127c5e67085c606ebb6ae67e3df868e11716b8516603fb3697c1",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/driver_harness/lib/src/ui/my_rounds_screen.dart": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "8b85e45e35c3635946ed84b54e86c1f53e0ef4e4a6bce6989b67872db7907649",
+    "inspected_working_sha256": "8b85e45e35c3635946ed84b54e86c1f53e0ef4e4a6bce6989b67872db7907649",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/operations-web/test/operations-history-export.test.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "43d4d20eb507b6a91895098d5676b1de81f2ca014b7ff571c715b8065ed0f587",
+    "inspected_working_sha256": "43d4d20eb507b6a91895098d5676b1de81f2ca014b7ff571c715b8065ed0f587",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/driver_harness/test/my_rounds_screen_test.dart": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "f1f3615e2a4b2742ca627ff9673b8111b49687a603f7b3d8acf2ec00b9a1fb44",
+    "inspected_working_sha256": "f1f3615e2a4b2742ca627ff9673b8111b49687a603f7b3d8acf2ec00b9a1fb44",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "services/api/src/live-delivery-change-handler.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "a1f71a45cd1a8a0d7327a274986299b9d23b969266a5bdc66c0e0a9798dbd25f",
+    "inspected_working_sha256": "a1f71a45cd1a8a0d7327a274986299b9d23b969266a5bdc66c0e0a9798dbd25f",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "services/api/test/live-delivery-change-handler.test.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "8fe106781c2c4bbf7774430f390c75a57b43d2ef324861b691e456b1a68e9537",
+    "inspected_working_sha256": "8fe106781c2c4bbf7774430f390c75a57b43d2ef324861b691e456b1a68e9537",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/driver_harness/lib/src/app/driver_design_system.dart": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "11751a2458342ee7db6b4d3992cfba16f772124736ecff03a2b1ed4249ee2bce",
+    "inspected_working_sha256": "11751a2458342ee7db6b4d3992cfba16f772124736ecff03a2b1ed4249ee2bce",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/driver_harness/lib/src/app/generated/driver_ui_metrics.g.dart": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "0684862e1d1250a94cba34f12e61b22626178162c4e32aba658109c334951442",
+    "inspected_working_sha256": "0684862e1d1250a94cba34f12e61b22626178162c4e32aba658109c334951442",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/driver_harness/lib/src/ui/components/rounds_action_drawer.dart": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "9873f0868f2961b95b91caa73ee4c973dad7ffdfe0207051e77763f66c5447ef",
+    "inspected_working_sha256": "9873f0868f2961b95b91caa73ee4c973dad7ffdfe0207051e77763f66c5447ef",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/operations-web/app/operations-v45.css": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "399c818f816b22c0d51e094930bd6713f43a8563480c67f3ffc6f42d1cac0d9b",
+    "inspected_working_sha256": "399c818f816b22c0d51e094930bd6713f43a8563480c67f3ffc6f42d1cac0d9b",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/operations-web/app/operations-section-sheet.tsx": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "7084ed2529fd07f85393111237e6303d58eb262dfb24620399575a7c701a6546",
+    "inspected_working_sha256": "7084ed2529fd07f85393111237e6303d58eb262dfb24620399575a7c701a6546",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/driver_harness/test/active_round_overview_geometry_test.dart": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "1e434d4ff2a6cfaab7099f8163fb01f61b1240bf56e994a107a815dd71219e18",
+    "inspected_working_sha256": "1e434d4ff2a6cfaab7099f8163fb01f61b1240bf56e994a107a815dd71219e18",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  },
+  "apps/operations-web/test/operations-contact-history.test.ts": {
+    "baseline_commit": "19d6c1e7dc570546026cfb41135fae74c6b4e23e",
+    "baseline_sha256": "165ec65da6c0a1c6f32de0ba8f8901047b8e737998109d660d8fbf8dad08fff0",
+    "inspected_working_sha256": "165ec65da6c0a1c6f32de0ba8f8901047b8e737998109d660d8fbf8dad08fff0",
+    "claim": "code/reuse reference, not v2.3 acceptance evidence"
+  }
+}

@@ -1,0 +1,1 @@
+PASS exact pickup wire schema closure and TS types

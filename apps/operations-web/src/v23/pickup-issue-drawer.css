@@ -1,0 +1,91 @@
+/* Phase39 source: :root, detail-*, issue-panel, dialog-*, form-fields,
+ * action-stack and primary/secondary-button. Scoped to exclude legacy v45 CSS.
+ * This is the approved bounded pickup form reuse, not a full-board replacement. */
+.pickup-issues, .pickup-issue-entry {
+  --ink:#17283f; --blue:#1754a6; --blue-deep:#14488d; --blue-soft:#edf4fd;
+  --blue-line:#c5d7ed; --muted:#526278; --line:#dce4ed;
+  color:var(--ink); background:#fff; font:16px Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+  -webkit-font-smoothing:antialiased; box-sizing:border-box; height:100%; min-height:0;
+}
+.pickup-issues *, .pickup-issue-entry * { box-sizing:border-box; }
+.pickup-issues [hidden] { display:none!important; }
+.pickup-issues button, .pickup-issues textarea, .pickup-issue-entry button { font:inherit; cursor:pointer; }
+.pickup-issues button:disabled { cursor:not-allowed; opacity:.45; }
+.pickup-issues :is(button,textarea,a):focus-visible { outline:2px solid var(--blue); outline-offset:4px; }
+.pickup-issues .icon { width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; flex:none; }
+.pickup-issues .issue-list-panel, .pickup-issues .delivery-detail { display:flex; flex-direction:column; width:100%; height:100%; min-height:0; overflow:hidden; background:#fff; }
+.pickup-issues .detail-top { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:18px 24px; border-bottom:1px solid var(--line); flex-shrink:0; }
+.pickup-issues .detail-top h1 { font-size:20px; font-weight:600; letter-spacing:-.035em; margin:0; }
+.pickup-issues .detail-top>span { min-width:0; overflow-wrap:anywhere; text-align:right; font-size:12px; color:var(--muted); }
+.pickup-issues .back-button { display:inline-flex; align-items:center; gap:8px; border:0; padding:6.4px 0; background:transparent; font-size:14px; color:#5d718c; }
+.pickup-issues .detail-scroll { overflow:auto; min-height:0; flex:1; padding:24px 28px; scrollbar-width:thin; }
+.pickup-issues .issue-list-panel .detail-scroll { padding:10px 12px 16px; }
+.pickup-issues .detail-kicker { display:flex; justify-content:space-between; gap:12px; margin-bottom:16px; font-size:12px; color:var(--muted); }
+.pickup-issues .detail-heading { margin:0 0 8px; font-size:26px; letter-spacing:-.035em; font-weight:600; line-height:1.2; overflow-wrap:anywhere; }
+.pickup-issues .detail-address { font-size:14px; line-height:1.6; color:var(--muted); margin:0; overflow-wrap:anywhere; white-space:pre-wrap; }
+.pickup-issues .assignment { display:flex; gap:12px; align-items:center; }
+.pickup-issues .driver-avatar { display:grid; place-items:center; flex-shrink:0; width:40px; height:40px; border-radius:6px; background:#edf2f8; color:#485f7d; }
+.pickup-issues .assignment b { display:block; font-size:14px; font-weight:550; overflow-wrap:anywhere; }
+.pickup-issues .assignment small { display:block; font-size:13px; color:var(--muted); margin-top:4px; }
+.pickup-issues .detail-section { padding:22px 0; border-bottom:1px solid var(--line); }
+.pickup-issues .section-label { margin:0 0 14px; color:var(--muted); font-size:12px; font-weight:550; text-transform:uppercase; letter-spacing:.07em; }
+.pickup-issues .issue-panel { background:#fff5ee; border:1px solid #f4dfd2; padding:16px; margin:20px 0 0; border-radius:6px; }
+.pickup-issues .issue-panel b { display:block; font-size:14px; color:#a84622; font-weight:600; }
+.pickup-issues .issue-panel p { margin:10px 0 0; color:#8b6959; font-size:13px; line-height:1.6; }
+.pickup-issues .exact-text { white-space:pre-wrap; overflow-wrap:anywhere; font-size:14px; line-height:1.6; }
+.pickup-issues .issue-identities { margin:0; font-size:12px; line-height:1.6; color:var(--muted); }
+.pickup-issues .issue-identities dt { margin-top:8px; font-weight:550; }
+.pickup-issues .issue-identities dd { margin:2px 0 0; overflow-wrap:anywhere; }
+.pickup-issues .detail-actions { padding:16px 28px 20px; border-top:1px solid var(--line); flex-shrink:0; }
+.pickup-issues .detail-actions .primary-button { width:100%; display:flex; align-items:center; justify-content:space-between; gap:16px; }
+.pickup-issues .detail-actions p { margin:12px 0 0; color:var(--muted); font-size:12px; line-height:1.5; }
+.pickup-issues .primary-button, .pickup-issue-entry .primary-button { min-height:40px; padding:9.6px 22px; background:var(--blue); color:#fff; border:1px solid var(--blue); border-radius:5px; font-size:14px; font-weight:550; }
+.pickup-issues .primary-button:hover { background:var(--blue-deep); border-color:var(--blue-deep); }
+.pickup-issues .secondary-button { min-height:40px; padding:9.6px 16px; color:var(--blue); border:1px solid var(--blue-line); border-radius:5px; background:#fff; font-size:14px; }
+.pickup-issues .secondary-button:hover { background:var(--blue-soft); }
+.pickup-issues .dialog-choice { display:flex; align-items:center; gap:14px; width:100%; padding:16px; border:1px solid transparent; border-radius:5px; background:transparent; text-align:left; color:var(--ink); }
+.pickup-issues .dialog-choice:hover, .pickup-issues .dialog-choice[aria-pressed=true] { background:#f3f6fa; border-color:#e5ebf3; }
+.pickup-issues .choice-copy { flex:1; min-width:0; }
+.pickup-issues .choice-copy b { display:block; font-size:14px; font-weight:550; line-height:1.5; }
+.pickup-issues .choice-copy small { display:block; margin-top:4.8px; font-size:13px; color:#708198; line-height:1.5; overflow-wrap:anywhere; }
+.pickup-issues .issue-row { border-bottom:1px solid var(--line); }
+/* Use Phase39's FINAL queue overrides (source lines1511–1523), not its
+ * earlier base card rules. Explicit px = source computed CSS at16px root. */
+.pickup-issues .delivery-card { display:block; width:100%; margin:0 0 6px; padding:16px 12px 12px; border:1px solid transparent; border-bottom-color:#e2e7ed; background:#fff; border-radius:9px; text-align:left; color:var(--ink); }
+.pickup-issues .delivery-card:hover { background:#fafbfd; border-color:var(--blue-line); }
+.pickup-issues .card-top { display:flex; gap:8px; margin-bottom:8px; font-size:11px; font-variant-numeric:tabular-nums; color:#586c81; overflow-wrap:anywhere; }
+.pickup-issues .card-name { display:block; font-size:16px; font-weight:650; letter-spacing:-.025em; line-height:1.35; overflow-wrap:anywhere; }
+.pickup-issues .card-address { display:block; font-size:12px; color:var(--muted); margin-top:4.8px; line-height:1.55; overflow-wrap:anywhere; }
+.pickup-issues .card-meta { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-top:14px; }
+.pickup-issues .card-status { font-size:11px; line-height:1.4; color:#52657a; }
+.pickup-issues .card-status.issue { color:#a44924; }
+.pickup-issues .card-next { display:flex; align-items:center; justify-content:space-between; gap:16px; border-top:1px solid #e8edf2; margin-top:12px; padding-top:8px; min-height:36px; font-size:11px; color:var(--blue); }
+.pickup-issues .card-next .icon { width:14px; height:14px; }
+.pickup-issues .empty-state { padding:36px 12px; color:#6a7c93; }
+.pickup-issues .empty-state b { color:#344963; font-weight:550; }
+.pickup-issues .empty-state p { font-size:14px; line-height:1.65; }
+.pickup-issues .form-help { font-size:13px; line-height:1.6; color:#77879c; margin:0; }
+.pickup-issues .form-error { font-size:14px; line-height:1.5; color:#b3462c; margin:12px 0; }
+.pickup-issues .reply-confirmed { color:#32745b; font-size:14px; line-height:1.6; }
+.pickup-issues .issue-action-dialog { padding:0; margin:auto; width:min(448px,calc(100vw - 32px)); max-height:calc(100dvh - 48px); color:var(--ink); background:#fff; border:1px solid #dbe3ed; border-radius:10px; box-shadow:0 24px 80px #16203330; font-family:inherit; }
+.pickup-issues .issue-action-dialog[open] { display:flex; flex-direction:column; }
+.pickup-issues .issue-action-dialog::backdrop { background:#16203335; backdrop-filter:blur(3px); }
+.pickup-issues .issue-action-dialog form { display:flex; flex-direction:column; min-height:0; }
+.pickup-issues .dialog-header { padding:24px 28px; display:flex; justify-content:space-between; align-items:center; gap:16px; border-bottom:1px solid var(--line); flex-shrink:0; }
+.pickup-issues .dialog-header h2 { margin:0; font-size:22px; font-weight:650; letter-spacing:-.035em; }
+.pickup-issues .close-button { width:32px; height:32px; background:transparent; border:0; color:var(--muted); font-size:26px; line-height:1; flex:none; }
+.pickup-issues .dialog-body { padding:24px 28px; overflow:auto; min-height:0; }
+.pickup-issues .dialog-footer { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:12px; padding:16px 28px 24px; flex-shrink:0; }
+.pickup-issues .action-intro { color:#667b94; font-size:14px; line-height:1.65; margin:0 0 20px; }
+.pickup-issues .action-stack { display:flex; flex-direction:column; gap:12px; }
+.pickup-issues .form-fields { display:flex; flex-direction:column; gap:18px; border:0; padding:0; margin:20px 0 0; min-width:0; }
+.pickup-issues legend { font-size:14px; color:#405670; margin-bottom:12px; }
+.pickup-issues .form-fields>label { display:flex; flex-direction:column; gap:8px; font-size:14px; color:#405670; }
+.pickup-issues textarea { width:100%; min-width:0; padding:12px; border:1px solid #d9e1ec; border-radius:5px; font-size:16px; color:var(--ink); background:#fff; line-height:1.6; resize:vertical; cursor:text; }
+.pickup-issue-entry { min-height:100dvh; padding:24px; background:#f5f7fa; }
+.pickup-issue-entry .connection-panel { margin:10vh auto; padding:28px; width:min(520px,100%); background:#fff; border:1px solid #dce4ed; border-radius:8px; }
+.pickup-issue-entry .connection-panel h1 { font-size:22px; margin:0 0 12px; }
+.pickup-issue-entry .connection-panel p { font-size:14px; line-height:1.6; }
+.pickup-issue-entry .pickup-issues { width:400px; max-width:100%; height:calc(100dvh - 48px); margin-left:auto; border:1px solid var(--line); }
+@media(max-width:980px) { .pickup-issue-entry { padding:0; } .pickup-issue-entry .pickup-issues { width:100%; height:100dvh; border:0; } }
+@media(max-width:430px) { .pickup-issues .detail-top, .pickup-issues .detail-scroll, .pickup-issues .dialog-header, .pickup-issues .dialog-body { padding:20px; } .pickup-issues .detail-actions { padding:14px 20px; } .pickup-issues .dialog-footer { padding:12px 20px 20px; } }

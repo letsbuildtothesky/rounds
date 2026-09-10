@@ -1,0 +1,41 @@
+{
+  "recorded_utc": "2026-09-10T07:07:10Z",
+  "kind": "Actual React component with synthetic Auth/HTTP, native browser fetch and sessionStorage",
+  "entry": "http://127.0.0.1:3023/?deliveries=1",
+  "source": "specs/source/Rounds-Complete-Project-v2.3/ui/dispatch/index.html",
+  "source_sha256": "6a0019ec88cdaa422c5d56831d42f78745665de30681769a0d3515047fd1663c",
+  "component_sha256": "adf41831560f985907c217f809f42a3f73b079b52e8e468a5371018257b26740",
+  "shell_sha256": "47264bcc2784500d09f0597a607f94c5ab2abb04dd71d045338bb2f49da7756a",
+  "css_sha256": "9feaa1250bf6aad2b7277e10ab685214d53e00a0d29fa6c112fde24eb93b0f1e",
+  "locale": "English",
+  "synthetic_banner_height": 44,
+  "device_pixel_ratio": 1,
+  "viewport_checks": [
+    {"width":1800,"height":1000,"page_width":1800,"body_width":1800,"header_height":76,"rail_width":448,"footer_bottom":1000},
+    {"width":1600,"height":900,"page_width":1600,"body_width":1600,"header_height":76,"rail_width":416,"footer_bottom":900},
+    {"width":1366,"height":768,"page_width":1366,"body_width":1366,"header_height":76,"rail_width":320,"footer_bottom":768},
+    {"width":1180,"height":820,"page_width":1180,"body_width":1180,"header_height":76,"rail_width":320,"footer_bottom":820},
+    {"width":1024,"height":768,"page_width":1024,"body_width":1024,"header_height":76,"rail_width":320,"footer_bottom":768},
+    {"width":820,"height":1180,"page_width":820,"body_width":820,"header_height":64,"rail_width":820,"footer_bottom":1180},
+    {"width":768,"height":1024,"page_width":768,"body_width":768,"header_height":64,"rail_width":768,"footer_bottom":1024},
+    {"width":360,"height":740,"page_width":360,"body_width":360,"header_height":64,"rail_width":360,"footer_bottom":740},
+    {"width":320,"height":640,"page_width":320,"body_width":320,"header_height":64,"rail_width":320,"footer_bottom":640}
+  ],
+  "wide_detail": {"viewport_width":1800,"left_width":448,"map_width":952,"right_x":1400,"right_width":400},
+  "observed_checks": [
+    "Authorized synthetic workspace/city and 12 deliveries rendered with no report-derived delivery count",
+    "Search no-match keeps selected detail; close returns focus to search; clear restores rows",
+    "Keep exact multiline pickup-reply draft, switch to deliveries, return and reopen: exact instructions/reason preserved",
+    "503 refresh shows last-known rows/context and explicit failure, not empty",
+    "Successful empty result shows zero scheduled deliveries",
+    "Successful removal of selected order closes missing private detail and retains 11 actual rows",
+    "Tablet Map/List toggles one surface without rebuilding controllers",
+    "After final focus fix, tablet back and Escape return focus to their original visible order card",
+    "403 removes recipient, workspace/city labels, selected detail and counts",
+    "Final clean browser tab logged no warnings/errors"
+  ],
+  "fixture_server_counter": {"posts":0,"pending_receipt":false},
+  "images": ["dispatch-delivery-board-desktop.png","dispatch-delivery-board-tablet.png"],
+  "capture_limitation": "Raw in-app full-page captures were saved unchanged. The browser capture paints content at reduced scale with extra blank area; one later capture failed. DOM geometry is measured separately. These images are layout review evidence, not pixel measurements or source parity. The earlier desktop capture predates a focus-return-only effect change; tablet capture uses final code.",
+  "not_accepted": ["Original HTML rendered comparison/diff", "Complete Dispatch layout and actions", "Configured Supabase Auth/API/SQL browser host", "Live Mapbox/provider", "Phone integration", "Browser dirty-reload/cross-tab signout acceptance"]
+}

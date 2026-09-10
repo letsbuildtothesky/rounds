@@ -1,0 +1,35 @@
+{
+  "recorded_date": "2026-09-10",
+  "component": "Compiled React Dispatch workspace with ADR-Q07 optional Now projection",
+  "url": "http://127.0.0.1:3023/?deliveries=1&map-test=1&now-test=1",
+  "data": "Synthetic HTTP/Auth/map fixture; no production data or basemap requests",
+  "checks": {
+    "categories": "Action4, Ready2, On road2, Done2; two Scheduled rows remain available through Show all",
+    "outcomes": "Delivered and Returned remain distinct; handoff says Completion pending",
+    "brand": "Second test brand yields zero category counts and exactly one Scheduled Johannes row in Show all",
+    "search": "UF-TEST-006 yields exactly one Delivered row and Done1",
+    "detail": "Readonly recorded outcome agrees with operational label; Escape closes and restores card state",
+    "dates": "Plan12September empty; native date keyboard stepper switches to11September/two rows; Now loads10September/12 rows; returning Plan retains11September/two rows",
+    "keyboard": "ArrowRight switches Now to Plan; refreshed current-date Now tab regains focus",
+    "draft": "Original10September report instructions 'Synthetic unsent Now/Plan preservation check.' and internal reason 'Synthetic only; do not send.' survive Keep and close, Plan/Now/date/report switching exactly; no submission",
+    "offline": "Refresh failure retains same-date rows with explicit last-known notice",
+    "denial": "Board access denial removes delivery data and map; independently authorized pickup reports remain accessible"
+  },
+  "viewport_overflow_px": {"1800x1100":0,"768x1024":0,"390x844":0},
+  "captures": ["dispatch-now/desktop-1800.png","dispatch-now/tablet-768.png","dispatch-now/narrow-390.png"],
+  "server_evidence": {
+    "synthetic":true,"posts":0,"version":1,"pendingReceipt":false,
+    "deliveryReads":[
+      {"serviceDate":"2026-09-10","mode":"ready"},
+      {"serviceDate":"2026-09-12","mode":"ready"},
+      {"serviceDate":"2026-09-11","mode":"ready"},
+      {"serviceDate":"2026-09-10","mode":"ready"},
+      {"serviceDate":"2026-09-11","mode":"ready"},
+      {"serviceDate":"2026-09-10","mode":"ready"},
+      {"serviceDate":"2026-09-10","mode":"offline"},
+      {"serviceDate":"2026-09-10","mode":"offline"},
+      {"serviceDate":"2026-09-10","mode":"denied"}
+    ]
+  },
+  "not_accepted":["Original HTML browser/pixel parity","Configured Mapbox/Auth/SQL journey","Specific Now action handlers/full Dispatch module","Phone installation/workflow","Shared migration/deployment/push"]
+}

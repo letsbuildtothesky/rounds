@@ -1,0 +1,48 @@
+{
+  "recorded_utc": "2026-09-10T08:11:10Z",
+  "kind": "manual-browser-check",
+  "source_html_sha256": "6a0019ec88cdaa422c5d56831d42f78745665de30681769a0d3515047fd1663c",
+  "surface": "compiled production React components in loopback test fixture",
+  "doubles": ["HTTP response data", "Auth", "Mapbox port"],
+  "real": ["React rendering", "browser native fetch", "read adapter", "date reader ownership", "report draft journal", "source-derived CSS"],
+  "checks": {
+    "unplanned_excludes_staged_awaiting_receipt": "PASS: 11 of 12, held staged order retained in All",
+    "brand_and_counts": "PASS: Second test brand, one matching row, All1/Unplanned1",
+    "new_date": "PASS: 2026-09-11, two different IDs; brand/filter reset, header and data agree",
+    "empty_date": "PASS: 2026-09-12, zero rows, no previous-date fallback",
+    "original_report_date": "PASS: reports and differing-date link remain 2026-09-10",
+    "saved_reply": "PASS: original driver instructions and internal reason survive date switch and explicit Keep and close; no send",
+    "same_date_failure": "PASS: labelled last-known rows, not an empty result",
+    "access_denied": "PASS: rows, counts, labels and map removed",
+    "console_warnings_errors": 0
+  },
+  "geometry": [
+    {"viewport": [1800, 1100], "document_horizontal_overflow": false, "rail_width": 448, "heading_px": 20, "capture": "dispatch-plan-pool/desktop-1800.png"},
+    {"viewport": [768, 1024], "document_horizontal_overflow": false, "rail_width": 768, "filter_bounds": {"left":18,"right":750,"top":511,"bottom":593}, "capture": "dispatch-plan-pool/tablet-768.png"},
+    {"viewport": [390, 844], "document_horizontal_overflow": false, "filter_bounds": {"left":18,"right":372,"top":511,"bottom":593}, "footer_bounds": {"left":0,"right":390,"top":789,"bottom":844}, "capture": "dispatch-plan-pool/narrow-390.png"}
+  ],
+  "server_evidence": {
+    "synthetic": true,
+    "posts": 0,
+    "version": 1,
+    "pendingReceipt": false,
+    "deliveryReads": [
+      {"serviceDate":"2026-09-10","mode":"ready"},
+      {"serviceDate":"2026-10-11","mode":"ready"},
+      {"serviceDate":"2026-10-10","mode":"ready"},
+      {"serviceDate":"2026-09-11","mode":"ready"},
+      {"serviceDate":"2026-09-12","mode":"ready"},
+      {"serviceDate":"2026-09-10","mode":"ready"},
+      {"serviceDate":"2026-09-10","mode":"offline"},
+      {"serviceDate":"2026-09-10","mode":"ready"},
+      {"serviceDate":"2026-09-10","mode":"denied"}
+    ]
+  },
+  "limitations": [
+    "Native date keyboard stepper used to commit date; fill alone changed field text without a React change event in this browser tool",
+    "First immediate post-resize capture was superseded after layout settled",
+    "Not original-source pixel comparison or live Mapbox/Auth/SQL browser integration",
+    "No phone, production activation, deployment or push"
+  ],
+  "cleanup": "Temporary viewport reset; agent test tabs closed; loopback fixture stopped"
+}

@@ -1,0 +1,25 @@
+{
+  "date": "2026-09-10",
+  "scope": "Actual compiled React/controller/native-fetch fixture; synthetic Auth/HTTP and explicitly labelled map port, not Mapbox SDK/provider execution",
+  "url": "http://127.0.0.1:3023/?deliveries=1&map-test=1",
+  "source_original_rendered": false,
+  "original_source_rehosted": false,
+  "fixture": {"orders": 12, "stored_points": 3, "not_mapped": 9, "command_posts": 0, "pending_receipt": false},
+  "viewports": [
+    {"width":1366,"height":768,"document_width":1366,"dialog_width":352,"dialog_bottom":752},
+    {"width":768,"height":1024,"document_width":768,"dialog":{"x":296,"y":305,"width":352,"height":703,"bottom":1008}},
+    {"width":390,"height":844,"document_width":390,"dialog":{"x":22,"y":297,"width":352,"height":531,"bottom":828}}
+  ],
+  "checks": {
+    "rotate_right": "Observed camera bearing20; North resets0",
+    "site": "Marker click opens Siriporn detail; Site center100.55,13.73 zoom17.1 pitch55 bearing0; return Operations pitch0",
+    "layer_selection": "Deliveries visibility toggles without clearing selected Siriporn detail; selected marker remains pressed on show",
+    "keyboard": "Escape closes dialog and returns focus to map trigger; narrow Focus is inside menu; Escape exits map focus",
+    "focus": "Wide focus hides rail/detail without deleting selection; return restores selected detail",
+    "failure": "Test map failure removes map fixture, preserves selected detail and offers Retry map; Retry restores selected point and camera",
+    "revocation": "Access denied removes map fixture and Siriporn from body text; neutral context and access-unavailable status remain"
+  },
+  "console_warn_error": [],
+  "screenshots": ["dispatch-map-controls-desktop.png", "dispatch-map-controls-tablet.png"],
+  "not_run": ["Live Mapbox token/account/SDK/GPU behavior", "Actual native zoom/compass and attribution rendering", "Original HTML rendered comparison/pixel diff", "Configured Auth/API/SQL browser journey", "Actual dirty-browser draft reload", "Phone installation or workflow"]
+}

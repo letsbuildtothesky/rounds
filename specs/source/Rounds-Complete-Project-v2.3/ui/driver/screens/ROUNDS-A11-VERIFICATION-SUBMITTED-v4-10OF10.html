@@ -1,0 +1,108 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content"><title>Rounds — Verification submitted</title><style>
+:root{--ink:#17283f;--blue:#1754a6;--blue-deep:#14488d;--blue-soft:#edf4fd;--orange:#ff6420;--muted:#526278;--line:#dce4ed;--green:#167344;--red:#a22f2f;font-family:Arial,Helvetica,sans-serif;color:var(--ink);background:#e9edf2;font-synthesis:none}*{box-sizing:border-box}body{margin:0;padding:28px}a,button{font:inherit;-webkit-tap-highlight-color:transparent;touch-action:manipulation}a{color:inherit;text-decoration:none}button{cursor:pointer}button:disabled{cursor:default}svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}button:focus-visible,a:focus-visible{outline:3px solid var(--orange);outline-offset:3px}[hidden]{display:none!important}.frame{width:393px;height:852px;margin:auto;border:1px solid #cbd5df;border-radius:24px;overflow:hidden;position:relative;background:#fff;box-shadow:0 16px 50px #17223810;display:flex;flex-direction:column}.statusbar{height:28px;flex:none;padding:7px 20px 0;font-size:12px;font-weight:700;display:flex;justify-content:space-between}.phone-status{display:flex;align-items:center;gap:7px}.phone-status i{display:block;width:19px;height:9px;border:1px solid var(--ink);border-radius:2px;background:linear-gradient(to right,var(--ink) 75%,transparent 75%)}.app{flex:1;min-height:0;display:flex;flex-direction:column;position:relative}.topbar{height:64px;flex:none;display:grid;grid-template-columns:52px minmax(0,1fr) 52px;align-items:center;gap:12px;padding:0 14px;background:#fff;border-bottom:1px solid var(--line)}.square{height:52px;width:52px;background:white;border:1px solid var(--line);border-radius:7px;display:grid;place-items:center;color:var(--ink)}.square:hover{background:var(--blue-soft)}.top-copy{min-width:0}.top-copy span{font-size:13px;color:var(--blue);display:block;line-height:1.2}.top-copy strong{display:block;font-size:17px;font-weight:600;line-height:1.2;margin-top:4px}.primary{width:100%;min-height:64px;background:var(--blue);color:#fff;border:0;border-radius:7px;display:flex;justify-content:center;align-items:center;gap:12px;font-size:18px;font-weight:600;padding:12px 16px}.primary:hover{background:var(--blue-deep)}.primary:disabled{background:#e2e8ee;color:#566477}.primary.ready{background:var(--green)}.primary svg{width:23px;height:23px}.panel-backdrop{position:absolute;inset:0;background:#132c4f55;z-index:80}.sheet{position:absolute;left:8px;right:8px;bottom:8px;z-index:81;border:1px solid var(--line);border-radius:12px 12px 8px 8px;background:#fff;padding:6px 16px 16px;box-shadow:0 -8px 40px #142f4a22;max-height:calc(100% - 36px);overflow:auto}.sheet-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:6px 0 8px}.sheet-head h2{font-size:23px;letter-spacing:-.5px;margin:0}.sheet-head .square{border:0;flex:none}.sheet-action{min-height:68px;display:flex;align-items:center;gap:14px;border:0;border-top:1px solid var(--line);width:100%;background:#fff;text-align:left;font-size:17px;color:var(--ink);padding:12px 4px}.sheet-action:hover{background:var(--blue-soft)}.sheet-action.issue{color:var(--red)}.sheet-action .end{margin-left:auto}.sheet-action svg{width:24px;flex:none}.sheet-action .end svg{width:18px}.sheet .cancel{min-height:60px;border:0;background:var(--blue-soft);color:var(--blue);border-radius:6px;width:100%;font-size:17px;font-weight:600;margin-top:8px}
+/* Rounds driver — shared design tokens, style guide v1. */
+:root {
+  --blue: #1754a6;
+  --blue-deep: #14488d;
+  --blue-soft: #edf4fd;
+  --orange: #ff6420;
+  --orange-soft: #fff2e8;
+  --ink: #17283f;
+  --muted: #526278;
+  --line: #dce4ed;
+  --paper: #ffffff;
+  --canvas: #e9edf2;
+  --green: #167344;
+  --green-soft: #edf7f1;
+  --red: #a22f2f;
+  --route-later: #668ebc;
+  --care-ink: #98400f;
+  --font-ui: Arial, Helvetica, sans-serif;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --content-inset: 18px;
+  --content-inset-narrow: 14px;
+  --radius-control: 7px;
+  --target-icon: 52px;
+  --target-contact: 60px;
+  --target-primary: 64px;
+  --target-confirm: 68px;
+}
+.frame{isolation:isolate}.app{overflow:hidden}.content{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;display:flex;flex-direction:column}.brandbar{min-height:64px;flex:none;padding:6px 22px;display:flex;align-items:center;justify-content:space-between;gap:20px;border-bottom:1px solid var(--line)}.brand{display:flex;align-items:baseline;font-size:24px;font-weight:800;line-height:1;letter-spacing:-1.1px;color:var(--blue)}.brand i{width:6px;height:6px;background:var(--orange);margin-left:3px}.context{font-size:14px;line-height:1.4;font-weight:600;color:var(--blue)}.sample-note{flex:none;font-size:13px;line-height:1.35;color:var(--muted);background:#f6f8fb;border-bottom:1px solid var(--line);padding:8px 18px;margin:0}.connection-note{flex:none;background:var(--orange-soft);border-bottom:1px solid #efdbc9;color:var(--care-ink);padding:12px 22px;margin:0;font-size:14px;line-height:1.4}
+.submitted-hero{flex:none;padding:32px 22px 28px}.receipt-mark{height:64px;width:64px;background:var(--green-soft);color:var(--green);border-radius:7px;display:grid;place-items:center;margin-bottom:24px}.receipt-mark svg{width:34px;height:34px;stroke-width:2.3}.submitted-hero h1{font-size:44px;font-weight:700;line-height:1.1;letter-spacing:-1.1px;margin:0;overflow-wrap:anywhere}.lead{font-size:17px;line-height:1.45;color:var(--muted);margin:16px 0 0}.state-unknown .receipt-mark,.state-error .receipt-mark{background:var(--blue-soft);color:var(--blue)}.state-error .submitted-hero h1{font-size:40px}
+.state-panel{flex:none;background:var(--blue-soft);border:1px solid #d2e0f0;border-left:4px solid var(--orange);border-radius:0 7px 7px 0;padding:0 18px 0 15px;margin:0 22px}.state-row{min-height:88px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 0}.state-row+.state-row{border-top:1px solid #d2e0f0}.state-row dt{font-size:18px;line-height:1.4;color:var(--muted);font-weight:400}.state-row dd{font-size:20px;line-height:1.35;font-weight:600;margin:0;text-align:right}.state-row .received{color:var(--green)}.state-row .unconfirmed{font-size:18px;color:var(--care-ink)}.state-row .access-state{color:var(--care-ink);font-size:18px}.spacer{flex:1;min-height:32px}.action-footer{flex:none;padding:16px 18px;border-top:1px solid var(--line);background:#fff}.action-footer .primary{min-height:68px;font-size:19px;line-height:1.35}.primary:disabled,.secondary:disabled{background:#e5eaf0;color:var(--muted)}
+.sheet-copy{font-size:17px;line-height:1.45;color:var(--muted);margin:16px 0 22px}.sheet .primary{margin-top:20px;min-height:68px}.secondary{min-height:60px;width:100%;padding:12px 16px;background:white;color:var(--blue);border:1px solid #bacbdd;border-radius:7px;font-size:18px;line-height:1.35;font-weight:600;display:flex;align-items:center;justify-content:center;gap:10px}.secondary:hover{background:var(--blue-soft)}.sheet .secondary{margin-top:10px;min-height:68px}.status-announcement{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+@media(max-width:460px){body{padding:0}.frame{width:100%;height:100dvh;border:0;border-radius:0;box-shadow:none}.statusbar{height:calc(28px + env(safe-area-inset-top));padding-top:calc(7px + env(safe-area-inset-top))}.action-footer{padding-bottom:calc(16px + env(safe-area-inset-bottom))}.sheet{bottom:calc(8px + env(safe-area-inset-bottom))}}
+@media(max-width:350px){.brandbar,.submitted-hero,.action-footer,.connection-note{padding-left:14px;padding-right:14px}.state-panel{margin-left:14px;margin-right:14px;padding-left:11px;padding-right:14px}.sheet{padding-left:14px;padding-right:14px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style></head><body data-state="" data-review="0"><div class="frame" id="frame"><div class="statusbar" aria-hidden="true"><span>18:26</span><span class="phone-status">5G <i></i></span></div><main class="app" id="app"><header class="brandbar"><div class="brand">Rounds<i></i></div><span class="context">Network</span></header><p class="sample-note" id="sampleNotice">Preview · Sample application</p><div class="status-announcement" id="statusAnnouncement" role="status" aria-live="polite"></div><p class="connection-note" id="connectionNote" hidden>You’re offline</p><div class="content" id="content"><header class="submitted-hero"><div class="receipt-mark" aria-hidden="true"><span id="receiptCheck"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg></span><span id="receiptClock" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span></div><h1 id="pageTitle" tabindex="-1">Verification submitted</h1><p class="lead" id="lead">We’ll notify you of the result.</p></header><dl class="state-panel" aria-label="Verification status"><div class="state-row"><dt>Application</dt><dd id="applicationState" class="received">Received</dd></div><div class="state-row"><dt>Network access</dt><dd id="accessState" class="access-state">In review</dd></div></dl><div class="spacer" aria-hidden="true"></div></div><footer class="action-footer"><button class="primary" id="primary">Go to Home</button></footer></main><div class="panel-backdrop" id="backdrop" hidden></div><section class="sheet" id="statusSheet" role="dialog" aria-modal="true" aria-labelledby="statusSheetTitle" hidden><div class="sheet-head"><h2 id="statusSheetTitle">Submission status preview</h2><button class="square" data-close-sheet aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg></button></div><p class="sheet-copy">Choose a sample result.</p><button class="primary" data-result="received">Application received</button><button class="secondary" data-result="unknown">Still unconfirmed</button><button class="secondary" data-result="error">Couldn’t check</button><button class="cancel" data-close-sheet>Keep checking</button></section></div><script>(()=>{'use strict';
+const $=id=>document.getElementById(id),app=$('app'),backdrop=$('backdrop');let activeSheet=null,returnFocus=null,onSheetClosed=()=>{},canCloseSheet=()=>true;
+function focusable(s){return [...s.querySelectorAll('button:not([disabled]),a[href],textarea,input,select,[tabindex="0"]')].filter(el=>!el.closest('[hidden]'))}
+function closeSheet(){if(!activeSheet||!canCloseSheet())return;const id=activeSheet.id;activeSheet.hidden=true;activeSheet=null;onSheetClosed(id);backdrop.hidden=true;app.inert=false;if(returnFocus&&!returnFocus.closest('[hidden]'))returnFocus.focus()}
+function openSheet(id,trigger){if(!activeSheet)returnFocus=trigger;else{const previous=activeSheet.id;activeSheet.hidden=true;onSheetClosed(previous)}activeSheet=$(id);activeSheet.hidden=false;backdrop.hidden=false;app.inert=true;activeSheet.scrollTop=0;focusable(activeSheet)[0]?.focus()}
+document.querySelectorAll('[data-close-sheet]').forEach(b=>b.addEventListener('click',closeSheet));backdrop.addEventListener('click',closeSheet);document.querySelectorAll('.sheet').forEach(s=>s.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();closeSheet()}if(e.key==='Tab'){const items=focusable(s),first=items[0],last=items[items.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus()}}}));
+
+const params=new URLSearchParams(location.search),review=document.body.dataset.review==='1'||params.get('review')==='1',fixture=document.body.dataset.state||params.get('state')||'';
+const offline=()=>params.get('offline')==='1'||fixture==='offline'||navigator.onLine===false;
+function text(el,value){el.textContent=value}
+function focusPage(){if($('content'))$('content').scrollTop=0;$('pageTitle')?.focus()}
+function make(tag,cls,value){const el=document.createElement(tag);if(cls)el.className=cls;if(value!==undefined)el.textContent=value;return el}
+function facts(id,rows){$(id).replaceChildren(...rows.map(([label,value,tone])=>{const row=make('div','fact');row.append(make('dt','',label),make('dd',tone||'',value));return row}))}
+function duration(minutes){return Math.floor(minutes/60)+'h '+String(minutes%60).padStart(2,'0')+'m'}
+if(review||document.body.dataset.standalone==='1')document.addEventListener('click',e=>{if(e.defaultPrevented)return;const a=e.target.closest('a[href]');if(a&&/^ROUNDS-/.test(a.getAttribute('href'))){e.preventDefault();parent.postMessage({type:'rounds-21-companion',href:a.getAttribute('href')},'*')}});
+
+function navigateLocal(href){if(review||document.body.dataset.standalone==='1')parent.postMessage({type:'rounds-21-companion',href},'*');else location.href=href;}
+// Design samples only. No evidence upload, approval or availability change occurs.
+const initial=['received','offline','unknown','error'].includes(fixture)?fixture:'received';
+let receiptConfirmed=initial==='received'||initial==='offline';
+let disconnected=initial==='offline'||navigator.onLine===false,reviewFresh=!disconnected;
+let failed=initial==='error';
+function render(){
+ if(navigator.onLine===false){disconnected=true;reviewFresh=false;}
+ const state=receiptConfirmed?'received':failed?'error':'unknown';
+ $('frame').className='frame state-'+state+(disconnected?' is-offline':'');
+ $('receiptCheck').hidden=!receiptConfirmed;$('receiptClock').hidden=receiptConfirmed;
+ $('pageTitle').textContent=receiptConfirmed?'Verification submitted':failed?'Couldn’t check':'Check submission';
+ $('lead').textContent=receiptConfirmed?'We’ll notify you of the result.':disconnected?'Reconnect to confirm your submission.':failed?'Your submission is still unconfirmed.':'Your submission isn’t confirmed yet.';
+ $('applicationState').textContent=receiptConfirmed?'Received':'Not confirmed';
+ $('applicationState').className=receiptConfirmed?'received':'unconfirmed';
+ $('accessState').textContent=receiptConfirmed?(reviewFresh?'In review':'Check status'):'Not available';
+ $('connectionNote').hidden=!disconnected;
+ $('primary').textContent=receiptConfirmed?'Go to Home':'Check status';
+ $('primary').disabled=!receiptConfirmed&&disconnected;
+ document.querySelectorAll('[data-result]').forEach(b=>b.disabled=disconnected);
+ $('statusAnnouncement').textContent=$('pageTitle').textContent+'. Application '+$('applicationState').textContent+'. Network access '+$('accessState').textContent+'.';
+}
+$('sampleNotice').hidden=review;
+$('primary').addEventListener('click',()=>{
+ if(navigator.onLine===false){disconnected=true;reviewFresh=false;render();}
+ if(receiptConfirmed){
+  const state=disconnected?'offline':reviewFresh?'pending':'unknown';
+  navigateLocal('ROUNDS-B02-HOME-VERIFICATION-PENDING-v5-10OF10.html?state='+state);return;
+ }
+ if(disconnected){render();return;}
+ openSheet('statusSheet',$('primary'));
+});
+document.querySelectorAll('[data-result]').forEach(b=>b.addEventListener('click',()=>{
+ if(activeSheet?.id!=='statusSheet')return;
+ if(disconnected||navigator.onLine===false){disconnected=true;closeSheet();render();$('pageTitle').focus();return;}
+ const result=b.dataset.result;
+ if(!['received','unknown','error'].includes(result))return;
+ closeSheet();receiptConfirmed=result==='received';reviewFresh=receiptConfirmed;failed=result==='error';render();
+}));
+window.addEventListener('offline',()=>{
+ const hadSheet=Boolean(activeSheet);disconnected=true;reviewFresh=false;if(activeSheet)closeSheet();render();
+ if(hadSheet)$('pageTitle').focus();
+});
+window.addEventListener('online',()=>{
+ if(!disconnected)return;
+ disconnected=false;reviewFresh=false;render();
+});
+render();
+
+})();</script></body></html>

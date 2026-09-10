@@ -1,0 +1,1 @@
+PASS local SQL mirror: 14 reference tables; legacy schema5 untouched

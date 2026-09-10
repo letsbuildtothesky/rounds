@@ -1,90 +1,32 @@
-# Rounds · Codex Build Order
+# Rounds — current build order
 
-**Version:** 1.1
+Version 2.1 · 2026-09-08
 
 ## Changelog
 
-- **v1.1 — 2026-09-04:** Records the human-authorized Pilot / Slice 1 closure
-  and Slice 2 own-fleet execution boundary while retaining incomplete Phase 0
-  field evidence as a release gate.
+- 2.1: user authorises reconciliation and continuation from existing code. v2.3-r1 module readiness and W01 replace blanket documentation-only authorization.
+- 2.0: replace the old Slice1–7 execution sequence with the v2.3 review and proposed E09 R0–R4 ladder. The current checkpoint authorises documentation only. Legacy Lalamove/Thai-first implementation ordering is no longer active.
 
-## Currently authorized
+## Current authorization
 
-Implementation is authorized through **Pilot / Slice 1 closure and Slice 2
-own-fleet depth**, constrained by
-`specs/engineering/ROUNDS-IMPLEMENTATION-COVERAGE-AND-GAP-CONTROL-v1.0.md`.
-This is not authorization for Slice 3, Lalamove or either Network slice.
+Reconcile current specs directly, finalize repository-grounded module contracts, and implement ready scopes from the existing code. Follow [module readiness](specs/build-v2.3/READINESS.md) and [W01](specs/build-v2.3/FIRST-WORKFLOW.md). Shared database migration/cutover, deployment, push and real external sends remain separately authorized; no blanket release promotion.
 
-Phase 0 motorcycle, background, battery and degraded-network evidence remains
-open. Continuing authorized implementation must not be described as a Phase 0
-field PASS or production readiness.
+Read [the v2.3 starting point](specs/build-v2.3/README.md), [source authority](specs/build-v2.3/SOURCE-AUTHORITY.md) and [audit dispositions](specs/build-v2.3/AUDIT.md). Routine conflicts are resolved in v2.3-r1. DEC-01 and provider/policy/missing-state choices gate only their named scope. Ready means implementable, never already tested.
 
-**Current sequencing decision (2026-09-04):** finish and physically stabilize
-the English Pilot/own-fleet surfaces before continuing additional Thai parity
-work. Existing shared localization remains in place; this changes execution
-order only and does not authorize a separate application or duplicated
-business logic.
+## Proposed implementation sequence
 
-This file controls implementation sequence. The complete Build Spec set exists, but Codex must not build everything in parallel.
+Follow [RELEASE-PLAN.md](specs/build-v2.3/RELEASE-PLAN.md) for the concrete dependency order and gates:
 
-## Current execution control
+1. R0: isolated platform/schema/role/contracts and combined native/provider field evidence.
+2. R1: complete English own-team intake/slot/plan/pickup/navigation/handoff/proof/history and pilot source path, with whole-order and offline recovery.
+3. R2: full English own-fleet planning/settings/schedules/comms/recovery/map/history/source depth.
+4. R3: freelance identity/availability/broadcast/one-winner execution/consent/settlement, explicitly promoted.
+5. R4: optional Intercity transport/receiver/dependent local planning, explicitly promoted.
 
-For every Pilot / Slice 1 and Slice 2 checkpoint, also read and update:
+English functional and visual acceptance precedes NEW Thai screen work. Existing language preference and data remain intact. Final promoted-product acceptance includes the required localized/device/provider/security coverage; no parked requirement is silently removed.
 
-- `specs/engineering/ROUNDS-IMPLEMENTATION-COVERAGE-AND-GAP-CONTROL-v1.0.md`
+## Evidence and scope
 
-That control specification maps canonical UX to implemented and tested product behavior, separates current scope from future boards, records unresolved specification decisions and defines the remaining English own-fleet sequence. It does not override the product specs, architecture, Build Specs or promotion gates below.
+The existence of every product screen or command does not authorise all releases at once. Never treat old test counts as v2.3 completion. Each checkpoint reports actual code, reference screenshot comparisons, functions, recovery tests, device/provider observations and unresolved gates. Missing field evidence may coexist with authorised safe engineering work but never becomes an assumed PASS.
 
-## Phase 0 — field evidence
-Read:
-- `specs/engineering/ROUNDS-PHASE-0-FIELD-VALIDATION-SPEC-v1.2.md`
-- `specs/build/BS-03.md`
-- `specs/build/BS-04.md`
-- `specs/build/BS-06.md`
-- `specs/build/BS-07.md`
-
-Build only the combined Flutter navigation + Rounds telemetry harness. Stop with PASS / BRIDGE REQUIRED / NAV FAILURE / LOCATION FAILURE.
-
-## Pilot / Slice 1 — one real UrbanFlowers delivery loop
-After human authorization following Phase 0, implement the minimum subsets of:
-- BS-00
-- BS-01
-- BS-02
-- BS-03
-- BS-04
-- BS-05
-- BS-06
-- BS-07
-- BS-08 (manual/internal canonical intake only)
-- BS-15 (delivery evidence/history subset)
-- BS-16 (only settings needed by Slice 1)
-- BS-17 production gates appropriate to pilot
-
-Target: merchant login → delivery → Team driver → Round assignment → pickup/custody → embedded navigation → live position → handoff/POD → completion → History.
-
-## Slice 2 — own-fleet depth
-- BS-09 full planning/capacity
-- BS-10 exceptions/comms/live changes
-- BS-11 customer tracking if promoted
-- BS-16 relevant settings
-
-## Slice 3 — UrbanFlowers commerce/API
-- BS-08 UrbanFlowers adapter + API/writeback/reconciliation
-
-## Slice 4 — Lalamove
-- BS-12
-
-## Slice 5 — preferred/invited Network
-- BS-13
-
-## Slice 6 — open Network
-- BS-14
-
-## Slice 7 — general SaaS connectors
-- BS-08 Shopify/WooCommerce/Public API portions
-
-## Cross-cutting
-BS-17 always applies. BS-15 grows as each fulfillment source is added.
-
-## Human gate
-Codex must stop at the end of every phase/slice and report tests, gaps and real-device/provider QA. It may not self-promote to the next slice.
+The old specs/build/ index and engineering Scope Ladder/Coverage files are historical pre-v2.3 references. [BS-INDEX.md](specs/build-v2.3/BS-INDEX.md) is the active implementation map. No Lalamove, temperature, wallet, COD, bank execution or split-delivery launch is implied.

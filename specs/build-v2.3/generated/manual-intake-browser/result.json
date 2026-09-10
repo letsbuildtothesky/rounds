@@ -1,0 +1,48 @@
+{
+  "at": "2026-09-10T10:04:54.755Z",
+  "synthetic": true,
+  "sourcePixelParity": "NOT_RUN",
+  "results": [
+    "source field edits and background draft save; final creation remains disabled",
+    "Escape closes, returns focus and retains exact edits on reopen",
+    "same-login tab reload recovers fields after fresh authorized context/revision read",
+    "close during a delayed save flushes newer edits only after the original receipt",
+    {
+      "width": 1365,
+      "metrics": {
+        "width": 560,
+        "overflow": false,
+        "headerPadding": "24px 28px",
+        "fieldGap": "18px"
+      }
+    },
+    {
+      "width": 390,
+      "metrics": {
+        "width": 352,
+        "overflow": false,
+        "headerPadding": "20px",
+        "fieldGap": "18px"
+      }
+    }
+  ],
+  "errors": [],
+  "evidence": {
+    "synthetic": true,
+    "posts": 0,
+    "version": 1,
+    "pendingReceipt": false,
+    "deliveryReads": [
+      {
+        "serviceDate": "2026-09-10",
+        "mode": "ready"
+      },
+      {
+        "serviceDate": "2026-09-10",
+        "mode": "ready"
+      }
+    ],
+    "intakePosts": 6,
+    "intakeVersion": 6
+  }
+}

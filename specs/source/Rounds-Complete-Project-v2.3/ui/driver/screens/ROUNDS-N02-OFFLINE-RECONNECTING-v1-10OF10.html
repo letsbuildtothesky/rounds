@@ -1,0 +1,214 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content"><title>Rounds — Connection recovery</title><style>
+:root{--ink:#17283f;--blue:#1754a6;--blue-deep:#14488d;--blue-soft:#edf4fd;--orange:#ff6420;--muted:#526278;--line:#dce4ed;--green:#167344;--red:#a22f2f;font-family:Arial,Helvetica,sans-serif;color:var(--ink);background:#e9edf2;font-synthesis:none}*{box-sizing:border-box}body{margin:0;padding:28px}a,button{font:inherit;-webkit-tap-highlight-color:transparent;touch-action:manipulation}a{color:inherit;text-decoration:none}button{cursor:pointer}button:disabled{cursor:default}svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}button:focus-visible,a:focus-visible{outline:3px solid var(--orange);outline-offset:3px}[hidden]{display:none!important}.frame{width:393px;height:852px;margin:auto;border:1px solid #cbd5df;border-radius:24px;overflow:hidden;position:relative;background:#fff;box-shadow:0 16px 50px #17223810;display:flex;flex-direction:column}.statusbar{height:28px;flex:none;padding:7px 20px 0;font-size:12px;font-weight:700;display:flex;justify-content:space-between}.phone-status{display:flex;align-items:center;gap:7px}.phone-status i{display:block;width:19px;height:9px;border:1px solid var(--ink);border-radius:2px;background:linear-gradient(to right,var(--ink) 75%,transparent 75%)}.app{flex:1;min-height:0;display:flex;flex-direction:column;position:relative}.topbar{height:64px;flex:none;display:grid;grid-template-columns:52px minmax(0,1fr) 52px;align-items:center;gap:12px;padding:0 14px;background:#fff;border-bottom:1px solid var(--line)}.square{height:52px;width:52px;background:white;border:1px solid var(--line);border-radius:7px;display:grid;place-items:center;color:var(--ink)}.square:hover{background:var(--blue-soft)}.top-copy{min-width:0}.top-copy span{font-size:13px;color:var(--blue);display:block;line-height:1.2}.top-copy strong{display:block;font-size:17px;font-weight:600;line-height:1.2;margin-top:4px}.primary{width:100%;min-height:64px;background:var(--blue);color:#fff;border:0;border-radius:7px;display:flex;justify-content:center;align-items:center;gap:12px;font-size:18px;font-weight:600;padding:12px 16px}.primary:hover{background:var(--blue-deep)}.primary:disabled{background:#e2e8ee;color:#566477}.primary.ready{background:var(--green)}.primary svg{width:23px;height:23px}.panel-backdrop{position:absolute;inset:0;background:#132c4f55;z-index:80}.sheet{position:absolute;left:8px;right:8px;bottom:8px;z-index:81;border:1px solid var(--line);border-radius:12px 12px 8px 8px;background:#fff;padding:6px 16px 16px;box-shadow:0 -8px 40px #142f4a22;max-height:calc(100% - 36px);overflow:auto}.sheet-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:6px 0 8px}.sheet-head h2{font-size:23px;letter-spacing:-.5px;margin:0}.sheet-head .square{border:0;flex:none}.sheet-action{min-height:68px;display:flex;align-items:center;gap:14px;border:0;border-top:1px solid var(--line);width:100%;background:#fff;text-align:left;font-size:17px;color:var(--ink);padding:12px 4px}.sheet-action:hover{background:var(--blue-soft)}.sheet-action.issue{color:var(--red)}.sheet-action .end{margin-left:auto}.sheet-action svg{width:24px;flex:none}.sheet-action .end svg{width:18px}.sheet .cancel{min-height:60px;border:0;background:var(--blue-soft);color:var(--blue);border-radius:6px;width:100%;font-size:17px;font-weight:600;margin-top:8px}
+/* Rounds driver — shared design tokens, style guide v1. */
+:root {
+  --blue: #1754a6;
+  --blue-deep: #14488d;
+  --blue-soft: #edf4fd;
+  --orange: #ff6420;
+  --orange-soft: #fff2e8;
+  --ink: #17283f;
+  --muted: #526278;
+  --line: #dce4ed;
+  --paper: #ffffff;
+  --canvas: #e9edf2;
+  --green: #167344;
+  --green-soft: #edf7f1;
+  --red: #a22f2f;
+  --route-later: #668ebc;
+  --care-ink: #98400f;
+  --font-ui: Arial, Helvetica, sans-serif;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --content-inset: 18px;
+  --content-inset-narrow: 14px;
+  --radius-control: 7px;
+  --target-icon: 52px;
+  --target-contact: 60px;
+  --target-primary: 64px;
+  --target-confirm: 68px;
+}
+.frame{isolation:isolate}.app{overflow:hidden}.content{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain}.brandbar{min-height:72px;flex:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 18px;border-bottom:1px solid var(--line);background:#fff}.brand{display:flex;align-items:baseline;font-size:24px;font-weight:800;letter-spacing:-1.1px;color:var(--blue);line-height:1}.brand i{width:6px;height:6px;margin-left:3px;background:var(--orange)}.header-state{font-size:14px;line-height:1.3;font-weight:600;color:var(--care-ink)}.header-state.good{color:var(--green)}.recovery-hero{padding:26px 18px 24px}.eyeline{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:600;line-height:1.4;color:var(--blue);margin:0 0 20px}.eyeline svg{width:26px;height:26px}.recovery-title{font-size:40px;line-height:1.08;letter-spacing:-1.1px;font-weight:700;margin:0;overflow-wrap:anywhere}.recovery-lead{font-size:18px;line-height:1.4;color:var(--muted);margin:18px 0 0}.round-context{padding:18px 18px 18px 14px;background:var(--blue-soft);border-left:4px solid var(--orange);border-top:1px solid #d2e1f2;border-bottom:1px solid #d2e1f2}.round-context strong{display:block;font-size:18px;font-weight:600;line-height:1.35}.round-context span{display:block;margin-top:7px;font-size:15px;line-height:1.4;color:var(--muted)}.queue-section{padding:24px 18px 20px}.section-label{font-size:20px;font-weight:600;line-height:1.3;margin:0 0 14px}.queue-row{display:grid;grid-template-columns:28px minmax(0,1fr) 20px;gap:13px;align-items:center;min-height:94px;width:100%;text-align:left;background:#fff;border:0;border-top:1px solid var(--line);padding:18px 0;color:var(--ink)}.queue-row:last-of-type{border-bottom:1px solid var(--line)}.queue-row>svg{color:var(--blue)}.queue-row>svg:last-child{width:20px}.queue-row strong{display:block;font-size:18px;font-weight:600;line-height:1.3}.queue-row small{display:block;font-size:15px;line-height:1.4;color:var(--care-ink);margin-top:7px}.queue-row small.good{color:var(--green)}.queue-row:hover{background:var(--blue-soft)}.subnote{font-size:14px;line-height:1.45;color:var(--muted);margin:16px 0 0}.inline-status{font-size:16px;line-height:1.4;color:var(--care-ink);margin:16px 0 0}.recovery-footer{flex:none;border-top:1px solid var(--line);padding:16px 18px 12px;background:white}.secondary{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:60px;border:0;border-radius:7px;background:#fff;color:var(--blue);font-size:17px;font-weight:600;line-height:1.35;padding:12px 10px;margin-top:8px;text-align:center}.secondary:hover{background:var(--blue-soft)}.secondary:disabled{color:var(--muted)}.sample-note{font-size:13px;line-height:1.35;color:var(--muted);margin:0;padding:9px 18px;border-bottom:1px solid var(--line);background:#f6f8fb}.sheet-copy{font-size:17px;line-height:1.45;color:var(--muted);margin:14px 0 22px}.sheet-merchant{font-size:25px;line-height:1.25;letter-spacing:-.5px;font-weight:600;margin:16px 0 10px}.sheet-kicker{font-size:14px;line-height:1.35;color:var(--blue);margin:8px 0 12px}.sheet .primary{margin-top:18px}.preview-choices{display:grid;gap:10px;margin:20px 0 12px}.preview-choices button{min-height:60px;margin:0}.preview-choices .secondary{background:var(--blue-soft);border:1px solid #bfd1e7}.detail-status{font-size:20px;line-height:1.35;font-weight:600;color:var(--care-ink);border-left:4px solid var(--orange);background:var(--blue-soft);padding:18px 14px;margin:22px 0 0}.detail-status.good{color:var(--green);background:var(--green-soft);border-color:var(--green)}.detail-copy{font-size:16px;line-height:1.45;color:var(--muted);margin:14px 0 22px}.opbar{min-height:76px;padding:10px 18px 10px 10px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;flex:none}.opbar .square{border:0;flex:none}.opcopy{min-width:0}.opcopy strong{display:block;font-size:18px;font-weight:600;line-height:1.25;color:var(--blue)}.opcopy span{display:block;font-size:14px;line-height:1.4;color:var(--muted);margin-top:5px}.saved-map{position:relative;margin:0;background:#e9edf2;border-bottom:1px solid var(--line)}.map-open{display:block;position:relative;width:100%;height:300px;border:0;padding:0;background:#e9edf2;text-align:left;overflow:hidden}.map-open>img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 50%}.map-label{position:absolute;right:14px;top:14px;background:white;border:1px solid #c9d3de;border-radius:6px;color:var(--ink);padding:9px 11px;font-size:14px;font-weight:600;line-height:1.3;box-shadow:0 2px 8px #17283f18}.map-expand{position:absolute;right:14px;bottom:14px;display:grid;place-items:center;min-width:52px;min-height:52px;color:var(--blue);background:#fff;border:1px solid #c9d3de;border-radius:7px}.map-attribution{font-size:12px;line-height:1.4;padding:5px 10px;background:white;color:var(--muted);text-align:right}.map-attribution a{text-decoration:underline;text-underline-offset:2px}.gps-copy{padding:24px 18px 22px}.gps-copy .recovery-title{font-size:36px}.gps-copy .recovery-lead{margin-top:14px}.destination{margin-top:22px;border-top:1px solid var(--line);padding-top:19px}.destination h2{font-size:22px;line-height:1.25;font-weight:600;letter-spacing:-.35px;margin:0}.destination p{font-size:16px;color:var(--muted);line-height:1.4;margin:8px 0 0}.full-map{display:block;width:100%;height:auto;border:1px solid var(--line);margin-top:18px}.map-fallback{min-height:240px;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:26px 18px;text-align:center;color:var(--muted);font-size:17px;line-height:1.4;gap:14px}.map-fallback svg{width:36px;height:36px;color:var(--blue)}.empty-queue{padding:24px 0;border-top:1px solid var(--line);font-size:17px;line-height:1.4;color:var(--muted)}.good{color:var(--green)}.settings-result{font-size:16px;line-height:1.4;color:var(--care-ink);margin:18px 0}.sr-only{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(max-width:460px){body{padding:0}.frame{width:100%;height:100dvh;border:0;border-radius:0;box-shadow:none}.statusbar{height:calc(28px + env(safe-area-inset-top));padding-top:calc(7px + env(safe-area-inset-top))}.recovery-footer{padding-bottom:calc(12px + env(safe-area-inset-bottom))}.sheet{bottom:calc(8px + env(safe-area-inset-bottom))}}
+@media(max-width:350px){.brandbar,.recovery-hero,.queue-section,.recovery-footer,.gps-copy{padding-left:14px;padding-right:14px}.round-context{padding-left:10px;padding-right:14px}.recovery-title{font-size:36px;letter-spacing:-.8px}.gps-copy .recovery-title{font-size:34px}.queue-row{gap:10px;grid-template-columns:26px minmax(0,1fr) 18px}.sheet{padding-left:14px;padding-right:14px}.map-label{right:12px;font-size:14px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style></head><body data-state="" data-review="0"><div class="frame connection"><div class="statusbar" aria-hidden="true"><span>16:48</span><span class="phone-status">5G <i></i></span></div><main class="app" id="app"><header class="brandbar"><div class="brand">Rounds<i></i></div><span class="header-state" id="headerState">Offline</span></header><p class="sample-note" id="sampleNotice" hidden>Preview · Sample saved work</p><div class="content" id="content"><section class="recovery-hero"><p class="eyeline"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 3 18 18M2 8a16 16 0 0 1 3-2m4-2a16 16 0 0 1 13 4M5 12a11 11 0 0 1 4-2m5 0a11 11 0 0 1 5 2M8 16a6 6 0 0 1 8 0M12 20h.01"/></svg>Connection</p><h1 class="recovery-title" id="pageTitle" tabindex="-1">You’re offline</h1><p class="recovery-lead" id="lead"></p></section><section class="round-context"><strong id="roundName">Round 18 · UrbanFlowers</strong><span id="roundSaved">Saved on phone · 16:46</span></section><section class="queue-section"><h2 class="section-label" id="queueTitle">Waiting to send · 2</h2><div id="queueRows"></div><p class="empty-queue" id="emptyQueue" hidden></p><p class="subnote" id="queueNote"></p><p class="inline-status" id="syncError" role="status" hidden></p></section></div><footer class="recovery-footer"><button class="primary" id="primary">Retry connection</button><button class="secondary" id="secondary">Return to Round</button></footer></main><div class="panel-backdrop" id="backdrop" hidden></div><section class="sheet" id="itemSheet" role="dialog" aria-modal="true" aria-labelledby="itemSheetTitle" hidden><div class="sheet-head"><h2 id="itemSheetTitle">Saved item</h2><button class="square" data-close-sheet aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg></button></div><p class="sheet-kicker" id="itemContext"></p><h3 class="sheet-merchant" id="itemTitle"></h3><p class="detail-status" id="itemState"></p><p class="detail-copy" id="itemCopy"></p><p class="inline-status" id="itemError" role="status" hidden></p><button class="primary" id="retryItem">Retry sending</button><button class="cancel" data-close-sheet>Close</button></section><section class="sheet" id="previewSheet" role="dialog" aria-modal="true" aria-labelledby="previewSheetTitle" hidden><div class="sheet-head"><h2 id="previewSheetTitle">Connection preview</h2><button class="square" data-close-sheet aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg></button></div><p class="sheet-copy" id="previewCopy">Choose a sample result. No work is sent.</p><div class="preview-choices"><button class="primary" id="previewSent">All items received</button><button class="primary" id="previewSaved" hidden>Saved on phone</button><button class="secondary" id="previewPartial">Proof failed · Message sent</button><button class="secondary" id="previewFailed">Retry failed</button><button class="secondary" id="previewOffline">Still offline</button></div><button class="cancel" data-close-sheet>Cancel</button></section></div><script>(()=>{'use strict';
+const $=id=>document.getElementById(id),app=$('app'),backdrop=$('backdrop');let activeSheet=null,returnFocus=null,onSheetClosed=()=>{},canCloseSheet=()=>true;
+function focusable(s){return [...s.querySelectorAll('button:not([disabled]),a[href],textarea,input,select,[tabindex="0"]')].filter(el=>!el.closest('[hidden]'))}
+function closeSheet(){if(!activeSheet||!canCloseSheet())return;const id=activeSheet.id;activeSheet.hidden=true;activeSheet=null;onSheetClosed(id);backdrop.hidden=true;app.inert=false;if(returnFocus&&!returnFocus.closest('[hidden]'))returnFocus.focus()}
+function openSheet(id,trigger){if(!activeSheet)returnFocus=trigger;else{const previous=activeSheet.id;activeSheet.hidden=true;onSheetClosed(previous)}activeSheet=$(id);activeSheet.hidden=false;backdrop.hidden=false;app.inert=true;activeSheet.scrollTop=0;focusable(activeSheet)[0]?.focus()}
+document.querySelectorAll('[data-close-sheet]').forEach(b=>b.addEventListener('click',closeSheet));backdrop.addEventListener('click',closeSheet);document.querySelectorAll('.sheet').forEach(s=>s.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();closeSheet()}if(e.key==='Tab'){const items=focusable(s),first=items[0],last=items[items.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus()}}}));
+
+const params=new URLSearchParams(location.search),review=document.body.dataset.review==='1'||params.get('review')==='1',fixture=document.body.dataset.state||params.get('state')||'';
+const offline=()=>params.get('offline')==='1'||fixture==='offline'||navigator.onLine===false;
+function text(el,value){el.textContent=value}
+function focusPage(){if($('content'))$('content').scrollTop=0;$('pageTitle')?.focus()}
+function make(tag,cls,value){const el=document.createElement(tag);if(cls)el.className=cls;if(value!==undefined)el.textContent=value;return el}
+function facts(id,rows){$(id).replaceChildren(...rows.map(([label,value,tone])=>{const row=make('div','fact');row.append(make('dt','',label),make('dd',tone||'',value));return row}))}
+function duration(minutes){return Math.floor(minutes/60)+'h '+String(minutes%60).padStart(2,'0')+'m'}
+if(review||document.body.dataset.standalone==='1')document.addEventListener('click',e=>{if(e.defaultPrevented)return;const a=e.target.closest('a[href]');if(a&&/^ROUNDS-/.test(a.getAttribute('href'))){e.preventDefault();parent.postMessage({type:'rounds-14-companion',href:a.getAttribute('href')},'*')}});
+
+function navigateLocal(href){if(review||document.body.dataset.standalone==='1')parent.postMessage({type:'rounds-14-companion',href},'*');else location.href=href;}
+const ICONS={"message": "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M21 15a3 3 0 0 1-3 3H9l-6 4V6a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3Z\"/></svg>", "chevron": "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"m9 5 7 7-7 7\"/></svg>", "photo": "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><rect x=\"3\" y=\"5\" width=\"18\" height=\"15\" rx=\"2\"/><circle cx=\"8\" cy=\"10\" r=\"1\"/><path d=\"m4 18 5-5 4 3 3-4 5 5\"/></svg>", "offline": "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"m3 3 18 18M2 8a16 16 0 0 1 3-2m4-2a16 16 0 0 1 13 4M5 12a11 11 0 0 1 4-2m5 0a11 11 0 0 1 5 2M8 16a6 6 0 0 1 8 0M12 20h.01\"/></svg>", "expand": "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5\"/></svg>", "back": "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M19 12H5m7 7-7-7 7-7\"/></svg>", "location": "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"7\"/><path d=\"M12 2v3m0 14v3M2 12h3m14 0h3m-7-2v2m0 3h.01\"/></svg>"};
+// Sample states are isolated from the optional native outbox adapter.
+const bridge=review?null:window.RoundsSyncBridge;
+const demo=review||!bridge;
+let snapshot=null,busy=false,serial=0,selectedId=null,previewPending=false,previewAction='read';
+const queueNodes=new Map();
+const baseItems=[
+ {id:'sample-proof-1',kind:'proof',title:'Proof of delivery',context:'Stop 1 · K. Nattaporn',localDurable:true,state:'queued'},
+ {id:'sample-message-1',kind:'message',title:'Message to Operations',context:'Round 18 · Stop 1',localDurable:true,state:'queued'}
+];
+function sample(mode){
+ const items=baseItems.map(i=>({...i}));
+ const s={connection:mode==='offline'?'offline':'online',round:{id:'18',merchant:'UrbanFlowers',savedAt:'16:46',cached:true},items};
+ function receipt(i){i.state='sent';i.receipt={id:'sample-receipt-'+i.id,itemId:i.id,accepted:true,evidenceDurable:i.kind==='proof'};}
+ if(mode==='uploading'){items[0].state='uploading';}
+ if(mode==='partial'){receipt(items[1]);items[0].state='failed';}
+ if(mode==='failed'){items.forEach(i=>i.state='failed');}
+ if(mode==='synced'){items.forEach(receipt);}
+ if(mode==='save-failed'){items[0].localDurable=false;items[0].state='save_failed';}
+ if(mode==='empty')s.items=[];
+ if(mode==='reconnecting')s.connection='checking';
+ return s;
+}
+function safeString(v,max=160){return typeof v==='string'&&v.length>0&&v.length<=max?v:null;}
+function validate(raw){
+ if(!raw||!['offline','online','checking','unknown'].includes(raw.connection)||!Array.isArray(raw.items)||raw.items.length>200)throw Error('invalid snapshot');
+ const seen=new Set();
+ const items=raw.items.map(i=>{
+  if(!i||!safeString(i.id)||seen.has(i.id)||!['proof','message'].includes(i.kind)||!safeString(i.title)||!safeString(i.context)||typeof i.localDurable!=='boolean'||!['queued','uploading','failed','sent','save_failed'].includes(i.state))throw Error('invalid item');
+  seen.add(i.id);
+  const receipt=i.receipt;
+  const confirmed=!!(receipt&&safeString(receipt.id)&&receipt.itemId===i.id&&receipt.accepted===true&&(i.kind!=='proof'||receipt.evidenceDurable===true));
+  let state=i.state;
+  if(state==='sent'&&!confirmed)state='queued';
+  if(!i.localDurable&&!confirmed)state='save_failed';
+  return {id:i.id,kind:i.kind,title:i.title,context:i.context,localDurable:i.localDurable,state,confirmed};
+ });
+ const r=raw.round;
+ const round=r&&safeString(r.id,32)&&safeString(r.merchant,80)&&typeof r.cached==='boolean'?{id:r.id,merchant:r.merchant,cached:r.cached,savedAt:safeString(r.savedAt,40)}:null;
+ return {connection:raw.connection,round,items};
+}
+function counts(){const items=snapshot?.items||[];return {items,pending:items.filter(i=>i.state!=='sent'),failed:items.filter(i=>i.state==='failed'),unsafe:items.filter(i=>i.state==='save_failed'),uploading:items.some(i=>i.state==='uploading')};}
+function itemLabel(i){return {queued:'Waiting to send',uploading:i.kind==='proof'?'Uploading':'Sending',failed:'Retry needed',sent:i.kind==='proof'?'Evidence received':'Message received',save_failed:'Not saved'}[i.state];}
+function render(){
+ const c=counts(),connection=snapshot?.connection||'unknown';
+ let heading='Checking saved work',lead='Your upload status will appear here.';
+ if(snapshot){
+  if(c.unsafe.length){heading='Work isn’t saved';lead='Review the item before leaving this screen.';}
+  else if(busy||connection==='checking'){heading='Checking saved work';lead='Saved work stays on this phone.';}
+  else if(connection==='offline'){heading='You’re offline';lead=snapshot.round?.cached?'Your saved Round is available.':'Your saved work is waiting to send.';}
+  else if(c.uploading){heading='Sending saved work';lead='Waiting for Rounds to confirm receipt.';}
+  else if(c.failed.length){heading=c.failed.length+' item'+(c.failed.length===1?'':'s')+' to retry';lead='Your work is still saved on this phone.';}
+  else if(c.pending.length){heading='Ready to reconnect';lead='Your saved work is waiting to send.';}
+  else{heading=c.items.length?'All work sent':'You’re connected';lead=c.items.length?'Rounds has received the items below.':'No saved items are waiting to send.';}
+ }
+ $('pageTitle').textContent=heading;$('lead').textContent=lead;$('lead').hidden=!c.unsafe.length;
+ $('headerState').textContent=connection==='online'?'Online':connection==='offline'?'Offline':connection==='checking'||busy?'Checking':'Not checked';
+ $('headerState').classList.toggle('good',connection==='online');
+ $('queueTitle').textContent=c.unsafe.length?'Needs attention':c.pending.length?'Saved work':c.items.length?'Received by Rounds':'Saved work';
+ const rows=[];
+ for(const i of c.items){
+  let record=queueNodes.get(i.id);
+  if(!record){
+   const row=make('button','queue-row');row.setAttribute('aria-haspopup','dialog');
+   const symbol=make('span'),copy=make('span'),title=make('strong'),status=make('small'),end=make('span');
+   copy.append(title,status);end.innerHTML=ICONS.chevron;row.append(symbol,copy,end);
+   row.addEventListener('click',()=>openItem(i.id,row));record={row,symbol,title,status};queueNodes.set(i.id,record);
+  }
+  record.symbol.innerHTML=ICONS[i.kind==='proof'?'photo':'message'];record.title.textContent=i.title;record.status.textContent=itemLabel(i);
+  record.status.className=i.state==='sent'?'good':'';rows.push(record.row);
+ }
+ const current=[...$('queueRows').children];
+ if(current.length!==rows.length||current.some((node,i)=>node!==rows[i]))$('queueRows').replaceChildren(...rows);
+ $('emptyQueue').hidden=c.items.length>0;$('emptyQueue').textContent=snapshot?'No items waiting to send.':'Saved work hasn’t been checked.';
+ $('roundName').textContent=snapshot?.round?'Round '+snapshot.round.id+' · '+snapshot.round.merchant:'Current Round';
+ $('roundSaved').textContent=snapshot?.round?.cached?'Saved on phone'+(snapshot.round.savedAt?' · '+snapshot.round.savedAt:''):'Saved route not checked';
+ const unsafe=c.unsafe.length>0;
+ $('primary').textContent=unsafe?'Review unsaved item':busy?'Checking connection…':c.uploading?'Check upload status':c.pending.length||!snapshot?'Retry connection':'Return to Round';
+ $('primary').disabled=busy;
+ $('secondary').textContent=c.pending.length||!snapshot?'Return to Round':'Check connection';
+ $('secondary').hidden=unsafe;
+ $('queueNote').textContent=c.unsafe.length?'Unsaved items need attention before you leave.':c.pending.length?'Items stay here until Rounds confirms receipt.':'';
+ $('queueNote').hidden=true;
+ if(activeSheet?.id==='itemSheet'&&selectedId)updateDetail();
+}
+function updateDetail(){
+ const i=snapshot?.items.find(x=>x.id===selectedId);if(!i){closeSheet();return;}
+ $('itemTitle').textContent=i.title;$('itemContext').textContent=i.context;
+ $('itemState').textContent=itemLabel(i);$('itemState').classList.toggle('good',i.state==='sent');
+ $('itemCopy').hidden=i.state==='sent';$('itemCopy').textContent=i.state==='sent'?'':
+  i.state==='save_failed'?'This item has no confirmed local copy. Keep this screen open and retry saving.':
+  i.kind==='proof'?'Saved on this phone. Delivery evidence is pending on Rounds.':'Saved on this phone.';
+ $('retryItem').hidden=i.state==='sent';$('retryItem').disabled=busy;
+ $('retryItem').textContent=i.state==='save_failed'?'Retry saving':i.state==='uploading'?'Check status':'Retry sending';
+}
+function openItem(id,trigger){selectedId=id;updateDetail();openSheet('itemSheet',trigger);}
+function goRound(){
+ serial++;
+ const ctx=params.get('context')==='network'?'network':'team';
+ const file=params.get('from')==='home'?(ctx==='network'?'ROUNDS-B03-HOME-NETWORK-AVAILABLE-v8-10OF10.html':'ROUNDS-B01-TEAM-DRIVER-HOME-v4-10OF10.html'):'ROUNDS-E01-ACTIVE-ROUND-OVERVIEW-v5-10OF10.html';
+ const href=file+'?context='+ctx+(snapshot?.connection==='offline'?'&offline=1':'');
+ navigateLocal(href);
+}
+function showError(message){
+ $('syncError').textContent=message;$('syncError').hidden=false;
+ if(activeSheet?.id==='itemSheet'){$('itemError').textContent=message;$('itemError').hidden=false;}
+}
+async function refresh(action='read',itemId=null){
+ if(busy)return;
+ if(demo){
+  previewPending=true;previewAction=action;$('previewSheetTitle').textContent=action==='save'?'Save preview':'Connection preview';
+  $('previewCopy').textContent='Choose a sample result. No work is sent.';
+  $('previewSaved').hidden=action!=='save';$('previewSent').hidden=action==='save';$('previewPartial').hidden=action==='save';
+  openSheet('previewSheet',activeSheet?$('retryItem'):$('primary'));return;
+ }
+ const n=++serial;busy=true;$('syncError').hidden=true;$('itemError').hidden=true;render();
+ try{
+  let raw;
+  if(action==='save'){
+   if(typeof bridge.retryLocalSave!=='function')throw Error('save unavailable');
+   raw=await bridge.retryLocalSave(itemId);
+  }else if(action==='retry'){
+   if(typeof bridge.retry!=='function')throw Error('retry unavailable');
+   raw=await bridge.retry(itemId);
+  }else{
+   if(typeof bridge.getSnapshot!=='function')throw Error('read unavailable');
+   raw=await bridge.getSnapshot();
+  }
+  if(n!==serial)return;
+  snapshot=validate(raw);
+ }catch(_){if(n!==serial)return;showError(action==='save'?'Still not saved. Keep this screen open and try again.':'Couldn’t check saved work. Try again.');}
+ finally{if(n===serial){busy=false;render();}}
+}
+function previewResult(mode){
+ if(!demo||!previewPending)return;previewPending=false;closeSheet();
+ const saveFailed=previewAction==='save'&&mode!=='saved';
+ snapshot=validate(sample(saveFailed?'save-failed':mode==='saved'?'offline':mode));$('syncError').hidden=true;render();focusPage();
+}
+['Offline','Partial','Sent','Failed','Saved'].forEach((name,i)=>$('preview'+name).addEventListener('click',()=>previewResult(['offline','partial','synced','failed','saved'][i])));
+$('primary').addEventListener('click',()=>{
+ const c=counts();
+ if(c.unsafe.length)return openItem(c.unsafe[0].id,$('primary'));
+ if(snapshot&&!c.pending.length&&!busy)return goRound();
+ refresh(c.uploading?'read':'retry');
+});
+$('secondary').addEventListener('click',()=>{if(counts().pending.length||!snapshot)goRound();else refresh();});
+$('retryItem').addEventListener('click',()=>{
+ const i=snapshot?.items.find(x=>x.id===selectedId);if(i)refresh(i.state==='save_failed'?'save':i.state==='uploading'?'read':'retry',i.id);
+});
+onSheetClosed=id=>{if(id==='previewSheet')previewPending=false;};
+// A network event alone never acknowledges a queued item and never invokes retry/send.
+window.addEventListener('online',()=>{if(!demo&&!busy)refresh();});
+window.addEventListener('offline',()=>{if(demo)return;serial++;busy=false;if(snapshot){snapshot={...snapshot,connection:'offline'};render();}});
+window.addEventListener('pagehide',()=>{serial++;busy=false;});
+$('sampleNotice').hidden=review||!demo;
+if(demo){snapshot=validate(sample(fixture||'offline'));render();}else{render();refresh();}
+
+})();</script></body></html>

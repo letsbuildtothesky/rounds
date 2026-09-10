@@ -1,0 +1,7 @@
+PASS reference example J01 same physical command contributes quantity once
+PASS reference example J02 acceptance defines assignment and released execution roots
+PASS reference example J03 incomplete order blocks; other complete order can proceed; split allocation prohibited
+PASS reference example J04 identity binding leaves original assignment fence intact on reassignment
+PASS reference example J05 prepayment, later earnings, adjustment and refund remain separate facts
+PASS reference example J06 independent receipt gates and synchronous gate ownership
+LIMIT: These are reference-rule examples, not API, concurrency, database, Flutter or device execution.

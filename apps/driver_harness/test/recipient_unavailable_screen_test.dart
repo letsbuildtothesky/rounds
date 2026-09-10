@@ -151,7 +151,7 @@ void main() {
     );
   }
 
-  testWidgets('two failed calls become a durable Operations escalation CTA', (
+  testWidgets('unconfigured call outcomes never fabricate durable attempts', (
     tester,
   ) async {
     final launched = <Uri>[];
@@ -169,8 +169,9 @@ void main() {
     await tester.tap(find.byKey(const Key('recipient-outcome-no_answer')));
     await tester.pumpAndSettle();
 
-    expect(find.text('Call recipient again'), findsOneWidget);
-    expect(find.byKey(const Key('recipient-attempt-0')), findsOneWidget);
+    expect(find.textContaining('Nothing was sent or saved.'), findsOneWidget);
+    expect(find.text('Call recipient again'), findsNothing);
+    expect(find.byKey(const Key('recipient-attempt-0')), findsNothing);
     await tester.pump(const Duration(seconds: 6));
     await tester.pumpAndSettle();
 
@@ -181,19 +182,31 @@ void main() {
 
     expect(launched, hasLength(2));
     expect(launched.every((uri) => uri.scheme == 'tel'), isTrue);
-    expect(find.text('Contact Operations'), findsOneWidget);
-    expect(find.byKey(const Key('recipient-attempt-1')), findsOneWidget);
+    expect(find.textContaining('Nothing was sent or saved.'), findsOneWidget);
+    expect(find.byKey(const Key('recipient-attempt-1')), findsNothing);
     expect(find.text('Waiting for Operations'), findsNothing);
     expect(find.textContaining('approved'), findsNothing);
-    await tester.pump(const Duration(seconds: 6));
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.byKey(const Key('recipient-unavailable-primary')));
-    await tester.pumpAndSettle();
-    expect(find.byKey(const Key('rounds-action-drawer')), findsOneWidget);
-    expect(find.text('Call UrbanFlowers Dispatch'), findsOneWidget);
-    expect(find.text('Message UrbanFlowers Dispatch'), findsOneWidget);
   });
+
+  testWidgets(
+    'two recorded call attempts expose the Operations action drawer',
+    (tester) async {
+      // Explicit display fixture, not a claim that this widget recorded a call.
+      // Durable contact records are covered by driver_command_outbox_test.dart.
+      await _pumpCanonicalScreen(
+        tester,
+        controller: controller,
+        attempts: _attemptScenarios.last.attempts,
+      );
+      expect(find.text('Contact Operations'), findsOneWidget);
+
+      await tester.tap(find.byKey(const Key('recipient-unavailable-primary')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('rounds-action-drawer')), findsOneWidget);
+      expect(find.text('Call UrbanFlowers Dispatch'), findsOneWidget);
+      expect(find.text('Message UrbanFlowers Dispatch'), findsOneWidget);
+    },
+  );
 }
 
 Future<void> _pumpCanonicalScreen(

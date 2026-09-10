@@ -1,0 +1,1048 @@
+[
+  {
+    "code": "ADDRESS_REVIEW_REQUIRED",
+    "commands": [
+      "ApplyEntrance",
+      "CommitDelivery",
+      "ReleasePlan",
+      "ReviewSourceRevision",
+      "StartBroadcast"
+    ],
+    "other_origin": null,
+    "query_handlers": []
+  },
+  {
+    "code": "ASSET_NOT_VERIFIED",
+    "commands": [
+      "CompleteDelivery",
+      "ReportIssue",
+      "SubmitProof",
+      "VerifyAsset"
+    ],
+    "other_origin": null,
+    "query_handlers": []
+  },
+  {
+    "code": "CLAIM_TAKEN",
+    "commands": [
+      "ReleasePlan",
+      "RespondOffer",
+      "StartBroadcast"
+    ],
+    "other_origin": null,
+    "query_handlers": []
+  },
+  {
+    "code": "CONSENT_REQUIRED",
+    "commands": [
+      "ApprovePartialPickup",
+      "CancelDelivery",
+      "MoveDeliveryWindow",
+      "ProposeChange",
+      "ReassignRound"
+    ],
+    "other_origin": null,
+    "query_handlers": []
+  },
+  {
+    "code": "CUSTODY_MISMATCH",
+    "commands": [
+      "ApprovePartialPickup",
+      "CancelAgreement",
+      "CancelDelivery",
+      "CancelRound",
+      "CompleteDelivery",
+      "ConfirmArrival",
+      "ConfirmPickup",
+      "ConfirmTransferReceipt",
+      "ReceiveReturn",
+      "ReceiveTrip",
+      "RecordHandoff",
+      "SubmitProof"
+    ],
+    "other_origin": null,
+    "query_handlers": []
+  },
+  {
+    "code": "CUTOFF_PASSED",
+    "commands": [
+      "HoldSlot",
+      "MoveSlotHold"
+    ],
+    "other_origin": null,
+    "query_handlers": []
+  },
+  {
+    "code": "DRIVER_CONFLICT",
+    "commands": [
+      "ApplyPlanProposal",
+      "ReassignRound",
+      "ReleasePlan",
+      "RespondOffer",
+      "StagePlan"
+    ],
+    "other_origin": null,
+    "query_handlers": []
+  },
+  {
+    "code": "EVIDENCE_PENDING",
+    "commands": [
+      "CompleteDelivery"
+    ],
+    "other_origin": null,
+    "query_handlers": []
+  },
+  {
+    "code": "EVIDENCE_RETAINED",
+    "commands": [],
+    "other_origin": "Retained evidence outcome classification, not a failed physical command to retry",
+    "query_handlers": []
+  },
+  {
+    "code": "HOLD_EXPIRED",
+    "commands": [
+      "CommitDelivery",
+      "MoveSlotHold",
+      "RefreshSlotHold"
+    ],
+    "other_origin": null,
+    "query_handlers": []
+  },
+  {
+    "code": "HOLD_LIMIT",
+    "commands": [
+      "RefreshSlotHold"
+    ],
+    "other_origin": null,
+    "query_handlers": []
+  },
+  {
+    "code": "IDEMPOTENCY_CONFLICT",
+    "commands": [
+      "AcceptInvitation",
+      "AcknowledgeAssignment",
+      "ApplyEntrance",
+      "ApplyOwnFleetAutomation",
+      "ApplyPlanProposal",
+      "ApprovePartialPickup",
+      "ArchiveFleetResource",
+      "ArriveTrip",
+      "AskAvailability",
+      "BindShiftVehicle",
+      "BookTrip",
+      "CancelAgreement",
+      "CancelDelivery",
+      "CancelRound",
+      "CancelTransfer",
+      "CancelTrip",
+      "ChangeMemberAccess",
+      "ChangeTrip",
+      "CloseTenant",
+      "CloseTrip",
+      "CommitDelivery",
+      "CommitIntakeBatch",
+      "CompleteDelivery",
+      "ConfirmArrival",
+      "ConfirmEntrance",
+      "ConfirmPickup",
+      "ConfirmTransferReceipt",
+      "ConfirmTripLoad",
+      "CorrectIncidentCause",
+      "CreateIntakeBatch",
+      "CreateNavigationIntent",
+      "CreateReturn",
+      "CreateTenant",
+      "CreateTrackingLink",
+      "DecideAttendanceCorrection",
+      "DecideDispute",
+      "DecideVerification",
+      "DeclineTransfer",
+      "DepartTrip",
+      "DiscardDraft",
+      "EndShift",
+      "ExpandBroadcast",
+      "ExtractDraft",
+      "GeneratePlan",
+      "HoldSlot",
+      "InitiateTransfer",
+      "InviteMember",
+      "LogCallOutcome",
+      "MarkMessagesRead",
+      "MarkNotificationRead",
+      "MoveDeliveryWindow",
+      "MoveSlotHold",
+      "OpenConversation",
+      "OpenDispute",
+      "PauseRound",
+      "PreviewPlanMove",
+      "ProposeChange",
+      "ReassignRound",
+      "ReceiveReturn",
+      "ReceiveTrip",
+      "RecordFareAdjustment",
+      "RecordHandoff",
+      "RecordSettlement",
+      "RefreshSlotHold",
+      "ReleasePlan",
+      "ReleaseSlotHold",
+      "RemoveSlotOverride",
+      "ReplyAvailability",
+      "ReportIssue",
+      "ReportLocationObservation",
+      "RequestAttendanceCorrection",
+      "RequestExport",
+      "RequestPrivacyAction",
+      "RescheduleDelivery",
+      "ReserveAsset",
+      "ReserveVerificationEvidence",
+      "ResolveIssue",
+      "RespondCall",
+      "RespondChange",
+      "RespondOffer",
+      "RestartBroadcast",
+      "RestoreTenant",
+      "RetainOfflineObservations",
+      "RetireEntrance",
+      "RetryWriteback",
+      "ReviewAddress",
+      "ReviewSourceRevision",
+      "ReviseBroadcast",
+      "RevokeTrackingLink",
+      "SaveBrand",
+      "SaveCargoClass",
+      "SaveCity",
+      "SaveConnection",
+      "SaveDeliveryDraft",
+      "SaveDriverProfile",
+      "SaveDriverRelationship",
+      "SaveDriverVehicle",
+      "SaveHandlingRule",
+      "SavePayoutMethod",
+      "SavePlan",
+      "SavePolicy",
+      "SaveRound",
+      "SaveShiftTemplate",
+      "SaveSite",
+      "SaveSlotTemplate",
+      "SaveStopPlanningFields",
+      "SaveTrip",
+      "SaveVehicle",
+      "SaveVehicleProfile",
+      "ScheduleTrip",
+      "SendMessage",
+      "SetAvailability",
+      "SetConnectionState",
+      "SetContactPermissions",
+      "SetFeature",
+      "SetPickupReadiness",
+      "SetShiftAvailability",
+      "SetShiftOccurrence",
+      "SetSlotOverride",
+      "StagePlan",
+      "StartBroadcast",
+      "StartCall",
+      "StartShift",
+      "StopBroadcast",
+      "SubmitProof",
+      "SubmitVerification",
+      "SubmitVerificationCorrection",
+      "SuspendTenant",
+      "VerifyAsset",
+      "WithdrawChange",
+      "WithdrawRelease"
+    ],
+    "other_origin": null,
+    "query_handlers": []
+  },
+  {
+    "code": "IMMUTABLE_RECORD",
+    "commands": [
+      "CompleteDelivery",
+      "ConfirmArrival",
+      "ConfirmPickup",
+      "RecordHandoff",
+      "ReserveAsset",
+      "SubmitProof"
+    ],
+    "other_origin": null,
+    "query_handlers": []
+  },
+  {
+    "code": "INBOUND_DISCREPANCY",
+    "commands": [
+      "ConfirmPickup",
+      "ReleasePlan"
+    ],
+    "other_origin": null,
+    "query_handlers": []
+  },
+  {
+    "code": "INBOUND_NOT_RECEIVED",
+    "commands": [
+      "ConfirmPickup",
+      "ReleasePlan"
+    ],
+    "other_origin": null,
+    "query_handlers": []
+  },
+  {
+    "code": "NOT_AUTHORIZED",
+    "commands": [
+      "AcceptInvitation",
+      "AcknowledgeAssignment",
+      "ApplyEntrance",
+      "ApplyOwnFleetAutomation",
+      "ApplyPlanProposal",
+      "ApprovePartialPickup",
+      "ArchiveFleetResource",
+      "ArriveTrip",
+      "AskAvailability",
+      "BindShiftVehicle",
+      "BookTrip",
+      "CancelAgreement",
+      "CancelDelivery",
+      "CancelRound",
+      "CancelTransfer",
+      "CancelTrip",
+      "ChangeMemberAccess",
+      "ChangeTrip",
+      "CloseTenant",
+      "CloseTrip",
+      "CommitDelivery",
+      "CommitIntakeBatch",
+      "CompleteDelivery",
+      "ConfirmArrival",
+      "ConfirmEntrance",
+      "ConfirmPickup",
+      "ConfirmTransferReceipt",
+      "ConfirmTripLoad",
+      "CorrectIncidentCause",
+      "CreateIntakeBatch",
+      "CreateNavigationIntent",
+      "CreateReturn",
+      "CreateTenant",
+      "CreateTrackingLink",
+      "DecideAttendanceCorrection",
+      "DecideDispute",
+      "DecideVerification",
+      "DeclineTransfer",
+      "DepartTrip",
+      "DiscardDraft",
+      "EndShift",
+      "ExpandBroadcast",
+      "ExtractDraft",
+      "GeneratePlan",
+      "HoldSlot",
+      "InitiateTransfer",
+      "InviteMember",
+      "LogCallOutcome",
+      "MarkMessagesRead",
+      "MarkNotificationRead",
+      "MoveDeliveryWindow",
+      "MoveSlotHold",
+      "OpenConversation",
+      "OpenDispute",
+      "PauseRound",
+      "PreviewPlanMove",
+      "ProposeChange",
+      "ReassignRound",
+      "ReceiveReturn",
+      "ReceiveTrip",
+      "RecordFareAdjustment",
+      "RecordHandoff",
+      "RecordSettlement",
+      "RefreshSlotHold",
+      "ReleasePlan",
+      "ReleaseSlotHold",
+      "RemoveSlotOverride",
+      "ReplyAvailability",
+      "ReportIssue",
+      "ReportLocationObservation",
+      "RequestAttendanceCorrection",
+      "RequestExport",
+      "RequestPrivacyAction",
+      "RescheduleDelivery",
+      "ReserveAsset",
+      "ReserveVerificationEvidence",
+      "ResolveIssue",
+      "RespondCall",
+      "RespondChange",
+      "RespondOffer",
+      "RestartBroadcast",
+      "RestoreTenant",
+      "RetainOfflineObservations",
+      "RetireEntrance",
+      "RetryWriteback",
+      "ReviewAddress",
+      "ReviewSourceRevision",
+      "ReviseBroadcast",
+      "RevokeTrackingLink",
+      "SaveBrand",
+      "SaveCargoClass",
+      "SaveCity",
+      "SaveConnection",
+      "SaveDeliveryDraft",
+      "SaveDriverProfile",
+      "SaveDriverRelationship",
+      "SaveDriverVehicle",
+      "SaveHandlingRule",
+      "SavePayoutMethod",
+      "SavePlan",
+      "SavePolicy",
+      "SaveRound",
+      "SaveShiftTemplate",
+      "SaveSite",
+      "SaveSlotTemplate",
+      "SaveStopPlanningFields",
+      "SaveTrip",
+      "SaveVehicle",
+      "SaveVehicleProfile",
+      "ScheduleTrip",
+      "SendMessage",
+      "SetAvailability",
+      "SetConnectionState",
+      "SetContactPermissions",
+      "SetFeature",
+      "SetPickupReadiness",
+      "SetShiftAvailability",
+      "SetShiftOccurrence",
+      "SetSlotOverride",
+      "StagePlan",
+      "StartBroadcast",
+      "StartCall",
+      "StartShift",
+      "StopBroadcast",
+      "SubmitProof",
+      "SubmitVerification",
+      "SubmitVerificationCorrection",
+      "SuspendTenant",
+      "VerifyAsset",
+      "WithdrawChange",
+      "WithdrawRelease"
+    ],
+    "other_origin": null,
+    "query_handlers": [
+      "GetTracking"
+    ]
+  },
+  {
+    "code": "NOT_FOUND",
+    "commands": [],
+    "other_origin": "Authorized resource lookup; never disclose another tenant resource existence",
+    "query_handlers": []
+  },
+  {
+    "code": "OFFER_EXPIRED",
+    "commands": [
+      "RespondOffer"
+    ],
+    "other_origin": null,
+    "query_handlers": []
+  },
+  {
+    "code": "OFFER_WITHDRAWN",
+    "commands": [
+      "RespondOffer"
+    ],
+    "other_origin": null,
+    "query_handlers": []
+  },
+  {
+    "code": "PARTIAL_APPROVAL_REQUIRED",
+    "commands": [],
+    "other_origin": "Reserved deferred split-release error; not emitted by launch pickup.",
+    "query_handlers": []
+  },
+  {
+    "code": "PHYSICAL_INCOMPATIBILITY",
+    "commands": [
+      "ApplyOwnFleetAutomation",
+      "ApplyPlanProposal",
+      "BookTrip",
+      "ReleasePlan"
+    ],
+    "other_origin": null,
+    "query_handlers": []
+  },
+  {
+    "code": "PICKUP_NOT_READY",
+    "commands": [
+      "ConfirmPickup",
+      "ReleasePlan"
+    ],
+    "other_origin": null,
+    "query_handlers": []
+  },
+  {
+    "code": "POLICY_NOT_CONFIGURED",
+    "commands": [
+      "CommitDelivery",
+      "CompleteDelivery",
+      "ConfirmArrival",
+      "CreateTenant",
+      "RecordHandoff",
+      "SubmitProof"
+    ],
+    "other_origin": null,
+    "query_handlers": []
+  },
+  {
+    "code": "POLICY_OUT_OF_BOUNDS",
+    "commands": [
+      "SavePolicy"
+    ],
+    "other_origin": null,
+    "query_handlers": []
+  },
+  {
+    "code": "PROOF_INCOMPLETE",
+    "commands": [
+      "CompleteDelivery",
+      "SubmitProof"
+    ],
+    "other_origin": null,
+    "query_handlers": []
+  },
+  {
+    "code": "PROVIDER_UNAVAILABLE",
+    "commands": [
+      "CreateNavigationIntent",
+      "ExtractDraft",
+      "StartCall"
+    ],
+    "other_origin": null,
+    "query_handlers": []
+  },
+  {
+    "code": "QUANTITY_EXCEEDED",
+    "commands": [
+      "ApprovePartialPickup",
+      "ConfirmPickup",
+      "ConfirmTransferReceipt",
+      "ReceiveReturn",
+      "ReceiveTrip",
+      "ReportIssue"
+    ],
+    "other_origin": null,
+    "query_handlers": []
+  },
+  {
+    "code": "RATE_LIMITED",
+    "commands": [],
+    "other_origin": "HTTP ingress quota gateway; no operational mutation",
+    "query_handlers": []
+  },
+  {
+    "code": "SCOPE_CHANGED",
+    "commands": [
+      "RespondChange",
+      "RespondOffer"
+    ],
+    "other_origin": null,
+    "query_handlers": []
+  },
+  {
+    "code": "SLOT_CLOSED",
+    "commands": [
+      "CommitDelivery",
+      "HoldSlot",
+      "MoveSlotHold",
+      "RefreshSlotHold"
+    ],
+    "other_origin": null,
+    "query_handlers": []
+  },
+  {
+    "code": "SLOT_EXPIRED",
+    "commands": [
+      "CommitDelivery",
+      "HoldSlot",
+      "MoveSlotHold",
+      "RefreshSlotHold"
+    ],
+    "other_origin": null,
+    "query_handlers": []
+  },
+  {
+    "code": "SLOT_FULL",
+    "commands": [
+      "HoldSlot",
+      "MoveDeliveryWindow",
+      "MoveSlotHold"
+    ],
+    "other_origin": null,
+    "query_handlers": []
+  },
+  {
+    "code": "SOURCE_STALE",
+    "commands": [
+      "ResolveIssue",
+      "ReviewSourceRevision"
+    ],
+    "other_origin": null,
+    "query_handlers": []
+  },
+  {
+    "code": "STALE_VERSION",
+    "commands": [
+      "AcceptInvitation",
+      "AcknowledgeAssignment",
+      "ApplyEntrance",
+      "ApplyOwnFleetAutomation",
+      "ApplyPlanProposal",
+      "ApprovePartialPickup",
+      "ArchiveFleetResource",
+      "ArriveTrip",
+      "AskAvailability",
+      "BindShiftVehicle",
+      "BookTrip",
+      "CancelAgreement",
+      "CancelDelivery",
+      "CancelRound",
+      "CancelTransfer",
+      "CancelTrip",
+      "ChangeMemberAccess",
+      "ChangeTrip",
+      "CloseTenant",
+      "CloseTrip",
+      "CommitDelivery",
+      "CommitIntakeBatch",
+      "CompleteDelivery",
+      "ConfirmArrival",
+      "ConfirmEntrance",
+      "ConfirmPickup",
+      "ConfirmTransferReceipt",
+      "ConfirmTripLoad",
+      "CorrectIncidentCause",
+      "CreateIntakeBatch",
+      "CreateNavigationIntent",
+      "CreateReturn",
+      "CreateTenant",
+      "CreateTrackingLink",
+      "DecideAttendanceCorrection",
+      "DecideDispute",
+      "DecideVerification",
+      "DeclineTransfer",
+      "DepartTrip",
+      "DiscardDraft",
+      "EndShift",
+      "ExpandBroadcast",
+      "ExtractDraft",
+      "GeneratePlan",
+      "HoldSlot",
+      "InitiateTransfer",
+      "InviteMember",
+      "LogCallOutcome",
+      "MarkMessagesRead",
+      "MarkNotificationRead",
+      "MoveDeliveryWindow",
+      "MoveSlotHold",
+      "OpenConversation",
+      "OpenDispute",
+      "PauseRound",
+      "PreviewPlanMove",
+      "ProposeChange",
+      "ReassignRound",
+      "ReceiveReturn",
+      "ReceiveTrip",
+      "RecordFareAdjustment",
+      "RecordHandoff",
+      "RecordSettlement",
+      "RefreshSlotHold",
+      "ReleasePlan",
+      "ReleaseSlotHold",
+      "RemoveSlotOverride",
+      "ReplyAvailability",
+      "ReportIssue",
+      "ReportLocationObservation",
+      "RequestAttendanceCorrection",
+      "RequestExport",
+      "RequestPrivacyAction",
+      "RescheduleDelivery",
+      "ReserveAsset",
+      "ReserveVerificationEvidence",
+      "ResolveIssue",
+      "RespondCall",
+      "RespondChange",
+      "RespondOffer",
+      "RestartBroadcast",
+      "RestoreTenant",
+      "RetainOfflineObservations",
+      "RetireEntrance",
+      "RetryWriteback",
+      "ReviewAddress",
+      "ReviewSourceRevision",
+      "ReviseBroadcast",
+      "RevokeTrackingLink",
+      "SaveBrand",
+      "SaveCargoClass",
+      "SaveCity",
+      "SaveConnection",
+      "SaveDeliveryDraft",
+      "SaveDriverProfile",
+      "SaveDriverRelationship",
+      "SaveDriverVehicle",
+      "SaveHandlingRule",
+      "SavePayoutMethod",
+      "SavePlan",
+      "SavePolicy",
+      "SaveRound",
+      "SaveShiftTemplate",
+      "SaveSite",
+      "SaveSlotTemplate",
+      "SaveStopPlanningFields",
+      "SaveTrip",
+      "SaveVehicle",
+      "SaveVehicleProfile",
+      "ScheduleTrip",
+      "SendMessage",
+      "SetAvailability",
+      "SetConnectionState",
+      "SetContactPermissions",
+      "SetFeature",
+      "SetPickupReadiness",
+      "SetShiftAvailability",
+      "SetShiftOccurrence",
+      "SetSlotOverride",
+      "StagePlan",
+      "StartBroadcast",
+      "StartCall",
+      "StartShift",
+      "StopBroadcast",
+      "SubmitProof",
+      "SubmitVerification",
+      "SubmitVerificationCorrection",
+      "SuspendTenant",
+      "VerifyAsset",
+      "WithdrawChange",
+      "WithdrawRelease"
+    ],
+    "other_origin": null,
+    "query_handlers": []
+  },
+  {
+    "code": "TRACKING_DISABLED",
+    "commands": [
+      "CreateTrackingLink"
+    ],
+    "other_origin": null,
+    "query_handlers": []
+  },
+  {
+    "code": "TRACKING_EXPIRED",
+    "commands": [
+      "CreateTrackingLink"
+    ],
+    "other_origin": null,
+    "query_handlers": [
+      "GetTracking"
+    ]
+  },
+  {
+    "code": "TRACKING_REVOKED",
+    "commands": [],
+    "other_origin": null,
+    "query_handlers": [
+      "GetTracking"
+    ]
+  },
+  {
+    "code": "TRANSFER_NOT_AUTHORIZED",
+    "commands": [
+      "ConfirmTransferReceipt",
+      "DeclineTransfer"
+    ],
+    "other_origin": null,
+    "query_handlers": []
+  },
+  {
+    "code": "UNAUTHENTICATED",
+    "commands": [],
+    "other_origin": "HTTP authentication gateway, before domain execution",
+    "query_handlers": []
+  },
+  {
+    "code": "UNKNOWN_RESULT",
+    "commands": [],
+    "other_origin": "Transport/gateway ambiguity; reconcile original command receipt before retrying effects",
+    "query_handlers": []
+  },
+  {
+    "code": "UNSUPPORTED_PROFILE",
+    "commands": [
+      "CreateNavigationIntent",
+      "SaveVehicleProfile"
+    ],
+    "other_origin": null,
+    "query_handlers": [
+      "GetRouteEstimate"
+    ]
+  },
+  {
+    "code": "UPGRADE_REQUIRED",
+    "commands": [],
+    "other_origin": "Feature entitlement middleware; active physical recovery rules still apply",
+    "query_handlers": []
+  },
+  {
+    "code": "VALIDATION_FAILED",
+    "commands": [
+      "AcceptInvitation",
+      "AcknowledgeAssignment",
+      "ApplyEntrance",
+      "ApplyOwnFleetAutomation",
+      "ApplyPlanProposal",
+      "ApprovePartialPickup",
+      "ArchiveFleetResource",
+      "ArriveTrip",
+      "AskAvailability",
+      "BindShiftVehicle",
+      "BookTrip",
+      "CancelAgreement",
+      "CancelDelivery",
+      "CancelRound",
+      "CancelTransfer",
+      "CancelTrip",
+      "ChangeMemberAccess",
+      "ChangeTrip",
+      "CloseTenant",
+      "CloseTrip",
+      "CommitDelivery",
+      "CommitIntakeBatch",
+      "CompleteDelivery",
+      "ConfirmArrival",
+      "ConfirmEntrance",
+      "ConfirmPickup",
+      "ConfirmTransferReceipt",
+      "ConfirmTripLoad",
+      "CorrectIncidentCause",
+      "CreateIntakeBatch",
+      "CreateNavigationIntent",
+      "CreateReturn",
+      "CreateTenant",
+      "CreateTrackingLink",
+      "DecideAttendanceCorrection",
+      "DecideDispute",
+      "DecideVerification",
+      "DeclineTransfer",
+      "DepartTrip",
+      "DiscardDraft",
+      "EndShift",
+      "ExpandBroadcast",
+      "ExtractDraft",
+      "GeneratePlan",
+      "HoldSlot",
+      "InitiateTransfer",
+      "InviteMember",
+      "LogCallOutcome",
+      "MarkMessagesRead",
+      "MarkNotificationRead",
+      "MoveDeliveryWindow",
+      "MoveSlotHold",
+      "OpenConversation",
+      "OpenDispute",
+      "PauseRound",
+      "PreviewPlanMove",
+      "ProposeChange",
+      "ReassignRound",
+      "ReceiveReturn",
+      "ReceiveTrip",
+      "RecordFareAdjustment",
+      "RecordHandoff",
+      "RecordSettlement",
+      "RefreshSlotHold",
+      "ReleasePlan",
+      "ReleaseSlotHold",
+      "RemoveSlotOverride",
+      "ReplyAvailability",
+      "ReportIssue",
+      "ReportLocationObservation",
+      "RequestAttendanceCorrection",
+      "RequestExport",
+      "RequestPrivacyAction",
+      "RescheduleDelivery",
+      "ReserveAsset",
+      "ReserveVerificationEvidence",
+      "ResolveIssue",
+      "RespondCall",
+      "RespondChange",
+      "RespondOffer",
+      "RestartBroadcast",
+      "RestoreTenant",
+      "RetainOfflineObservations",
+      "RetireEntrance",
+      "RetryWriteback",
+      "ReviewAddress",
+      "ReviewSourceRevision",
+      "ReviseBroadcast",
+      "RevokeTrackingLink",
+      "SaveBrand",
+      "SaveCargoClass",
+      "SaveCity",
+      "SaveConnection",
+      "SaveDeliveryDraft",
+      "SaveDriverProfile",
+      "SaveDriverRelationship",
+      "SaveDriverVehicle",
+      "SaveHandlingRule",
+      "SavePayoutMethod",
+      "SavePlan",
+      "SavePolicy",
+      "SaveRound",
+      "SaveShiftTemplate",
+      "SaveSite",
+      "SaveSlotTemplate",
+      "SaveStopPlanningFields",
+      "SaveTrip",
+      "SaveVehicle",
+      "SaveVehicleProfile",
+      "ScheduleTrip",
+      "SendMessage",
+      "SetAvailability",
+      "SetConnectionState",
+      "SetContactPermissions",
+      "SetFeature",
+      "SetPickupReadiness",
+      "SetShiftAvailability",
+      "SetShiftOccurrence",
+      "SetSlotOverride",
+      "StagePlan",
+      "StartBroadcast",
+      "StartCall",
+      "StartShift",
+      "StopBroadcast",
+      "SubmitProof",
+      "SubmitVerification",
+      "SubmitVerificationCorrection",
+      "SuspendTenant",
+      "VerifyAsset",
+      "WithdrawChange",
+      "WithdrawRelease"
+    ],
+    "other_origin": null,
+    "query_handlers": [
+      "GetRouteEstimate"
+    ]
+  },
+  {
+    "code": "VEHICLE_CONFLICT",
+    "commands": [
+      "ApplyOwnFleetAutomation",
+      "ApplyPlanProposal",
+      "ReleasePlan"
+    ],
+    "other_origin": null,
+    "query_handlers": []
+  },
+  {
+    "code": "VEHICLE_INCOMPATIBLE",
+    "commands": [
+      "ApplyPlanProposal",
+      "ReassignRound",
+      "ReleasePlan",
+      "StagePlan",
+      "StartBroadcast"
+    ],
+    "other_origin": null,
+    "query_handlers": []
+  },
+  {
+    "code": "TRACKING_GRANT_INVALID",
+    "commands": [],
+    "other_origin": "Internal tracking-grant writer/SQL guard; fails invalid grant creation; no grant may broaden visibility",
+    "query_handlers": []
+  },
+  {
+    "code": "PAYMENT_REFERENCE_CONFLICT",
+    "commands": [
+      "RecordSettlement"
+    ],
+    "other_origin": null,
+    "query_handlers": []
+  },
+  {
+    "code": "REFUND_EXCEEDS_PAID",
+    "commands": [
+      "RecordSettlement"
+    ],
+    "other_origin": null,
+    "query_handlers": []
+  },
+  {
+    "code": "DISPUTE_OUTCOME_INVALID",
+    "commands": [
+      "DecideDispute"
+    ],
+    "other_origin": null,
+    "query_handlers": []
+  },
+  {
+    "code": "EXECUTION_FENCE_CHANGED",
+    "commands": [
+      "CompleteDelivery",
+      "ConfirmArrival",
+      "ConfirmPickup",
+      "RecordHandoff",
+      "ReportIssue",
+      "ReserveAsset",
+      "SubmitProof",
+      "VerifyAsset"
+    ],
+    "other_origin": null,
+    "query_handlers": []
+  },
+  {
+    "code": "QUANTITY_ALREADY_ALLOCATED",
+    "commands": [
+      "ConfirmPickup"
+    ],
+    "other_origin": null,
+    "query_handlers": []
+  },
+  {
+    "code": "DEPENDENCY_UNRESOLVED",
+    "commands": [],
+    "other_origin": "Local observation materializer status; no HTTP physical command is sent yet",
+    "query_handlers": []
+  },
+  {
+    "code": "MANIFEST_MISMATCH",
+    "commands": [
+      "BookTrip",
+      "ConfirmPickup",
+      "ConfirmTransferReceipt",
+      "ReportIssue"
+    ],
+    "other_origin": null,
+    "query_handlers": []
+  },
+  {
+    "code": "INVALID_REVISION",
+    "commands": [
+      "ProposeChange",
+      "RespondChange"
+    ],
+    "other_origin": null,
+    "query_handlers": []
+  },
+  {
+    "code": "COMPLETE_ORDER_REQUIRED",
+    "commands": [
+      "ConfirmPickup"
+    ],
+    "other_origin": null,
+    "query_handlers": []
+  },
+  {
+    "code": "FEATURE_NOT_ENABLED",
+    "commands": [
+      "ApprovePartialPickup",
+      "CreateTenant",
+      "ReportIssue",
+      "ReserveAsset",
+      "ResolveIssue"
+    ],
+    "other_origin": null,
+    "query_handlers": []
+  }
+]

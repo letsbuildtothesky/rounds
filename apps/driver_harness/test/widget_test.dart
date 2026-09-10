@@ -30,7 +30,7 @@ void main() {
     expect(find.text('Siriporn'), findsOneWidget);
   });
 
-  testWidgets('arrival remains pending and never claims server completion', (
+  testWidgets('unconfigured arrival never claims pending sync or completion', (
     tester,
   ) async {
     SharedPreferences.setMockInitialValues({
@@ -55,7 +55,8 @@ void main() {
     await tester.tap(find.byKey(const Key('arrival-action')));
     await tester.pumpAndSettle();
 
-    expect(find.text('Pending sync'), findsOneWidget);
+    expect(find.textContaining('Nothing was sent or saved.'), findsOneWidget);
+    expect(find.text('Pending sync'), findsNothing);
     expect(find.text('Completed'), findsNothing);
   });
 

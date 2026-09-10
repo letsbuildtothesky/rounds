@@ -1,0 +1,440 @@
+{
+  "tenants.status": [
+    "active",
+    "suspended",
+    "closed"
+  ],
+  "memberships.status": [
+    "invited",
+    "active",
+    "suspended",
+    "revoked"
+  ],
+  "tenant_subscriptions.state": [
+    "trial",
+    "active",
+    "past_due",
+    "cancelled"
+  ],
+  "driver_relationships.status": [
+    "invited",
+    "active",
+    "suspended",
+    "ended"
+  ],
+  "verification_applications.state": [
+    "draft",
+    "submitted",
+    "pending",
+    "approved",
+    "rejected",
+    "correction_required"
+  ],
+  "verification_evidence.state": [
+    "reserved",
+    "uploaded",
+    "verified",
+    "rejected",
+    "superseded"
+  ],
+  "payout_methods.verification_state": [
+    "pending",
+    "verified",
+    "rejected"
+  ],
+  "vehicles.status": [
+    "available",
+    "unavailable",
+    "maintenance",
+    "archived"
+  ],
+  "freelance_vehicles.status": [
+    "pending",
+    "verified",
+    "unavailable",
+    "archived"
+  ],
+  "shift_occurrences.state": [
+    "scheduled",
+    "started",
+    "on_break",
+    "ended",
+    "no_show",
+    "cancelled"
+  ],
+  "slot_occurrences.admission_state": [
+    "open",
+    "closed",
+    "overcommitted",
+    "superseded"
+  ],
+  "slot_reservations.state": [
+    "held",
+    "committed",
+    "released",
+    "expired"
+  ],
+  "source_connections.state": [
+    "active",
+    "paused",
+    "error",
+    "disconnected"
+  ],
+  "source_events.state": [
+    "received",
+    "normalized",
+    "review_required",
+    "applied",
+    "rejected",
+    "conflict"
+  ],
+  "intake_batches.state": [
+    "draft",
+    "processing",
+    "review_ready",
+    "committing",
+    "completed",
+    "partial_failed",
+    "failed"
+  ],
+  "intake_drafts.review_state": [
+    "draft",
+    "extracting",
+    "review_needed",
+    "ready",
+    "committed",
+    "discarded"
+  ],
+  "address_suggestions.state": [
+    "proposed",
+    "accepted",
+    "edited",
+    "rejected",
+    "superseded"
+  ],
+  "location_observations.state": [
+    "proposed",
+    "reviewed",
+    "accepted",
+    "rejected"
+  ],
+  "deliveries.readiness": [
+    "draft",
+    "review_needed",
+    "ready",
+    "held"
+  ],
+  "deliveries.preparation_state": [
+    "unknown",
+    "preparing",
+    "ready",
+    "blocked"
+  ],
+  "deliveries.outcome": [
+    "open",
+    "delivered",
+    "rescheduled",
+    "returned",
+    "cancelled",
+    "unresolved",
+    "partially_delivered"
+  ],
+  "deliveries.evidence_state": [
+    "none",
+    "local_only",
+    "pending",
+    "complete",
+    "disputed"
+  ],
+  "plans.state": [
+    "draft",
+    "generating",
+    "review_ready",
+    "saved",
+    "released",
+    "superseded"
+  ],
+  "rounds.state": [
+    "draft",
+    "planned",
+    "staged",
+    "released",
+    "active",
+    "completed",
+    "cancelled"
+  ],
+  "rounds.departure_gate": [
+    "awaiting_preparation",
+    "awaiting_receipt",
+    "discrepancy",
+    "ready",
+    "blocked"
+  ],
+  "stops.state": [
+    "planned",
+    "released",
+    "en_route",
+    "arrived",
+    "handed_over",
+    "completed",
+    "failed",
+    "cancelled"
+  ],
+  "assignments.state": [
+    "issued",
+    "received",
+    "acknowledged",
+    "cannot_comply",
+    "withdrawn",
+    "superseded",
+    "completed"
+  ],
+  "driver_commitments.state": [
+    "pending",
+    "committed",
+    "cancelled",
+    "completed"
+  ],
+  "delivery_attempts.state": [
+    "pending",
+    "en_route",
+    "arrived",
+    "handed_over",
+    "completed",
+    "failed",
+    "cancelled"
+  ],
+  "handoffs.state": [
+    "recorded",
+    "disputed",
+    "corrected"
+  ],
+  "assets.state": [
+    "reserved",
+    "uploading",
+    "uploaded",
+    "scanning",
+    "verified",
+    "rejected",
+    "expired"
+  ],
+  "proof_submissions.state": [
+    "pending",
+    "complete",
+    "disputed",
+    "retained_for_review",
+    "rejected"
+  ],
+  "proof_items.state": [
+    "pending",
+    "verified",
+    "invalidated",
+    "rejected"
+  ],
+  "issues.state": [
+    "open",
+    "investigating",
+    "decided",
+    "resolved"
+  ],
+  "return_tasks.state": [
+    "planned",
+    "in_transit",
+    "arrived",
+    "receiving",
+    "received",
+    "disputed",
+    "cancelled"
+  ],
+  "change_proposals.state": [
+    "pending",
+    "applied",
+    "acknowledged",
+    "accepted",
+    "declined",
+    "withdrawn",
+    "expired",
+    "superseded"
+  ],
+  "broadcasts.state": [
+    "searching",
+    "accepted",
+    "stopped",
+    "expired",
+    "no_acceptance"
+  ],
+  "broadcast_waves.state": [
+    "scheduled",
+    "active",
+    "closed",
+    "cancelled"
+  ],
+  "offers.state": [
+    "offered",
+    "accepted",
+    "declined",
+    "expired",
+    "taken",
+    "withdrawn"
+  ],
+  "freelance_agreements.state": [
+    "active",
+    "completed",
+    "cancelled"
+  ],
+  "settlement_records.state": [
+    "open",
+    "closed",
+    "cancelled"
+  ],
+  "transport_trips.state": [
+    "draft",
+    "scheduled",
+    "loading",
+    "departed",
+    "arrived",
+    "receiving",
+    "closed",
+    "cancelled"
+  ],
+  "trip_bookings.state": [
+    "booked",
+    "partially_loaded",
+    "loaded",
+    "partially_received",
+    "received",
+    "disputed",
+    "cancelled"
+  ],
+  "trip_receipts.state": [
+    "partial",
+    "complete",
+    "disputed"
+  ],
+  "messages.state": [
+    "received",
+    "delivered",
+    "read",
+    "failed"
+  ],
+  "call_sessions.state": [
+    "initiated",
+    "ringing",
+    "connected",
+    "declined",
+    "missed",
+    "ended",
+    "failed"
+  ],
+  "notification_deliveries.state": [
+    "queued",
+    "provider_accepted",
+    "delivered",
+    "failed",
+    "unknown"
+  ],
+  "writeback_tasks.state": [
+    "queued",
+    "sending",
+    "succeeded",
+    "failed",
+    "unknown"
+  ],
+  "navigation_intents.state": [
+    "created",
+    "opened",
+    "superseded",
+    "expired",
+    "failed"
+  ],
+  "command_receipts.state": [
+    "in_progress",
+    "queued",
+    "committed",
+    "rejected",
+    "retained_for_review"
+  ],
+  "outbox_events.state": [
+    "queued",
+    "sending",
+    "delivered",
+    "retry",
+    "failed"
+  ],
+  "account_outbox.state": [
+    "queued",
+    "sending",
+    "delivered",
+    "retry",
+    "failed"
+  ],
+  "job_runs.state": [
+    "queued",
+    "running",
+    "retry",
+    "completed",
+    "failed",
+    "cancelled"
+  ],
+  "export_jobs.state": [
+    "queued",
+    "running",
+    "ready",
+    "failed",
+    "expired"
+  ],
+  "privacy_requests.state": [
+    "requested",
+    "reviewing",
+    "approved",
+    "rejected",
+    "executing",
+    "completed",
+    "held"
+  ],
+  "custody_transfers.state": [
+    "pending",
+    "partially_received",
+    "received",
+    "declined",
+    "cancelled",
+    "expired"
+  ],
+  "remaining_obligations.state": [
+    "open",
+    "planned",
+    "resolved",
+    "cancelled"
+  ],
+  "inbound_dependencies.state": [
+    "awaiting_receipt",
+    "partial",
+    "ready",
+    "discrepancy",
+    "cancelled"
+  ],
+  "fulfillment_units.state": [
+    "open",
+    "collected",
+    "delivered",
+    "returned",
+    "cancelled"
+  ],
+  "dispute_cases.state": [
+    "open",
+    "investigating",
+    "decided",
+    "closed"
+  ],
+  "settlement_records.earning_state": [
+    "unearned",
+    "earned",
+    "void"
+  ],
+  "settlement_records.payment_state": [
+    "unpaid",
+    "partially_paid",
+    "paid",
+    "overpaid"
+  ]
+}

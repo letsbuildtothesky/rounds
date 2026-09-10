@@ -1,0 +1,40 @@
+{
+  "checked_date": "2026-09-10",
+  "scope": "Actual React source-derived pickup issue cards/detail/form; not the original HTML or full Dispatch board",
+  "browser": "Codex in-app browser via documented CUA APIs",
+  "fixture": "tools/review_pickup_issue_ui.mjs; labelled synthetic Auth/HTTP/issue/receipt on loopback; actual React, native fetch, sessionStorage and generated validators; no customer/provider/shared database/phone sends",
+  "passed": [
+    "Query display labels render in the source-derived card and detail hierarchy",
+    "Recipient, address, site and original reporting driver appear; original IDs remain inspectable",
+    "No horizontal document overflow at five final viewport sizes, including 320px width and 300px height",
+    "Reply action remains visible and 40px high at all checked sizes",
+    "Empty-field Send is disabled; multiline instructions remain exact",
+    "One explicit Send interaction produces the fixture's unknown-result state and freezes inputs",
+    "Explicit Check reply status recovers the recorded instruction and restores heading focus",
+    "Clean reload after code update loads the current component; no unsaved draft existed during this reload",
+    "Final card computed CSS matches the source's later queue rules:16/12/12px padding,9px radius,16px/650 name,12px address,11px issue/action text and36px action row"
+  ],
+  "viewport_checks": [
+    {"width":1366,"height":900,"document_width":1366,"detail_width":399,"detail_right":1366,"reply_top":810,"reply_bottom":850},
+    {"width":1024,"height":768,"document_width":1024,"detail_width":399,"detail_right":1024,"reply_top":678,"reply_bottom":718},
+    {"width":400,"height":800,"document_width":400,"detail_width":399,"detail_right":400,"reply_top":716,"reply_bottom":756},
+    {"width":320,"height":640,"document_width":320,"detail_width":319,"detail_right":320,"reply_top":538,"reply_bottom":578},
+    {"width":400,"height":300,"document_width":400,"detail_width":399,"detail_right":400,"reply_top":216,"reply_bottom":256}
+  ],
+  "geometry_note": "Synthetic wrapper is 400px INCLUDING its 1px border; inner detail is399px. On narrower viewports wrapper shrinks to100%. Header banner is44px. Production default-off host is verified separately by build/tests.",
+  "fixed_during_checks": [
+    "Add border-box to root component/connection and synthetic wrapper; initial narrow-screen overflow was1px",
+    "Wrap long delivery reference text in the detail header"
+  ],
+  "screenshot": "specs/build-v2.3/generated/pickup-issue-labels-detail.jpg",
+  "card_screenshot": "specs/build-v2.3/generated/pickup-issue-labels-card.jpg",
+  "screenshot_note": "Final normal viewport captures:400x900 detail and400x800 card, including the synthetic-test banner. Full-page/cropped API captures had incorrect scale and were replaced with normal viewport captures after checking settled DOM bounds. No source HTML was executed or rehosted.",
+  "limitations": [
+    "Browser navigation to the fixture JSON test-evidence endpoint was blocked by the client. No alternate access attempted; final server POST counter was not read in this browser run. Automated restricted-SQL/controller tests separately assert one POST/decision.",
+    "Two selector-evaluation timeouts followed viewport changes; documented read-only DOM evaluation then verified dimensions. No alternative browser control was used.",
+    "No original file-URL interaction, action-form reference screenshot or pixel parity claim",
+    "No dirty-draft browser reload or configured Auth/SQL/phone journey",
+    "No main-board activation, deployment, migration or push"
+  ],
+  "cleanup": "Temporary test tabs closed and viewport override reset; user tabs left intact"
+}

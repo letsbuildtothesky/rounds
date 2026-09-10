@@ -1,0 +1,160 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content"><title>Rounds — Get paid</title><style>
+:root{--ink:#17283f;--blue:#1754a6;--blue-deep:#14488d;--blue-soft:#edf4fd;--orange:#ff6420;--muted:#526278;--line:#dce4ed;--green:#167344;--red:#a22f2f;font-family:Arial,Helvetica,sans-serif;color:var(--ink);background:#e9edf2;font-synthesis:none}*{box-sizing:border-box}body{margin:0;padding:28px}a,button{font:inherit;-webkit-tap-highlight-color:transparent;touch-action:manipulation}a{color:inherit;text-decoration:none}button{cursor:pointer}button:disabled{cursor:default}svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}button:focus-visible,a:focus-visible{outline:3px solid var(--orange);outline-offset:3px}[hidden]{display:none!important}.frame{width:393px;height:852px;margin:auto;border:1px solid #cbd5df;border-radius:24px;overflow:hidden;position:relative;background:#fff;box-shadow:0 16px 50px #17223810;display:flex;flex-direction:column}.statusbar{height:28px;flex:none;padding:7px 20px 0;font-size:12px;font-weight:700;display:flex;justify-content:space-between}.phone-status{display:flex;align-items:center;gap:7px}.phone-status i{display:block;width:19px;height:9px;border:1px solid var(--ink);border-radius:2px;background:linear-gradient(to right,var(--ink) 75%,transparent 75%)}.app{flex:1;min-height:0;display:flex;flex-direction:column;position:relative}.topbar{height:64px;flex:none;display:grid;grid-template-columns:52px minmax(0,1fr) 52px;align-items:center;gap:12px;padding:0 14px;background:#fff;border-bottom:1px solid var(--line)}.square{height:52px;width:52px;background:white;border:1px solid var(--line);border-radius:7px;display:grid;place-items:center;color:var(--ink)}.square:hover{background:var(--blue-soft)}.top-copy{min-width:0}.top-copy span{font-size:13px;color:var(--blue);display:block;line-height:1.2}.top-copy strong{display:block;font-size:17px;font-weight:600;line-height:1.2;margin-top:4px}.primary{width:100%;min-height:64px;background:var(--blue);color:#fff;border:0;border-radius:7px;display:flex;justify-content:center;align-items:center;gap:12px;font-size:18px;font-weight:600;padding:12px 16px}.primary:hover{background:var(--blue-deep)}.primary:disabled{background:#e2e8ee;color:#566477}.primary.ready{background:var(--green)}.primary svg{width:23px;height:23px}.panel-backdrop{position:absolute;inset:0;background:#132c4f55;z-index:80}.sheet{position:absolute;left:8px;right:8px;bottom:8px;z-index:81;border:1px solid var(--line);border-radius:12px 12px 8px 8px;background:#fff;padding:6px 16px 16px;box-shadow:0 -8px 40px #142f4a22;max-height:calc(100% - 36px);overflow:auto}.sheet-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:6px 0 8px}.sheet-head h2{font-size:23px;letter-spacing:-.5px;margin:0}.sheet-head .square{border:0;flex:none}.sheet-action{min-height:68px;display:flex;align-items:center;gap:14px;border:0;border-top:1px solid var(--line);width:100%;background:#fff;text-align:left;font-size:17px;color:var(--ink);padding:12px 4px}.sheet-action:hover{background:var(--blue-soft)}.sheet-action.issue{color:var(--red)}.sheet-action .end{margin-left:auto}.sheet-action svg{width:24px;flex:none}.sheet-action .end svg{width:18px}.sheet .cancel{min-height:60px;border:0;background:var(--blue-soft);color:var(--blue);border-radius:6px;width:100%;font-size:17px;font-weight:600;margin-top:8px}
+/* Rounds driver — shared design tokens, style guide v1. */
+:root {
+  --blue: #1754a6;
+  --blue-deep: #14488d;
+  --blue-soft: #edf4fd;
+  --orange: #ff6420;
+  --orange-soft: #fff2e8;
+  --ink: #17283f;
+  --muted: #526278;
+  --line: #dce4ed;
+  --paper: #ffffff;
+  --canvas: #e9edf2;
+  --green: #167344;
+  --green-soft: #edf7f1;
+  --red: #a22f2f;
+  --route-later: #668ebc;
+  --care-ink: #98400f;
+  --font-ui: Arial, Helvetica, sans-serif;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --content-inset: 18px;
+  --content-inset-narrow: 14px;
+  --radius-control: 7px;
+  --target-icon: 52px;
+  --target-contact: 60px;
+  --target-primary: 64px;
+  --target-confirm: 68px;
+}
+.frame{isolation:isolate}.app{overflow:hidden}.content{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;display:flex;flex-direction:column}.brandbar{min-height:64px;flex:none;display:flex;align-items:center;gap:12px;padding:6px 22px;border-bottom:1px solid var(--line)}.brand{display:flex;align-items:baseline;font-size:24px;font-weight:800;line-height:1;letter-spacing:-1.1px;color:var(--blue)}.brand i{width:6px;height:6px;background:var(--orange);margin-left:3px}.context{margin-left:auto;font-size:14px;line-height:1.4;color:var(--blue);font-weight:600}.brandbar .square{border:0;flex:none;margin-left:-8px}.sample-note{flex:none;font-size:13px;line-height:1.35;color:var(--muted);background:#f6f8fb;border-bottom:1px solid var(--line);padding:8px 18px;margin:0}.page-hero{padding:24px 22px;flex:none}.page-hero h1{font-size:44px;line-height:1.1;letter-spacing:-1.1px;font-weight:700;margin:0;overflow-wrap:anywhere}.lead{font-size:17px;line-height:1.45;color:var(--muted);margin:12px 0 0}.spacer{flex:1;min-height:24px}.action-footer{flex:none;padding:16px 18px;border-top:1px solid var(--line);background:#fff}.action-footer .primary{min-height:68px;font-size:19px;line-height:1.35}.action-footer .secondary{margin-bottom:10px}.connection-note{font-size:14px;line-height:1.4;color:var(--care-ink);margin:0 0 12px}.failure-note{font-size:16px;line-height:1.4;color:var(--red);background:var(--orange-soft);margin:0 22px 20px;padding:14px}.primary:disabled,.secondary:disabled{background:#e5eaf0;color:var(--muted)}.sheet-copy{font-size:17px;line-height:1.45;color:var(--muted);margin:16px 0 22px}.sheet .primary{margin-top:18px;min-height:68px}.secondary{min-height:60px;width:100%;padding:12px 16px;background:white;color:var(--blue);border:1px solid #bacbdd;border-radius:7px;font-size:18px;line-height:1.35;font-weight:600;display:flex;align-items:center;justify-content:center;gap:10px}.secondary:hover{background:var(--blue-soft)}.sheet .secondary{margin-top:10px;min-height:68px}.status-announcement{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+.camera-wrap{flex:none;padding:0 22px}.camera{height:465px;position:relative;background:#20334c;border:1px solid #344d6a;border-radius:7px;overflow:hidden;color:white}.camera video,.camera img{position:absolute;inset:0;width:100%;height:100%}.camera video{object-fit:cover;transform:scaleX(-1)}.camera img{object-fit:contain;background:#20334c}.camera-badge{position:absolute;top:16px;left:16px;z-index:2;background:#17283f;padding:8px 12px;border-radius:5px;font-size:14px;line-height:1.3}.face-oval{position:absolute;left:50%;top:45%;transform:translate(-50%,-50%);width:220px;height:294px;max-width:calc(100% - 64px);border:2px solid #d4e1f2;border-radius:50%;pointer-events:none}.face-oval:after{content:'';position:absolute;bottom:-2px;left:calc(50% - 19px);height:4px;width:38px;background:var(--orange);border-radius:4px}.camera-empty{position:absolute;inset:90px 38px 90px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px}.camera-empty svg{width:40px;height:40px;color:#c6d7eb;stroke-width:1.6}.camera-empty strong{font-size:20px;font-weight:600;line-height:1.3}.camera-empty p{font-size:16px;line-height:1.45;color:#d4e1f2;margin:0;max-width:250px}.camera-status{position:absolute;left:16px;right:16px;bottom:16px;padding:14px 16px;background:#17283f;border:1px solid #49617e;border-radius:7px;min-height:58px;font-size:17px;line-height:1.4}.face-captured .camera-badge{color:#cff0db}.face-captured .camera-status{border-color:#517766}.face-error .face-oval{display:none}.face-error .camera-empty{inset:76px 28px 100px}
+.payout-form{flex:none;padding:0 22px}.method-list{display:flex;flex-direction:column;gap:12px;margin-bottom:28px}.method{min-height:92px;width:100%;display:flex;align-items:center;gap:14px;background:white;border:1px solid #bacbdd;border-radius:7px;padding:16px;text-align:left;color:var(--ink)}.method.selected{background:var(--blue-soft);border:2px solid var(--blue);padding:15px}.method-icon{width:40px;height:44px;display:grid;place-items:center;flex:none;color:var(--blue)}.method-icon svg{width:28px;height:28px}.method-copy{flex:1;min-width:0}.method-copy strong{display:block;font-size:20px;line-height:1.3;font-weight:600;letter-spacing:-.2px}.method-copy span{display:block;font-size:14px;line-height:1.4;color:var(--muted);margin-top:5px}.method-radio{height:24px;width:24px;border:2px solid #99aec6;border-radius:50%;flex:none;display:grid;place-items:center}.method.selected .method-radio{border-color:var(--blue)}.method.selected .method-radio:after{content:'';width:12px;height:12px;background:var(--blue);border-radius:50%}.field{margin:0 0 22px}.field label{display:block;font-size:17px;font-weight:600;line-height:1.4;margin-bottom:10px}.field input,.field select{font:18px/1.4 Arial,Helvetica,sans-serif;color:var(--ink);min-height:60px;padding:15px 14px;border:1px solid #9fb3ca;border-radius:7px;width:100%;background:white;scroll-margin-block:20px}.field input::placeholder{color:#617084;opacity:1}.field input:focus-visible,.field select:focus-visible{outline:3px solid var(--orange);outline-offset:3px;border-color:var(--blue)}.field input[aria-invalid="true"]{border-color:var(--red)}.field-hint,.field-error{font-size:14px;line-height:1.45;margin:10px 0 0;color:var(--muted)}.field-error{color:var(--red)}.qr-option{min-height:76px;text-align:left;justify-content:space-between;gap:16px}.qr-option svg{flex:none;width:26px;height:26px}.qr-summary{margin:0 0 16px;padding:16px;background:var(--blue-soft);border-left:4px solid var(--orange)}.qr-summary strong{font-size:19px;line-height:1.4;font-weight:600}.qr-summary p{font-size:14px;color:var(--muted);line-height:1.4;margin:6px 0 0}.qr-image,.qr-placeholder{height:252px;width:100%;object-fit:contain;background:#f0f3f7;border:1px solid var(--line);border-radius:7px}.qr-placeholder{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;color:var(--muted);font-size:17px;line-height:1.4}.qr-placeholder svg{height:48px;width:48px;stroke-width:1.5}.qr-placeholder small{font-size:14px}.qr-sheet-error{font-size:16px;line-height:1.4;color:var(--red);margin:16px 0 0}.saved-panel{margin:0 22px;border:1px solid #ccdfd3;border-left:4px solid var(--orange);background:var(--green-soft);padding:22px 20px;border-radius:0 7px 7px 0}.saved-icon{height:56px;width:56px;color:var(--green);display:grid;place-items:center;border:1px solid #c5ddcd;border-radius:7px;margin-bottom:22px}.saved-icon svg{width:30px;height:30px}.saved-panel h2{font-size:24px;line-height:1.3;letter-spacing:-.4px;margin:0 0 12px;font-weight:600}.saved-panel p{font-size:18px;line-height:1.5;margin:0;overflow-wrap:anywhere}.saved-panel .secondary{margin-top:24px}.payout-unknown .saved-panel{background:var(--blue-soft);border-color:#d2e0f0;border-left-color:var(--orange)}.payout-unknown .saved-icon{color:var(--blue);border-color:#b7cce5}.review-detail{background:var(--blue-soft);border-left:4px solid var(--orange);padding:18px;font-size:18px;line-height:1.5;overflow-wrap:anywhere}
+@media(max-width:460px){body{padding:0}.frame{width:100%;height:100dvh;border:0;border-radius:0;box-shadow:none}.statusbar{height:calc(28px + env(safe-area-inset-top));padding-top:calc(7px + env(safe-area-inset-top))}.action-footer{padding-bottom:calc(16px + env(safe-area-inset-bottom))}.sheet{bottom:calc(8px + env(safe-area-inset-bottom))}}
+@media(max-width:350px){.brandbar,.page-hero,.camera-wrap,.payout-form,.action-footer{padding-left:14px;padding-right:14px}.failure-note,.saved-panel{margin-left:14px;margin-right:14px}.sheet{padding-left:14px;padding-right:14px}.method{padding:14px;gap:12px}.method.selected{padding:13px}.method-icon{width:32px}.method-copy strong{font-size:20px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style></head><body data-state="" data-review="0"><div class="frame payout" id="frame"><div class="statusbar" aria-hidden="true"><span>18:18</span><span class="phone-status">5G <i></i></span></div><main class="app" id="app"><header class="brandbar"><button class="square" id="backBtn" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5m7-7-7 7 7 7"/></svg></button><div class="brand">Rounds<i></i></div><span class="context">Network</span></header><p class="sample-note" id="sampleNotice">Preview · No payout details are saved</p><div class="status-announcement" id="statusAnnouncement" role="status" aria-live="polite"></div><div class="content" id="content"><header class="page-hero"><h1 id="pageTitle" tabindex="-1">Get paid</h1><p class="lead" id="lead">Choose where Network earnings go.</p></header><p class="failure-note" id="failureNote" role="alert" hidden></p><div class="payout-form" id="payoutForm"><section class="method-list" role="radiogroup" aria-label="Payout method"><button class="method" data-method="promptpay" type="button" role="radio" aria-checked="false"><span class="method-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h4"/></svg></span><span class="method-copy"><strong>PromptPay</strong><span>Phone, ID or QR</span></span><span class="method-radio" aria-hidden="true"></span></button><button class="method" data-method="bank" type="button" role="radio" aria-checked="false"><span class="method-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9h18L12 3ZM5 12v6m5-6v6m4-6v6m5-6v6M3 21h18"/></svg></span><span class="method-copy"><strong>Bank account</strong><span>Account number</span></span><span class="method-radio" aria-hidden="true"></span></button></section><section id="promptSetup" aria-label="PromptPay details"><div class="field" id="promptField"><label for="promptInput">Phone or PromptPay ID</label><input type="text" id="promptInput" inputmode="numeric" autocomplete="off" maxlength="34" placeholder="Enter your number" aria-describedby="promptHint promptError"><p class="field-hint" id="promptHint">Use the number linked to PromptPay.</p><p class="field-error" id="promptError" hidden>Enter a number, without letters.</p></div><div class="qr-summary" id="qrSummary" hidden><strong>QR image added</strong><p>Ready to check when you save.</p></div><button class="secondary qr-option" id="qrBtn"><span id="qrBtnText">Use PromptPay QR</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V4h4m8 0h4v4m0 8v4h-4M8 20H4v-4"/><rect x="8" y="8" width="8" height="8" rx="1"/></svg></button><button class="secondary" id="useNumber" style="margin-top:10px" hidden>Use a number instead</button></section><section id="bankSetup" aria-label="Bank account details" hidden><div class="field"><label for="bankSelect">Bank</label><select id="bankSelect"><option value="">Choose bank</option><option>Bangkok Bank</option><option>Kasikornbank</option><option>Krung Thai Bank</option><option>SCB</option><option>Krungsri</option><option>Other bank</option></select></div><div class="field"><label for="accountInput">Account number</label><input type="text" id="accountInput" inputmode="numeric" autocomplete="off" maxlength="34" placeholder="Enter account number" aria-describedby="accountError"><p class="field-error" id="accountError" hidden>Enter a number, without letters.</p></div></section></div><section class="saved-panel" id="savedPanel" hidden aria-labelledby="savedTitle"><div class="saved-icon" aria-hidden="true"><span id="savedTick"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4 10-10"/></svg></span><span id="savedClock" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span></div><h2 id="savedTitle">Saved</h2><p id="savedDetail">PromptPay · •••• 4821</p><button class="secondary" id="editMethod">Edit payout method</button></section><div class="spacer" aria-hidden="true"></div></div><footer class="action-footer"><p class="connection-note" id="connectionNote" hidden></p><button class="primary" id="primary">Save PromptPay</button></footer></main><div class="panel-backdrop" id="backdrop" hidden></div><section class="sheet" id="qrSheet" role="dialog" aria-modal="true" aria-labelledby="qrSheetTitle" hidden><div class="sheet-head"><h2 id="qrSheetTitle">Your PromptPay QR</h2><button class="square" data-close-sheet aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg></button></div><img class="qr-image" id="qrImage" alt="Selected QR image" hidden><div class="qr-placeholder" id="qrPlaceholder"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V4h4m8 0h4v4m0 8v4h-4M8 20H4v-4"/><rect x="8" y="8" width="8" height="8" rx="1"/></svg><span id="qrPlaceholderTitle">No QR selected</span><small id="qrPlaceholderSub">Choose the QR from your phone.</small></div><p class="qr-sheet-error" id="qrError" role="alert" hidden></p><button class="secondary" id="chooseQR">Choose QR image</button><button class="primary" id="useQR" disabled>Use QR image</button><button class="cancel" data-close-sheet>Cancel</button></section><input id="qrFile" type="file" accept="image/*" hidden aria-label="Choose PromptPay QR image"><section class="sheet" id="saveSheet" role="dialog" aria-modal="true" aria-labelledby="saveSheetTitle" hidden><div class="sheet-head"><h2 id="saveSheetTitle">Save payout preview</h2><button class="square" data-close-sheet aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg></button></div><p class="sheet-copy">Choose a sample result. No payout details are checked or sent.</p><p class="review-detail" id="reviewDetail"></p><button class="primary" data-outcome="saved">Accepted and saved · Sample</button><button class="secondary" data-outcome="not_saved">Not saved</button><button class="secondary" data-outcome="unknown">Unconfirmed</button><button class="cancel" data-close-sheet>Keep editing</button></section><section class="sheet" id="statusSheet" role="dialog" aria-modal="true" aria-labelledby="statusSheetTitle" hidden><div class="sheet-head"><h2 id="statusSheetTitle">Payout status preview</h2><button class="square" data-close-sheet aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg></button></div><p class="sheet-copy">Choose a sample result.</p><button class="primary" data-outcome="saved">Saved · Sample</button><button class="secondary" data-outcome="not_saved">Not saved · Try again</button><button class="secondary" data-outcome="unknown">Still unconfirmed</button><button class="secondary" data-outcome="error">Couldn’t check</button><button class="cancel" data-close-sheet>Keep checking</button></section><section class="sheet" id="leaveSheet" role="dialog" aria-modal="true" aria-labelledby="leaveSheetTitle" hidden><div class="sheet-head"><h2 id="leaveSheetTitle">Leave payout setup?</h2><button class="square" data-close-sheet aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg></button></div><p class="sheet-copy" id="leaveCopy">Your unsaved changes won’t be kept.</p><button class="primary" id="leaveStep">Leave step</button><button class="cancel" data-close-sheet>Keep editing</button></section></div><script>(()=>{'use strict';
+const $=id=>document.getElementById(id),app=$('app'),backdrop=$('backdrop');let activeSheet=null,returnFocus=null,onSheetClosed=()=>{},canCloseSheet=()=>true;
+function focusable(s){return [...s.querySelectorAll('button:not([disabled]),a[href],textarea,input,select,[tabindex="0"]')].filter(el=>!el.closest('[hidden]'))}
+function closeSheet(){if(!activeSheet||!canCloseSheet())return;const id=activeSheet.id;activeSheet.hidden=true;activeSheet=null;onSheetClosed(id);backdrop.hidden=true;app.inert=false;if(returnFocus&&!returnFocus.closest('[hidden]'))returnFocus.focus()}
+function openSheet(id,trigger){if(!activeSheet)returnFocus=trigger;else{const previous=activeSheet.id;activeSheet.hidden=true;onSheetClosed(previous)}activeSheet=$(id);activeSheet.hidden=false;backdrop.hidden=false;app.inert=true;activeSheet.scrollTop=0;focusable(activeSheet)[0]?.focus()}
+document.querySelectorAll('[data-close-sheet]').forEach(b=>b.addEventListener('click',closeSheet));backdrop.addEventListener('click',closeSheet);document.querySelectorAll('.sheet').forEach(s=>s.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();closeSheet()}if(e.key==='Tab'){const items=focusable(s),first=items[0],last=items[items.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus()}}}));
+
+const params=new URLSearchParams(location.search),review=document.body.dataset.review==='1'||params.get('review')==='1',fixture=document.body.dataset.state||params.get('state')||'';
+const offline=()=>params.get('offline')==='1'||fixture==='offline'||navigator.onLine===false;
+function text(el,value){el.textContent=value}
+function focusPage(){if($('content'))$('content').scrollTop=0;$('pageTitle')?.focus()}
+function make(tag,cls,value){const el=document.createElement(tag);if(cls)el.className=cls;if(value!==undefined)el.textContent=value;return el}
+function facts(id,rows){$(id).replaceChildren(...rows.map(([label,value,tone])=>{const row=make('div','fact');row.append(make('dt','',label),make('dd',tone||'',value));return row}))}
+function duration(minutes){return Math.floor(minutes/60)+'h '+String(minutes%60).padStart(2,'0')+'m'}
+if(review||document.body.dataset.standalone==='1')document.addEventListener('click',e=>{if(e.defaultPrevented)return;const a=e.target.closest('a[href]');if(a&&/^ROUNDS-/.test(a.getAttribute('href'))){e.preventDefault();parent.postMessage({type:'rounds-23-companion',href:a.getAttribute('href')},'*')}});
+
+function navigateLocal(href){if(review||document.body.dataset.standalone==='1')parent.postMessage({type:'rounds-23-companion',href},'*');else location.href=href;}
+// Payout form design only. Sample outcomes do not validate, save or send financial data.
+let method=fixture==='bank'?'bank':'promptpay';
+let phase=fixture==='saved'?'saved':fixture==='unknown'?'unknown':'editing';
+let disconnected=fixture==='offline'||navigator.onLine===false,failed=fixture==='error';
+let qr={url:null,sample:fixture==='qr',ready:fixture==='qr'},draft=null,qrBusy=false,qrSerial=0;
+const pendingURLs=new Set();let savedDetail='PromptPay · •••• 4821';
+const numeric=value=>/^[0-9 ()+\-]+$/.test(String(value||''))&&/\d/.test(value);
+const digits=value=>String(value||'').replace(/\D/g,'');
+function formReady(){return method==='promptpay'?(qr.ready||numeric($('promptInput').value)):(!!$('bankSelect').value&&numeric($('accountInput').value));}
+function detail(){return method==='promptpay'?(qr.ready?'PromptPay QR':('PromptPay · •••• '+digits($('promptInput').value).slice(-4))):$('bankSelect').value+' · •••• '+digits($('accountInput').value).slice(-4);}
+function render(){
+ if(navigator.onLine===false)disconnected=true;
+ const edit=phase==='editing',saved=phase==='saved';
+ $('frame').className='frame payout payout-'+phase;
+ $('pageTitle').textContent=saved?'Payout method saved':phase==='unknown'?'Check payout setup':'Get paid';
+ $('lead').textContent=saved?'You’re ready for the next step.':phase==='unknown'?'Check before saving again.':'Choose where Network earnings go.';
+ $('payoutForm').hidden=!edit;$('savedPanel').hidden=edit;
+ $('savedTitle').textContent=saved?'Saved': 'Save not confirmed';
+ $('savedDetail').textContent=savedDetail;
+ $('savedTick').hidden=!saved;$('savedClock').hidden=saved;
+ $('editMethod').hidden=!saved;
+ $('promptSetup').hidden=method!=='promptpay';$('bankSetup').hidden=method!=='bank';
+ $('promptField').hidden=qr.ready;
+ $('qrSummary').hidden=!qr.ready;
+ $('qrBtnText').textContent=qr.ready?'Review QR image':'Use PromptPay QR';
+ $('useNumber').hidden=!qr.ready;
+ document.querySelectorAll('[data-method]').forEach(b=>{const on=b.dataset.method===method;b.classList.toggle('selected',on);b.setAttribute('aria-checked',String(on));b.tabIndex=on?0:-1;});
+ $('primary').textContent=saved?'Continue':phase==='unknown'?'Check status':method==='promptpay'?'Save PromptPay':'Save bank account';
+ $('primary').disabled=disconnected||(edit&&!formReady());
+ $('connectionNote').hidden=!disconnected;$('connectionNote').textContent=saved?'Offline · Reconnect to continue.':'Offline · Reconnect to save.';
+ $('failureNote').hidden=!failed;$('failureNote').textContent=phase==='unknown'?'Couldn’t check. Try again.':'Not saved. Check your details and try again.';
+ $('statusAnnouncement').textContent=$('pageTitle').textContent+(failed?'. '+$('failureNote').textContent:'');
+}
+function resetFieldError(id){$(id+'Error').hidden=true;$(id+'Input').removeAttribute('aria-invalid');}
+function checkField(id){const input=$(id+'Input');const invalid=!!input.value&&!numeric(input.value);$(id+'Error').hidden=!invalid;input.setAttribute('aria-invalid',String(invalid));}
+function selectMethod(next){if(phase!=='editing')return;method=next;failed=false;render();}
+const methodButtons=[...document.querySelectorAll('[data-method]')];
+methodButtons.forEach((b,i)=>{
+ b.addEventListener('click',()=>selectMethod(b.dataset.method));
+ b.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End'].includes(e.key))return;e.preventDefault();const n=e.key==='Home'?0:e.key==='End'?1:(i+1)%2;selectMethod(methodButtons[n].dataset.method);methodButtons[n].focus();});
+});
+for(const id of ['prompt','account']){
+ $(id+'Input').addEventListener('input',()=>{failed=false;resetFieldError(id);render();});
+ $(id+'Input').addEventListener('blur',()=>checkField(id));
+}
+$('bankSelect').addEventListener('change',()=>{failed=false;render();});
+function renderQR(){
+ $('qrImage').hidden=!draft?.url;if(draft?.url)$('qrImage').src=draft.url;else $('qrImage').removeAttribute('src');
+ $('qrPlaceholder').hidden=!!draft?.url;$('qrPlaceholderTitle').textContent=draft?.sample?'Sample QR image':'No QR selected';
+ $('qrPlaceholderSub').textContent=draft?.sample?'No payment data':'Choose the QR from your phone.';
+ $('chooseQR').textContent=qrBusy?'Opening image…':draft?.ready?'Replace QR image':'Choose QR image';
+ $('chooseQR').disabled=qrBusy;$('useQR').disabled=qrBusy||!draft?.ready;
+}
+function discardDraft(){qrSerial++;if(draft?.url&&draft.url!==qr.url)URL.revokeObjectURL(draft.url);draft=null;qrBusy=false;}
+onSheetClosed=id=>{if(id==='qrSheet')discardDraft();};
+$('qrBtn').addEventListener('click',()=>{if(phase!=='editing')return;draft={...qr};$('qrError').hidden=true;qrBusy=false;renderQR();openSheet('qrSheet',$('qrBtn'));});
+$('chooseQR').addEventListener('click',()=>{if(qrBusy||activeSheet?.id!=='qrSheet')return;$('qrFile').value='';$('qrFile').click();});
+$('qrFile').addEventListener('change',()=>{
+ const file=$('qrFile').files?.[0];if(!file||activeSheet?.id!=='qrSheet'||phase!=='editing')return;
+ function error(){ $('qrError').textContent='This image couldn’t be opened. Try another.';$('qrError').hidden=false;}
+ if(!file.size||!/^image\//.test(file.type)||file.type==='image/svg+xml'){error();return;}
+ const ticket=++qrSerial,url=URL.createObjectURL(file),candidate=new Image();pendingURLs.add(url);qrBusy=true;$('qrError').hidden=true;renderQR();
+ const dispose=()=>{pendingURLs.delete(url);URL.revokeObjectURL(url);};
+ candidate.onload=()=>{
+  if(ticket!==qrSerial||activeSheet?.id!=='qrSheet'){dispose();return;}
+  qrBusy=false;
+  if(!candidate.naturalWidth||!candidate.naturalHeight){dispose();error();renderQR();return;}
+  if(draft?.url&&draft.url!==qr.url)URL.revokeObjectURL(draft.url);
+  pendingURLs.delete(url);draft={url,sample:false,ready:true};renderQR();
+ };
+ candidate.onerror=()=>{dispose();if(ticket!==qrSerial)return;qrBusy=false;error();renderQR();};candidate.src=url;
+});
+$('useQR').addEventListener('click',()=>{
+ if(activeSheet?.id!=='qrSheet'||qrBusy||!draft?.ready)return;
+ if(qr.url&&qr.url!==draft.url)URL.revokeObjectURL(qr.url);qr={...draft};$('promptInput').value='';resetFieldError('prompt');failed=false;closeSheet();render();$('qrBtn').focus();
+});
+$('useNumber').addEventListener('click',()=>{if(qr.url)URL.revokeObjectURL(qr.url);qr={url:null,ready:false,sample:false};render();$('promptInput').focus();});
+$('primary').addEventListener('click',()=>{
+ render();if($('primary').disabled)return;
+ if(phase==='saved'){navigateLocal('ROUNDS-A11-VERIFICATION-SUBMITTED-v4-10OF10.html');return;}
+ if(phase==='unknown'){openSheet('statusSheet',$('primary'));return;}
+ savedDetail=detail();$('reviewDetail').textContent=savedDetail;
+ openSheet('saveSheet',$('primary'));
+});
+document.querySelectorAll('[data-outcome]').forEach(b=>b.addEventListener('click',()=>{
+ if(!['saveSheet','statusSheet'].includes(activeSheet?.id))return;
+ if(disconnected||navigator.onLine===false){disconnected=true;closeSheet();render();$('pageTitle').focus();return;}
+ const result=b.dataset.outcome;
+ if(!['saved','not_saved','unknown','error'].includes(result))return;
+ closeSheet();phase=result==='saved'?'saved':['unknown','error'].includes(result)?'unknown':'editing';failed=['not_saved','error'].includes(result);render();focusPage();
+}));
+$('editMethod').addEventListener('click',()=>{phase='editing';failed=false;render();focusPage();});
+function dirty(){return qr.ready||$('promptInput').value||$('accountInput').value||$('bankSelect').value;}
+$('backBtn').addEventListener('click',()=>{if(phase==='unknown'||(phase==='editing'&&dirty())){$('leaveCopy').textContent=phase==='unknown'?'Your save is still unconfirmed.':'Your unsaved changes won’t be kept.';openSheet('leaveSheet',$('backBtn'));return;}navigateLocal('ROUNDS-A09-LIVE-FACE-CHECK-v5-10OF10.html');});
+$('leaveStep').addEventListener('click',()=>{if(activeSheet?.id!=='leaveSheet')return;closeSheet();navigateLocal('ROUNDS-A09-LIVE-FACE-CHECK-v5-10OF10.html');});
+window.addEventListener('offline',()=>{const was=activeSheet?.id;disconnected=true;if(['saveSheet','statusSheet'].includes(was))closeSheet();render();if(was&&was!=='qrSheet')$('pageTitle').focus();});
+window.addEventListener('online',()=>{if(!disconnected)return;disconnected=false;render();});
+window.addEventListener('pagehide',e=>{if(e.persisted)return;qrSerial++;new Set([qr.url,draft?.url,...pendingURLs]).forEach(url=>{if(url)URL.revokeObjectURL(url);});});
+$('sampleNotice').hidden=review;
+render();
+
+})();</script></body></html>

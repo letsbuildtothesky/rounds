@@ -1,0 +1,34 @@
+{
+  "checked_date": "2026-09-10",
+  "scope": "Our React pickup issue drawer and its compiled default-off connection, not the original HTML or complete Dispatch board",
+  "browser": "Codex in-app browser via supported CUA APIs",
+  "fixture": "tools/review_pickup_issue_ui.mjs; synthetic Auth/HTTP/report/receipt; real React, native fetch, sessionStorage and static validators; no customer, driver, provider or shared database writes",
+  "passed": [
+    "Authorized fixture report opens the drawer and focuses its heading",
+    "Closing the final drawer restores focus to its original issue row",
+    "Send is disabled until both text fields contain nonblank content",
+    "Multiline instructions and separate internal reason are retained exactly",
+    "Escape opens draft review; Keep and close retains text on drawer reopen",
+    "Uncertain fixture POST freezes editing and shows status recovery without discard advice",
+    "Status recovery displays the recorded exact instruction and restores heading focus",
+    "Final fixture evidence: posts=1, issue version=2, receipt present",
+    "Compiled /pickup-issues route renders its disabled state without configured activation"
+  ],
+  "viewport_checks": [
+    {"width":1366,"height":768,"document_width":1366,"drawer_scroll_height":549,"footer_bottom":768},
+    {"width":1180,"height":820,"document_width":1180,"drawer_scroll_height":601,"footer_bottom":820},
+    {"width":1024,"height":768,"document_width":1024,"drawer_scroll_height":549,"footer_bottom":768},
+    {"width":820,"height":1180,"document_width":820,"drawer_scroll_height":961,"footer_bottom":1180},
+    {"width":768,"height":1024,"document_width":768,"drawer_scroll_height":805,"footer_bottom":1024}
+  ],
+  "screenshot": "specs/build-v2.3/generated/pickup-reply-form-1366.png",
+  "fixed_during_checks": ["Default fetch Window receiver", "Heading/row focus return", "Pending-result copy must not suggest discarding", "Production Turbopack runtime TS import resolution"],
+  "not_accepted": [
+    "Original file-URL interactive rendering and reference pixel comparison",
+    "Actual browser reload with unsaved-work warning: navigation was cancelled and query timestamp did not change",
+    "Configured Supabase Auth and browser-to-restricted-SQL-to-phone workflow",
+    "Full-board responsive parity, human-readable issue labels and private evidence viewer",
+    "All browser storage denial, logout/account-switch, CSP and mobile device permutations"
+  ],
+  "no_deployment_or_phone_switch": true
+}

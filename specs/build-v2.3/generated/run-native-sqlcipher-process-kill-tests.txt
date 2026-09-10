@@ -1,0 +1,1 @@
+PASS actual SQLCipher process-kill rollback, encrypted hot-journal bytes and cross-process writer lock.

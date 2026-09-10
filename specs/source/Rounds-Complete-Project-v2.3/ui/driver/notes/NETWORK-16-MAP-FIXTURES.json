@@ -1,0 +1,41 @@
+{
+  "zones": [
+    {
+      "name": "Thonglor",
+      "jobs": 5,
+      "distance": "1.8 km",
+      "coord": [
+        100.583,
+        13.738
+      ]
+    },
+    {
+      "name": "Ekkamai",
+      "jobs": 3,
+      "distance": "2.4 km",
+      "coord": [
+        100.594,
+        13.736
+      ]
+    },
+    {
+      "name": "Sukhumvit 39",
+      "jobs": 2,
+      "distance": "0.9 km",
+      "coord": [
+        100.572624,
+        13.745653
+      ]
+    }
+  ],
+  "center": [
+    100.5833,
+    13.7407
+  ],
+  "zoom": 12.7,
+  "note": "Approximate demo demand areas, original counts and distance labels. No live demand or driver location.",
+  "size": [
+    393,
+    420
+  ]
+}

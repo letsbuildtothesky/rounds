@@ -1,0 +1,35 @@
+# Rounds driver — Refresh 10
+
+## Scope and continuity
+Read the complete original J01 My rounds and K00 Team hours before refreshing. Keep the fixed blue/orange style, large controls, concise copy and generous content spacing. The 47-screen pack now contains 20 refreshed screens and 27 unchanged originals. Exactly J01 and K00 change from Refresh 09. All 45 other screen files, including the refined H02 Call/contact, remain byte-identical; earlier reviews, maps/markers, design-tokens.css and the style guide are preserved. Map-marker refinement remains deferred.
+
+## J01 — My rounds
+- Use the approved 24px blue Rounds wordmark and 6px orange square, 52px notification control, and blue current navigation state with a narrow orange indicator. Navigation targets remain Home, Jobs, Hours/Earnings and Profile. Avoid the original generic .active selector, which also affected the Jobs navigation item with active-round card styling.
+- Keep the current round prominent: 36px Stop 2 of 4, a separate 23px recipient name, 16px wrapping destination and 28px travel estimate. Use the existing pale-blue/orange panel style and a 64px Return to round action. No compressed short-height variant reduces touch targets.
+- Reconcile the original mismatched James T. / Thonglor / 16 min / 12.4 km fixture with the previously approved Stop 2 route: James T., The Sukhothai Residences, Sathorn; 20 min and 5.3 km to Stop 2; 3 stops left and 12.0 km remaining. Values come from the existing captured route used in Refresh 05, not a new/live calculation. The demonstration destination is approximate, not a verified entrance.
+- Return to round opens a readable current-round sheet showing the same Stop 2, package #8422 (one Signature hamper), and later Stops 3 and 4. Its Navigate to Stop 2 link uses the existing sample destination coordinates. It does not route into E01's fixed Stop 1 fixture or mark any new stop delivered. No map assets or markers are changed.
+- Preserve all three original completed records and their evidence/fare details. Whole rows are at least 120px, merchant names 18px, metadata/status 14px and duration/fare 22px. Long names wrap instead of truncating. Detail facts use 64px rows and proper modal focus.
+- Keep team and network modes: network routes Hours to Earnings and uses the network home/notification context. The mixed completed history is retained as in the original. A No active round review state retains completed records and a clear Home action.
+- POD saved and guaranteed fare in this screen are original sample records; no proof files are fabricated, no payout is asserted and no external work is executed.
+
+## K00 — Team hours
+- Preserve the large total (48px, 44px at narrow widths), 31h 46m recorded and 42m overtime. Calculate both from one daily dataset: 8h20m, 7h55m, 7h09m and 8h22m; future days are null, not zero hours. Keep the existing four previous-week totals and overtime values.
+- Increase the chart's daily value labels from roughly 10–10.5px to 14px on two lines. Show full three-letter weekdays and dates, a shared 0/4/8/10-hour scale and a labelled dashed 8h schedule line. Regular time is blue; the actual portion above 8h is orange, drawn proportionally rather than as a decorative fixed-height cap. Today has a labelled date and orange underline. This uses HTML/CSS geometry, not an image.
+- The compact seven-column chart is informational. A full-width 56px Daily breakdown control opens 80px day rows, avoiding seven tiny interactive targets. Select a recorded day to see its total/overtime; future days remain labelled and disabled. The chart also has a full accessible textual description.
+- Move the missing clock-out action directly below the weekly summary and enlarge it to 112px with 18px heading and 14px support text. Increase previous-week rows to 94px and their values to 20px (18px at the narrow breakpoint).
+- Fix the original year mismatch: the original Monday 25 Aug, Wednesday 20 Aug and Thursday 28 Aug correspond to 2025. The review is explicitly dated 28 Aug 2025, and the correction key/date now match that sample. Do not reuse the original mismatched 2026 local-storage record.
+- Preserve today's original Start 08:00, End 17:22 and recorded 8h22m. Show the one-hour difference as Excluded time, calculated from the 9h22m elapsed span. Its cause is not provided by the original, so it is not labelled an assumed break. The short explanation distinguishes elapsed from recorded hours.
+- Preserve the missing clock-out workflow for 20 Aug, with Start 08:03 and Last delivery 16:47. Use a 64px native time field and a 64px save control. Validate actual HH:MM ranges and require the same-day end time to be no earlier than the last delivery. Invalid input, blocked storage and correction editing have explicit states.
+- Replace the original unsupported Submitted/Sent claims with Save correction and Saved on this device · Not sent. Save success requires a successful localStorage write. Failure retains the typed value and permits retry. Reload restores a valid saved correction; review data uses its own key. Editing changes only the proposed end time.
+- Reconnection never sends a correction or changes a total. The missing-date previous week remains labelled Correction needed because local saving is not Dispatch approval. Backend submission, approval and final payroll calculations remain implementation work, not claimed by this prototype.
+
+## Review and navigation
+Standalone review embeds both full screens. Tabs cover Team, Network, No active round, Hours, Correction and Offline. Jobs/Hours navigation switches between the two preview frames; other companion links open from the extracted pack and are explained outside the phone in standalone mode. Frame messages validate their source. External navigation requires an explicit user click.
+
+The cumulative ZIP contains all 47 screen files, reviews 01–09, style guide, design tokens and notes. Storage support for local HTML varies by browser. These two screens introduce no API, dispatch, payout, calling or messaging connection.
+
+## Validation
+Source/Node logic checks cover role navigation, active-stop destination/estimates, all three completed details, modal focus, daily sums and proportional chart segments, null future days, day selection, elapsed versus recorded time, correction validation/editing/storage failure/reload, offline state without false submission, preview tabs and companion routing. Check JavaScript syntax, unique IDs, link targets, exact two-screen scope, fixed guide/tokens, archive integrity and the 47-screen inventory. Full browser rendering remains unavailable after the earlier browser security block; phone layout, native time controls, Thai text, sunlight and gloves still need device review. Do not label this a complete accessibility audit or production validation.
+
+## Next pair
+K01 Earnings and L01 Driver profile. Read both originals first. Preserve the fixed style guide and two-screen cadence; map-marker refinement remains deferred.

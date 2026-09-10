@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 
 import '../app/app_strings.dart';
@@ -5,6 +7,8 @@ import '../app/driver_design_system.dart';
 import '../app/generated/driver_ui_metrics.g.dart';
 import '../app/harness_app_controller.dart';
 import '../driver/driver_session.dart';
+import 'components/pickup_collection_view.dart';
+import 'operations_chat_screen.dart';
 
 class PickupConfirmationScreen extends StatefulWidget {
   const PickupConfirmationScreen({
@@ -25,6 +29,38 @@ class _PickupConfirmationScreenState extends State<PickupConfirmationScreen> {
   final Set<String> _confirmed = {};
   bool _submitting = false;
   bool _pendingSync = false;
+  int _revision = 0;
+
+  @override
+  void didUpdateWidget(covariant PickupConfirmationScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.controller != widget.controller ||
+        jsonEncode(oldWidget.round.toJson()) !=
+            jsonEncode(widget.round.toJson())) {
+      _revision++;
+      _confirmed.clear();
+      _submitting = false;
+      _pendingSync = false;
+    }
+  }
+
+  // Each physical package is checked individually; the command still confirms
+  // the entire original manifest, never a subset of the checked display rows.
+  List<PickupPackage> get _packages => [
+    for (final stop in widget.round.stops)
+      for (final item in stop.manifestItems)
+        for (var piece = 1; piece <= item.quantity; piece++)
+          PickupPackage(
+            key: 'manifest-${stop.id}-${item.lineNumber}-$piece',
+            title: item.description,
+            reference: stop.deliveryReference,
+            recipient: stop.recipientName,
+            piece: item.quantity > 1 ? '$piece of ${item.quantity}' : null,
+            handling: item.handlingNote,
+            keepCool:
+                item.handlingNote?.toLowerCase().contains('cool') ?? false,
+          ),
+  ];
 
   int get _lineCount => widget.round.stops.fold(
     0,
@@ -36,7 +72,10 @@ class _PickupConfirmationScreenState extends State<PickupConfirmationScreen> {
         count +
         stop.manifestItems.fold(0, (units, item) => units + item.quantity),
   );
-  bool get _ready => _lineCount > 0 && _confirmed.length == _lineCount;
+  bool get _ready => widget.controller.strings.isThai
+      ? _lineCount > 0 && _confirmed.length == _lineCount
+      : _packages.isNotEmpty &&
+            _packages.every((p) => _confirmed.contains(p.key));
 
   String _key(DriverRoundStopModel stop, DriverManifestItemModel item) =>
       '${stop.id}:${item.lineNumber}';
@@ -44,9 +83,10 @@ class _PickupConfirmationScreenState extends State<PickupConfirmationScreen> {
   Future<void> _confirm() async {
     final copy = widget.controller.strings;
     if (!_ready || _submitting) return;
+    final revision = _revision;
     setState(() => _submitting = true);
     final outcome = await widget.controller.confirmPickup(widget.round);
-    if (!mounted) return;
+    if (!mounted || revision != _revision) return;
     if (outcome?.committed ?? false) {
       Navigator.of(context).pop(true);
       return;
@@ -68,24 +108,56 @@ class _PickupConfirmationScreenState extends State<PickupConfirmationScreen> {
     );
   }
 
-  Future<void> _reportProblem() async {
+  Future<void> _openEnglishActions() async {
+    if (_submitting || _pendingSync || widget.round.stops.isEmpty) return;
+    final revision = _revision;
+    final action = await showPickupProblemActions(context);
+    if (!mounted || action == null || revision != _revision) return;
+    if (action == PickupProblemAction.message) {
+      // Existing scoped Round/stop chat; no simulated send or new tenant IDs.
+      await Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => OperationsChatScreen(
+            controller: widget.controller,
+            round: widget.round,
+            stop: widget.round.stops.first,
+          ),
+        ),
+      );
+      return;
+    }
+    await _reportProblem(
+      initialCategory: switch (action) {
+        PickupProblemAction.missing => 'missing_item',
+        PickupProblemAction.wrong => 'wrong_item',
+        PickupProblemAction.damaged => 'damaged_item',
+        PickupProblemAction.message => null,
+      },
+    );
+  }
+
+  Future<void> _reportProblem({String? initialCategory}) async {
     if (_submitting || _pendingSync) return;
+    final revision = _revision;
     final copy = widget.controller.strings;
     final draft = await showModalBottomSheet<_PickupProblemDraft>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      builder: (context) =>
-          _PickupProblemSheet(stops: widget.round.stops, copy: copy),
+      builder: (context) => _PickupProblemSheet(
+        stops: widget.round.stops,
+        copy: copy,
+        initialCategory: initialCategory,
+      ),
     );
-    if (draft == null || !mounted) return;
+    if (draft == null || !mounted || revision != _revision) return;
     setState(() => _submitting = true);
     final outcome = await widget.controller.reportPickupProblem(
       stop: draft.stop,
       category: draft.category,
       note: draft.note,
     );
-    if (!mounted) return;
+    if (!mounted || revision != _revision) return;
     setState(() => _submitting = false);
     if (outcome?.committed ?? false) {
       ScaffoldMessenger.of(
@@ -113,6 +185,26 @@ class _PickupConfirmationScreenState extends State<PickupConfirmationScreen> {
   @override
   Widget build(BuildContext context) {
     final copy = widget.controller.strings;
+    if (!copy.isThai) {
+      return PickupCollectionView(
+        merchant: widget.round.tenantName,
+        stopCount: widget.round.stops.length,
+        packages: _packages,
+        selected: _confirmed,
+        locked: _submitting || _pendingSync,
+        actionLabel: _pendingSync
+            ? copy.pickupPendingSync
+            : _submitting
+            ? copy.pickupSending
+            : null,
+        onToggle: (key) => setState(() {
+          if (!_confirmed.add(key)) _confirmed.remove(key);
+        }),
+        onBack: () => Navigator.of(context).maybePop(),
+        onProblem: _openEnglishActions,
+        onConfirm: _ready ? _confirm : null,
+      );
+    }
     final compact =
         MediaQuery.sizeOf(context).width <
         DriverReferenceViewport.compactBreakpoint;
@@ -614,9 +706,14 @@ class _PickupProblemDraft {
 }
 
 class _PickupProblemSheet extends StatefulWidget {
-  const _PickupProblemSheet({required this.stops, required this.copy});
+  const _PickupProblemSheet({
+    required this.stops,
+    required this.copy,
+    this.initialCategory,
+  });
   final List<DriverRoundStopModel> stops;
   final AppStrings copy;
+  final String? initialCategory;
 
   @override
   State<_PickupProblemSheet> createState() => _PickupProblemSheetState();
@@ -624,7 +721,7 @@ class _PickupProblemSheet extends StatefulWidget {
 
 class _PickupProblemSheetState extends State<_PickupProblemSheet> {
   late DriverRoundStopModel _stop = widget.stops.first;
-  String? _category;
+  late String? _category = widget.initialCategory;
   final _note = TextEditingController();
 
   @override

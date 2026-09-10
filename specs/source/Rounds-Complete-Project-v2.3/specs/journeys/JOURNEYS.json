@@ -1,0 +1,216 @@
+[
+  {
+    "id": "J01-OWN-TEAM",
+    "setup": "Operator O, driver S, recipient C; delivery D1, manifest M1 quantity 1, unit U1, ready pickup site H1.",
+    "steps": [
+      {
+        "step": "Intake",
+        "command_identity": "SaveDeliveryDraft \u2192 ReviewAddress \u2192 HoldSlot \u2192 CommitDelivery",
+        "required_result": "Return delivery D1, manifest M1, unit U1 and committed slot identity; address review is explicit."
+      },
+      {
+        "step": "Plan",
+        "command_identity": "GeneratePlan(city_id,service_date,fulfillment_unit_ids=[U1]) \u2192 GetPlan \u2192 ApplyPlanProposal",
+        "required_result": "Use proposal ID/version 1, source plan base_version and input/policy hashes. Preserve stable stop IDs."
+      },
+      {
+        "step": "Release",
+        "command_identity": "ReleasePlan(plan_id,proposal_id,input_hash,round_ids)",
+        "required_result": "Atomic team assignment, claims and driver range; actual readiness must pass. Cache GetDriverRound assignment fence and pickup/dropoff/unit IDs."
+      },
+      {
+        "step": "Collect",
+        "command_identity": "ConfirmArrival(pickup stop) \u2192 ConfirmPickup(round_id,pickup_stop_id,manifest_ids,fulfillment_unit_ids,quantities)",
+        "required_result": "Supply original execution_fence. Result binds collected U1, attempt A1, custody event and resource versions. Missing approval field is valid for full collection."
+      },
+      {
+        "step": "Deliver",
+        "command_identity": "ConfirmArrival(dropoff) \u2192 RecordHandoff(attempt_id=A1,receiver_kind,quantities)",
+        "required_result": "Handoff H01 moves actual U1 quantity. Lost response recovers the same handoff ID through GetCommandStatus."
+      },
+      {
+        "step": "Evidence",
+        "command_identity": "ReserveAsset \u2192 upload \u2192 VerifyAsset \u2192 SubmitProof(attempt_id=A1,handoff_id=H01,policy_version_id,evidence) \u2192 CompleteDelivery",
+        "required_result": "Proof ID comes from SubmitProof.data.resource.id. Complete U1/attempt/stop, derive whole D1 and this Round closure once."
+      }
+    ],
+    "adverse": "Unready release returns PICKUP_NOT_READY/INBOUND_NOT_RECEIVED without assignment mutation. Duplicate pickup or completion command returns its original result and adds no physical quantity/event. No own-team payroll or freelance settlement is invented.",
+    "events": [
+      "pickup.confirmed",
+      "handoff.recorded",
+      "proof.submitted",
+      "fulfillment.completed",
+      "delivery.completed",
+      "round.completed"
+    ],
+    "status": "written; implementation unexecuted"
+  },
+  {
+    "id": "J02-FREELANCE",
+    "setup": "Operator O; opted-in freelancer F; unplanned unit U1; broadcast B1; current scope revision/hash; eligible vehicle.",
+    "steps": [
+      {
+        "step": "Broadcast",
+        "command_identity": "StartBroadcast(fulfillment_unit_ids=[U1],...configured fare/search...)",
+        "required_result": "Operator decides even when an own driver is free. Creates search Round R1/stops, unit claim and offered candidates."
+      },
+      {
+        "step": "Accept",
+        "command_identity": "RespondOffer(offer_id,scope_revision,scope_hash,response=accept)",
+        "required_result": "Atomically create agreement G1, acknowledged origin=freelance assignment A1, released Round/stops, driver interval and open/unearned/unpaid settlement. Other offers become taken."
+      },
+      {
+        "step": "Inspect",
+        "command_identity": "GetDriverRound",
+        "required_result": "Contains A1 and version, U1 and stops even if goods are not ready. No own-team plan/proposal is needed."
+      },
+      {
+        "step": "Wait for goods",
+        "command_identity": "SetPickupReadiness or actual ReceiveTrip",
+        "required_result": "Gate changes synchronously on the same assignment. No second acceptance, no inferred receipt from ETA."
+      },
+      {
+        "step": "Execute",
+        "command_identity": "ConfirmArrival \u2192 ConfirmPickup \u2192 RecordHandoff \u2192 SubmitProof \u2192 CompleteDelivery",
+        "required_result": "Use J01 identity chain. Complete agreed units, close Round, derive settlement.earned for accepted scope; customer notification consumes delivery.completed only."
+      }
+    ],
+    "adverse": "Two simultaneous accepts have one winner; loser cannot obtain assigned private data. Acceptance before readiness does not authorize pickup. Response loss recovers original assignment/agreement; replay cannot create a second guarantee or fee.",
+    "events": [
+      "work.accepted",
+      "offer.taken",
+      "pickup.confirmed",
+      "fulfillment.completed",
+      "settlement.earned"
+    ],
+    "status": "written; implementation unexecuted"
+  },
+  {
+    "id": "J03-COMPLETE-ORDER",
+    "description": "# J03-COMPLETE-ORDER \u2014 Shortage blocks one order, not its neighbours\n\nStatus: written contract; application/database execution pending.\n\nD1/M1 requires five items; only three are ready. D2 is a separate complete order on the planned route.\n\n1. Plan and stage D1 and D2 before stock/inbound readiness. No pickup is implied.\n2. Report D1 shortage. ConfirmPickup(D1, quantity 3) rejects COMPLETE_ORDER_REQUIRED with zero custody, attempts or residual units. ApprovePartialPickup rejects FEATURE_NOT_ENABLED.\n3. Explicitly adjust the route to leave D1 pending and retain D2; preserve appropriate team acknowledgement or freelance consent. D2 may be collected complete and delivered normally.\n4. When all five items for D1 are physically received and prepared, confirm exactly five under its current assignment fence. Create one whole-order attempt; remaining_units and obligation_ids are empty.\n5. Handoff the complete D1 order, verify proof and complete. Replay adds zero. A direct second unit insert or non-null parent_unit_id fails SQL constraints.\n\nMissing, duplicate or excess manifest lines reject. An atomic batch containing incomplete D1 does not silently collect D2; retry with a new explicit complete-order selection after route adjustment. Already moved goods are retained as incident evidence for custody reconciliation, not hidden or converted into an authorized short pickup.\n\nFacts: pickup.confirmed, fulfillment.completed, delivery.completed only on actual successful branches. Rejection emits no success fact. Partial inbound receipts are truthful inventory/custody updates, not delivery authorization.\n",
+    "events": [
+      "pickup.confirmed",
+      "fulfillment.completed",
+      "delivery.completed"
+    ]
+  },
+  {
+    "id": "J04-OFFLINE",
+    "setup": "Device has authorized A1/version 7, R1, U1, stops and policy cached. Connectivity fails before pickup.",
+    "steps": [
+      {
+        "step": "Observe",
+        "command_identity": "Persist local O1 pickup, O2 arrival, O3 handoff, O4 proof, O5 completion",
+        "required_result": "Each has original time/fence; O3 references O1 attempt binding; O4 references O3 handoff binding and local assets; O5 references O4 proof binding. They are not final API request hashes."
+      },
+      {
+        "step": "Restart",
+        "command_identity": "Kill/reopen app; read encrypted observations/bindings/assets",
+        "required_result": "Same O1\u2013O5 and captured evidence survive. UI says pending sync, not server complete."
+      },
+      {
+        "step": "Resolve pickup",
+        "command_identity": "Materialize C1 ConfirmPickup, freeze exact hash and send",
+        "required_result": "Committed result maps U1\u2192attempt A1x and root versions. On lost response GetCommandStatus(C1) recovers exactly that result."
+      },
+      {
+        "step": "Bind successors",
+        "command_identity": "Resolve O2/O3 from C1 and arrival result, then materialize handoff C3",
+        "required_result": "Only own predecessor resource versions update the chain. Original assignment A1/version7 stays unchanged; never replace it from a current reassignment."
+      },
+      {
+        "step": "Upload and finish",
+        "command_identity": "Upload/verify assets \u2192 bind C3 handoff ID into SubmitProof C4 \u2192 bind C4 proof ID into CompleteDelivery C5",
+        "required_result": "Freeze each command only after all bindings resolve. Exactly one attempt, handoff, proof submission and completion for the observation chain."
+      }
+    ],
+    "adverse": "If A1 was superseded while offline, block dependent physical commands. RetainOfflineObservations stores original chain/assets under incident; new assignment/custody remains unchanged. Rejected/retained predecessor never yields a success binding. Retry after response loss reuses original frozen C ID/hash.",
+    "events": [
+      "pickup.confirmed",
+      "handoff.recorded",
+      "proof.submitted",
+      "fulfillment.completed",
+      "evidence.retained_stale"
+    ],
+    "status": "written; implementation unexecuted"
+  },
+  {
+    "id": "J05-SETTLEMENT-DISPUTE",
+    "setup": "Agreement G1 guarantees 1000 minor units; settlement S1 open/unearned/unpaid; valid proof P1 after work.",
+    "steps": [
+      {
+        "step": "Prepay",
+        "command_identity": "RecordSettlement(agreement_id=G1,direction=payment,amount_minor=400,currency,payment_reference,occurred_at)",
+        "required_result": "Append payment; S1 unearned/partially_paid with net paid400. Do not mark delivered/earned."
+      },
+      {
+        "step": "Earn",
+        "command_identity": "Complete agreed Round",
+        "required_result": "S1 earned1000, paid400, due600; completion does not erase earlier payment."
+      },
+      {
+        "step": "Pay remainder",
+        "command_identity": "RecordSettlement(...amount_minor=600,new payment_reference...)",
+        "required_result": "Paid1000; due0; close if final entitlement and no open financial case."
+      },
+      {
+        "step": "Financial dispute",
+        "command_identity": "OpenDispute(kind=financial,agreement_id=G1) \u2192 DecideDispute(financial_adjustment=-100,...)",
+        "required_result": "Finance authority appends adjustment; entitlement900, net paid1000, refund_due100. Completed job and valid P1 remain unchanged. Record actual refund100 to balance; case closes after authorized effects."
+      },
+      {
+        "step": "Evidence dispute",
+        "command_identity": "OpenDispute(kind=evidence,proof_submission_id=P1) \u2192 DecideDispute(evidence_upheld)",
+        "required_result": "Proof reviewer restores previously verified proof; finance-only actor rejects NOT_AUTHORIZED. Rejected proof instead requires a genuine verified replacement, with original evidence retained."
+      }
+    ],
+    "adverse": "Replaying same payment reference/command adds zero; differing bytes for same command reject. Refund beyond net paid rejects. Prepaid1000 then cancellation with no entitlement records refund_due1000 until actual refund; no imaginary money movement. Reject replacement proof for a different handoff.",
+    "events": [
+      "settlement.payment_recorded",
+      "settlement.earned",
+      "settlement.balance_changed",
+      "dispute.opened",
+      "dispute.resolved"
+    ],
+    "status": "written; implementation unexecuted"
+  },
+  {
+    "id": "J06-INTERCITY",
+    "setup": "Truck T1 carries D1\u2013D5; destination hub H1. R1 has D1\u2013D3 units, R2 has D4\u2013D5. Expected arrival09:00; receiver RH.",
+    "steps": [
+      {
+        "step": "Plan at07:00",
+        "command_identity": "GeneratePlan \u2192 ApplyPlanProposal \u2192 StagePlan",
+        "required_result": "All local routes/drivers/stops are ready before goods arrive; provisional commitments reserve driver time. Pickup is destination H1."
+      },
+      {
+        "step": "Truck delayed",
+        "command_identity": "SaveTrip ETA update; preview/reallocate with WithdrawRelease/StagePlan",
+        "required_result": "Preserve route/stop IDs. Operator can release S provisional interval and assign N; no automatic reshuffle or freelance consent bypass."
+      },
+      {
+        "step": "Actual receipt",
+        "command_identity": "ArriveTrip \u2192 ReceiveTrip for L1,L2,L4,L5",
+        "required_result": "Actual increments update custody and each unit dependency. R2 ready; R1 awaits L3. Worker processing can be paused and gates must already be current."
+      },
+      {
+        "step": "Independent departure",
+        "command_identity": "ReleasePlan for R2 \u2192 local ConfirmPickup \u2192 local proof journey",
+        "required_result": "R2 departs with received goods; no whole-truck check blocks it. Wrong-manifest booking/receipt lines reject before movement."
+      },
+      {
+        "step": "Later receipt",
+        "command_identity": "ReceiveTrip for L3 \u2192 ReleasePlan R1 \u2192 local fulfillment",
+        "required_result": "Same original deliveries/units/stops; no duplicate customer order or reset. CloseTrip requires all booked balances received or explicit discrepancy disposition."
+      }
+    ],
+    "adverse": "Receive2 then3 of booked5 yields total5; replay changes0; another1 rejects QUANTITY_EXCEEDED. Missing D3 cannot freeze R2. Concurrent receipt/release recomputes under the same root locks; ETA alone never unlocks pickup.",
+    "events": [
+      "round.readiness_changed",
+      "pickup.confirmed",
+      "fulfillment.completed",
+      "delivery.completed"
+    ],
+    "status": "written; implementation unexecuted"
+  }
+]

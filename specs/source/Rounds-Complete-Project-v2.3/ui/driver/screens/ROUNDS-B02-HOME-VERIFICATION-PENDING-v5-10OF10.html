@@ -1,0 +1,144 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content"><title>Rounds — Home / verification pending</title><style>
+:root{--ink:#17283f;--blue:#1754a6;--blue-deep:#14488d;--blue-soft:#edf4fd;--orange:#ff6420;--muted:#526278;--line:#dce4ed;--green:#167344;--red:#a22f2f;font-family:Arial,Helvetica,sans-serif;color:var(--ink);background:#e9edf2;font-synthesis:none}*{box-sizing:border-box}body{margin:0;padding:28px}a,button{font:inherit;-webkit-tap-highlight-color:transparent;touch-action:manipulation}a{color:inherit;text-decoration:none}button{cursor:pointer}button:disabled{cursor:default}svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}button:focus-visible,a:focus-visible{outline:3px solid var(--orange);outline-offset:3px}[hidden]{display:none!important}.frame{width:393px;height:852px;margin:auto;border:1px solid #cbd5df;border-radius:24px;overflow:hidden;position:relative;background:#fff;box-shadow:0 16px 50px #17223810;display:flex;flex-direction:column}.statusbar{height:28px;flex:none;padding:7px 20px 0;font-size:12px;font-weight:700;display:flex;justify-content:space-between}.phone-status{display:flex;align-items:center;gap:7px}.phone-status i{display:block;width:19px;height:9px;border:1px solid var(--ink);border-radius:2px;background:linear-gradient(to right,var(--ink) 75%,transparent 75%)}.app{flex:1;min-height:0;display:flex;flex-direction:column;position:relative}.topbar{height:64px;flex:none;display:grid;grid-template-columns:52px minmax(0,1fr) 52px;align-items:center;gap:12px;padding:0 14px;background:#fff;border-bottom:1px solid var(--line)}.square{height:52px;width:52px;background:white;border:1px solid var(--line);border-radius:7px;display:grid;place-items:center;color:var(--ink)}.square:hover{background:var(--blue-soft)}.top-copy{min-width:0}.top-copy span{font-size:13px;color:var(--blue);display:block;line-height:1.2}.top-copy strong{display:block;font-size:17px;font-weight:600;line-height:1.2;margin-top:4px}.primary{width:100%;min-height:64px;background:var(--blue);color:#fff;border:0;border-radius:7px;display:flex;justify-content:center;align-items:center;gap:12px;font-size:18px;font-weight:600;padding:12px 16px}.primary:hover{background:var(--blue-deep)}.primary:disabled{background:#e2e8ee;color:#566477}.primary.ready{background:var(--green)}.primary svg{width:23px;height:23px}.panel-backdrop{position:absolute;inset:0;background:#132c4f55;z-index:80}.sheet{position:absolute;left:8px;right:8px;bottom:8px;z-index:81;border:1px solid var(--line);border-radius:12px 12px 8px 8px;background:#fff;padding:6px 16px 16px;box-shadow:0 -8px 40px #142f4a22;max-height:calc(100% - 36px);overflow:auto}.sheet-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:6px 0 8px}.sheet-head h2{font-size:23px;letter-spacing:-.5px;margin:0}.sheet-head .square{border:0;flex:none}.sheet-action{min-height:68px;display:flex;align-items:center;gap:14px;border:0;border-top:1px solid var(--line);width:100%;background:#fff;text-align:left;font-size:17px;color:var(--ink);padding:12px 4px}.sheet-action:hover{background:var(--blue-soft)}.sheet-action.issue{color:var(--red)}.sheet-action .end{margin-left:auto}.sheet-action svg{width:24px;flex:none}.sheet-action .end svg{width:18px}.sheet .cancel{min-height:60px;border:0;background:var(--blue-soft);color:var(--blue);border-radius:6px;width:100%;font-size:17px;font-weight:600;margin-top:8px}
+/* Rounds driver — shared design tokens, style guide v1. */
+:root {
+  --blue: #1754a6;
+  --blue-deep: #14488d;
+  --blue-soft: #edf4fd;
+  --orange: #ff6420;
+  --orange-soft: #fff2e8;
+  --ink: #17283f;
+  --muted: #526278;
+  --line: #dce4ed;
+  --paper: #ffffff;
+  --canvas: #e9edf2;
+  --green: #167344;
+  --green-soft: #edf7f1;
+  --red: #a22f2f;
+  --route-later: #668ebc;
+  --care-ink: #98400f;
+  --font-ui: Arial, Helvetica, sans-serif;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --content-inset: 18px;
+  --content-inset-narrow: 14px;
+  --radius-control: 7px;
+  --target-icon: 52px;
+  --target-contact: 60px;
+  --target-primary: 64px;
+  --target-confirm: 68px;
+}
+.frame{isolation:isolate}.app{overflow:hidden}.content{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;display:flex;flex-direction:column}.brandbar{min-height:64px;flex:none;padding:6px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}.brand{display:flex;align-items:baseline;font-size:24px;font-weight:800;line-height:1;letter-spacing:-1.1px;color:var(--blue)}.brand i{width:6px;height:6px;background:var(--orange);margin-left:3px}.brandbar .square{border:0}.sample-note{flex:none;font-size:13px;line-height:1.35;color:var(--muted);background:#f6f8fb;border-bottom:1px solid var(--line);padding:8px 18px;margin:0}
+.pending-hero{flex:none;padding:28px 22px;background:var(--blue-soft);border-bottom:1px solid #d2e0f0;border-left:4px solid var(--orange);padding-left:18px}.eyebrow{display:flex;align-items:center;gap:9px;font-size:14px;line-height:1.4;color:var(--blue);font-weight:600;margin:0 0 16px}.eyebrow svg{width:20px;height:20px;flex:none}.pending-hero h1{font-size:46px;font-weight:700;line-height:1.1;letter-spacing:-1.2px;margin:0;overflow-wrap:anywhere}.lead{font-size:17px;line-height:1.45;color:var(--muted);margin:14px 0 0}.state-attention .pending-hero{background:var(--orange-soft);border-bottom-color:#efdbc9}.state-attention .pending-hero h1,.state-error .pending-hero h1{font-size:40px}.state-approved .pending-hero{background:var(--green-soft);border-bottom-color:#cce2d5}.state-approved .pending-hero h1{font-size:44px;color:var(--green)}.state-offline .pending-hero,.state-unknown .pending-hero,.state-error .pending-hero{background:#f5f7fa}
+.submitted{flex:none;padding:24px 22px}.section-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;border-bottom:1px solid var(--line);padding-bottom:18px}.section-head h2{font-size:16px;line-height:1.4;font-weight:600;margin:0;color:var(--muted)}.received-count{font-size:36px;line-height:1.1;letter-spacing:-.8px;font-weight:600;margin:0;color:var(--blue);font-variant-numeric:tabular-nums;white-space:nowrap}.received-count span{font-size:16px;font-weight:400;letter-spacing:0}.check-list{margin:0;padding:0;list-style:none}.check-row{min-height:72px;display:flex;align-items:center;justify-content:space-between;gap:16px;border-bottom:1px solid var(--line);padding:16px 0}.check-name{font-size:18px;font-weight:600;line-height:1.4;min-width:0}.received-mark{color:var(--blue);width:24px;height:24px;display:grid;place-items:center;flex:none}.received-mark svg{width:22px;height:22px}.needs-fix{background:var(--orange-soft);margin-inline:-12px;padding-inline:12px;border-bottom-color:#efdbc9}.fix-label{font-size:14px;font-weight:600;color:var(--care-ink);line-height:1.4}.spacer{flex:1;min-height:24px}.action-footer{flex:none;padding:16px 18px;border-top:1px solid var(--line);background:#fff}.action-footer .primary{min-height:68px;font-size:19px;line-height:1.35}.primary:disabled,.secondary:disabled{background:#e5eaf0;color:var(--muted)}
+.bottomnav{flex:none;min-height:76px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid var(--line);padding:5px 8px 8px;background:#fff}.nav-item{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:62px;gap:6px;font-size:13px;font-weight:400;color:var(--muted);position:relative;border:0;background:white;padding:0 4px}.nav-item.active{color:var(--blue);font-weight:600}.nav-item.active:before{content:'';position:absolute;top:-6px;width:26px;height:3px;background:var(--orange)}.nav-item:hover:not(:disabled){background:var(--blue-soft)}.nav-item:disabled{color:#697788}.nav-item:disabled svg{color:#a0adbc}
+.sheet-copy{font-size:17px;line-height:1.45;color:var(--muted);margin:16px 0 22px}.sheet .primary{margin-top:20px;min-height:68px}.secondary{min-height:60px;width:100%;padding:12px 16px;background:white;color:var(--blue);border:1px solid #bacbdd;border-radius:7px;font-size:18px;line-height:1.35;font-weight:600;display:flex;align-items:center;justify-content:center;gap:10px}.secondary:hover{background:var(--blue-soft)}.sheet .secondary{margin-top:10px;min-height:68px}.sheet-subtitle{font-size:24px;line-height:1.25;font-weight:600;margin:20px 0 8px;letter-spacing:-.5px}.sheet-facts{margin:24px 0;padding:0}.sheet-fact{display:flex;align-items:baseline;justify-content:space-between;gap:18px;border-bottom:1px solid var(--line);padding:18px 0}.sheet-fact dt{font-size:16px;line-height:1.4;color:var(--muted)}.sheet-fact dd{font-size:17px;line-height:1.4;font-weight:600;margin:0;text-align:right}.status-announcement{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+@media(max-width:460px){body{padding:0}.frame{width:100%;height:100dvh;border:0;border-radius:0;box-shadow:none}.statusbar{height:calc(28px + env(safe-area-inset-top));padding-top:calc(7px + env(safe-area-inset-top))}.bottomnav{padding-bottom:calc(8px + env(safe-area-inset-bottom));min-height:calc(76px + env(safe-area-inset-bottom))}.sheet{bottom:calc(8px + env(safe-area-inset-bottom))}}
+@media(max-width:350px){.brandbar,.submitted,.action-footer{padding-left:14px;padding-right:14px}.pending-hero{padding-left:10px;padding-right:14px}.sheet{padding-left:14px;padding-right:14px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style></head><body data-state="" data-review="0"><div class="frame" id="frame"><div class="statusbar" aria-hidden="true"><span>16:03</span><span class="phone-status">5G <i></i></span></div><main class="app" id="app"><header class="brandbar"><div class="brand">Rounds<i></i></div><button class="square" id="notificationsOpen" aria-label="Notifications" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 7h18s-3 0-3-7M10 21h4"/></svg></button></header><p class="sample-note" id="sampleNotice">Preview · Sample application</p><div class="status-announcement" id="statusAnnouncement" role="status" aria-live="polite"></div><div class="content" id="content"><header class="pending-hero"><p class="eyebrow"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Network verification</span></p><h1 id="pageTitle" tabindex="-1">In review</h1><p class="lead" id="lead">We’ll notify you of the result.</p></header><section class="submitted" aria-labelledby="submittedTitle"><div class="section-head"><h2 id="submittedTitle" tabindex="-1">Checks received</h2><p class="received-count" aria-label="4 of 4 received">4 <span>of</span> 4</p></div><ul class="check-list"><li class="check-row" id="identityRow"><span class="check-name">Identity</span><span class="received-mark" id="identityReceived" role="img" aria-label="Received"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg></span><span class="fix-label" id="identityFix" hidden>New photo needed</span></li><li class="check-row" id="faceRow"><span class="check-name">Face check</span><span class="received-mark" id="faceReceived" role="img" aria-label="Received"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg></span></li><li class="check-row" id="vehicleRow"><span class="check-name">Vehicle</span><span class="received-mark" id="vehicleReceived" role="img" aria-label="Received"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg></span></li><li class="check-row" id="payoutRow"><span class="check-name">Payout</span><span class="received-mark" id="payoutReceived" role="img" aria-label="Received"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg></span></li></ul></section><div class="spacer" aria-hidden="true"></div></div><footer class="action-footer"><button class="primary" id="primary">Check status</button></footer><nav class="bottomnav" aria-label="Primary"><a class="nav-item active" href="#content" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7M5 9v12h14V9M10 21v-7h4v7"/></svg><span>Home</span></a><button class="nav-item" id="jobsOpen" disabled aria-label="Jobs, available after approval"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg><span>Jobs</span></button><button class="nav-item" id="earningsOpen" disabled aria-label="Earnings, available after approval"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span>Earnings</span></button><button class="nav-item" id="profileOpen" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 22v-3a8 8 0 0 1 16 0v3"/></svg><span>Profile</span></button></nav></main><div class="panel-backdrop" id="backdrop" hidden></div><section class="sheet" id="statusSheet" role="dialog" aria-modal="true" aria-labelledby="statusSheetTitle" hidden><div class="sheet-head"><h2 id="statusSheetTitle">Review status preview</h2><button class="square" data-close-sheet aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg></button></div><p class="sheet-copy">Choose a sample result.</p><button class="primary" data-result="pending">Still in review</button><button class="secondary" data-result="attention">New ID photo needed</button><button class="secondary" data-result="approved">Approved</button><button class="secondary" data-result="error">Couldn’t refresh</button><button class="cancel" data-close-sheet>Keep waiting</button></section><section class="sheet" id="profileSheet" role="dialog" aria-modal="true" aria-labelledby="profileSheetTitle" hidden><div class="sheet-head"><h2 id="profileSheetTitle">Profile</h2><button class="square" data-close-sheet aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg></button></div><h3 class="sheet-subtitle">Rounds Network</h3><dl class="sheet-facts"><div class="sheet-fact"><dt>Verification</dt><dd id="profileStatus">In review</dd></div><div class="sheet-fact"><dt>Availability</dt><dd id="profileAvailability">Not available</dd></div></dl><button class="secondary" id="viewSubmitted">View submitted checks</button><button class="cancel" data-close-sheet>Close</button></section><section class="sheet" id="notificationsSheet" role="dialog" aria-modal="true" aria-labelledby="notificationsSheetTitle" hidden><div class="sheet-head"><h2 id="notificationsSheetTitle">Notifications</h2><button class="square" data-close-sheet aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg></button></div><h3 class="sheet-subtitle" id="notificationTitle">No updates yet</h3><p class="sheet-copy" id="notificationLead" hidden></p><button class="primary" id="notificationAction" hidden>Review update</button><button class="cancel" data-close-sheet>Close</button></section><section class="sheet" id="jobsSheet" role="dialog" aria-modal="true" aria-labelledby="jobsSheetTitle" hidden><div class="sheet-head"><h2 id="jobsSheetTitle">Jobs</h2><button class="square" data-close-sheet aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg></button></div><h3 class="sheet-subtitle">No jobs yet</h3><button class="primary" id="jobsNetwork">Go to Network</button><button class="cancel" data-close-sheet>Close</button></section><section class="sheet" id="earningsSheet" role="dialog" aria-modal="true" aria-labelledby="earningsSheetTitle" hidden><div class="sheet-head"><h2 id="earningsSheetTitle">Earnings</h2><button class="square" data-close-sheet aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg></button></div><h3 class="sheet-subtitle">Nothing earned yet</h3><p class="sheet-copy">Completed Network jobs will appear here.</p><button class="cancel" data-close-sheet>Close</button></section></div><script>(()=>{'use strict';
+const $=id=>document.getElementById(id),app=$('app'),backdrop=$('backdrop');let activeSheet=null,returnFocus=null,onSheetClosed=()=>{},canCloseSheet=()=>true;
+function focusable(s){return [...s.querySelectorAll('button:not([disabled]),a[href],textarea,input,select,[tabindex="0"]')].filter(el=>!el.closest('[hidden]'))}
+function closeSheet(){if(!activeSheet||!canCloseSheet())return;const id=activeSheet.id;activeSheet.hidden=true;activeSheet=null;onSheetClosed(id);backdrop.hidden=true;app.inert=false;if(returnFocus&&!returnFocus.closest('[hidden]'))returnFocus.focus()}
+function openSheet(id,trigger){if(!activeSheet)returnFocus=trigger;else{const previous=activeSheet.id;activeSheet.hidden=true;onSheetClosed(previous)}activeSheet=$(id);activeSheet.hidden=false;backdrop.hidden=false;app.inert=true;activeSheet.scrollTop=0;focusable(activeSheet)[0]?.focus()}
+document.querySelectorAll('[data-close-sheet]').forEach(b=>b.addEventListener('click',closeSheet));backdrop.addEventListener('click',closeSheet);document.querySelectorAll('.sheet').forEach(s=>s.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();closeSheet()}if(e.key==='Tab'){const items=focusable(s),first=items[0],last=items[items.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus()}}}));
+
+const params=new URLSearchParams(location.search),review=document.body.dataset.review==='1'||params.get('review')==='1',fixture=document.body.dataset.state||params.get('state')||'';
+const offline=()=>params.get('offline')==='1'||fixture==='offline'||navigator.onLine===false;
+function text(el,value){el.textContent=value}
+function focusPage(){if($('content'))$('content').scrollTop=0;$('pageTitle')?.focus()}
+function make(tag,cls,value){const el=document.createElement(tag);if(cls)el.className=cls;if(value!==undefined)el.textContent=value;return el}
+function facts(id,rows){$(id).replaceChildren(...rows.map(([label,value,tone])=>{const row=make('div','fact');row.append(make('dt','',label),make('dd',tone||'',value));return row}))}
+function duration(minutes){return Math.floor(minutes/60)+'h '+String(minutes%60).padStart(2,'0')+'m'}
+if(review||document.body.dataset.standalone==='1')document.addEventListener('click',e=>{if(e.defaultPrevented)return;const a=e.target.closest('a[href]');if(a&&/^ROUNDS-/.test(a.getAttribute('href'))){e.preventDefault();parent.postMessage({type:'rounds-20-companion',href:a.getAttribute('href')},'*')}});
+
+function navigateLocal(href){if(review||document.body.dataset.standalone==='1')parent.postMessage({type:'rounds-20-companion',href},'*');else location.href=href;}
+// Local design samples only. A check never submits evidence or grants Network access.
+const initial=['pending','attention','approved','offline','unknown','error'].includes(fixture)?fixture:'pending';
+let decision=['attention','approved'].includes(initial)?initial:'pending';
+let disconnected=initial==='offline'||navigator.onLine===false;
+let needsStatus=initial==='unknown',failed=initial==='error';
+function shown(){return disconnected?'offline':needsStatus?'unknown':failed?'error':decision;}
+function render(){
+ if(navigator.onLine===false)disconnected=true;
+ const state=shown();
+ const d={
+  pending:['In review','We’ll notify you of the result.','Check status'],
+  attention:['Needs attention','Your Thai ID photo is unreadable.','Replace ID photo'],
+  approved:['Approved','Network offers are paused.','Go to Network'],
+  offline:['You’re offline','Reconnect to check verification.','Check status'],
+  unknown:['Check status','Your review status needs updating.','Check status'],
+  error:['Couldn’t refresh','Try checking again.','Try again']
+ }[state];
+ $('frame').className='frame state-'+state;
+ $('pageTitle').textContent=d[0];$('lead').textContent=d[1];$('primary').textContent=d[2];$('primary').disabled=disconnected;
+ for(const key of ['jobs','earnings']){
+  const label=key==='jobs'?'Jobs':'Earnings';
+  $(key+'Open').disabled=state!=='approved';
+  $(key+'Open').setAttribute('aria-label',state==='approved'?label:label+', available after approval');
+ }
+ $('jobsNetwork').disabled=state!=='approved';
+ $('identityRow').className='check-row'+(state==='attention'?' needs-fix':'');
+ $('identityReceived').hidden=state==='attention';$('identityFix').hidden=state!=='attention';
+ $('profileStatus').textContent=state==='pending'?'In review':state==='attention'?'Needs attention':state==='approved'?'Approved':'Not confirmed';
+ $('profileAvailability').textContent=state==='approved'?'Offers paused':state==='pending'||state==='attention'?'Not available':'Not confirmed';
+ $('notificationTitle').textContent=state==='attention'?'New ID photo needed':state==='approved'?'Network approved':state==='pending'?'No updates yet':'Updates unavailable';
+ $('notificationLead').textContent=state==='attention'?'Thai ID photo unreadable.':state==='approved'?'Choose when to receive offers.':state==='pending'?'':'Check verification after reconnecting.';
+ $('notificationLead').hidden=state==='pending';
+ if(state==='unknown'||state==='error')$('notificationLead').textContent='Check verification to refresh updates.';
+ $('notificationAction').hidden=!['attention','approved'].includes(state);
+ $('notificationAction').textContent=state==='approved'?'Go to Network':'Replace ID photo';
+ document.querySelectorAll('[data-result]').forEach(b=>b.disabled=disconnected);
+ $('statusAnnouncement').textContent='Network verification. '+d[0]+'. '+d[1];
+}
+function resolve(result){
+ if(result==='error'){failed=true;needsStatus=false;}else{decision=result;failed=false;needsStatus=false;}
+ render();
+}
+function nextAction(trigger){
+ if(disconnected||navigator.onLine===false){disconnected=true;render();return;}
+ const state=shown();
+ if(state==='attention'){navigateLocal('ROUNDS-A12-VERIFICATION-NEEDS-ATTENTION-v1-10OF10.html?issue=id');return;}
+ // Approval does not turn availability on.
+ if(state==='approved'){navigateLocal('ROUNDS-B03-HOME-NETWORK-AVAILABLE-v8-10OF10.html?state=off');return;}
+ openSheet('statusSheet',trigger);
+}
+$('sampleNotice').hidden=review;
+$('primary').addEventListener('click',()=>nextAction($('primary')));
+document.querySelectorAll('[data-result]').forEach(b=>b.addEventListener('click',()=>{
+ if(activeSheet?.id!=='statusSheet')return;
+ if(disconnected||navigator.onLine===false){disconnected=true;closeSheet();render();return;}
+ if(!['pending','attention','approved','error'].includes(b.dataset.result))return;
+ closeSheet();resolve(b.dataset.result);
+}));
+$('notificationsOpen').addEventListener('click',()=>openSheet('notificationsSheet',$('notificationsOpen')));
+$('profileOpen').addEventListener('click',()=>openSheet('profileSheet',$('profileOpen')));
+for(const key of ['jobs','earnings'])$(key+'Open').addEventListener('click',()=>{
+ if(shown()!=='approved')return;
+ openSheet(key+'Sheet',$(key+'Open'));
+});
+$('jobsNetwork').addEventListener('click',()=>{
+ if(activeSheet?.id!=='jobsSheet'||shown()!=='approved')return;
+ closeSheet();nextAction($('primary'));
+});
+$('notificationAction').addEventListener('click',()=>{
+ if(activeSheet?.id!=='notificationsSheet'||!['attention','approved'].includes(shown()))return;
+ closeSheet();nextAction($('primary'));
+});
+$('viewSubmitted').addEventListener('click',()=>{closeSheet();$('submittedTitle').scrollIntoView({block:'start'});$('submittedTitle').focus();});
+window.addEventListener('offline',()=>{
+ const hadSheet=Boolean(activeSheet);disconnected=true;if(activeSheet)closeSheet();render();
+ if(hadSheet)$('pageTitle').focus();
+});
+window.addEventListener('online',()=>{
+ if(!disconnected)return;
+ disconnected=false;needsStatus=true;failed=false;render();
+});
+render();
+
+})();</script></body></html>

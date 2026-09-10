@@ -1,0 +1,116 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content"><title>Rounds — End shift confirmation</title><style>
+:root{--ink:#17283f;--blue:#1754a6;--blue-deep:#14488d;--blue-soft:#edf4fd;--orange:#ff6420;--muted:#526278;--line:#dce4ed;--green:#167344;--red:#a22f2f;font-family:Arial,Helvetica,sans-serif;color:var(--ink);background:#e9edf2;font-synthesis:none}*{box-sizing:border-box}body{margin:0;padding:28px}a,button{font:inherit;-webkit-tap-highlight-color:transparent;touch-action:manipulation}a{color:inherit;text-decoration:none}button{cursor:pointer}button:disabled{cursor:default}svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}button:focus-visible,a:focus-visible{outline:3px solid var(--orange);outline-offset:3px}[hidden]{display:none!important}.frame{width:393px;height:852px;margin:auto;border:1px solid #cbd5df;border-radius:24px;overflow:hidden;position:relative;background:#fff;box-shadow:0 16px 50px #17223810;display:flex;flex-direction:column}.statusbar{height:28px;flex:none;padding:7px 20px 0;font-size:12px;font-weight:700;display:flex;justify-content:space-between}.phone-status{display:flex;align-items:center;gap:7px}.phone-status i{display:block;width:19px;height:9px;border:1px solid var(--ink);border-radius:2px;background:linear-gradient(to right,var(--ink) 75%,transparent 75%)}.app{flex:1;min-height:0;display:flex;flex-direction:column;position:relative}.topbar{height:64px;flex:none;display:grid;grid-template-columns:52px minmax(0,1fr) 52px;align-items:center;gap:12px;padding:0 14px;background:#fff;border-bottom:1px solid var(--line)}.square{height:52px;width:52px;background:white;border:1px solid var(--line);border-radius:7px;display:grid;place-items:center;color:var(--ink)}.square:hover{background:var(--blue-soft)}.top-copy{min-width:0}.top-copy span{font-size:13px;color:var(--blue);display:block;line-height:1.2}.top-copy strong{display:block;font-size:17px;font-weight:600;line-height:1.2;margin-top:4px}.primary{width:100%;min-height:64px;background:var(--blue);color:#fff;border:0;border-radius:7px;display:flex;justify-content:center;align-items:center;gap:12px;font-size:18px;font-weight:600;padding:12px 16px}.primary:hover{background:var(--blue-deep)}.primary:disabled{background:#e2e8ee;color:#566477}.primary.ready{background:var(--green)}.primary svg{width:23px;height:23px}.panel-backdrop{position:absolute;inset:0;background:#132c4f55;z-index:80}.sheet{position:absolute;left:8px;right:8px;bottom:8px;z-index:81;border:1px solid var(--line);border-radius:12px 12px 8px 8px;background:#fff;padding:6px 16px 16px;box-shadow:0 -8px 40px #142f4a22;max-height:calc(100% - 36px);overflow:auto}.sheet-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:6px 0 8px}.sheet-head h2{font-size:23px;letter-spacing:-.5px;margin:0}.sheet-head .square{border:0;flex:none}.sheet-action{min-height:68px;display:flex;align-items:center;gap:14px;border:0;border-top:1px solid var(--line);width:100%;background:#fff;text-align:left;font-size:17px;color:var(--ink);padding:12px 4px}.sheet-action:hover{background:var(--blue-soft)}.sheet-action.issue{color:var(--red)}.sheet-action .end{margin-left:auto}.sheet-action svg{width:24px;flex:none}.sheet-action .end svg{width:18px}.sheet .cancel{min-height:60px;border:0;background:var(--blue-soft);color:var(--blue);border-radius:6px;width:100%;font-size:17px;font-weight:600;margin-top:8px}
+/* Rounds driver — shared design tokens, style guide v1. */
+:root {
+  --blue: #1754a6;
+  --blue-deep: #14488d;
+  --blue-soft: #edf4fd;
+  --orange: #ff6420;
+  --orange-soft: #fff2e8;
+  --ink: #17283f;
+  --muted: #526278;
+  --line: #dce4ed;
+  --paper: #ffffff;
+  --canvas: #e9edf2;
+  --green: #167344;
+  --green-soft: #edf7f1;
+  --red: #a22f2f;
+  --route-later: #668ebc;
+  --care-ink: #98400f;
+  --font-ui: Arial, Helvetica, sans-serif;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --content-inset: 18px;
+  --content-inset-narrow: 14px;
+  --radius-control: 7px;
+  --target-icon: 52px;
+  --target-contact: 60px;
+  --target-primary: 64px;
+  --target-confirm: 68px;
+}
+.frame{isolation:isolate}.app{overflow:hidden}.content{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;display:flex;flex-direction:column}.brandbar{min-height:64px;flex:none;padding:6px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}.brand{display:flex;align-items:baseline;font-size:24px;font-weight:800;line-height:1;letter-spacing:-1.1px;color:var(--blue)}.brand i{width:6px;height:6px;background:var(--orange);margin-left:3px}.brandbar .square{border:0}.sample-note{flex:none;font-size:13px;line-height:1.35;color:var(--muted);background:#f6f8fb;border-bottom:1px solid var(--line);padding:8px 18px;margin:0}.end-hero{flex:none;padding:28px 22px 30px}.state-label{display:flex;align-items:center;gap:9px;font-size:14px;line-height:1.4;color:var(--green);font-weight:600;margin:0 0 18px}.state-label svg{width:20px;height:20px;flex:none}.end-hero h1{font-size:40px;font-weight:700;line-height:1.08;letter-spacing:-1px;margin:0;overflow-wrap:anywhere}.merchant{font-size:18px;line-height:1.4;color:var(--muted);margin:14px 0 0}.state-lead{font-size:16px;line-height:1.45;color:var(--muted);margin:16px 0 0}.hours-panel{flex:none;padding:24px 22px 26px 18px;border-block:1px solid #d2e0f0;border-left:4px solid var(--orange);background:var(--blue-soft)}.hours-label{font-size:14px;line-height:1.4;color:var(--blue);margin:0 0 18px;font-weight:600}.hours-total{display:flex;align-items:baseline;justify-content:space-between;gap:16px}.hours-value{font-size:44px;line-height:1.1;font-weight:600;letter-spacing:-1.3px;font-variant-numeric:tabular-nums;color:var(--blue);margin:0;white-space:nowrap}.hours-caption{font-size:16px;line-height:1.4;color:var(--muted);margin:0;text-align:right}.hours-breakdown{border-top:1px solid #cfdeef;padding:18px 0 0;margin:24px 0 0;display:grid;gap:16px}.hours-row{display:flex;align-items:baseline;justify-content:space-between;gap:20px}.hours-row dt{font-size:16px;line-height:1.4;color:var(--muted)}.hours-row dd{font-size:20px;line-height:1.3;font-weight:600;font-variant-numeric:tabular-nums;color:var(--ink);margin:0}.hours-row.overtime dt,.hours-row.overtime dd{color:var(--care-ink)}.spacer{flex:1;min-height:32px}.action-footer{flex:none;display:grid;gap:10px;padding:16px 18px;border-top:1px solid var(--line);background:#fff}.action-footer .primary{min-height:68px;font-size:19px}.primary.ready{background:var(--green)}.primary.ready:hover{background:#12643b}.primary:disabled{background:#edf0f4;color:var(--muted)}.secondary{min-height:60px;width:100%;padding:12px 16px;background:white;color:var(--blue);border:1px solid #bacbdd;border-radius:7px;font-size:18px;line-height:1.35;font-weight:600;display:flex;align-items:center;justify-content:center;gap:10px}.secondary:hover{background:var(--blue-soft)}.secondary:disabled{background:#f4f6f8;border-color:var(--line);color:var(--muted)}.bottomnav{flex:none;min-height:76px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid var(--line);padding:5px 8px 8px;background:#fff}.nav-item{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:62px;gap:6px;font-size:13px;font-weight:400;color:var(--muted);position:relative}.nav-item.active{color:var(--blue);font-weight:600}.nav-item.active:before{content:'';position:absolute;top:-6px;width:26px;height:3px;background:var(--orange)}.nav-item:hover{background:var(--blue-soft)}.state-ended .end-hero{background:var(--green-soft)}.state-work .state-label,.state-offline .state-label,.state-unknown .state-label{color:var(--care-ink)}.state-staying .state-label{color:var(--blue)}.sheet-copy{font-size:17px;line-height:1.45;color:var(--muted);margin:16px 0 22px}.sheet .primary{margin-top:20px;min-height:68px}.sheet .secondary{margin-top:10px;min-height:68px}.sheet-value{font-size:40px;line-height:1.1;font-weight:600;letter-spacing:-1px;margin:24px 0 14px;color:var(--blue)}.sheet-merchant{font-size:22px;line-height:1.3;font-weight:600;margin:18px 0 8px}.sheet-facts{margin:24px 0 0;padding:0}.sheet-fact{display:flex;align-items:baseline;justify-content:space-between;gap:18px;border-top:1px solid var(--line);padding:18px 0}.sheet-fact dt{font-size:16px;line-height:1.4;color:var(--muted)}.sheet-fact dd{font-size:18px;line-height:1.4;font-weight:600;margin:0;text-align:right}.status-announcement{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+@media(max-width:460px){body{padding:0}.frame{width:100%;height:100dvh;border:0;border-radius:0;box-shadow:none}.statusbar{height:calc(28px + env(safe-area-inset-top));padding-top:calc(7px + env(safe-area-inset-top))}.bottomnav{padding-bottom:calc(8px + env(safe-area-inset-bottom));min-height:calc(76px + env(safe-area-inset-bottom))}.sheet{bottom:calc(8px + env(safe-area-inset-bottom))}}
+@media(max-width:350px){.brandbar,.end-hero,.action-footer{padding-left:14px;padding-right:14px}.hours-panel{padding-left:10px;padding-right:14px}.hours-total{gap:12px}.sheet{padding-left:14px;padding-right:14px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style></head><body data-state="" data-review="0"><div class="frame" id="frame"><div class="statusbar" aria-hidden="true"><span id="clock">17:22</span><span class="phone-status">5G <i></i></span></div><main class="app" id="app"><header class="brandbar"><div class="brand">Rounds<i></i></div><a class="square" href="ROUNDS-M01-NOTIFICATIONS-v2-10OF10.html?context=team" aria-label="Notifications"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 7h18s-3 0-3-7M10 21h4"/></svg></a></header><p class="sample-note" id="sampleNotice">Preview · Sample shift</p><div class="status-announcement" id="statusAnnouncement" role="status" aria-live="polite"></div><div class="content" id="content"><header class="end-hero"><p class="state-label"><span id="stateIcon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg></span><span id="stateText">Last delivery complete</span></p><h1 id="pageTitle" tabindex="-1">End your shift?</h1><p class="merchant">UrbanFlowers</p><p class="state-lead" id="stateLead" hidden></p></header><section class="hours-panel" aria-label="Today’s hours"><p class="hours-label">Today</p><div class="hours-total"><p class="hours-value" id="hoursTotal">8h 22m</p><p class="hours-caption" id="hoursCaption">On the clock</p></div><dl class="hours-breakdown"><div class="hours-row"><dt>Regular</dt><dd>8h 00m</dd></div><div class="hours-row overtime"><dt>Overtime</dt><dd id="overtimeTotal">22m</dd></div></dl></section><div class="spacer" aria-hidden="true"></div></div><footer class="action-footer"><button class="primary ready" id="primary">End shift</button><button class="secondary" id="secondary">Stay on shift</button></footer><nav class="bottomnav" aria-label="Primary"><a class="nav-item active" href="#content" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7M5 9v12h14V9M10 21v-7h4v7"/></svg><span>Home</span></a><a class="nav-item " href="ROUNDS-J01-MY-ROUNDS-v7-10OF10.html?context=team" ><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg><span>Jobs</span></a><a class="nav-item " href="ROUNDS-K00-TEAM-HOURS-v5-10OF10.html" ><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Hours</span></a><a class="nav-item " href="ROUNDS-L01-DRIVER-PROFILE-v3-10OF10.html?context=team" ><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 22v-3a8 8 0 0 1 16 0v3"/></svg><span>Profile</span></a></nav></main><div class="panel-backdrop" id="backdrop" hidden></div><section class="sheet" id="statusSheet" role="dialog" aria-modal="true" aria-labelledby="statusSheetTitle" hidden><div class="sheet-head"><h2 id="statusSheetTitle">Shift status preview</h2><button class="square" data-close-sheet aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg></button></div><p class="sheet-copy">Choose a sample result. No clock-out is submitted here.</p><button class="primary" id="previewEnded">Shift ended at 17:22</button><button class="secondary" id="previewStillOn">Still on shift</button><button class="cancel" data-close-sheet>Keep checking</button></section><section class="sheet" id="hoursSheet" role="dialog" aria-modal="true" aria-labelledby="hoursSheetTitle" hidden><div class="sheet-head"><h2 id="hoursSheetTitle">Today’s Team hours</h2><button class="square" data-close-sheet aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg></button></div><h3 class="sheet-merchant">UrbanFlowers</h3><p class="sheet-value">8h 22m</p><dl class="sheet-facts"><div class="sheet-fact"><dt>Regular</dt><dd>8h 00m</dd></div><div class="sheet-fact"><dt>Overtime</dt><dd>22m</dd></div><div class="sheet-fact"><dt>Ended at</dt><dd>17:22</dd></div></dl><button class="cancel" data-close-sheet>Close</button></section></div><script>(()=>{'use strict';
+const $=id=>document.getElementById(id),app=$('app'),backdrop=$('backdrop');let activeSheet=null,returnFocus=null,onSheetClosed=()=>{},canCloseSheet=()=>true;
+function focusable(s){return [...s.querySelectorAll('button:not([disabled]),a[href],textarea,input,select,[tabindex="0"]')].filter(el=>!el.closest('[hidden]'))}
+function closeSheet(){if(!activeSheet||!canCloseSheet())return;const id=activeSheet.id;activeSheet.hidden=true;activeSheet=null;onSheetClosed(id);backdrop.hidden=true;app.inert=false;if(returnFocus&&!returnFocus.closest('[hidden]'))returnFocus.focus()}
+function openSheet(id,trigger){if(!activeSheet)returnFocus=trigger;else{const previous=activeSheet.id;activeSheet.hidden=true;onSheetClosed(previous)}activeSheet=$(id);activeSheet.hidden=false;backdrop.hidden=false;app.inert=true;activeSheet.scrollTop=0;focusable(activeSheet)[0]?.focus()}
+document.querySelectorAll('[data-close-sheet]').forEach(b=>b.addEventListener('click',closeSheet));backdrop.addEventListener('click',closeSheet);document.querySelectorAll('.sheet').forEach(s=>s.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();closeSheet()}if(e.key==='Tab'){const items=focusable(s),first=items[0],last=items[items.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus()}}}));
+
+const params=new URLSearchParams(location.search),review=document.body.dataset.review==='1'||params.get('review')==='1',fixture=document.body.dataset.state||params.get('state')||'';
+const offline=()=>params.get('offline')==='1'||fixture==='offline'||navigator.onLine===false;
+function text(el,value){el.textContent=value}
+function focusPage(){if($('content'))$('content').scrollTop=0;$('pageTitle')?.focus()}
+function make(tag,cls,value){const el=document.createElement(tag);if(cls)el.className=cls;if(value!==undefined)el.textContent=value;return el}
+function facts(id,rows){$(id).replaceChildren(...rows.map(([label,value,tone])=>{const row=make('div','fact');row.append(make('dt','',label),make('dd',tone||'',value));return row}))}
+function duration(minutes){return Math.floor(minutes/60)+'h '+String(minutes%60).padStart(2,'0')+'m'}
+if(review||document.body.dataset.standalone==='1')document.addEventListener('click',e=>{if(e.defaultPrevented)return;const a=e.target.closest('a[href]');if(a&&/^ROUNDS-/.test(a.getAttribute('href'))){e.preventDefault();parent.postMessage({type:'rounds-18-companion',href:a.getAttribute('href')},'*')}});
+
+function navigateLocal(href){if(review||document.body.dataset.standalone==='1')parent.postMessage({type:'rounds-18-companion',href},'*');else location.href=href;}
+// Design preview only: no clock-out request, custody change or Network availability is published.
+const initial=['ready','staying','ended','work','offline','unknown'].includes(fixture)?fixture:'ready';
+let view=initial==='offline'?'ready':initial,disconnected=initial==='offline'||navigator.onLine===false;
+let needsStatus=initial==='unknown';
+const workOpen=initial==='work';
+const regular=480,overtime=workOpen?14:22,total=regular+overtime;
+function shown(){if(view==='ended'||workOpen)return view;if(disconnected&&view!=='staying')return 'offline';if(needsStatus)return 'unknown';return view;}
+function render(){
+ if(navigator.onLine===false)disconnected=true;
+ const state=shown();
+ const d={
+  ready:['Last delivery complete','End your shift?','','End shift','Stay on shift'],
+  staying:[disconnected?'Last known shift':'Last delivery complete','Still on shift',disconnected?'Offline · Shift status needs refreshing.':'','Review end shift',''],
+  ended:['Ended at 17:22','Shift ended','','View hours',''],
+  work:['Delivery still open','Finish delivery first','','Return to delivery','End shift'],
+  offline:['Connection lost','You’re offline',needsStatus?'Reconnect to check your end time.':'Reconnect to end your shift.',needsStatus?'Check shift status':'End shift',needsStatus?'':'Stay on shift'],
+  unknown:['Clock-out not confirmed','Check shift status','Your end time is not confirmed.','Check status','']
+ }[state];
+ $('frame').className='frame state-'+state;$('stateText').textContent=d[0];$('stateIcon').hidden=!['ready','staying','ended'].includes(state)||disconnected;
+ $('pageTitle').textContent=d[1];$('stateLead').textContent=d[2];$('stateLead').hidden=!d[2];
+ $('primary').textContent=d[3];$('primary').className='primary'+(state==='ready'?' ready':'');$('primary').disabled=state==='offline'||(state==='staying'&&disconnected);
+ $('secondary').textContent=d[4];$('secondary').hidden=!d[4];$('secondary').disabled=state==='work';
+ $('hoursTotal').textContent=Math.floor(total/60)+'h '+String(total%60).padStart(2,'0')+'m';$('overtimeTotal').textContent=overtime+'m';
+ $('hoursCaption').textContent=view==='ended'?'Recorded':disconnected?'Last known':'On the clock';
+ $('clock').textContent=workOpen?'17:14':'17:22';
+ $('statusAnnouncement').textContent=d[0]+'. '+d[1];
+}
+function setView(next){view=next;render();$('content').scrollTop=0;$('pageTitle').focus();}
+$('sampleNotice').hidden=review;
+$('primary').addEventListener('click',()=>{
+ const state=shown();
+ if(state==='work'){navigateLocal('ROUNDS-B01E-SHIFT-OVERTIME-v3-10OF10.html?state=delivery');return;}
+ if(state==='ended'){openSheet('hoursSheet',$('primary'));return;}
+ if(disconnected||navigator.onLine===false){disconnected=true;render();return;}
+ if(state==='unknown'){openSheet('statusSheet',$('primary'));return;}
+ if(state==='staying'){setView('ready');return;}
+ if(state==='ready'){setView('ended');}
+});
+$('secondary').addEventListener('click',()=>{
+ if(workOpen||needsStatus||view==='ended')return;
+ if(['ready','offline'].includes(shown()))setView('staying');
+});
+$('previewEnded').addEventListener('click',()=>{
+ if(disconnected||navigator.onLine===false||workOpen){closeSheet();render();return;}
+ closeSheet();needsStatus=false;setView('ended');
+});
+$('previewStillOn').addEventListener('click',()=>{
+ if(disconnected||navigator.onLine===false||workOpen){closeSheet();render();return;}
+ closeSheet();needsStatus=false;setView('staying');
+});
+window.addEventListener('offline',()=>{
+ disconnected=true;if(activeSheet&&activeSheet.id==='statusSheet')closeSheet();render();
+});
+window.addEventListener('online',()=>{
+ // Presence reconnecting is not a shift-state receipt.
+ disconnected=false;if(view!=='ended'&&!workOpen){needsStatus=true;view='unknown';}render();
+});
+render();
+
+})();</script></body></html>

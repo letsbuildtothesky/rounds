@@ -2,8 +2,15 @@
 
 **Version:** 1.0  
 **Date:** 2026-09-01  
-**Status:** Controlling implementation scope boundary  
+**Status:** Historical pre-v2.3 scope boundary; not current implementation authority
 **Purpose:** Separate the product-complete Rounds V1 design from the first deployable system and prevent implementation agents from treating the entire design library as one release.
+
+## Changelog
+
+- **2026-09-08:** Retained as legacy provenance only. Current authority is
+  [v2.3 source authority](../build-v2.3/SOURCE-AUTHORITY.md) and
+  [v2.3 release plan](../build-v2.3/RELEASE-PLAN.md). All older sequence and
+  promotion rules below describe the old build, not the updated product.
 
 ---
 

@@ -1,0 +1,314 @@
+[
+  {
+    "column": "memberships.role_code",
+    "mode": "closed",
+    "values": [
+      "owner",
+      "admin",
+      "dispatcher",
+      "fleet_manager",
+      "reviewer",
+      "finance",
+      "driver",
+      "receiver"
+    ]
+  },
+  {
+    "column": "sites.site_type",
+    "mode": "closed",
+    "values": [
+      "pickup",
+      "hub",
+      "depot",
+      "office",
+      "residence"
+    ]
+  },
+  {
+    "column": "invitations.relationship_kind",
+    "mode": "closed",
+    "values": [
+      "team",
+      "known_freelancer"
+    ]
+  },
+  {
+    "column": "driver_devices.platform",
+    "mode": "closed",
+    "values": [
+      "ios",
+      "android"
+    ]
+  },
+  {
+    "column": "verification_evidence.evidence_kind",
+    "mode": "closed",
+    "values": [
+      "identity_front",
+      "identity_back",
+      "face_capture",
+      "liveness_receipt",
+      "vehicle_document",
+      "license"
+    ]
+  },
+  {
+    "column": "payout_methods.method_kind",
+    "mode": "closed",
+    "values": [
+      "promptpay",
+      "bank"
+    ]
+  },
+  {
+    "column": "intake_batches.input_kind",
+    "mode": "closed",
+    "values": [
+      "text",
+      "image",
+      "pdf",
+      "csv"
+    ]
+  },
+  {
+    "column": "active_delivery_claims.claim_kind",
+    "mode": "closed",
+    "values": [
+      "team",
+      "freelance",
+      "broadcast"
+    ]
+  },
+  {
+    "column": "handoffs.receiver_kind",
+    "mode": "closed",
+    "values": [
+      "recipient",
+      "alternate",
+      "unattended"
+    ]
+  },
+  {
+    "column": "assets.kind",
+    "mode": "closed",
+    "values": [
+      "delivery_photo",
+      "signature",
+      "issue_photo",
+      "message_photo",
+      "voice",
+      "document",
+      "import",
+      "export"
+    ]
+  },
+  {
+    "column": "customer_tracking_tokens.audience",
+    "mode": "closed",
+    "values": [
+      "buyer",
+      "recipient"
+    ]
+  },
+  {
+    "column": "export_jobs.kind",
+    "mode": "closed",
+    "values": [
+      "deliveries",
+      "drivers",
+      "incidents",
+      "finance",
+      "subject"
+    ]
+  },
+  {
+    "column": "privacy_requests.kind",
+    "mode": "closed",
+    "values": [
+      "access",
+      "export",
+      "delete"
+    ]
+  },
+  {
+    "column": "offline_evidence_observations.kind",
+    "mode": "closed",
+    "values": [
+      "pickup",
+      "arrival",
+      "handoff",
+      "proof",
+      "completion"
+    ]
+  },
+  {
+    "column": "policy_versions.policy_kind",
+    "mode": "closed",
+    "values": [
+      "own_fleet",
+      "broadcast",
+      "proof",
+      "customer",
+      "timing",
+      "commercial",
+      "retention",
+      "map",
+      "locale",
+      "slot",
+      "intake",
+      "intercity",
+      "messaging",
+      "escalation",
+      "account",
+      "weather"
+    ]
+  },
+  {
+    "column": "policy_bindings.policy_kind",
+    "mode": "closed",
+    "values": [
+      "own_fleet",
+      "broadcast",
+      "proof",
+      "customer",
+      "timing",
+      "commercial",
+      "retention",
+      "map",
+      "locale",
+      "slot",
+      "intake",
+      "intercity",
+      "messaging",
+      "escalation",
+      "account",
+      "weather"
+    ]
+  },
+  {
+    "column": "attendance_events.event_kind",
+    "mode": "versioned service registry",
+    "rule": "Value must belong to the enabled command/provider consumer mapping; unknown names are quarantined/rejected before domain mutation. Never treat an arbitrary client string as authority. Provider original event type is opaque evidence and cannot select a domain handler directly.",
+    "implementation_gate": "Enforce the owning adapter/command registry at enablement; this is not a global hard-coded enum."
+  },
+  {
+    "column": "location_observations.kind",
+    "mode": "versioned service registry",
+    "rule": "Value must belong to the enabled command/provider consumer mapping; unknown names are quarantined/rejected before domain mutation. Never treat an arbitrary client string as authority. Provider original event type is opaque evidence and cannot select a domain handler directly.",
+    "implementation_gate": "Enforce the owning adapter/command registry at enablement; this is not a global hard-coded enum."
+  },
+  {
+    "column": "manifests.source",
+    "mode": "versioned service registry",
+    "rule": "Value must belong to the enabled command/provider consumer mapping; unknown names are quarantined/rejected before domain mutation. Never treat an arbitrary client string as authority. Provider original event type is opaque evidence and cannot select a domain handler directly.",
+    "implementation_gate": "Enforce the owning adapter/command registry at enablement; this is not a global hard-coded enum."
+  },
+  {
+    "column": "custody_events.event_kind",
+    "mode": "versioned service registry",
+    "rule": "Value must belong to the enabled command/provider consumer mapping; unknown names are quarantined/rejected before domain mutation. Never treat an arbitrary client string as authority. Provider original event type is opaque evidence and cannot select a domain handler directly.",
+    "implementation_gate": "Enforce the owning adapter/command registry at enablement; this is not a global hard-coded enum."
+  },
+  {
+    "column": "proof_items.item_kind",
+    "mode": "versioned service registry",
+    "rule": "Value must belong to the enabled command/provider consumer mapping; unknown names are quarantined/rejected before domain mutation. Never treat an arbitrary client string as authority. Provider original event type is opaque evidence and cannot select a domain handler directly.",
+    "implementation_gate": "Enforce the owning adapter/command registry at enablement; this is not a global hard-coded enum."
+  },
+  {
+    "column": "issue_decisions.decision_kind",
+    "mode": "versioned service registry",
+    "rule": "Value must belong to the enabled command/provider consumer mapping; unknown names are quarantined/rejected before domain mutation. Never treat an arbitrary client string as authority. Provider original event type is opaque evidence and cannot select a domain handler directly.",
+    "implementation_gate": "Enforce the owning adapter/command registry at enablement; this is not a global hard-coded enum."
+  },
+  {
+    "column": "change_proposals.change_kind",
+    "mode": "versioned service registry",
+    "rule": "Value must belong to the enabled command/provider consumer mapping; unknown names are quarantined/rejected before domain mutation. Never treat an arbitrary client string as authority. Provider original event type is opaque evidence and cannot select a domain handler directly.",
+    "implementation_gate": "Enforce the owning adapter/command registry at enablement; this is not a global hard-coded enum."
+  },
+  {
+    "column": "settlement_events.event_kind",
+    "mode": "versioned service registry",
+    "rule": "Value must belong to the enabled command/provider consumer mapping; unknown names are quarantined/rejected before domain mutation. Never treat an arbitrary client string as authority. Provider original event type is opaque evidence and cannot select a domain handler directly.",
+    "implementation_gate": "Enforce the owning adapter/command registry at enablement; this is not a global hard-coded enum."
+  },
+  {
+    "column": "conversations.kind",
+    "mode": "versioned service registry",
+    "rule": "Value must belong to the enabled command/provider consumer mapping; unknown names are quarantined/rejected before domain mutation. Never treat an arbitrary client string as authority. Provider original event type is opaque evidence and cannot select a domain handler directly.",
+    "implementation_gate": "Enforce the owning adapter/command registry at enablement; this is not a global hard-coded enum."
+  },
+  {
+    "column": "conversation_participants.access_kind",
+    "mode": "versioned service registry",
+    "rule": "Value must belong to the enabled command/provider consumer mapping; unknown names are quarantined/rejected before domain mutation. Never treat an arbitrary client string as authority. Provider original event type is opaque evidence and cannot select a domain handler directly.",
+    "implementation_gate": "Enforce the owning adapter/command registry at enablement; this is not a global hard-coded enum."
+  },
+  {
+    "column": "messages.kind",
+    "mode": "versioned service registry",
+    "rule": "Value must belong to the enabled command/provider consumer mapping; unknown names are quarantined/rejected before domain mutation. Never treat an arbitrary client string as authority. Provider original event type is opaque evidence and cannot select a domain handler directly.",
+    "implementation_gate": "Enforce the owning adapter/command registry at enablement; this is not a global hard-coded enum."
+  },
+  {
+    "column": "message_attachments.kind",
+    "mode": "versioned service registry",
+    "rule": "Value must belong to the enabled command/provider consumer mapping; unknown names are quarantined/rejected before domain mutation. Never treat an arbitrary client string as authority. Provider original event type is opaque evidence and cannot select a domain handler directly.",
+    "implementation_gate": "Enforce the owning adapter/command registry at enablement; this is not a global hard-coded enum."
+  },
+  {
+    "column": "call_events.event_kind",
+    "mode": "versioned service registry",
+    "rule": "Value must belong to the enabled command/provider consumer mapping; unknown names are quarantined/rejected before domain mutation. Never treat an arbitrary client string as authority. Provider original event type is opaque evidence and cannot select a domain handler directly.",
+    "implementation_gate": "Enforce the owning adapter/command registry at enablement; this is not a global hard-coded enum."
+  },
+  {
+    "column": "notifications.kind",
+    "mode": "versioned service registry",
+    "rule": "Value must belong to the enabled command/provider consumer mapping; unknown names are quarantined/rejected before domain mutation. Never treat an arbitrary client string as authority. Provider original event type is opaque evidence and cannot select a domain handler directly.",
+    "implementation_gate": "Enforce the owning adapter/command registry at enablement; this is not a global hard-coded enum."
+  },
+  {
+    "column": "provider_receipts.event_kind",
+    "mode": "versioned service registry",
+    "rule": "Value must belong to the enabled command/provider consumer mapping; unknown names are quarantined/rejected before domain mutation. Never treat an arbitrary client string as authority. Provider original event type is opaque evidence and cannot select a domain handler directly.",
+    "implementation_gate": "Enforce the owning adapter/command registry at enablement; this is not a global hard-coded enum."
+  },
+  {
+    "column": "writeback_tasks.kind",
+    "mode": "versioned service registry",
+    "rule": "Value must belong to the enabled command/provider consumer mapping; unknown names are quarantined/rejected before domain mutation. Never treat an arbitrary client string as authority. Provider original event type is opaque evidence and cannot select a domain handler directly.",
+    "implementation_gate": "Enforce the owning adapter/command registry at enablement; this is not a global hard-coded enum."
+  },
+  {
+    "column": "tracking_entitlements.purpose",
+    "mode": "versioned service registry",
+    "rule": "Value must belong to the enabled command/provider consumer mapping; unknown names are quarantined/rejected before domain mutation. Never treat an arbitrary client string as authority. Provider original event type is opaque evidence and cannot select a domain handler directly.",
+    "implementation_gate": "Enforce the owning adapter/command registry at enablement; this is not a global hard-coded enum."
+  },
+  {
+    "column": "current_positions.source",
+    "mode": "versioned service registry",
+    "rule": "Value must belong to the enabled command/provider consumer mapping; unknown names are quarantined/rejected before domain mutation. Never treat an arbitrary client string as authority. Provider original event type is opaque evidence and cannot select a domain handler directly.",
+    "implementation_gate": "Enforce the owning adapter/command registry at enablement; this is not a global hard-coded enum."
+  },
+  {
+    "column": "job_runs.job_kind",
+    "mode": "versioned service registry",
+    "rule": "Value must belong to the enabled command/provider consumer mapping; unknown names are quarantined/rejected before domain mutation. Never treat an arbitrary client string as authority. Provider original event type is opaque evidence and cannot select a domain handler directly.",
+    "implementation_gate": "Enforce the owning adapter/command registry at enablement; this is not a global hard-coded enum."
+  },
+  {
+    "column": "audit_access.purpose",
+    "mode": "versioned service registry",
+    "rule": "Value must belong to the enabled command/provider consumer mapping; unknown names are quarantined/rejected before domain mutation. Never treat an arbitrary client string as authority. Provider original event type is opaque evidence and cannot select a domain handler directly.",
+    "implementation_gate": "Enforce the owning adapter/command registry at enablement; this is not a global hard-coded enum."
+  },
+  {
+    "column": "custodians.kind",
+    "mode": "versioned service registry",
+    "rule": "Value must belong to the enabled command/provider consumer mapping; unknown names are quarantined/rejected before domain mutation. Never treat an arbitrary client string as authority. Provider original event type is opaque evidence and cannot select a domain handler directly.",
+    "implementation_gate": "Enforce the owning adapter/command registry at enablement; this is not a global hard-coded enum."
+  }
+]

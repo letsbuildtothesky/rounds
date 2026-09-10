@@ -1,0 +1,1607 @@
+[
+  {
+    "event": "address.reviewed",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "agreement.cancelled",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "asset.expire",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "asset.reserved",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "asset.upload.received",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "asset.upload.started",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "asset.verified",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "asset.verify",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "assignment.device.receipt",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "assignment.reassigned",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "assignment.responded",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "assignment.withdrawn",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "attendance.correction_decided",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "attendance.correction_requested",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "availability.requested",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "availability.responded",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "batch.committed",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "batch.extract",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "batch.extracted",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "batch.failed",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "brand.saved",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "broadcast.exhaust",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "broadcast.expanded",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "broadcast.expire",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "broadcast.restarted",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "broadcast.revised",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "broadcast.started",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "broadcast.stopped",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "call.deadline",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "call.outcome_reported",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "call.provider.receipt",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "call.requested",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "call.responded",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "cargo.class_saved",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "change.expire",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "city.saved",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "commitment.proposal",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "connection.check",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "connection.disconnect",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "connection.saved",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "connection.state_changed",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "conversation.opened",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "conversation.read",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "custody.transfer_cancelled",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "custody.transfer_declined",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "custody.transfer_declined",
+    "consumer": "notifications",
+    "effect": "transfer_declined",
+    "dedupe_key": "event_id + recipient_principal + channel + kind; template version frozen at first enqueue",
+    "eligibility": "Configured template enabled; eligible current member/assigned driver or permitted customer audience; entity-specific rule selects recipients. Notify readiness only when useful to assigned driver, not every unchanged recomputation."
+  },
+  {
+    "event": "custody.transfer_pending",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "custody.transfer_received",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "delivery.cancelled",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "delivery.completed",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "delivery.completed",
+    "consumer": "notifications",
+    "effect": "delivery_completed",
+    "dedupe_key": "event_id + recipient_principal + channel + kind; template version frozen at first enqueue",
+    "eligibility": "Configured template enabled; eligible current member/assigned driver or permitted customer audience; entity-specific rule selects recipients. Notify readiness only when useful to assigned driver, not every unchanged recomputation."
+  },
+  {
+    "event": "delivery.completed",
+    "consumer": "commerce_writeback",
+    "effect": "Mark source delivery fulfilled once after whole delivery completion; partial units do not trigger full fulfillment.",
+    "dedupe_key": "source_connection + source_order + milestone + source_revision",
+    "eligibility": "Enabled versioned provider adapter; current source binding; authority checked before effect"
+  },
+  {
+    "event": "delivery.created",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "delivery.entrance_applied",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "delivery.outcome_changed",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "delivery.rescheduled",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "delivery.review.required",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "delivery.window_changed",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "dispute.opened",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "dispute.resolved",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "dispute.resolved",
+    "consumer": "notifications",
+    "effect": "dispute_resolved",
+    "dedupe_key": "event_id + recipient_principal + channel + kind; template version frozen at first enqueue",
+    "eligibility": "Configured template enabled; eligible current member/assigned driver or permitted customer audience; entity-specific rule selects recipients. Notify readiness only when useful to assigned driver, not every unchanged recomputation."
+  },
+  {
+    "event": "dispute.review_started",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "draft.extracted",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "driver.availability_changed",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "driver.contact_permission_changed",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "driver.profile_saved",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "driver.relationship_saved",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "driver.vehicle_saved",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "entrance.confirmed",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "entrance.retired",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "evidence.retained_stale",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "export.complete",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "export.expire",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "export.failure",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "export.requested",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "export.start",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "fare.adjusted",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "feature.changed",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "fleet.resource_archived",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "fulfillment.completed",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "handling.rule_saved",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "handoff.recorded",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "hold.expire",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "incident.cause_corrected",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "intake.batch_committed",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "intake.batch_created",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "intake.draft_discarded",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "intake.draft_saved",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "intake.extraction_requested",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "issue.decided",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "issue.effect.complete",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "issue.reported",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "issue.review",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "legacy.quarantine",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "local.evidence.observed",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "location.observed",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "membership.access_changed",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "membership.invited",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "membership.joined",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "membership.revoke",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "message.device.receipt",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "message.failure",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "message.received",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "message.received",
+    "consumer": "notifications",
+    "effect": "new_message",
+    "dedupe_key": "event_id + recipient_principal + channel + kind; template version frozen at first enqueue",
+    "eligibility": "Configured template enabled; eligible current member/assigned driver or permitted customer audience; entity-specific rule selects recipients. Notify readiness only when useful to assigned driver, not every unchanged recomputation."
+  },
+  {
+    "event": "navigation.device.receipt",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "navigation.expire",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "navigation.intent_created",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "notification.enqueue",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "notification.read",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "notification.receipt",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "notification.reconcile",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "notification.send",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "notification.timeout",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "obligation.resolved",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "observation.reject",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "observation.review",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "offer.declined",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "offer.expire",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "offer.issue",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "offer.taken",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "offer.taken",
+    "consumer": "notifications",
+    "effect": "offer_taken",
+    "dedupe_key": "event_id + recipient_principal + channel + kind; template version frozen at first enqueue",
+    "eligibility": "Configured template enabled; eligible current member/assigned driver or permitted customer audience; entity-specific rule selects recipients. Notify readiness only when useful to assigned driver, not every unchanged recomputation."
+  },
+  {
+    "event": "payout.method.receipt",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "payout_method.saved",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "pickup.confirmed",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "pickup.partial_approved",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream",
+    "release_scope": "deferred",
+    "launch_behavior": "No emission or effect at launch. ApprovePartialPickup rejects FEATURE_NOT_ENABLED."
+  },
+  {
+    "event": "pickup.readiness_changed",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "plan.automation_applied",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "plan.changed",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "plan.failed",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "plan.generation_requested",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "plan.move_previewed",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "plan.released",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "plan.result",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "plan.saved",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "plan.staged",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "plan.supersede",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "policy.revised",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "privacy.complete",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "privacy.decision",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "privacy.execute",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "privacy.hold",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "privacy.release.hold",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "privacy.requested",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "privacy.review",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "proof.item.invalidate",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "proof.item.verify",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "proof.submitted",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "return.created",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "return.received",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "return.start",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "round.cancelled",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "round.completed",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "round.hold_changed",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "round.readiness_changed",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "round.readiness_changed",
+    "consumer": "notifications",
+    "effect": "readiness_changed",
+    "dedupe_key": "event_id + recipient_principal + channel + kind; template version frozen at first enqueue",
+    "eligibility": "Configured template enabled; eligible current member/assigned driver or permitted customer audience; entity-specific rule selects recipients. Notify readiness only when useful to assigned driver, not every unchanged recomputation."
+  },
+  {
+    "event": "round.saved",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "settlement.balance_changed",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "settlement.closed",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "settlement.earned",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "settlement.payment_recorded",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "shift.availability_changed",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "shift.changed",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "shift.ended",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "shift.started",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "shift.template_saved",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "shift.vehicle_bound",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "site.saved",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "slot.admission_changed",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "slot.hold_moved",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "slot.hold_refreshed",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "slot.materialize",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "slot.override_removed",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "slot.override_saved",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "slot.reservation_released",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "slot.reserved",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "slot.revision_changed",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "slot.template_revised",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "source.apply",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "source.conflict",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "source.ingress",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "source.normalize",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "source.reject",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "source.revision_reviewed",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "stop.arrived",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "stop.planning_changed",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "subscription.cancel",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "subscription.due",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "subscription.receipt",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "suggestion.superseded",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "tenant.closed",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "tenant.created",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "tenant.restored",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "tenant.suspended",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "tracking.link_created",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "tracking.link_revoked",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "transfer.expire",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "trip.arrived",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "trip.booked",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "trip.cancelled",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "trip.changed",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "trip.closed",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "trip.departed",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "trip.loaded",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "trip.received",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "trip.saved",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "trip.scheduled",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "vehicle.profile_saved",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "vehicle.saved",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "vehicle.unavailable",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "vehicle.verification",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "verification.check",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "verification.correction.request",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "verification.correction_submitted",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "verification.decided",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "verification.evidence.check",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "verification.evidence_reserved",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "verification.submitted",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "verification.upload",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "wave.deadline",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "work.accepted",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "work.accepted",
+    "consumer": "notifications",
+    "effect": "assignment_ready",
+    "dedupe_key": "event_id + recipient_principal + channel + kind; template version frozen at first enqueue",
+    "eligibility": "Configured template enabled; eligible current member/assigned driver or permitted customer audience; entity-specific rule selects recipients. Notify readiness only when useful to assigned driver, not every unchanged recomputation."
+  },
+  {
+    "event": "work.change_proposed",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "work.change_responded",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "work.change_withdrawn",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "writeback.enqueue",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "writeback.reconcile",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "writeback.retry_requested",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "writeback.send",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  },
+  {
+    "event": "writeback.timeout",
+    "consumer": "audit_realtime",
+    "effect": "Append audit and scoped entity/version invalidation; refetch authoritative projection. Do not infer payment or notification from arbitrary state changes.",
+    "dedupe_key": "consumer + event_id + audience scope",
+    "eligibility": "Current authorized recipient scope at dispatch and refetch; no private account fact on tenant stream"
+  }
+]

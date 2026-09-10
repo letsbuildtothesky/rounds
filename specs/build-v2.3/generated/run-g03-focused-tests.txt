@@ -1,0 +1,40 @@
+00:00 +0: loading /Users/imac2022/Documents/Codex/2026-09-01/ok-x20/work/rounds/apps/driver_harness/test/v23_pickup_issue_form_test.dart
+00:00 +0: /Users/imac2022/Documents/Codex/2026-09-01/ok-x20/work/rounds/apps/driver_harness/test/v23_pickup_issue_form_test.dart: draft edits persist through reopen without observations or commands
+00:01 +1: /Users/imac2022/Documents/Codex/2026-09-01/ok-x20/work/rounds/apps/driver_harness/test/v23_pickup_issue_form_test.dart: missing submits latest exact details once without camera or asset
+00:01 +2: /Users/imac2022/Documents/Codex/2026-09-01/ok-x20/work/rounds/apps/driver_harness/test/v23_pickup_issue_form_test.dart: photo draft stays editable; exact selected encrypted bytes bind only at submit
+00:02 +3: /Users/imac2022/Documents/Codex/2026-09-01/ok-x20/work/rounds/apps/driver_harness/test/v23_pickup_issue_form_test.dart: cancelled retake retains selection and every earlier photo
+00:03 +4: /Users/imac2022/Documents/Codex/2026-09-01/ok-x20/work/rounds/apps/driver_harness/test/v23_pickup_issue_form_test.dart: successful retake replaces selection, never erases prior evidence
+00:03 +5: /Users/imac2022/Documents/Codex/2026-09-01/ok-x20/work/rounds/apps/driver_harness/test/v23_pickup_issue_form_test.dart: changing reason clears selection, preserves old file, requires new purpose evidence
+00:03 +6: /Users/imac2022/Documents/Codex/2026-09-01/ok-x20/work/rounds/apps/driver_harness/test/v23_pickup_issue_form_test.dart: pending camera locks edit/submit/relaunch, cancellation restores edit
+00:04 +7: /Users/imac2022/Documents/Codex/2026-09-01/ok-x20/work/rounds/apps/driver_harness/test/v23_pickup_issue_form_test.dart: unknown/long reason or note rejects; 240 unicode scalar values survive
+00:04 +8: /Users/imac2022/Documents/Codex/2026-09-01/ok-x20/work/rounds/apps/driver_harness/test/v23_pickup_issue_form_test.dart: wrong delivery cannot create a report form
+00:04 +9: /Users/imac2022/Documents/Codex/2026-09-01/ok-x20/work/rounds/apps/driver_harness/test/v23_pickup_issue_form_test.dart: a tampered photo selection cannot attach another existing capture
+00:05 +10: /Users/imac2022/Documents/Codex/2026-09-01/ok-x20/work/rounds/apps/driver_harness/test/v23_pickup_issue_form_test.dart: assignment change during camera retains bytes but cannot submit
+00:06 +11: /Users/imac2022/Documents/Codex/2026-09-01/ok-x20/work/rounds/apps/driver_harness/test/v23_pickup_issue_form_test.dart: interruption at metadata_committed preserves old choice and recovers only exact saved capture
+00:06 +12: /Users/imac2022/Documents/Codex/2026-09-01/ok-x20/work/rounds/apps/driver_harness/test/v23_pickup_issue_form_test.dart: interruption at file_staged preserves old choice and recovers only exact saved capture
+00:07 +13: /Users/imac2022/Documents/Codex/2026-09-01/ok-x20/work/rounds/apps/driver_harness/test/v23_pickup_issue_form_test.dart: interruption at file_renamed preserves old choice and recovers only exact saved capture
+00:07 +14: /Users/imac2022/Documents/Codex/2026-09-01/ok-x20/work/rounds/apps/driver_harness/test/v23_pickup_issue_form_test.dart: interruption at saved_committed preserves old choice and recovers only exact saved capture
+00:08 +15: /Users/imac2022/Documents/Codex/2026-09-01/ok-x20/work/rounds/apps/driver_harness/test/v23_pickup_issue_form_test.dart: interruption at pickup_form_photo_saved preserves old choice and recovers only exact saved capture
+00:08 +16: /Users/imac2022/Documents/Codex/2026-09-01/ok-x20/work/rounds/apps/driver_harness/test/v23_pickup_issue_form_test.dart: interruption at pickup_form_submit_frozen freezes same note/time/ID for retry
+00:09 +17: /Users/imac2022/Documents/Codex/2026-09-01/ok-x20/work/rounds/apps/driver_harness/test/v23_pickup_issue_form_test.dart: interruption at observation_committed freezes same note/time/ID for retry
+00:09 +18: /Users/imac2022/Documents/Codex/2026-09-01/ok-x20/work/rounds/apps/driver_harness/test/v23_pickup_issue_form_test.dart: lost report response keeps frozen draft and recovers status once
+00:09 +19: loading /Users/imac2022/Documents/Codex/2026-09-01/ok-x20/work/rounds/apps/driver_harness/test/v23_pickup_issue_form_controller_test.dart
+00:11 +19: /Users/imac2022/Documents/Codex/2026-09-01/ok-x20/work/rounds/apps/driver_harness/test/v23_pickup_issue_form_controller_test.dart: controller sends latest queued edits, one report after rapid double tap
+00:12 +20: /Users/imac2022/Documents/Codex/2026-09-01/ok-x20/work/rounds/apps/driver_harness/test/v23_pickup_issue_form_controller_test.dart: real Auth camera return, note edit, upload verification and ReportIssue
+00:13 +21: /Users/imac2022/Documents/Codex/2026-09-01/ok-x20/work/rounds/apps/driver_harness/test/v23_pickup_issue_form_controller_test.dart: uncertain report probes original status after reassignment without another POST
+00:13 +22: /Users/imac2022/Documents/Codex/2026-09-01/ok-x20/work/rounds/apps/driver_harness/test/v23_pickup_issue_form_controller_test.dart: failed draft write does not submit stale note, subsequent save recovers
+00:14 +23: /Users/imac2022/Documents/Codex/2026-09-01/ok-x20/work/rounds/apps/driver_harness/test/v23_pickup_issue_form_controller_test.dart: cancelled retake retains preview and does not submit
+00:14 +24: /Users/imac2022/Documents/Codex/2026-09-01/ok-x20/work/rounds/apps/driver_harness/test/v23_pickup_issue_form_controller_test.dart: sign-out during camera never saves/sends under a new lease
+00:15 +25: /Users/imac2022/Documents/Codex/2026-09-01/ok-x20/work/rounds/apps/driver_harness/test/v23_pickup_issue_form_controller_test.dart: dispose during camera suppresses late UI result, retains same-owner photo
+00:15 +26: /Users/imac2022/Documents/Codex/2026-09-01/ok-x20/work/rounds/apps/driver_harness/test/v23_pickup_issue_form_controller_test.dart: G03 actual route chooses missing, saves details and reaches committed callback
+00:17 +27: loading /Users/imac2022/Documents/Codex/2026-09-01/ok-x20/work/rounds/apps/driver_harness/test/v23_package_problem_view_test.dart
+00:19 +27: /Users/imac2022/Documents/Codex/2026-09-01/ok-x20/work/rounds/apps/driver_harness/test/v23_package_problem_view_test.dart: (setUpAll)
+00:19 +27: /Users/imac2022/Documents/Codex/2026-09-01/ok-x20/work/rounds/apps/driver_harness/test/v23_package_problem_view_test.dart: G03 approved choices and contacts dispatch callbacks; measured outer geometry
+00:20 +28: /Users/imac2022/Documents/Codex/2026-09-01/ok-x20/work/rounds/apps/driver_harness/test/v23_package_problem_view_test.dart: damaged needs real photo before submit; no fake approval
+00:21 +29: /Users/imac2022/Documents/Codex/2026-09-01/ok-x20/work/rounds/apps/driver_harness/test/v23_package_problem_view_test.dart: missing has no photo gate and can explicitly submit
+00:21 +30: /Users/imac2022/Documents/Codex/2026-09-01/ok-x20/work/rounds/apps/driver_harness/test/v23_package_problem_view_test.dart: damaged 320px/large text/short viewport scrolls with pinned contacts
+00:21 +31: /Users/imac2022/Documents/Codex/2026-09-01/ok-x20/work/rounds/apps/driver_harness/test/v23_package_problem_view_test.dart: missing 320px/large text/short viewport scrolls with pinned contacts
+00:21 +32: /Users/imac2022/Documents/Codex/2026-09-01/ok-x20/work/rounds/apps/driver_harness/test/v23_package_problem_view_test.dart: wrong 320px/large text/short viewport scrolls with pinned contacts
+00:21 +33: /Users/imac2022/Documents/Codex/2026-09-01/ok-x20/work/rounds/apps/driver_harness/test/v23_package_problem_view_test.dart: busy prevents double submission, back and contacts remain available
+00:22 +34: /Users/imac2022/Documents/Codex/2026-09-01/ok-x20/work/rounds/apps/driver_harness/test/v23_package_problem_view_test.dart: (tearDownAll)
+00:22 +34: All tests passed!

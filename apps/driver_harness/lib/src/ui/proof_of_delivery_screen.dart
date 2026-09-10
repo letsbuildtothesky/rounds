@@ -7,6 +7,7 @@ import '../app/driver_design_system.dart';
 import '../app/generated/driver_ui_metrics.g.dart';
 import '../app/harness_app_controller.dart';
 import '../driver/driver_handoff_selection.dart';
+import '../driver/evidence_camera.dart';
 import '../driver/driver_session.dart';
 import '../permissions/driver_permissions_screen.dart';
 import '../storage/pod_draft_photo_store.dart';
@@ -357,12 +358,7 @@ class _ProofOfDeliveryScreenState extends State<ProofOfDeliveryScreen> {
     }
   }
 
-  Future<XFile?> _openCamera() => ImagePicker().pickImage(
-    source: ImageSource.camera,
-    maxWidth: 1600,
-    imageQuality: 75,
-    requestFullMetadata: false,
-  );
+  Future<XFile?> _openCamera() => openDeliveryEvidenceCamera();
 
   Future<void> _complete() async {
     if (!_ready || _submitting) return;

@@ -1,0 +1,23 @@
+{
+  "date": "2026-09-10",
+  "scope": "Compiled Dispatch pickup component with synthetic issue/Auth/HTTP, actual React/native fetch/sessionStorage and legacy CSS coexistence",
+  "url": "http://127.0.0.1:3023/?board=1",
+  "test_banner_height": 44,
+  "source": "Static Phase39 HTML final CSS plus user-supplied original screenshots; original interactive navigation remained blocked and was not bypassed",
+  "measurements": [
+    {"viewport": [1800,1000], "document": [1800,1000], "header_heights": [76,76], "list_width": 448, "detail": [1400,196,400,804], "reply_footer": [1401,893,399,107]},
+    {"viewport": [1600,900], "document": [1600,900], "header_heights": [76,76], "list_width": 416, "detail": [1200,196,400,704], "reply_footer": [1201,793,399,107]},
+    {"viewport": [1440,900], "document": [1440,900], "header_heights": [76,76], "list_hidden": true, "detail": [0,196,374.3984375,704], "reply_footer": [0,775,373.3984375,125]},
+    {"viewport": [1366,768], "document": [1366,768], "header_heights": [76,76], "list_hidden": true, "detail": [0,196,320,572], "reply_footer": [0,643,319,125]},
+    {"viewport": [1180,820], "document": [1180,820], "header_heights": [76,76], "list_hidden": true, "detail": [0,196,320,624], "reply_footer": [0,695,319,125]},
+    {"viewport": [1024,768], "document": [1024,768], "header_heights": [76,76], "list_hidden": true, "detail": [0,196,320,572], "reply_footer": [0,643,319,125]},
+    {"viewport": [820,1180], "document": [820,1180], "header_heights": [64,64], "list_hidden": true, "detail": [0,229,820,951], "reply_footer": [0,1073,820,107]},
+    {"viewport": [768,1024], "document": [768,1024], "header_heights": [64,64], "list_hidden": true, "detail": [0,229,768,795], "reply_footer": [0,917,768,107]},
+    {"viewport": [320,640], "document": [320,640], "header_heights": [64,64], "list_hidden": true, "detail": [0,229,320,411], "reply_footer": [0,523,320,117]}
+  ],
+  "rectangle_order": ["x","y","width","height"],
+  "observed": ["Selected row and detail coexist at wide breakpoint", "Search no-match preserves selected detail and saved original draft", "Closing a filtered-out detail focuses search", "Clear search restores report", "Keep draft and tablet Map/List switching preserve exact multiline instructions", "Synthetic lost POST response freezes original reply; status recovery renders recorded text", "Reply footer remains visible at all measured sizes"],
+  "final_browser_warning_error_logs": [],
+  "screenshots": ["dispatch-pickup-board-desktop.jpg","dispatch-pickup-board-tablet.jpg"],
+  "not_accepted": ["Original interactive-source rendering/pixel parity", "Actual dirty-browser reload", "Browser POST counter not read", "Configured Auth/browser/SQL host", "Real map/provider data", "Full Dispatch", "Phone installation/journey", "Shared migration/deployment/push"]
+}

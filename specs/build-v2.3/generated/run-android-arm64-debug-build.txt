@@ -1,0 +1,18 @@
+RUN /Users/imac2022/Documents/Codex/2026-09-01/ok-x20/work/flutter-sdk/bin/flutter build apk --debug --no-pub --target-platform android-arm64
+Running Gradle task 'assembleDebug'...                          
+Running Gradle task 'assembleDebug'...                             19.4s
+✓ Built build/app/outputs/flutter-apk/app-debug.apk
+PASS merged manifest and compiled APK backup policies for new namespace; actual backup/restore NOT_RUN
+{"status": "PASS", "apk_sha256": "1f638b2b6445490669252dccb6480bb83e85f918964f475ff15b9dc0656f5f98", "published_sqlcipher_arm64_sha256": "b5a4be982aabc22ca89e7ffe7803952c41544d5f19cbc242fdd4a1d362d0fbae", "ndk_version": "28.2.13676358", "packaged_sqlcipher_arm64_sha256": "e07fc9a9a009bb7aa826b3dd4807b3d050b326fc805dedb4235bec850d9ac405", "meaning": "Local Android ARM64 debug packaging/Activity bridge compilation only. No installation, native execution, store activation, backup/restore, release signing or license acceptance."}
+Warning: Flutter support for your project's Gradle version (8.14.0) will soon be dropped. Please upgrade your Gradle version to a version of at least 9.1.0 soon.
+Alternatively, use the flag "--android-skip-build-dependency-validation" to bypass this check.
+
+Potential fix: Your project's gradle version is typically defined in the gradle wrapper file. By default, this can be found at /Users/imac2022/Documents/Codex/2026-09-01/ok-x20/work/rounds/apps/driver_harness/android/gradle/wrapper/gradle-wrapper.properties. 
+For more information, see https://docs.gradle.org/current/userguide/gradle_wrapper.html.
+
+Warning: Flutter support for your project's Android Gradle Plugin version (Android Gradle Plugin version 8.13.2) will soon be dropped. Please upgrade your Android Gradle Plugin version to a version of at least Android Gradle Plugin version 9.0.1 soon.
+Alternatively, use the flag "--android-skip-build-dependency-validation" to bypass this check.
+
+Potential fix: Your project's AGP version is typically defined in the plugins block of the `settings.gradle` file (/Users/imac2022/Documents/Codex/2026-09-01/ok-x20/work/rounds/apps/driver_harness/android/settings.gradle), by a plugin with the id of com.android.application. 
+If you don't see a plugins block, your project was likely created with an older template version. In this case it is most likely defined in the top-level build.gradle file (/Users/imac2022/Documents/Codex/2026-09-01/ok-x20/work/rounds/apps/driver_harness/android/build.gradle) by the following line in the dependencies block of the buildscript: "classpath 'com.android.tools.build:gradle:<version>'".
+

@@ -14,6 +14,7 @@ import '../storage/pod_evidence_outbox.dart';
 import 'driver_session.dart';
 import 'driver_operations_thread.dart';
 import 'driver_entry.dart';
+import 'driver_auth_boundary.dart';
 
 class DriverApiException implements Exception {
   const DriverApiException(this.message);
@@ -55,12 +56,16 @@ class DriverApi {
     required this.roundsApiUrl,
     FlutterSecureStorage? storage,
     http.Client? client,
+    DriverAuthBoundary? authBoundary,
     Future<DriverCommandOutbox> Function()? outboxFactory,
     Future<PodEvidenceOutbox> Function()? podOutboxFactory,
     Future<DeliveryExceptionEvidenceOutbox> Function()? exceptionOutboxFactory,
     Future<MessageMediaOutbox> Function()? messageMediaOutboxFactory,
   }) : _storage = storage ?? const FlutterSecureStorage(),
-       _client = client ?? http.Client(),
+       _authBoundary = authBoundary,
+       _client = authBoundary == null
+           ? client ?? http.Client()
+           : _AuthInvalidatingClient(client ?? http.Client(), authBoundary),
        _outboxFactory = outboxFactory ?? DriverCommandOutbox.open,
        _podOutboxFactory = podOutboxFactory ?? PodEvidenceOutbox.open,
        _exceptionOutboxFactory =
@@ -76,6 +81,10 @@ class DriverApi {
   final String roundsApiUrl;
   final FlutterSecureStorage _storage;
   final http.Client _client;
+  final DriverAuthBoundary? _authBoundary;
+  int _authGeneration = 0;
+  bool _authenticationBlocked = false;
+  Future<void> _tokenTail = Future<void>.value();
   final Future<DriverCommandOutbox> Function() _outboxFactory;
   final Future<PodEvidenceOutbox> Function() _podOutboxFactory;
   final Future<DeliveryExceptionEvidenceOutbox> Function()
@@ -94,10 +103,16 @@ class DriverApi {
   Future<String?> realtimeAccessToken() => _storage.read(key: _accessTokenKey);
 
   Future<DriverSessionModel?> restore({String? expectedDriverId}) async {
+    final generation = _authGeneration;
     final accessToken = await _storage.read(key: _accessTokenKey);
-    if (accessToken == null) return null;
+    _checkAuthentication(generation);
+    if (accessToken == null) {
+      _authBoundary?.lock();
+      return null;
+    }
     try {
       var session = await _driverSession(accessToken);
+      _checkAuthentication(generation);
       await _validateDriverIdentity(session, expectedDriverId);
       final exceptionFlush = await _flushPendingExceptionEvidence(accessToken);
       final podFlush = await _flushPendingPodEvidence(
@@ -108,12 +123,14 @@ class DriverApi {
       if (flush.committedAny) session = await _driverSession(flush.accessToken);
       return session;
     } on _Unauthorized {
+      _checkAuthentication(generation);
       final refreshed = await _refresh();
       if (refreshed == null) {
         await signOut();
         return null;
       }
       var session = await _driverSession(refreshed);
+      _checkAuthentication(generation);
       await _validateDriverIdentity(session, expectedDriverId);
       final exceptionFlush = await _flushPendingExceptionEvidence(refreshed);
       final podFlush = await _flushPendingPodEvidence(
@@ -127,6 +144,7 @@ class DriverApi {
   }
 
   Future<void> requestPhoneOtp(String phoneE164) async {
+    lockAuthentication();
     final response = await _client.post(
       Uri.parse('$supabaseUrl/auth/v1/otp'),
       headers: {'apikey': publishableKey, 'content-type': 'application/json'},
@@ -146,11 +164,14 @@ class DriverApi {
     String token, {
     String? expectedDriverId,
   }) async {
+    lockAuthentication();
+    final generation = _authGeneration;
     final response = await _client.post(
       Uri.parse('$supabaseUrl/auth/v1/verify'),
       headers: {'apikey': publishableKey, 'content-type': 'application/json'},
       body: jsonEncode({'phone': phoneE164, 'token': token, 'type': 'sms'}),
     );
+    _checkAuthentication(generation, signInAttempt: true);
     if (response.statusCode != 200) {
       throw DriverApiException(
         _message(response, 'Code could not be verified'),
@@ -162,9 +183,10 @@ class DriverApi {
     if (accessToken == null || refreshToken == null) {
       throw const DriverApiException('Verified session was not returned');
     }
-    await _writeTokens(accessToken, refreshToken);
+    await _writeTokens(accessToken, refreshToken, generation, newSignIn: true);
 
     final session = await _driverSessionOrNull(accessToken);
+    _checkAuthentication(generation);
     if (session != null) {
       await _validateDriverIdentity(session, expectedDriverId);
       return DriverPhoneVerificationResult(session: session);
@@ -216,10 +238,43 @@ class DriverApi {
     return session;
   }
 
-  Future<void> signOut() => Future.wait([
-    _storage.delete(key: _accessTokenKey),
-    _storage.delete(key: _refreshTokenKey),
-  ]);
+  /// Synchronous invalidation, before controller inspection or token IO.
+  void lockAuthentication() {
+    _authGeneration++;
+    _authenticationBlocked = true;
+    _authBoundary?.lock();
+  }
+
+  Future<void> signOut() {
+    lockAuthentication();
+    // Serialize deletes after an already-started native token write. A stale
+    // login cannot resurrect tokens after sign-out has completed.
+    return _serializeTokens(() async {
+      await Future.wait([
+        _storage.delete(key: _accessTokenKey),
+        _storage.delete(key: _refreshTokenKey),
+      ]);
+    });
+  }
+
+  void _checkAuthentication(int generation, {bool signInAttempt = false}) {
+    if ((!signInAttempt && _authenticationBlocked) ||
+        generation != _authGeneration) {
+      throw const DriverApiException('Sign-in changed. Please try again.');
+    }
+  }
+
+  Future<void> _authenticateStorage(String bearer, int generation) async {
+    _checkAuthentication(generation);
+    final boundary = _authBoundary;
+    if (boundary == null) return;
+    if (await _storage.read(key: _accessTokenKey) != bearer) {
+      throw const DriverApiException('Sign-in changed. Please try again.');
+    }
+    _checkAuthentication(generation);
+    await boundary.authenticate(bearer);
+    _checkAuthentication(generation);
+  }
 
   Future<void> _validateDriverIdentity(
     DriverSessionModel session,
@@ -759,7 +814,11 @@ class DriverApi {
     required Map<String, Object?> payload,
   }) async {
     if (!isConfigured) {
-      return const DriverCommandOutcome(DriverCommandDisposition.pendingSync);
+      // No outbox write happened: reporting pendingSync would falsely tell
+      // the screen that the physical action was durably saved on this phone.
+      throw const DriverApiException(
+        'Driver service is not configured. Nothing was sent or saved.',
+      );
     }
     final outbox = await _commandOutbox();
     final command = await outbox.enqueue(
@@ -1463,6 +1522,7 @@ class DriverApi {
       _messageMediaQueue ??= await _messageMediaOutboxFactory();
 
   Future<DriverSessionModel> _driverSession(String accessToken) async {
+    final generation = _authGeneration;
     final response = await _client.get(
       Uri.parse('$roundsApiUrl/v1/driver/session'),
       headers: {
@@ -1476,12 +1536,14 @@ class DriverApi {
         _message(response, 'Assigned work could not be loaded'),
       );
     }
+    await _authenticateStorage(accessToken, generation);
     return DriverSessionModel.fromJson(
       jsonDecode(response.body) as Map<String, dynamic>,
     );
   }
 
   Future<DriverSessionModel?> _driverSessionOrNull(String accessToken) async {
+    final generation = _authGeneration;
     final response = await _client.get(
       Uri.parse('$roundsApiUrl/v1/driver/session'),
       headers: {
@@ -1496,6 +1558,7 @@ class DriverApi {
         _message(response, 'Driver account could not be loaded'),
       );
     }
+    await _authenticateStorage(accessToken, generation);
     return DriverSessionModel.fromJson(
       jsonDecode(response.body) as Map<String, dynamic>,
     );
@@ -1574,28 +1637,53 @@ class DriverApi {
   }
 
   Future<String?> _refresh() async {
+    _authBoundary
+        ?.lock(); // 401/refresh failure cannot leave local access open.
+    final generation = _authGeneration;
     final refreshToken = await _storage.read(key: _refreshTokenKey);
+    _checkAuthentication(generation);
     if (refreshToken == null) return null;
     final response = await _client.post(
       Uri.parse('$supabaseUrl/auth/v1/token?grant_type=refresh_token'),
       headers: {'apikey': publishableKey, 'content-type': 'application/json'},
       body: jsonEncode({'refresh_token': refreshToken}),
     );
+    _checkAuthentication(generation);
     if (response.statusCode != 200) return null;
     final body = jsonDecode(response.body) as Map<String, dynamic>;
     final accessToken = body['access_token'] as String;
     await _writeTokens(
       accessToken,
       body['refresh_token'] as String? ?? refreshToken,
+      generation,
     );
     return accessToken;
   }
 
-  Future<void> _writeTokens(String accessToken, String refreshToken) =>
-      Future.wait([
-        _storage.write(key: _accessTokenKey, value: accessToken),
-        _storage.write(key: _refreshTokenKey, value: refreshToken),
-      ]);
+  Future<void> _writeTokens(
+    String accessToken,
+    String refreshToken,
+    int generation, {
+    bool newSignIn = false,
+  }) => _serializeTokens(() async {
+    _checkAuthentication(generation, signInAttempt: newSignIn);
+    _authBoundary?.lock();
+    await Future.wait([
+      _storage.write(key: _accessTokenKey, value: accessToken),
+      _storage.write(key: _refreshTokenKey, value: refreshToken),
+    ]);
+    _checkAuthentication(generation, signInAttempt: newSignIn);
+    if (newSignIn) _authenticationBlocked = false;
+  });
+
+  Future<void> _serializeTokens(Future<void> Function() action) {
+    final result = _tokenTail.then((_) => action());
+    _tokenTail = result.then<void>(
+      (_) {},
+      onError: (Object _, StackTrace _) {},
+    );
+    return result;
+  }
 
   String _message(http.Response response, String fallback) {
     try {
@@ -1611,6 +1699,25 @@ class DriverApi {
     } catch (_) {}
     return fallback;
   }
+}
+
+/// Covers every legacy HTTP path (including refresh/media), not only the main
+/// session GET. A denial locks new storage; it never deletes pending bytes.
+class _AuthInvalidatingClient extends http.BaseClient {
+  _AuthInvalidatingClient(this.inner, this.boundary);
+  final http.Client inner;
+  final DriverAuthBoundary boundary;
+  @override
+  Future<http.StreamedResponse> send(http.BaseRequest request) async {
+    final response = await inner.send(request);
+    if (response.statusCode == 401 || response.statusCode == 403) {
+      boundary.lock();
+    }
+    return response;
+  }
+
+  @override
+  void close() => inner.close();
 }
 
 class _Unauthorized implements Exception {

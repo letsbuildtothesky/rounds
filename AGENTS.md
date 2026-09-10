@@ -1,85 +1,44 @@
-# Rounds — Codex repository instructions
+# Rounds — repository instructions
 
-This repository is the complete implementation handoff for Rounds.
+Version 2.1 · 2026-09-08
 
-## 0. Specification maintenance rule
+## Changelog
 
-Treat the canonical specification set as maintained source, not an append-only
-conversation log.
+- 2.1: user authorises in-place reconciliation, repository-grounded Build Specs and implementation of the first ready workflow. Preserve the original ZIP, not a second active spec tree; deployment and destructive cutover remain separately gated.
+- 2.0: adopt the user's v2.3 review/build-spec direction, preserve the old implementation as baseline, replace competing source/UX pointers, and keep current work documentation-only until implementation is authorised.
 
-- Do not add a new `ADDENDUM`, "supersedes earlier wording" block or duplicate
-  decision summary to a canonical specification or index.
-- Edit the owning section in place and remove or reconcile the superseded text
-  in the same change.
-- Record each substantive specification change in a short changelog near the
-  top of the owning file. A version bump is valid only with a matching
-  changelog entry, and the version header must match the filename.
-- When one decision closes or changes an item in another active control or
-  specification, update that file in the same checkpoint.
-- Indexes list authoritative sources and precedence only. They must not become
-  an additional product specification or changelog.
-- Existing appended material is technical debt to consolidate deliberately.
-  Do not delete it until the owning sections have been checked for equivalent
-  authoritative coverage.
+## Current task boundary
 
-## 1. Authority and read order
-Before changing code, read:
-1. `AGENTS.md`
-2. `CODEX-BUILD-ORDER.md`
-3. the Build Spec(s) for the authorized phase in `specs/build/`
-4. `specs/engineering/ROUNDS-IMPLEMENTATION-SCOPE-LADDER-v1.0.md`
-5. relevant current product specs in `specs/product/`
-6. relevant UX references in `ux/`
-7. `specs/engineering/ROUNDS-ENGINEERING-ARCHITECTURE-v1.1.md`
+Current authorization is specification reconciliation and implementation from the existing repository for modules marked ready. Routine engineering choices are documented; genuine business choices remain gated. Do not deploy, push, change the shared database, send real customer messages or perform destructive cutover without scope-specific authorization. Ready to implement does not mean tests passed or release approved.
 
-Do not use historical specifications. They are intentionally absent.
+## Authority and read order
 
-## 2. What each layer controls
-- Product behavior: `specs/product/`
-- Architecture: `specs/engineering/ROUNDS-ENGINEERING-ARCHITECTURE-v1.1.md`
-- Implementation mechanics: `specs/build/`
-- Build sequence: `CODEX-BUILD-ORDER.md`
-- Scope promotion: `specs/engineering/ROUNDS-IMPLEMENTATION-SCOPE-LADDER-v1.0.md`
-- Operations visual reference: `ux/operations/rounds-operations-current-v45.html`
-- Driver visual reference: `ux/driver/en/screens/`; Thai mirror: `ux/driver/th/`
+1. This file and CODEX-BUILD-ORDER.md.
+2. specs/build-v2.3/README.md, SOURCE-AUTHORITY.md and AUDIT.md.
+3. specs/build-v2.3/BS-INDEX.md and applicable BS files, RELEASE-PLAN.md, BS-12 visual acceptance and BS-13 security.
+4. Applicable current product/engineering/contracts/decisions under specs/source/Rounds-Complete-Project-v2.3/specs/.
+5. Current approved Dispatch Phase39 and Driver Refresh26 under specs/source/Rounds-Complete-Project-v2.3/ui/.
 
-If current sources conflict, STOP and report exact filenames/sections. Do not guess.
+The active v2.3 source is reconciled in place under specs/source/Rounds-Complete-Project-v2.3; the original ZIP is preserved under specs/source/archives. The user's complete-order rule is settled: no partial pickup approval or independently assigned residual delivery. Complete independent orders may proceed after explicit route adjustment; complete routes may be planned before inbound arrival. Reconcile affected owning sections/contracts before implementation. Unknown business choices require explicit resolution, not invented behaviour.
 
-## 3. Complete Build Specs now exist
-`specs/build/BUILD-SPEC-INDEX.md` lists the full engineering Build Spec set for product-complete Rounds V1.
+Old specs/product, specs/build, old engineering scope/coverage and ux references describe the preserved pre-v2.3 implementation. They are historical evidence/reuse context, NOT a competing build authority. Old passing tests and goldens do not certify the new product. Root navigation documents must point here, not silently revive old slices.
 
-Their existence is not permission to implement all of them. Follow `CODEX-BUILD-ORDER.md` strictly.
+## Specification maintenance
 
-## 4. Current authorized execution
+Edit owning sections in place; do not append contradictory addenda or duplicate changelogs. Each substantive authored-spec edit has a dated changelog; version/header/filename must agree. Indexes identify sources/owners, not another product spec. Keep the original ZIP byte-identical, record original and working hashes, and update dependent contracts/acceptance together. Generated registers are regenerated by tools/spec_audit_v23.py, never edited by hand.
 
-Human authorization has advanced implementation through **Pilot / Slice 1
-closure and Slice 2 own-fleet depth**. Work only on capabilities marked current
-in `specs/engineering/ROUNDS-IMPLEMENTATION-COVERAGE-AND-GAP-CONTROL-v1.0.md`.
-Phase 0 motorcycle/background/battery/degraded-network evidence remains an open
-release gate; implementation progress does not convert that missing evidence
-into a PASS. Do not self-promote to Slice 3 or any Network/external-courier
-slice.
+## Architecture and data safeguards
 
-## 5. Locked architecture
-- Supabase PostgreSQL + PostGIS system of record.
-- Next.js/React/TypeScript Operations.
-- Flutter/Dart Driver, gated by Phase 0.
-- Server-authoritative versioned/idempotent commands.
-- Dedicated buffered/batched GPS ingest; tenant-aggregated Supabase Broadcast.
-- Cross-tenant Network via server projections.
-- Embedded Google Navigation `TWO_WHEELER` for Driver subject to Phase 0.
-- Mapbox Operations renderer; no authoritative client route logic.
-- Thai-first Driver, English secondary.
-- POD/evidence survives offline/session loss.
+Retain Flutter, Next.js/React/TypeScript, Supabase Postgres/PostGIS/Auth/private Storage, Mapbox Operations and embedded Google navigation subject to provider/device gates. V2.3 domain transactions are owned by pinned-connection TypeScript handlers under restricted roles; preserve old RPC migration history without treating it as the new architecture. Durable original-fence offline evidence, server-authoritative idempotent commands, tenant/city/job isolation and no fabricated physical state are mandatory.
 
-## 6. Code quality
-- Build small deterministic vertical slices.
-- Add automated tests for every consequential invariant in the active Build Spec.
-- Version/repeat migrations.
-- Never commit secrets.
-- Preserve trace IDs.
-- Provider calls/webhooks are idempotent.
-- Never fake real-device/provider QA.
+Do not reset existing databases, delete queues/media, rewrite applied migrations or force-push. New development schema must be isolated and migration/cutover explicitly reviewed. No app/provider test uses real customer sends or money effects without scope-specific authorization.
 
-## 7. UX
-HTML boards are references, not code to paste wholesale. Prototype/demo switches are not production controls. Implement only screens required by current phase/slice, even though 47 boards exist.
+## UI and language
+
+Use supplied HTML layouts, tokens and interactions; screenshots plus functional tests are required per BS-12. No invented replacement boards. Prototype-only sample controls and deferred temperature/Lalamove do not ship. Missing UI states are logged and reviewed, not silently improvised. Preserve map attribution/vendor safety controls.
+
+Finish and test English before NEW Thai screen implementation per user instruction. Keep one app, shared language-neutral logic, existing preferences and pending evidence. Thai remains a later required localization gate, not a second codebase.
+
+## Checkpoints
+
+Keep source hashes, app commit, per-feature/screen state, automated/visual/device/provider evidence and open gates separate. Do not claim a percentage from 47 filenames. No release self-promotion or PASS based on source syntax, mocks or stale historical evidence. Respect nested AGENTS.md instructions in any application being edited.

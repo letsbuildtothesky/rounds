@@ -1,0 +1,2471 @@
+[
+  {
+    "event": "address.reviewed",
+    "schema": "Event_address_reviewed",
+    "payload_schema": "Fact_address_reviewed",
+    "producer": "ReviewAddress",
+    "producers": [
+      "ReviewAddress"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "agreement.cancelled",
+    "schema": "Event_agreement_cancelled",
+    "payload_schema": "Fact_agreement_cancelled",
+    "producer": "CancelAgreement",
+    "producers": [
+      "CancelAgreement"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "asset.expire",
+    "schema": "Event_asset_expire",
+    "payload_schema": "Fact_asset_expire",
+    "producer": "worker:asset_expire",
+    "producers": [
+      "worker:asset_expire"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "asset.reserved",
+    "schema": "Event_asset_reserved",
+    "payload_schema": "Fact_asset_reserved",
+    "producer": "ReserveAsset",
+    "producers": [
+      "ReserveAsset"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "asset.upload.received",
+    "schema": "Event_asset_upload_received",
+    "payload_schema": "Fact_asset_upload_received",
+    "producer": "worker:asset_upload_received",
+    "producers": [
+      "worker:asset_upload_received"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "asset.upload.started",
+    "schema": "Event_asset_upload_started",
+    "payload_schema": "Fact_asset_upload_started",
+    "producer": "worker:asset_upload_started",
+    "producers": [
+      "worker:asset_upload_started"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "asset.verified",
+    "schema": "Event_asset_verified",
+    "payload_schema": "Fact_asset_verified",
+    "producer": "VerifyAsset",
+    "producers": [
+      "VerifyAsset"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "asset.verify",
+    "schema": "Event_asset_verify",
+    "payload_schema": "Fact_asset_verify",
+    "producer": "worker:asset_verify",
+    "producers": [
+      "worker:asset_verify"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "assignment.device.receipt",
+    "schema": "Event_assignment_device_receipt",
+    "payload_schema": "Fact_assignment_device_receipt",
+    "producer": "worker:assignment_device_receipt",
+    "producers": [
+      "worker:assignment_device_receipt"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "assignment.reassigned",
+    "schema": "Event_assignment_reassigned",
+    "payload_schema": "Fact_assignment_reassigned",
+    "producer": "ReassignRound",
+    "producers": [
+      "ReassignRound"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "assignment.responded",
+    "schema": "Event_assignment_responded",
+    "payload_schema": "Fact_assignment_responded",
+    "producer": "AcknowledgeAssignment",
+    "producers": [
+      "AcknowledgeAssignment"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "assignment.withdrawn",
+    "schema": "Event_assignment_withdrawn",
+    "payload_schema": "Fact_assignment_withdrawn",
+    "producer": "WithdrawRelease",
+    "producers": [
+      "WithdrawRelease"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "attendance.correction_decided",
+    "schema": "Event_attendance_correction_decided",
+    "payload_schema": "Fact_attendance_correction_decided",
+    "producer": "DecideAttendanceCorrection",
+    "producers": [
+      "DecideAttendanceCorrection"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "attendance.correction_requested",
+    "schema": "Event_attendance_correction_requested",
+    "payload_schema": "Fact_attendance_correction_requested",
+    "producer": "RequestAttendanceCorrection",
+    "producers": [
+      "RequestAttendanceCorrection"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "availability.requested",
+    "schema": "Event_availability_requested",
+    "payload_schema": "Fact_availability_requested",
+    "producer": "AskAvailability",
+    "producers": [
+      "AskAvailability"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "availability.responded",
+    "schema": "Event_availability_responded",
+    "payload_schema": "Fact_availability_responded",
+    "producer": "ReplyAvailability",
+    "producers": [
+      "ReplyAvailability"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "batch.committed",
+    "schema": "Event_batch_committed",
+    "payload_schema": "Fact_batch_committed",
+    "producer": "worker:batch_committed",
+    "producers": [
+      "worker:batch_committed"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "batch.extract",
+    "schema": "Event_batch_extract",
+    "payload_schema": "Fact_batch_extract",
+    "producer": "worker:batch_extract",
+    "producers": [
+      "worker:batch_extract"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "batch.extracted",
+    "schema": "Event_batch_extracted",
+    "payload_schema": "Fact_batch_extracted",
+    "producer": "worker:batch_extracted",
+    "producers": [
+      "worker:batch_extracted"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "batch.failed",
+    "schema": "Event_batch_failed",
+    "payload_schema": "Fact_batch_failed",
+    "producer": "worker:batch_failed",
+    "producers": [
+      "worker:batch_failed"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "brand.saved",
+    "schema": "Event_brand_saved",
+    "payload_schema": "Fact_brand_saved",
+    "producer": "SaveBrand",
+    "producers": [
+      "SaveBrand"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "broadcast.exhaust",
+    "schema": "Event_broadcast_exhaust",
+    "payload_schema": "Fact_broadcast_exhaust",
+    "producer": "worker:broadcast_exhaust",
+    "producers": [
+      "worker:broadcast_exhaust"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "broadcast.expanded",
+    "schema": "Event_broadcast_expanded",
+    "payload_schema": "Fact_broadcast_expanded",
+    "producer": "ExpandBroadcast",
+    "producers": [
+      "ExpandBroadcast"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "broadcast.expire",
+    "schema": "Event_broadcast_expire",
+    "payload_schema": "Fact_broadcast_expire",
+    "producer": "worker:broadcast_expire",
+    "producers": [
+      "worker:broadcast_expire"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "broadcast.restarted",
+    "schema": "Event_broadcast_restarted",
+    "payload_schema": "Fact_broadcast_restarted",
+    "producer": "RestartBroadcast",
+    "producers": [
+      "RestartBroadcast"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "broadcast.revised",
+    "schema": "Event_broadcast_revised",
+    "payload_schema": "Fact_broadcast_revised",
+    "producer": "ReviseBroadcast",
+    "producers": [
+      "ReviseBroadcast"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "broadcast.started",
+    "schema": "Event_broadcast_started",
+    "payload_schema": "Fact_broadcast_started",
+    "producer": "StartBroadcast",
+    "producers": [
+      "StartBroadcast"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "broadcast.stopped",
+    "schema": "Event_broadcast_stopped",
+    "payload_schema": "Fact_broadcast_stopped",
+    "producer": "StopBroadcast",
+    "producers": [
+      "StopBroadcast"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "call.deadline",
+    "schema": "Event_call_deadline",
+    "payload_schema": "Fact_call_deadline",
+    "producer": "worker:call_deadline",
+    "producers": [
+      "worker:call_deadline"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "call.outcome_reported",
+    "schema": "Event_call_outcome_reported",
+    "payload_schema": "Fact_call_outcome_reported",
+    "producer": "LogCallOutcome",
+    "producers": [
+      "LogCallOutcome"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "call.provider.receipt",
+    "schema": "Event_call_provider_receipt",
+    "payload_schema": "Fact_call_provider_receipt",
+    "producer": "worker:call_provider_receipt",
+    "producers": [
+      "worker:call_provider_receipt"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "call.requested",
+    "schema": "Event_call_requested",
+    "payload_schema": "Fact_call_requested",
+    "producer": "StartCall",
+    "producers": [
+      "StartCall"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "call.responded",
+    "schema": "Event_call_responded",
+    "payload_schema": "Fact_call_responded",
+    "producer": "RespondCall",
+    "producers": [
+      "RespondCall"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "cargo.class_saved",
+    "schema": "Event_cargo_class_saved",
+    "payload_schema": "Fact_cargo_class_saved",
+    "producer": "SaveCargoClass",
+    "producers": [
+      "SaveCargoClass"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "change.expire",
+    "schema": "Event_change_expire",
+    "payload_schema": "Fact_change_expire",
+    "producer": "worker:change_expire",
+    "producers": [
+      "worker:change_expire"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "city.saved",
+    "schema": "Event_city_saved",
+    "payload_schema": "Fact_city_saved",
+    "producer": "SaveCity",
+    "producers": [
+      "SaveCity"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "commitment.proposal",
+    "schema": "Event_commitment_proposal",
+    "payload_schema": "Fact_commitment_proposal",
+    "producer": "worker:commitment_proposal",
+    "producers": [
+      "worker:commitment_proposal"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "connection.check",
+    "schema": "Event_connection_check",
+    "payload_schema": "Fact_connection_check",
+    "producer": "worker:connection_check",
+    "producers": [
+      "worker:connection_check"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "connection.disconnect",
+    "schema": "Event_connection_disconnect",
+    "payload_schema": "Fact_connection_disconnect",
+    "producer": "worker:connection_disconnect",
+    "producers": [
+      "worker:connection_disconnect"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "connection.saved",
+    "schema": "Event_connection_saved",
+    "payload_schema": "Fact_connection_saved",
+    "producer": "SaveConnection",
+    "producers": [
+      "SaveConnection"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "connection.state_changed",
+    "schema": "Event_connection_state_changed",
+    "payload_schema": "Fact_connection_state_changed",
+    "producer": "SetConnectionState",
+    "producers": [
+      "SetConnectionState"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "conversation.opened",
+    "schema": "Event_conversation_opened",
+    "payload_schema": "Fact_conversation_opened",
+    "producer": "OpenConversation",
+    "producers": [
+      "OpenConversation"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "conversation.read",
+    "schema": "Event_conversation_read",
+    "payload_schema": "Fact_conversation_read",
+    "producer": "MarkMessagesRead",
+    "producers": [
+      "MarkMessagesRead"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "custody.transfer_cancelled",
+    "schema": "Event_custody_transfer_cancelled",
+    "payload_schema": "Fact_custody_transfer_cancelled",
+    "producer": "CancelTransfer",
+    "producers": [
+      "CancelTransfer"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "custody.transfer_declined",
+    "schema": "Event_custody_transfer_declined",
+    "payload_schema": "Fact_custody_transfer_declined",
+    "producer": "DeclineTransfer",
+    "producers": [
+      "DeclineTransfer"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "custody.transfer_pending",
+    "schema": "Event_custody_transfer_pending",
+    "payload_schema": "Fact_custody_transfer_pending",
+    "producer": "InitiateTransfer",
+    "producers": [
+      "InitiateTransfer"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "custody.transfer_received",
+    "schema": "Event_custody_transfer_received",
+    "payload_schema": "Fact_custody_transfer_received",
+    "producer": "ConfirmTransferReceipt",
+    "producers": [
+      "ConfirmTransferReceipt"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "delivery.cancelled",
+    "schema": "Event_delivery_cancelled",
+    "payload_schema": "Fact_delivery_cancelled",
+    "producer": "CancelDelivery",
+    "producers": [
+      "CancelDelivery"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "delivery.completed",
+    "schema": "Event_delivery_completed",
+    "payload_schema": "Fact_delivery_completed",
+    "producer": "CompleteDelivery",
+    "producers": [
+      "CompleteDelivery"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "delivery.created",
+    "schema": "Event_delivery_created",
+    "payload_schema": "Fact_delivery_created",
+    "producer": "CommitDelivery",
+    "producers": [
+      "CommitDelivery"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "delivery.entrance_applied",
+    "schema": "Event_delivery_entrance_applied",
+    "payload_schema": "Fact_delivery_entrance_applied",
+    "producer": "ApplyEntrance",
+    "producers": [
+      "ApplyEntrance"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "delivery.outcome_changed",
+    "schema": "Event_delivery_outcome_changed",
+    "payload_schema": "Fact_delivery_outcome_changed",
+    "producer": "CancelDelivery | CompleteDelivery | ReceiveReturn | derive:delivery_outcome",
+    "producers": [
+      "CancelDelivery",
+      "CompleteDelivery",
+      "ReceiveReturn",
+      "derive:delivery_outcome"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "delivery.rescheduled",
+    "schema": "Event_delivery_rescheduled",
+    "payload_schema": "Fact_delivery_rescheduled",
+    "producer": "RescheduleDelivery",
+    "producers": [
+      "RescheduleDelivery"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "delivery.review.required",
+    "schema": "Event_delivery_review_required",
+    "payload_schema": "Fact_delivery_review_required",
+    "producer": "worker:delivery_review_required",
+    "producers": [
+      "worker:delivery_review_required"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "delivery.window_changed",
+    "schema": "Event_delivery_window_changed",
+    "payload_schema": "Fact_delivery_window_changed",
+    "producer": "MoveDeliveryWindow",
+    "producers": [
+      "MoveDeliveryWindow"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "dispute.opened",
+    "schema": "Event_dispute_opened",
+    "payload_schema": "Fact_dispute_opened",
+    "producer": "OpenDispute",
+    "producers": [
+      "OpenDispute"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "dispute.resolved",
+    "schema": "Event_dispute_resolved",
+    "payload_schema": "Fact_dispute_resolved",
+    "producer": "DecideDispute | derive:dispute_effects",
+    "producers": [
+      "DecideDispute",
+      "derive:dispute_effects"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "dispute.review_started",
+    "schema": "Event_dispute_review_started",
+    "payload_schema": "Fact_dispute_review_started",
+    "producer": "derive:dispute_review",
+    "producers": [
+      "derive:dispute_review"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "draft.extracted",
+    "schema": "Event_draft_extracted",
+    "payload_schema": "Fact_draft_extracted",
+    "producer": "worker:draft_extracted",
+    "producers": [
+      "worker:draft_extracted"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "driver.availability_changed",
+    "schema": "Event_driver_availability_changed",
+    "payload_schema": "Fact_driver_availability_changed",
+    "producer": "SetAvailability",
+    "producers": [
+      "SetAvailability"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "driver.contact_permission_changed",
+    "schema": "Event_driver_contact_permission_changed",
+    "payload_schema": "Fact_driver_contact_permission_changed",
+    "producer": "SetContactPermissions",
+    "producers": [
+      "SetContactPermissions"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "driver.profile_saved",
+    "schema": "Event_driver_profile_saved",
+    "payload_schema": "Fact_driver_profile_saved",
+    "producer": "SaveDriverProfile",
+    "producers": [
+      "SaveDriverProfile"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "driver.relationship_saved",
+    "schema": "Event_driver_relationship_saved",
+    "payload_schema": "Fact_driver_relationship_saved",
+    "producer": "SaveDriverRelationship",
+    "producers": [
+      "SaveDriverRelationship"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "driver.vehicle_saved",
+    "schema": "Event_driver_vehicle_saved",
+    "payload_schema": "Fact_driver_vehicle_saved",
+    "producer": "SaveDriverVehicle",
+    "producers": [
+      "SaveDriverVehicle"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "entrance.confirmed",
+    "schema": "Event_entrance_confirmed",
+    "payload_schema": "Fact_entrance_confirmed",
+    "producer": "ConfirmEntrance",
+    "producers": [
+      "ConfirmEntrance"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "entrance.retired",
+    "schema": "Event_entrance_retired",
+    "payload_schema": "Fact_entrance_retired",
+    "producer": "RetireEntrance",
+    "producers": [
+      "RetireEntrance"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "evidence.retained_stale",
+    "schema": "Event_evidence_retained_stale",
+    "payload_schema": "Fact_evidence_retained_stale",
+    "producer": "RetainOfflineObservations",
+    "producers": [
+      "RetainOfflineObservations"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "export.complete",
+    "schema": "Event_export_complete",
+    "payload_schema": "Fact_export_complete",
+    "producer": "worker:export_complete",
+    "producers": [
+      "worker:export_complete"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "export.expire",
+    "schema": "Event_export_expire",
+    "payload_schema": "Fact_export_expire",
+    "producer": "worker:export_expire",
+    "producers": [
+      "worker:export_expire"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "export.failure",
+    "schema": "Event_export_failure",
+    "payload_schema": "Fact_export_failure",
+    "producer": "worker:export_failure",
+    "producers": [
+      "worker:export_failure"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "export.requested",
+    "schema": "Event_export_requested",
+    "payload_schema": "Fact_export_requested",
+    "producer": "RequestExport",
+    "producers": [
+      "RequestExport"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "export.start",
+    "schema": "Event_export_start",
+    "payload_schema": "Fact_export_start",
+    "producer": "worker:export_start",
+    "producers": [
+      "worker:export_start"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "fare.adjusted",
+    "schema": "Event_fare_adjusted",
+    "payload_schema": "Fact_fare_adjusted",
+    "producer": "RecordFareAdjustment",
+    "producers": [
+      "RecordFareAdjustment"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "feature.changed",
+    "schema": "Event_feature_changed",
+    "payload_schema": "Fact_feature_changed",
+    "producer": "SetFeature",
+    "producers": [
+      "SetFeature"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "fleet.resource_archived",
+    "schema": "Event_fleet_resource_archived",
+    "payload_schema": "Fact_fleet_resource_archived",
+    "producer": "ArchiveFleetResource | SaveDriverRelationship",
+    "producers": [
+      "ArchiveFleetResource",
+      "SaveDriverRelationship"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "fulfillment.completed",
+    "schema": "Event_fulfillment_completed",
+    "payload_schema": "Fact_fulfillment_completed",
+    "producer": "CompleteDelivery",
+    "producers": [
+      "CompleteDelivery"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "handling.rule_saved",
+    "schema": "Event_handling_rule_saved",
+    "payload_schema": "Fact_handling_rule_saved",
+    "producer": "SaveHandlingRule",
+    "producers": [
+      "SaveHandlingRule"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "handoff.recorded",
+    "schema": "Event_handoff_recorded",
+    "payload_schema": "Fact_handoff_recorded",
+    "producer": "RecordHandoff",
+    "producers": [
+      "RecordHandoff"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "hold.expire",
+    "schema": "Event_hold_expire",
+    "payload_schema": "Fact_hold_expire",
+    "producer": "worker:hold_expire",
+    "producers": [
+      "worker:hold_expire"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "incident.cause_corrected",
+    "schema": "Event_incident_cause_corrected",
+    "payload_schema": "Fact_incident_cause_corrected",
+    "producer": "CorrectIncidentCause",
+    "producers": [
+      "CorrectIncidentCause"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "intake.batch_committed",
+    "schema": "Event_intake_batch_committed",
+    "payload_schema": "Fact_intake_batch_committed",
+    "producer": "CommitIntakeBatch",
+    "producers": [
+      "CommitIntakeBatch"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "intake.batch_created",
+    "schema": "Event_intake_batch_created",
+    "payload_schema": "Fact_intake_batch_created",
+    "producer": "CreateIntakeBatch",
+    "producers": [
+      "CreateIntakeBatch"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "intake.draft_discarded",
+    "schema": "Event_intake_draft_discarded",
+    "payload_schema": "Fact_intake_draft_discarded",
+    "producer": "DiscardDraft",
+    "producers": [
+      "DiscardDraft"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "intake.draft_saved",
+    "schema": "Event_intake_draft_saved",
+    "payload_schema": "Fact_intake_draft_saved",
+    "producer": "SaveDeliveryDraft",
+    "producers": [
+      "SaveDeliveryDraft"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "intake.extraction_requested",
+    "schema": "Event_intake_extraction_requested",
+    "payload_schema": "Fact_intake_extraction_requested",
+    "producer": "ExtractDraft",
+    "producers": [
+      "ExtractDraft"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "issue.decided",
+    "schema": "Event_issue_decided",
+    "payload_schema": "Fact_issue_decided",
+    "producer": "ResolveIssue",
+    "producers": [
+      "ResolveIssue"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "issue.effect.complete",
+    "schema": "Event_issue_effect_complete",
+    "payload_schema": "Fact_issue_effect_complete",
+    "producer": "worker:issue_effect_complete",
+    "producers": [
+      "worker:issue_effect_complete"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "issue.reported",
+    "schema": "Event_issue_reported",
+    "payload_schema": "Fact_issue_reported",
+    "producer": "ReportIssue",
+    "producers": [
+      "ReportIssue"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "issue.review",
+    "schema": "Event_issue_review",
+    "payload_schema": "Fact_issue_review",
+    "producer": "worker:issue_review",
+    "producers": [
+      "worker:issue_review"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "legacy.quarantine",
+    "schema": "Event_legacy_quarantine",
+    "payload_schema": "Fact_legacy_quarantine",
+    "producer": "worker:legacy_quarantine",
+    "producers": [
+      "worker:legacy_quarantine"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "local.evidence.observed",
+    "schema": "Event_local_evidence_observed",
+    "payload_schema": "Fact_local_evidence_observed",
+    "producer": "worker:local_evidence_observed",
+    "producers": [
+      "worker:local_evidence_observed"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "location.observed",
+    "schema": "Event_location_observed",
+    "payload_schema": "Fact_location_observed",
+    "producer": "ReportLocationObservation",
+    "producers": [
+      "ReportLocationObservation"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "membership.access_changed",
+    "schema": "Event_membership_access_changed",
+    "payload_schema": "Fact_membership_access_changed",
+    "producer": "ChangeMemberAccess",
+    "producers": [
+      "ChangeMemberAccess"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "membership.invited",
+    "schema": "Event_membership_invited",
+    "payload_schema": "Fact_membership_invited",
+    "producer": "InviteMember",
+    "producers": [
+      "InviteMember"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "membership.joined",
+    "schema": "Event_membership_joined",
+    "payload_schema": "Fact_membership_joined",
+    "producer": "AcceptInvitation",
+    "producers": [
+      "AcceptInvitation"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "membership.revoke",
+    "schema": "Event_membership_revoke",
+    "payload_schema": "Fact_membership_revoke",
+    "producer": "worker:membership_revoke",
+    "producers": [
+      "worker:membership_revoke"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "message.device.receipt",
+    "schema": "Event_message_device_receipt",
+    "payload_schema": "Fact_message_device_receipt",
+    "producer": "worker:message_device_receipt",
+    "producers": [
+      "worker:message_device_receipt"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "message.failure",
+    "schema": "Event_message_failure",
+    "payload_schema": "Fact_message_failure",
+    "producer": "worker:message_failure",
+    "producers": [
+      "worker:message_failure"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "message.received",
+    "schema": "Event_message_received",
+    "payload_schema": "Fact_message_received",
+    "producer": "SendMessage",
+    "producers": [
+      "SendMessage"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "navigation.device.receipt",
+    "schema": "Event_navigation_device_receipt",
+    "payload_schema": "Fact_navigation_device_receipt",
+    "producer": "worker:navigation_device_receipt",
+    "producers": [
+      "worker:navigation_device_receipt"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "navigation.expire",
+    "schema": "Event_navigation_expire",
+    "payload_schema": "Fact_navigation_expire",
+    "producer": "worker:navigation_expire",
+    "producers": [
+      "worker:navigation_expire"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "navigation.intent_created",
+    "schema": "Event_navigation_intent_created",
+    "payload_schema": "Fact_navigation_intent_created",
+    "producer": "CreateNavigationIntent",
+    "producers": [
+      "CreateNavigationIntent"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "notification.enqueue",
+    "schema": "Event_notification_enqueue",
+    "payload_schema": "Fact_notification_enqueue",
+    "producer": "worker:notification_enqueue",
+    "producers": [
+      "worker:notification_enqueue"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "notification.read",
+    "schema": "Event_notification_read",
+    "payload_schema": "Fact_notification_read",
+    "producer": "MarkNotificationRead",
+    "producers": [
+      "MarkNotificationRead"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "notification.receipt",
+    "schema": "Event_notification_receipt",
+    "payload_schema": "Fact_notification_receipt",
+    "producer": "worker:notification_receipt",
+    "producers": [
+      "worker:notification_receipt"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "notification.reconcile",
+    "schema": "Event_notification_reconcile",
+    "payload_schema": "Fact_notification_reconcile",
+    "producer": "worker:notification_reconcile",
+    "producers": [
+      "worker:notification_reconcile"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "notification.send",
+    "schema": "Event_notification_send",
+    "payload_schema": "Fact_notification_send",
+    "producer": "worker:notification_send",
+    "producers": [
+      "worker:notification_send"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "notification.timeout",
+    "schema": "Event_notification_timeout",
+    "payload_schema": "Fact_notification_timeout",
+    "producer": "worker:notification_timeout",
+    "producers": [
+      "worker:notification_timeout"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "obligation.resolved",
+    "schema": "Event_obligation_resolved",
+    "payload_schema": "Fact_obligation_resolved",
+    "producer": "CancelDelivery | CompleteDelivery | ReceiveReturn | derive:obligation_resolution",
+    "producers": [
+      "CancelDelivery",
+      "CompleteDelivery",
+      "ReceiveReturn",
+      "derive:obligation_resolution"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "observation.reject",
+    "schema": "Event_observation_reject",
+    "payload_schema": "Fact_observation_reject",
+    "producer": "worker:observation_reject",
+    "producers": [
+      "worker:observation_reject"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "observation.review",
+    "schema": "Event_observation_review",
+    "payload_schema": "Fact_observation_review",
+    "producer": "worker:observation_review",
+    "producers": [
+      "worker:observation_review"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "offer.declined",
+    "schema": "Event_offer_declined",
+    "payload_schema": "Fact_offer_declined",
+    "producer": "RespondOffer",
+    "producers": [
+      "RespondOffer"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "offer.expire",
+    "schema": "Event_offer_expire",
+    "payload_schema": "Fact_offer_expire",
+    "producer": "worker:offer_expire",
+    "producers": [
+      "worker:offer_expire"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "offer.issue",
+    "schema": "Event_offer_issue",
+    "payload_schema": "Fact_offer_issue",
+    "producer": "worker:offer_issue",
+    "producers": [
+      "worker:offer_issue"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "offer.taken",
+    "schema": "Event_offer_taken",
+    "payload_schema": "Fact_offer_taken",
+    "producer": "RespondOffer",
+    "producers": [
+      "RespondOffer"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "payout.method.receipt",
+    "schema": "Event_payout_method_receipt",
+    "payload_schema": "Fact_payout_method_receipt",
+    "producer": "worker:payout_method_receipt",
+    "producers": [
+      "worker:payout_method_receipt"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "payout_method.saved",
+    "schema": "Event_payout_method_saved",
+    "payload_schema": "Fact_payout_method_saved",
+    "producer": "SavePayoutMethod",
+    "producers": [
+      "SavePayoutMethod"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "pickup.confirmed",
+    "schema": "Event_pickup_confirmed",
+    "payload_schema": "Fact_pickup_confirmed",
+    "producer": "ConfirmPickup",
+    "producers": [
+      "ConfirmPickup"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "pickup.partial_approved",
+    "schema": "Event_pickup_partial_approved",
+    "payload_schema": "Fact_pickup_partial_approved",
+    "producer": "ApprovePartialPickup",
+    "producers": [
+      "ApprovePartialPickup"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json",
+    "release_scope": "deferred",
+    "launch_behavior": "No emission or effect at launch. ApprovePartialPickup rejects FEATURE_NOT_ENABLED."
+  },
+  {
+    "event": "pickup.readiness_changed",
+    "schema": "Event_pickup_readiness_changed",
+    "payload_schema": "Fact_pickup_readiness_changed",
+    "producer": "SetPickupReadiness",
+    "producers": [
+      "SetPickupReadiness"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "plan.automation_applied",
+    "schema": "Event_plan_automation_applied",
+    "payload_schema": "Fact_plan_automation_applied",
+    "producer": "ApplyOwnFleetAutomation",
+    "producers": [
+      "ApplyOwnFleetAutomation"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "plan.changed",
+    "schema": "Event_plan_changed",
+    "payload_schema": "Fact_plan_changed",
+    "producer": "ApplyPlanProposal",
+    "producers": [
+      "ApplyPlanProposal"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "plan.failed",
+    "schema": "Event_plan_failed",
+    "payload_schema": "Fact_plan_failed",
+    "producer": "worker:plan_failed",
+    "producers": [
+      "worker:plan_failed"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "plan.generation_requested",
+    "schema": "Event_plan_generation_requested",
+    "payload_schema": "Fact_plan_generation_requested",
+    "producer": "GeneratePlan",
+    "producers": [
+      "GeneratePlan"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "plan.move_previewed",
+    "schema": "Event_plan_move_previewed",
+    "payload_schema": "Fact_plan_move_previewed",
+    "producer": "PreviewPlanMove",
+    "producers": [
+      "PreviewPlanMove"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "plan.released",
+    "schema": "Event_plan_released",
+    "payload_schema": "Fact_plan_released",
+    "producer": "ReleasePlan",
+    "producers": [
+      "ReleasePlan"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "plan.result",
+    "schema": "Event_plan_result",
+    "payload_schema": "Fact_plan_result",
+    "producer": "worker:plan_result",
+    "producers": [
+      "worker:plan_result"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "plan.saved",
+    "schema": "Event_plan_saved",
+    "payload_schema": "Fact_plan_saved",
+    "producer": "SavePlan",
+    "producers": [
+      "SavePlan"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "plan.staged",
+    "schema": "Event_plan_staged",
+    "payload_schema": "Fact_plan_staged",
+    "producer": "StagePlan",
+    "producers": [
+      "StagePlan"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "plan.supersede",
+    "schema": "Event_plan_supersede",
+    "payload_schema": "Fact_plan_supersede",
+    "producer": "worker:plan_supersede",
+    "producers": [
+      "worker:plan_supersede"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "policy.revised",
+    "schema": "Event_policy_revised",
+    "payload_schema": "Fact_policy_revised",
+    "producer": "SavePolicy",
+    "producers": [
+      "SavePolicy"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "privacy.complete",
+    "schema": "Event_privacy_complete",
+    "payload_schema": "Fact_privacy_complete",
+    "producer": "worker:privacy_complete",
+    "producers": [
+      "worker:privacy_complete"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "privacy.decision",
+    "schema": "Event_privacy_decision",
+    "payload_schema": "Fact_privacy_decision",
+    "producer": "worker:privacy_decision",
+    "producers": [
+      "worker:privacy_decision"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "privacy.execute",
+    "schema": "Event_privacy_execute",
+    "payload_schema": "Fact_privacy_execute",
+    "producer": "worker:privacy_execute",
+    "producers": [
+      "worker:privacy_execute"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "privacy.hold",
+    "schema": "Event_privacy_hold",
+    "payload_schema": "Fact_privacy_hold",
+    "producer": "worker:privacy_hold",
+    "producers": [
+      "worker:privacy_hold"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "privacy.release.hold",
+    "schema": "Event_privacy_release_hold",
+    "payload_schema": "Fact_privacy_release_hold",
+    "producer": "worker:privacy_release_hold",
+    "producers": [
+      "worker:privacy_release_hold"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "privacy.requested",
+    "schema": "Event_privacy_requested",
+    "payload_schema": "Fact_privacy_requested",
+    "producer": "RequestPrivacyAction",
+    "producers": [
+      "RequestPrivacyAction"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "privacy.review",
+    "schema": "Event_privacy_review",
+    "payload_schema": "Fact_privacy_review",
+    "producer": "worker:privacy_review",
+    "producers": [
+      "worker:privacy_review"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "proof.item.invalidate",
+    "schema": "Event_proof_item_invalidate",
+    "payload_schema": "Fact_proof_item_invalidate",
+    "producer": "worker:proof_item_invalidate",
+    "producers": [
+      "worker:proof_item_invalidate"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "proof.item.verify",
+    "schema": "Event_proof_item_verify",
+    "payload_schema": "Fact_proof_item_verify",
+    "producer": "worker:proof_item_verify",
+    "producers": [
+      "worker:proof_item_verify"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "proof.submitted",
+    "schema": "Event_proof_submitted",
+    "payload_schema": "Fact_proof_submitted",
+    "producer": "SubmitProof",
+    "producers": [
+      "SubmitProof"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "return.created",
+    "schema": "Event_return_created",
+    "payload_schema": "Fact_return_created",
+    "producer": "CreateReturn",
+    "producers": [
+      "CreateReturn"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "return.received",
+    "schema": "Event_return_received",
+    "payload_schema": "Fact_return_received",
+    "producer": "ReceiveReturn",
+    "producers": [
+      "ReceiveReturn"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "return.start",
+    "schema": "Event_return_start",
+    "payload_schema": "Fact_return_start",
+    "producer": "worker:return_start",
+    "producers": [
+      "worker:return_start"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "round.cancelled",
+    "schema": "Event_round_cancelled",
+    "payload_schema": "Fact_round_cancelled",
+    "producer": "CancelRound",
+    "producers": [
+      "CancelRound"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "round.completed",
+    "schema": "Event_round_completed",
+    "payload_schema": "Fact_round_completed",
+    "producer": "CancelDelivery | CompleteDelivery | ReceiveReturn | derive:round_completion",
+    "producers": [
+      "CancelDelivery",
+      "CompleteDelivery",
+      "ReceiveReturn",
+      "derive:round_completion"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "round.hold_changed",
+    "schema": "Event_round_hold_changed",
+    "payload_schema": "Fact_round_hold_changed",
+    "producer": "PauseRound",
+    "producers": [
+      "PauseRound"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "round.readiness_changed",
+    "schema": "Event_round_readiness_changed",
+    "payload_schema": "Fact_round_readiness_changed",
+    "producer": "ApplyPlanProposal | ConfirmPickup | PauseRound | ReceiveTrip | ReleasePlan | ReportIssue | ResolveIssue | RespondChange | ReviewAddress | SetPickupReadiness | derive:departure_gate",
+    "producers": [
+      "ApplyPlanProposal",
+      "ConfirmPickup",
+      "PauseRound",
+      "ReceiveTrip",
+      "ReleasePlan",
+      "ReportIssue",
+      "ResolveIssue",
+      "RespondChange",
+      "ReviewAddress",
+      "SetPickupReadiness",
+      "derive:departure_gate"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "round.saved",
+    "schema": "Event_round_saved",
+    "payload_schema": "Fact_round_saved",
+    "producer": "SaveRound",
+    "producers": [
+      "SaveRound"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "settlement.balance_changed",
+    "schema": "Event_settlement_balance_changed",
+    "payload_schema": "Fact_settlement_balance_changed",
+    "producer": "CancelAgreement | CancelDelivery | CompleteDelivery | DecideDispute | ReceiveReturn | RecordSettlement | derive:settlement_payment",
+    "producers": [
+      "CancelAgreement",
+      "CancelDelivery",
+      "CompleteDelivery",
+      "DecideDispute",
+      "ReceiveReturn",
+      "RecordSettlement",
+      "derive:settlement_payment"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "settlement.closed",
+    "schema": "Event_settlement_closed",
+    "payload_schema": "Fact_settlement_closed",
+    "producer": "CancelAgreement | CancelDelivery | CompleteDelivery | DecideDispute | ReceiveReturn | RecordSettlement | derive:settlement_close",
+    "producers": [
+      "CancelAgreement",
+      "CancelDelivery",
+      "CompleteDelivery",
+      "DecideDispute",
+      "ReceiveReturn",
+      "RecordSettlement",
+      "derive:settlement_close"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "settlement.earned",
+    "schema": "Event_settlement_earned",
+    "payload_schema": "Fact_settlement_earned",
+    "producer": "CancelDelivery | CompleteDelivery | ReceiveReturn | derive:settlement_earning",
+    "producers": [
+      "CancelDelivery",
+      "CompleteDelivery",
+      "ReceiveReturn",
+      "derive:settlement_earning"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "settlement.payment_recorded",
+    "schema": "Event_settlement_payment_recorded",
+    "payload_schema": "Fact_settlement_payment_recorded",
+    "producer": "RecordSettlement",
+    "producers": [
+      "RecordSettlement"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "shift.availability_changed",
+    "schema": "Event_shift_availability_changed",
+    "payload_schema": "Fact_shift_availability_changed",
+    "producer": "SetShiftAvailability",
+    "producers": [
+      "SetShiftAvailability"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "shift.changed",
+    "schema": "Event_shift_changed",
+    "payload_schema": "Fact_shift_changed",
+    "producer": "SetShiftOccurrence",
+    "producers": [
+      "SetShiftOccurrence"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "shift.ended",
+    "schema": "Event_shift_ended",
+    "payload_schema": "Fact_shift_ended",
+    "producer": "EndShift",
+    "producers": [
+      "EndShift"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "shift.started",
+    "schema": "Event_shift_started",
+    "payload_schema": "Fact_shift_started",
+    "producer": "StartShift",
+    "producers": [
+      "StartShift"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "shift.template_saved",
+    "schema": "Event_shift_template_saved",
+    "payload_schema": "Fact_shift_template_saved",
+    "producer": "SaveShiftTemplate",
+    "producers": [
+      "SaveShiftTemplate"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "shift.vehicle_bound",
+    "schema": "Event_shift_vehicle_bound",
+    "payload_schema": "Fact_shift_vehicle_bound",
+    "producer": "BindShiftVehicle",
+    "producers": [
+      "BindShiftVehicle"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "site.saved",
+    "schema": "Event_site_saved",
+    "payload_schema": "Fact_site_saved",
+    "producer": "SaveSite",
+    "producers": [
+      "SaveSite"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "slot.admission_changed",
+    "schema": "Event_slot_admission_changed",
+    "payload_schema": "Fact_slot_admission_changed",
+    "producer": "derive:slot_admission",
+    "producers": [
+      "derive:slot_admission"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "slot.hold_moved",
+    "schema": "Event_slot_hold_moved",
+    "payload_schema": "Fact_slot_hold_moved",
+    "producer": "MoveSlotHold",
+    "producers": [
+      "MoveSlotHold"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "slot.hold_refreshed",
+    "schema": "Event_slot_hold_refreshed",
+    "payload_schema": "Fact_slot_hold_refreshed",
+    "producer": "RefreshSlotHold",
+    "producers": [
+      "RefreshSlotHold"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "slot.materialize",
+    "schema": "Event_slot_materialize",
+    "payload_schema": "Fact_slot_materialize",
+    "producer": "worker:slot_materialize",
+    "producers": [
+      "worker:slot_materialize"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "slot.override_removed",
+    "schema": "Event_slot_override_removed",
+    "payload_schema": "Fact_slot_override_removed",
+    "producer": "RemoveSlotOverride",
+    "producers": [
+      "RemoveSlotOverride"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "slot.override_saved",
+    "schema": "Event_slot_override_saved",
+    "payload_schema": "Fact_slot_override_saved",
+    "producer": "SetSlotOverride",
+    "producers": [
+      "SetSlotOverride"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "slot.reservation_released",
+    "schema": "Event_slot_reservation_released",
+    "payload_schema": "Fact_slot_reservation_released",
+    "producer": "ReleaseSlotHold",
+    "producers": [
+      "ReleaseSlotHold"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "slot.reserved",
+    "schema": "Event_slot_reserved",
+    "payload_schema": "Fact_slot_reserved",
+    "producer": "HoldSlot",
+    "producers": [
+      "HoldSlot"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "slot.revision_changed",
+    "schema": "Event_slot_revision_changed",
+    "payload_schema": "Fact_slot_revision_changed",
+    "producer": "derive:slot_revision",
+    "producers": [
+      "derive:slot_revision"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "slot.template_revised",
+    "schema": "Event_slot_template_revised",
+    "payload_schema": "Fact_slot_template_revised",
+    "producer": "SaveSlotTemplate",
+    "producers": [
+      "SaveSlotTemplate"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "source.apply",
+    "schema": "Event_source_apply",
+    "payload_schema": "Fact_source_apply",
+    "producer": "worker:source_apply",
+    "producers": [
+      "worker:source_apply"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "source.conflict",
+    "schema": "Event_source_conflict",
+    "payload_schema": "Fact_source_conflict",
+    "producer": "worker:source_conflict",
+    "producers": [
+      "worker:source_conflict"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "source.ingress",
+    "schema": "Event_source_ingress",
+    "payload_schema": "Fact_source_ingress",
+    "producer": "worker:source_ingress",
+    "producers": [
+      "worker:source_ingress"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "source.normalize",
+    "schema": "Event_source_normalize",
+    "payload_schema": "Fact_source_normalize",
+    "producer": "worker:source_normalize",
+    "producers": [
+      "worker:source_normalize"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "source.reject",
+    "schema": "Event_source_reject",
+    "payload_schema": "Fact_source_reject",
+    "producer": "worker:source_reject",
+    "producers": [
+      "worker:source_reject"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "source.revision_reviewed",
+    "schema": "Event_source_revision_reviewed",
+    "payload_schema": "Fact_source_revision_reviewed",
+    "producer": "ReviewSourceRevision",
+    "producers": [
+      "ReviewSourceRevision"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "stop.arrived",
+    "schema": "Event_stop_arrived",
+    "payload_schema": "Fact_stop_arrived",
+    "producer": "ConfirmArrival",
+    "producers": [
+      "ConfirmArrival"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "stop.planning_changed",
+    "schema": "Event_stop_planning_changed",
+    "payload_schema": "Fact_stop_planning_changed",
+    "producer": "SaveStopPlanningFields",
+    "producers": [
+      "SaveStopPlanningFields"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "subscription.cancel",
+    "schema": "Event_subscription_cancel",
+    "payload_schema": "Fact_subscription_cancel",
+    "producer": "worker:subscription_cancel",
+    "producers": [
+      "worker:subscription_cancel"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "subscription.due",
+    "schema": "Event_subscription_due",
+    "payload_schema": "Fact_subscription_due",
+    "producer": "worker:subscription_due",
+    "producers": [
+      "worker:subscription_due"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "subscription.receipt",
+    "schema": "Event_subscription_receipt",
+    "payload_schema": "Fact_subscription_receipt",
+    "producer": "worker:subscription_receipt",
+    "producers": [
+      "worker:subscription_receipt"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "suggestion.superseded",
+    "schema": "Event_suggestion_superseded",
+    "payload_schema": "Fact_suggestion_superseded",
+    "producer": "worker:suggestion_superseded",
+    "producers": [
+      "worker:suggestion_superseded"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "tenant.closed",
+    "schema": "Event_tenant_closed",
+    "payload_schema": "Fact_tenant_closed",
+    "producer": "CloseTenant",
+    "producers": [
+      "CloseTenant"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "tenant.created",
+    "schema": "Event_tenant_created",
+    "payload_schema": "Fact_tenant_created",
+    "producer": "CreateTenant",
+    "producers": [
+      "CreateTenant"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "tenant.restored",
+    "schema": "Event_tenant_restored",
+    "payload_schema": "Fact_tenant_restored",
+    "producer": "RestoreTenant",
+    "producers": [
+      "RestoreTenant"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "tenant.suspended",
+    "schema": "Event_tenant_suspended",
+    "payload_schema": "Fact_tenant_suspended",
+    "producer": "SuspendTenant",
+    "producers": [
+      "SuspendTenant"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "tracking.link_created",
+    "schema": "Event_tracking_link_created",
+    "payload_schema": "Fact_tracking_link_created",
+    "producer": "CreateTrackingLink",
+    "producers": [
+      "CreateTrackingLink"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "tracking.link_revoked",
+    "schema": "Event_tracking_link_revoked",
+    "payload_schema": "Fact_tracking_link_revoked",
+    "producer": "RevokeTrackingLink",
+    "producers": [
+      "RevokeTrackingLink"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "transfer.expire",
+    "schema": "Event_transfer_expire",
+    "payload_schema": "Fact_transfer_expire",
+    "producer": "worker:transfer_expire",
+    "producers": [
+      "worker:transfer_expire"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "trip.arrived",
+    "schema": "Event_trip_arrived",
+    "payload_schema": "Fact_trip_arrived",
+    "producer": "ArriveTrip",
+    "producers": [
+      "ArriveTrip"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "trip.booked",
+    "schema": "Event_trip_booked",
+    "payload_schema": "Fact_trip_booked",
+    "producer": "BookTrip",
+    "producers": [
+      "BookTrip"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "trip.cancelled",
+    "schema": "Event_trip_cancelled",
+    "payload_schema": "Fact_trip_cancelled",
+    "producer": "CancelTrip",
+    "producers": [
+      "CancelTrip"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "trip.changed",
+    "schema": "Event_trip_changed",
+    "payload_schema": "Fact_trip_changed",
+    "producer": "ChangeTrip",
+    "producers": [
+      "ChangeTrip"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "trip.closed",
+    "schema": "Event_trip_closed",
+    "payload_schema": "Fact_trip_closed",
+    "producer": "CloseTrip",
+    "producers": [
+      "CloseTrip"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "trip.departed",
+    "schema": "Event_trip_departed",
+    "payload_schema": "Fact_trip_departed",
+    "producer": "DepartTrip",
+    "producers": [
+      "DepartTrip"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "trip.loaded",
+    "schema": "Event_trip_loaded",
+    "payload_schema": "Fact_trip_loaded",
+    "producer": "ConfirmTripLoad",
+    "producers": [
+      "ConfirmTripLoad"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "trip.received",
+    "schema": "Event_trip_received",
+    "payload_schema": "Fact_trip_received",
+    "producer": "ReceiveTrip",
+    "producers": [
+      "ReceiveTrip"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "trip.saved",
+    "schema": "Event_trip_saved",
+    "payload_schema": "Fact_trip_saved",
+    "producer": "SaveTrip",
+    "producers": [
+      "SaveTrip"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "trip.scheduled",
+    "schema": "Event_trip_scheduled",
+    "payload_schema": "Fact_trip_scheduled",
+    "producer": "ScheduleTrip",
+    "producers": [
+      "ScheduleTrip"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "vehicle.profile_saved",
+    "schema": "Event_vehicle_profile_saved",
+    "payload_schema": "Fact_vehicle_profile_saved",
+    "producer": "SaveVehicleProfile",
+    "producers": [
+      "SaveVehicleProfile"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "vehicle.saved",
+    "schema": "Event_vehicle_saved",
+    "payload_schema": "Fact_vehicle_saved",
+    "producer": "SaveVehicle",
+    "producers": [
+      "SaveVehicle"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "vehicle.unavailable",
+    "schema": "Event_vehicle_unavailable",
+    "payload_schema": "Fact_vehicle_unavailable",
+    "producer": "worker:vehicle_unavailable",
+    "producers": [
+      "worker:vehicle_unavailable"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "vehicle.verification",
+    "schema": "Event_vehicle_verification",
+    "payload_schema": "Fact_vehicle_verification",
+    "producer": "worker:vehicle_verification",
+    "producers": [
+      "worker:vehicle_verification"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "verification.check",
+    "schema": "Event_verification_check",
+    "payload_schema": "Fact_verification_check",
+    "producer": "worker:verification_check",
+    "producers": [
+      "worker:verification_check"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "verification.correction.request",
+    "schema": "Event_verification_correction_request",
+    "payload_schema": "Fact_verification_correction_request",
+    "producer": "worker:verification_correction_request",
+    "producers": [
+      "worker:verification_correction_request"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "verification.correction_submitted",
+    "schema": "Event_verification_correction_submitted",
+    "payload_schema": "Fact_verification_correction_submitted",
+    "producer": "SubmitVerificationCorrection",
+    "producers": [
+      "SubmitVerificationCorrection"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "verification.decided",
+    "schema": "Event_verification_decided",
+    "payload_schema": "Fact_verification_decided",
+    "producer": "DecideVerification",
+    "producers": [
+      "DecideVerification"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "verification.evidence.check",
+    "schema": "Event_verification_evidence_check",
+    "payload_schema": "Fact_verification_evidence_check",
+    "producer": "worker:verification_evidence_check",
+    "producers": [
+      "worker:verification_evidence_check"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "verification.evidence_reserved",
+    "schema": "Event_verification_evidence_reserved",
+    "payload_schema": "Fact_verification_evidence_reserved",
+    "producer": "ReserveVerificationEvidence",
+    "producers": [
+      "ReserveVerificationEvidence"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "verification.submitted",
+    "schema": "Event_verification_submitted",
+    "payload_schema": "Fact_verification_submitted",
+    "producer": "SubmitVerification",
+    "producers": [
+      "SubmitVerification"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "verification.upload",
+    "schema": "Event_verification_upload",
+    "payload_schema": "Fact_verification_upload",
+    "producer": "worker:verification_upload",
+    "producers": [
+      "worker:verification_upload"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "wave.deadline",
+    "schema": "Event_wave_deadline",
+    "payload_schema": "Fact_wave_deadline",
+    "producer": "worker:wave_deadline",
+    "producers": [
+      "worker:wave_deadline"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "work.accepted",
+    "schema": "Event_work_accepted",
+    "payload_schema": "Fact_work_accepted",
+    "producer": "RespondOffer",
+    "producers": [
+      "RespondOffer"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "work.change_proposed",
+    "schema": "Event_work_change_proposed",
+    "payload_schema": "Fact_work_change_proposed",
+    "producer": "ProposeChange",
+    "producers": [
+      "ProposeChange"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "work.change_responded",
+    "schema": "Event_work_change_responded",
+    "payload_schema": "Fact_work_change_responded",
+    "producer": "RespondChange",
+    "producers": [
+      "RespondChange"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "work.change_withdrawn",
+    "schema": "Event_work_change_withdrawn",
+    "payload_schema": "Fact_work_change_withdrawn",
+    "producer": "WithdrawChange",
+    "producers": [
+      "WithdrawChange"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "writeback.enqueue",
+    "schema": "Event_writeback_enqueue",
+    "payload_schema": "Fact_writeback_enqueue",
+    "producer": "worker:writeback_enqueue",
+    "producers": [
+      "worker:writeback_enqueue"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "writeback.reconcile",
+    "schema": "Event_writeback_reconcile",
+    "payload_schema": "Fact_writeback_reconcile",
+    "producer": "worker:writeback_reconcile",
+    "producers": [
+      "worker:writeback_reconcile"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "writeback.retry_requested",
+    "schema": "Event_writeback_retry_requested",
+    "payload_schema": "Fact_writeback_retry_requested",
+    "producer": "RetryWriteback",
+    "producers": [
+      "RetryWriteback"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "writeback.send",
+    "schema": "Event_writeback_send",
+    "payload_schema": "Fact_writeback_send",
+    "producer": "worker:writeback_send",
+    "producers": [
+      "worker:writeback_send"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  },
+  {
+    "event": "writeback.timeout",
+    "schema": "Event_writeback_timeout",
+    "payload_schema": "Fact_writeback_timeout",
+    "producer": "worker:writeback_timeout",
+    "producers": [
+      "worker:writeback_timeout"
+    ],
+    "fact_identity": "event_type + subject aggregate identity/version; coalesce same fact within transaction",
+    "consumer_policy": "audit/refetch hints only unless explicitly enabled in EVENT-CONSUMERS.json"
+  }
+]

@@ -121,26 +121,36 @@ void main() {
     expect(find.text('Package photo'), findsOneWidget);
   });
 
-  testWidgets('missing package sends without fabricated photo evidence', (
-    tester,
-  ) async {
-    await _pump(tester, controller, store);
-    await tester.tap(find.byKey(const Key('package-problem-missing')));
-    await tester.pumpAndSettle();
+  testWidgets(
+    'unconfigured missing-package report never claims saved or sent',
+    (tester) async {
+      await _pump(tester, controller, store);
+      await tester.tap(find.byKey(const Key('package-problem-missing')));
+      await tester.pumpAndSettle();
 
-    expect(
-      find.byKey(const Key('capture-package-problem-photo')),
-      findsNothing,
-    );
-    final send = tester.widget<FilledButton>(
-      find.byKey(const Key('submit-package-problem')),
-    );
-    expect(send.onPressed, isNotNull);
-    await tester.tap(find.byKey(const Key('submit-package-problem')));
-    await tester.pumpAndSettle();
-    expect(find.text('Waiting to sync'), findsWidgets);
-    expect(find.textContaining('Saved locally'), findsOneWidget);
-  });
+      expect(
+        find.byKey(const Key('capture-package-problem-photo')),
+        findsNothing,
+      );
+      final send = tester.widget<FilledButton>(
+        find.byKey(const Key('submit-package-problem')),
+      );
+      expect(send.onPressed, isNotNull);
+      await tester.tap(find.byKey(const Key('submit-package-problem')));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Nothing was sent or saved.'), findsOneWidget);
+      expect(find.text('Waiting to sync'), findsNothing);
+      expect(find.textContaining('Saved locally'), findsNothing);
+      expect(
+        tester
+            .widget<FilledButton>(
+              find.byKey(const Key('submit-package-problem')),
+            )
+            .onPressed,
+        isNotNull,
+      );
+    },
+  );
 
   testWidgets('Thai G03 fits a 393 by 852 phone without overflow', (
     tester,

@@ -2,10 +2,14 @@
 
 **Version:** 1.0  
 **Date:** 2026-09-07
-**Status:** Active implementation-control specification  
+**Status:** Historical pre-v2.3 implementation evidence; not current execution authority
 **Applies to:** English own-fleet Pilot / Slice 1 closure and Slice 2 execution
 
 ## Changelog
+
+- **2026-09-08:** Preserve all historical checkpoints without counting them
+  as v2.3 completion. Use [the current draft build ledger](../build-v2.3/README.md)
+  and [source authority](../build-v2.3/SOURCE-AUTHORITY.md) for new work.
 
 - **2026-09-07 · Checkpoint 74:** Locks the English H03 Contact History
   presentation to the supplied `393 × 852` board without adding prototype

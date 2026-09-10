@@ -1,10 +1,14 @@
-# Rounds · Canonical Specification Index
+# Rounds · Legacy Canonical Specification Index
 
 **Version:** 44
-**Canonical Operations UX artifact:** `ux/operations/rounds-operations-current-v45.html`
-**Canonical Driver UX artifacts:** `ux/driver/en/screens/` and `ux/driver/th/`
+**Historical Operations UX artifact:** `ux/operations/rounds-operations-current-v45.html`
+**Historical Driver UX artifacts:** `ux/driver/en/screens/` and `ux/driver/th/`
 
 ## Changelog
+
+- **2026-09-08:** Mark the V1 source index as historical. Current authority is
+  [v2.3 source authority](../build-v2.3/SOURCE-AUTHORITY.md); the files below
+  explain the old implementation and do not control new v2.3 work.
 
 - **v44 — 2026-09-04:** Restored this file to an index. Product decisions that
   had accumulated here as a duplicate append-only changelog remain in their
@@ -13,10 +17,9 @@
 
 ## Authority rule
 
-Only the current files listed below are implementation authority. Historical
-versions are intentionally absent from the active specification set. A conflict
-between current sources must be reported and reconciled in the owning sections;
-filename recency and this index are not conflict-resolution mechanisms.
+The files below were implementation authority for the preserved V1 build.
+They are not current authority for v2.3. Follow the current source index and
+report/reconcile conflicts in owning sections; do not choose by filename recency.
 
 This index identifies sources and ownership. It does not define product
 behavior, visual rules, implementation scope or release status.

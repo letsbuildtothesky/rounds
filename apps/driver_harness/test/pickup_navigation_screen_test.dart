@@ -84,7 +84,14 @@ void main() {
   testWidgets(
     'D01 arrival continues to canonical D03/D04 pickup confirmation',
     (tester) async {
-      await _pumpScreen(tester, reviewState: PickupNavigationReviewState.near);
+      // Explicit receipt double: unconfigured API must not pretend it saved
+      // an arrival. This checks route wiring, not device/server acceptance.
+      await _pumpScreen(
+        tester,
+        reviewState: PickupNavigationReviewState.near,
+        arrivalRecorder: (_, _) async =>
+            const DriverCommandOutcome(DriverCommandDisposition.committed),
+      );
 
       expect(find.text('80 m'), findsWidgets);
       expect(find.text('UrbanFlowers entrance ahead'), findsOneWidget);

@@ -1,0 +1,2528 @@
+[
+  {
+    "name": "EnsureDriverDeviceSession",
+    "method": "post",
+    "path": "/v1/auth/driver-device/session",
+    "definition": {
+      "operationId": "EnsureDriverDeviceSession",
+      "description": "ADR-A02 authentication transport, not a business command. Verified bearer plus a securely persisted random 32-byte installation_secret enrolls an existing driver's installation or refreshes its 15-minute capability. Same-secret retry preserves device identity; revoked/archived installations never reactivate. No tenant/job authority is granted by enrollment.",
+      "x-errors": [
+        "UNAUTHENTICATED",
+        "NOT_AUTHORIZED",
+        "VALIDATION_FAILED",
+        "RATE_LIMITED",
+        "PROVIDER_UNAVAILABLE",
+        "UNKNOWN_RESULT",
+        "FEATURE_NOT_ENABLED",
+        "UPGRADE_REQUIRED"
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/DriverDeviceSessionRequest"
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Committed installation registration or refreshed capability",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DriverDeviceSessionResult"
+              }
+            }
+          }
+        },
+        "422": {
+          "description": "Unsupported stored device epoch; recovery required",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Invalid request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        },
+        "401": {
+          "description": "Unverified bearer",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        },
+        "403": {
+          "description": "Unavailable identity/device or runtime disabled",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        },
+        "429": {
+          "description": "Retry after rate window",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        },
+        "503": {
+          "description": "Dependency or uncertain commit; retry the same installation secret",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        }
+      }
+    },
+    "implementation": "NOT_CERTIFIED_V23",
+    "build_spec": "BS-00.md; domain owner per BS-INDEX.md"
+  },
+  {
+    "name": "RevokeDriverDeviceSession",
+    "method": "post",
+    "path": "/v1/auth/driver-device/revoke",
+    "definition": {
+      "operationId": "RevokeDriverDeviceSession",
+      "description": "ADR-A02 authenticated self-revocation of the identified installation. Retry is idempotent, epoch invalidates prior capabilities, and no local evidence, other device or Auth session is deleted. Unknown own installation returns NOT_AUTHORIZED.",
+      "x-errors": [
+        "UNAUTHENTICATED",
+        "NOT_AUTHORIZED",
+        "VALIDATION_FAILED",
+        "RATE_LIMITED",
+        "PROVIDER_UNAVAILABLE",
+        "UNKNOWN_RESULT",
+        "FEATURE_NOT_ENABLED",
+        "UPGRADE_REQUIRED"
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/DriverDeviceRevokeRequest"
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Revocation committed or already revoked",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DriverDeviceRevokeResult"
+              }
+            }
+          }
+        },
+        "422": {
+          "description": "Unsupported stored device epoch; recovery required",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Invalid request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        },
+        "401": {
+          "description": "Unverified bearer",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        },
+        "403": {
+          "description": "Unavailable identity/device or runtime disabled",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        },
+        "429": {
+          "description": "Retry after rate window",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        },
+        "503": {
+          "description": "Dependency or uncertain commit; retry unchanged",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        }
+      }
+    },
+    "implementation": "NOT_CERTIFIED_V23",
+    "build_spec": "BS-00.md; domain owner per BS-INDEX.md"
+  },
+  {
+    "name": "GetWorkspace",
+    "method": "get",
+    "path": "/v1/queries/Workspace",
+    "definition": {
+      "operationId": "GetWorkspace",
+      "tags": [
+        "P01"
+      ],
+      "summary": "workspace identity, city grants and capabilities",
+      "parameters": [
+        {
+          "name": "tenant_id",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "city_id",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "entity_id",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "service_date",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/date"
+          }
+        },
+        {
+          "name": "cursor",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/string"
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          }
+        },
+        {
+          "name": "view",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "manual_intake"
+            ]
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Authorized projection",
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/WorkspaceQueryResult"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OperationsManualIntakeQueryResult"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "403": {
+          "description": "Not permitted",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        }
+      },
+      "description": "Minimal authorized projection. State/action codes are governed by the owning product state machine. Supplemental detail endpoints may extend this contract only through a reviewed compatible schema revision. Filter values never grant access. ADR-Q08: view=manual_intake requires tenant_id and city_id and deliveries.create; optional entity_id is an existing manual draft, not a delivery. No paging/date filters on this finite view. Omitted view retains the full Workspace contract; this staged adapter only implements the explicit manual view."
+    },
+    "implementation": "NOT_CERTIFIED_V23",
+    "build_spec": "BS-00.md; domain owner per BS-INDEX.md"
+  },
+  {
+    "name": "GetBoard",
+    "method": "get",
+    "path": "/v1/queries/Board",
+    "definition": {
+      "operationId": "GetBoard",
+      "tags": [
+        "P04"
+      ],
+      "summary": "city/date deliveries, fleet, pending work and versions",
+      "parameters": [
+        {
+          "name": "tenant_id",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "city_id",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "entity_id",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "service_date",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/date"
+          }
+        },
+        {
+          "name": "cursor",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/string"
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          }
+        },
+        {
+          "name": "view",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "enum": [
+              "pickup_issues",
+              "delivery_board"
+            ]
+          },
+          "description": "Finite views: pickup_issues requires issues.decide (ADR-Q05); delivery_board requires board.read (ADR-Q06). Default Board contract unchanged. Cursor/limit/entity_id unsupported. display=labels is pickup_issues-only; display=now is delivery_board-only."
+        },
+        {
+          "name": "display",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "enum": [
+              "labels",
+              "now"
+            ]
+          },
+          "description": "ADR-Q05 labels opts pickup_issues into current authorized labels. ADR-Q07 now opts delivery_board into finite server-derived operational categories. Omission preserves earlier exact responses. Neither extension grants command authority."
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Authorized projection",
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/BoardQueryResult"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OperationsPickupIssuesQueryResult"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OperationsDeliveryBoardQueryResult"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "403": {
+          "description": "Not permitted",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        }
+      },
+      "description": "Minimal authorized projection. State/action codes are governed by the owning product state machine. Supplemental detail endpoints may extend this contract only through a reviewed compatible schema revision. Filter values never grant access."
+    },
+    "implementation": "NOT_CERTIFIED_V23",
+    "build_spec": "BS-00.md; domain owner per BS-INDEX.md"
+  },
+  {
+    "name": "GetDelivery",
+    "method": "get",
+    "path": "/v1/queries/Delivery",
+    "definition": {
+      "operationId": "GetDelivery",
+      "tags": [
+        "P05"
+      ],
+      "summary": "allowed parties, manifest, attempts, proof and next actions",
+      "parameters": [
+        {
+          "name": "tenant_id",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "entity_id",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "cursor",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/string"
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Authorized projection",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeliveryQueryResult"
+              }
+            }
+          }
+        },
+        "403": {
+          "description": "Not permitted",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        }
+      },
+      "description": "Minimal authorized projection. State/action codes are governed by the owning product state machine. Supplemental detail endpoints may extend this contract only through a reviewed compatible schema revision. Filter values never grant access."
+    },
+    "implementation": "NOT_CERTIFIED_V23",
+    "build_spec": "BS-00.md; domain owner per BS-INDEX.md"
+  },
+  {
+    "name": "GetPlan",
+    "method": "get",
+    "path": "/v1/queries/Plan",
+    "definition": {
+      "operationId": "GetPlan",
+      "tags": [
+        "P04"
+      ],
+      "summary": "date plan, lanes, proposals and releases",
+      "parameters": [
+        {
+          "name": "tenant_id",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "city_id",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "entity_id",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "service_date",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/date"
+          }
+        },
+        {
+          "name": "cursor",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/string"
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Authorized projection",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanQueryResult"
+              }
+            }
+          }
+        },
+        "403": {
+          "description": "Not permitted",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        }
+      },
+      "description": "Minimal authorized projection. State/action codes are governed by the owning product state machine. Supplemental detail endpoints may extend this contract only through a reviewed compatible schema revision. Filter values never grant access."
+    },
+    "implementation": "NOT_CERTIFIED_V23",
+    "build_spec": "BS-00.md; domain owner per BS-INDEX.md"
+  },
+  {
+    "name": "GetSlotOccurrences",
+    "method": "get",
+    "path": "/v1/queries/SlotOccurrences",
+    "definition": {
+      "operationId": "GetSlotOccurrences",
+      "tags": [
+        "P03"
+      ],
+      "summary": "resolved windows, capacity/cutoff state and revision",
+      "parameters": [
+        {
+          "name": "tenant_id",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "city_id",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "entity_id",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "service_date",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/date"
+          }
+        },
+        {
+          "name": "cursor",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/string"
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Authorized projection",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SlotOccurrencesQueryResult"
+              }
+            }
+          }
+        },
+        "403": {
+          "description": "Not permitted",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        }
+      },
+      "description": "Minimal authorized projection. State/action codes are governed by the owning product state machine. Supplemental detail endpoints may extend this contract only through a reviewed compatible schema revision. Filter values never grant access."
+    },
+    "implementation": "NOT_CERTIFIED_V23",
+    "build_spec": "BS-00.md; domain owner per BS-INDEX.md"
+  },
+  {
+    "name": "GetDrivers",
+    "method": "get",
+    "path": "/v1/queries/Drivers",
+    "definition": {
+      "operationId": "GetDrivers",
+      "tags": [
+        "P06"
+      ],
+      "summary": "own directory or permission-minimized known relationships",
+      "parameters": [
+        {
+          "name": "tenant_id",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "city_id",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "entity_id",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "service_date",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/date"
+          }
+        },
+        {
+          "name": "cursor",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/string"
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Authorized projection",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DriversQueryResult"
+              }
+            }
+          }
+        },
+        "403": {
+          "description": "Not permitted",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        }
+      },
+      "description": "Minimal authorized projection. State/action codes are governed by the owning product state machine. Supplemental detail endpoints may extend this contract only through a reviewed compatible schema revision. Filter values never grant access."
+    },
+    "implementation": "NOT_CERTIFIED_V23",
+    "build_spec": "BS-00.md; domain owner per BS-INDEX.md"
+  },
+  {
+    "name": "GetDriverHome",
+    "method": "get",
+    "path": "/v1/queries/DriverHome",
+    "definition": {
+      "operationId": "GetDriverHome",
+      "tags": [
+        "P06"
+      ],
+      "summary": "authenticated driver work context/availability and obligations",
+      "parameters": [
+        {
+          "name": "cursor",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/string"
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Authorized projection",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DriverHomeQueryResult"
+              }
+            }
+          }
+        },
+        "403": {
+          "description": "Not permitted",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        }
+      },
+      "description": "Minimal authorized projection. State/action codes are governed by the owning product state machine. Supplemental detail endpoints may extend this contract only through a reviewed compatible schema revision. Filter values never grant access."
+    },
+    "implementation": "NOT_CERTIFIED_V23",
+    "build_spec": "BS-00.md; domain owner per BS-INDEX.md"
+  },
+  {
+    "name": "GetOffers",
+    "method": "get",
+    "path": "/v1/queries/Offers",
+    "definition": {
+      "operationId": "GetOffers",
+      "tags": [
+        "P07"
+      ],
+      "summary": "recipient-owned offer scope/deadline and result",
+      "parameters": [
+        {
+          "name": "cursor",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/string"
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Authorized projection",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OffersQueryResult"
+              }
+            }
+          }
+        },
+        "403": {
+          "description": "Not permitted",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        }
+      },
+      "description": "Minimal authorized projection. State/action codes are governed by the owning product state machine. Supplemental detail endpoints may extend this contract only through a reviewed compatible schema revision. Filter values never grant access."
+    },
+    "implementation": "NOT_CERTIFIED_V23",
+    "build_spec": "BS-00.md; domain owner per BS-INDEX.md"
+  },
+  {
+    "name": "GetBroadcasts",
+    "method": "get",
+    "path": "/v1/queries/Broadcasts",
+    "definition": {
+      "operationId": "GetBroadcasts",
+      "tags": [
+        "P07"
+      ],
+      "summary": "operator-authorized city search status",
+      "parameters": [
+        {
+          "name": "tenant_id",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "city_id",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "entity_id",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "service_date",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/date"
+          }
+        },
+        {
+          "name": "cursor",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/string"
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Authorized projection",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BroadcastsQueryResult"
+              }
+            }
+          }
+        },
+        "403": {
+          "description": "Not permitted",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        }
+      },
+      "description": "Minimal authorized projection. State/action codes are governed by the owning product state machine. Supplemental detail endpoints may extend this contract only through a reviewed compatible schema revision. Filter values never grant access."
+    },
+    "implementation": "NOT_CERTIFIED_V23",
+    "build_spec": "BS-00.md; domain owner per BS-INDEX.md"
+  },
+  {
+    "name": "GetNetworkSupply",
+    "method": "get",
+    "path": "/v1/queries/NetworkSupply",
+    "definition": {
+      "operationId": "GetNetworkSupply",
+      "tags": [
+        "P07"
+      ],
+      "summary": "generalized eligible supply only",
+      "parameters": [
+        {
+          "name": "tenant_id",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "city_id",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "entity_id",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "service_date",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/date"
+          }
+        },
+        {
+          "name": "cursor",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/string"
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Authorized projection",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NetworkSupplyQueryResult"
+              }
+            }
+          }
+        },
+        "403": {
+          "description": "Not permitted",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        }
+      },
+      "description": "Minimal authorized projection. State/action codes are governed by the owning product state machine. Supplemental detail endpoints may extend this contract only through a reviewed compatible schema revision. Filter values never grant access."
+    },
+    "implementation": "NOT_CERTIFIED_V23",
+    "build_spec": "BS-00.md; domain owner per BS-INDEX.md"
+  },
+  {
+    "name": "GetTrips",
+    "method": "get",
+    "path": "/v1/queries/Trips",
+    "definition": {
+      "operationId": "GetTrips",
+      "tags": [
+        "P08"
+      ],
+      "summary": "authorized intercity legs/manifest dependencies",
+      "parameters": [
+        {
+          "name": "tenant_id",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "city_id",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "entity_id",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "service_date",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/date"
+          }
+        },
+        {
+          "name": "cursor",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/string"
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Authorized projection",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TripsQueryResult"
+              }
+            }
+          }
+        },
+        "403": {
+          "description": "Not permitted",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        }
+      },
+      "description": "Minimal authorized projection. State/action codes are governed by the owning product state machine. Supplemental detail endpoints may extend this contract only through a reviewed compatible schema revision. Filter values never grant access."
+    },
+    "implementation": "NOT_CERTIFIED_V23",
+    "build_spec": "BS-00.md; domain owner per BS-INDEX.md"
+  },
+  {
+    "name": "GetConversation",
+    "method": "get",
+    "path": "/v1/queries/Conversation",
+    "definition": {
+      "operationId": "GetConversation",
+      "tags": [
+        "P09"
+      ],
+      "summary": "participant-authorized messages/call/event context",
+      "parameters": [
+        {
+          "name": "tenant_id",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "entity_id",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "cursor",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/string"
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Authorized projection",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConversationQueryResult"
+              }
+            }
+          }
+        },
+        "403": {
+          "description": "Not permitted",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        }
+      },
+      "description": "Minimal authorized projection. State/action codes are governed by the owning product state machine. Supplemental detail endpoints may extend this contract only through a reviewed compatible schema revision. Filter values never grant access."
+    },
+    "implementation": "NOT_CERTIFIED_V23",
+    "build_spec": "BS-00.md; domain owner per BS-INDEX.md"
+  },
+  {
+    "name": "GetNotifications",
+    "method": "get",
+    "path": "/v1/queries/Notifications",
+    "definition": {
+      "operationId": "GetNotifications",
+      "tags": [
+        "P09"
+      ],
+      "summary": "actor notifications with current-action fetch pointers",
+      "parameters": [
+        {
+          "name": "cursor",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/string"
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Authorized projection",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NotificationsQueryResult"
+              }
+            }
+          }
+        },
+        "403": {
+          "description": "Not permitted",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        }
+      },
+      "description": "Minimal authorized projection. State/action codes are governed by the owning product state machine. Supplemental detail endpoints may extend this contract only through a reviewed compatible schema revision. Filter values never grant access."
+    },
+    "implementation": "NOT_CERTIFIED_V23",
+    "build_spec": "BS-00.md; domain owner per BS-INDEX.md"
+  },
+  {
+    "name": "GetEntrance",
+    "method": "get",
+    "path": "/v1/queries/Entrance",
+    "definition": {
+      "operationId": "GetEntrance",
+      "tags": [
+        "P10"
+      ],
+      "summary": "authorized reviewed revision and provenance",
+      "parameters": [
+        {
+          "name": "tenant_id",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "entity_id",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "cursor",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/string"
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Authorized projection",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EntranceQueryResult"
+              }
+            }
+          }
+        },
+        "403": {
+          "description": "Not permitted",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        }
+      },
+      "description": "Minimal authorized projection. State/action codes are governed by the owning product state machine. Supplemental detail endpoints may extend this contract only through a reviewed compatible schema revision. Filter values never grant access."
+    },
+    "implementation": "NOT_CERTIFIED_V23",
+    "build_spec": "BS-00.md; domain owner per BS-INDEX.md"
+  },
+  {
+    "name": "GetHistory",
+    "method": "get",
+    "path": "/v1/queries/History",
+    "definition": {
+      "operationId": "GetHistory",
+      "tags": [
+        "P11"
+      ],
+      "summary": "scoped as-of history with common metric definitions",
+      "parameters": [
+        {
+          "name": "tenant_id",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "city_id",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "entity_id",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "service_date",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/date"
+          }
+        },
+        {
+          "name": "cursor",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/string"
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Authorized projection",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HistoryQueryResult"
+              }
+            }
+          }
+        },
+        "403": {
+          "description": "Not permitted",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        }
+      },
+      "description": "Minimal authorized projection. State/action codes are governed by the owning product state machine. Supplemental detail endpoints may extend this contract only through a reviewed compatible schema revision. Filter values never grant access."
+    },
+    "implementation": "NOT_CERTIFIED_V23",
+    "build_spec": "BS-00.md; domain owner per BS-INDEX.md"
+  },
+  {
+    "name": "GetTracking",
+    "method": "get",
+    "path": "/v1/queries/Tracking",
+    "definition": {
+      "operationId": "GetTracking",
+      "tags": [
+        "P12"
+      ],
+      "summary": "token-audience-minimized customer projection",
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Authorized projection",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TrackingQueryResult"
+              }
+            }
+          }
+        },
+        "403": {
+          "description": "Not permitted",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        },
+        "410": {
+          "description": "Expired/revoked/disabled",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        }
+      },
+      "security": [
+        {
+          "TrackingToken": []
+        },
+        {
+          "TrackingSessionCookie": []
+        }
+      ],
+      "description": "Minimal authorized projection. State/action codes are governed by the owning product state machine. Supplemental detail endpoints may extend this contract only through a reviewed compatible schema revision. The credential resolves one tracking audience; no tenant or delivery ID selector is accepted.",
+      "x-errors": [
+        "TRACKING_EXPIRED",
+        "TRACKING_REVOKED",
+        "NOT_AUTHORIZED"
+      ]
+    },
+    "implementation": "NOT_CERTIFIED_V23",
+    "build_spec": "BS-00.md; domain owner per BS-INDEX.md"
+  },
+  {
+    "name": "GetConnections",
+    "method": "get",
+    "path": "/v1/queries/Connections",
+    "definition": {
+      "operationId": "GetConnections",
+      "tags": [
+        "P12"
+      ],
+      "summary": "configuration versus actual health, no secrets",
+      "parameters": [
+        {
+          "name": "tenant_id",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "city_id",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "entity_id",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "service_date",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/date"
+          }
+        },
+        {
+          "name": "cursor",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/string"
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Authorized projection",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConnectionsQueryResult"
+              }
+            }
+          }
+        },
+        "403": {
+          "description": "Not permitted",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        }
+      },
+      "description": "Minimal authorized projection. State/action codes are governed by the owning product state machine. Supplemental detail endpoints may extend this contract only through a reviewed compatible schema revision. Filter values never grant access."
+    },
+    "implementation": "NOT_CERTIFIED_V23",
+    "build_spec": "BS-00.md; domain owner per BS-INDEX.md"
+  },
+  {
+    "name": "GetSettings",
+    "method": "get",
+    "path": "/v1/queries/Settings",
+    "definition": {
+      "operationId": "GetSettings",
+      "tags": [
+        "P13"
+      ],
+      "summary": "permitted configuration and effective policy versions",
+      "parameters": [
+        {
+          "name": "tenant_id",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "city_id",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "entity_id",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "service_date",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/date"
+          }
+        },
+        {
+          "name": "cursor",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/string"
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Authorized projection",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SettingsQueryResult"
+              }
+            }
+          }
+        },
+        "403": {
+          "description": "Not permitted",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        }
+      },
+      "description": "Minimal authorized projection. State/action codes are governed by the owning product state machine. Supplemental detail endpoints may extend this contract only through a reviewed compatible schema revision. Filter values never grant access."
+    },
+    "implementation": "NOT_CERTIFIED_V23",
+    "build_spec": "BS-00.md; domain owner per BS-INDEX.md"
+  },
+  {
+    "name": "GetEarnings",
+    "method": "get",
+    "path": "/v1/queries/Earnings",
+    "definition": {
+      "operationId": "GetEarnings",
+      "tags": [
+        "P15"
+      ],
+      "summary": "driver-owned or finance-authorized ledger without bank secrets",
+      "parameters": [
+        {
+          "name": "cursor",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/string"
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Authorized projection",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EarningsQueryResult"
+              }
+            }
+          }
+        },
+        "403": {
+          "description": "Not permitted",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        }
+      },
+      "description": "Minimal authorized projection. State/action codes are governed by the owning product state machine. Supplemental detail endpoints may extend this contract only through a reviewed compatible schema revision. Filter values never grant access."
+    },
+    "implementation": "NOT_CERTIFIED_V23",
+    "build_spec": "BS-00.md; domain owner per BS-INDEX.md"
+  },
+  {
+    "name": "GetCommandStatus",
+    "method": "get",
+    "path": "/v1/queries/CommandStatus",
+    "definition": {
+      "operationId": "GetCommandStatus",
+      "tags": [
+        "E04"
+      ],
+      "summary": "same actor/scope original command result",
+      "parameters": [
+        {
+          "name": "entity_id",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "tenant_id",
+          "in": "query",
+          "required": false,
+          "description": "Original receipt tenant, required for the implemented local pickup scope. Omit only for a supported global command. Filter, not authority.",
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "city_id",
+          "in": "query",
+          "required": false,
+          "description": "Original receipt city, required for the implemented local pickup scope. Filter, not authority.",
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "X-Rounds-Device-Session",
+          "in": "header",
+          "required": false,
+          "description": "Required for Driver command recovery under ADR-A01. Without this header ADR-T08 permits only the authenticated Operations submitter's ResolveIssue receipt with original tenant/city/job access. This header is a routing hint, not authority.",
+          "schema": {
+            "type": "string",
+            "maxLength": 2048
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Authorized projection",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommandStatusQueryResult"
+              }
+            }
+          }
+        },
+        "403": {
+          "description": "Not permitted",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Invalid query shape",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        },
+        "401": {
+          "description": "Authentication required",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        },
+        "404": {
+          "description": "No readable result",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        },
+        "422": {
+          "description": "Unprovable legacy context requires upgrade/recovery",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        },
+        "429": {
+          "description": "Rate limited; Retry-After",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        },
+        "503": {
+          "description": "Dependency unavailable or result uncertain",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        }
+      },
+      "description": "Minimal authorized projection. State/action codes are governed by the owning product state machine. Supplemental detail endpoints may extend this contract only through a reviewed compatible schema revision. Filter values never grant access."
+    },
+    "implementation": "NOT_CERTIFIED_V23",
+    "build_spec": "BS-00.md; domain owner per BS-INDEX.md"
+  },
+  {
+    "name": "GetOperationStatus",
+    "method": "get",
+    "path": "/v1/queries/OperationStatus",
+    "definition": {
+      "operationId": "GetOperationStatus",
+      "tags": [
+        "E07"
+      ],
+      "summary": "authorized asynchronous job outcome and child results",
+      "parameters": [
+        {
+          "name": "entity_id",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Authorized projection",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OperationStatusQueryResult"
+              }
+            }
+          }
+        },
+        "403": {
+          "description": "Not permitted",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        }
+      },
+      "description": "Minimal authorized projection. State/action codes are governed by the owning product state machine. Supplemental detail endpoints may extend this contract only through a reviewed compatible schema revision. Filter values never grant access."
+    },
+    "implementation": "NOT_CERTIFIED_V23",
+    "build_spec": "BS-00.md; domain owner per BS-INDEX.md"
+  },
+  {
+    "name": "GetAssetAccess",
+    "method": "get",
+    "path": "/v1/queries/AssetAccess",
+    "definition": {
+      "operationId": "GetAssetAccess",
+      "tags": [
+        "E05"
+      ],
+      "summary": "purpose-authorized expiring read capability",
+      "parameters": [
+        {
+          "name": "entity_id",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Authorized projection",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetAccessQueryResult"
+              }
+            }
+          }
+        },
+        "403": {
+          "description": "Not permitted",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        }
+      },
+      "description": "Minimal authorized projection. State/action codes are governed by the owning product state machine. Supplemental detail endpoints may extend this contract only through a reviewed compatible schema revision. Filter values never grant access."
+    },
+    "implementation": "NOT_CERTIFIED_V23",
+    "build_spec": "BS-00.md; domain owner per BS-INDEX.md"
+  },
+  {
+    "name": "GetRouteEstimate",
+    "method": "get",
+    "path": "/v1/queries/RouteEstimate",
+    "definition": {
+      "operationId": "GetRouteEstimate",
+      "tags": [
+        "P10"
+      ],
+      "summary": "permitted estimate/provenance for current entity inputs",
+      "parameters": [
+        {
+          "name": "tenant_id",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "entity_id",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "cursor",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/string"
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Authorized projection",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RouteEstimateQueryResult"
+              }
+            }
+          }
+        },
+        "403": {
+          "description": "Not permitted",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        }
+      },
+      "description": "Minimal authorized projection. State/action codes are governed by the owning product state machine. Supplemental detail endpoints may extend this contract only through a reviewed compatible schema revision. Filter values never grant access.",
+      "x-errors": [
+        "UNSUPPORTED_PROFILE",
+        "VALIDATION_FAILED"
+      ]
+    },
+    "implementation": "NOT_CERTIFIED_V23",
+    "build_spec": "BS-00.md; domain owner per BS-INDEX.md"
+  },
+  {
+    "name": "IngestLocationBatch",
+    "method": "post",
+    "path": "/v1/location/batches",
+    "definition": {
+      "operationId": "IngestLocationBatch",
+      "tags": [
+        "E06"
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/TelemetryBatch"
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Per-sample accepted/duplicate/rejected; latest point cannot rewind"
+        },
+        "401": {
+          "description": "Re-authenticate; preserve permitted local buffer",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        },
+        "403": {
+          "description": "No tracking entitlement",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        }
+      }
+    },
+    "implementation": "NOT_CERTIFIED_V23",
+    "build_spec": "BS-00.md; domain owner per BS-INDEX.md"
+  },
+  {
+    "name": "GetDriverRound",
+    "method": "get",
+    "path": "/v1/queries/DriverRound",
+    "definition": {
+      "operationId": "GetDriverRound",
+      "tags": [
+        "P06"
+      ],
+      "summary": "Authenticated job/receiver scoped DriverRound",
+      "parameters": [
+        {
+          "name": "entity_id",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "view",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "full",
+              "execution",
+              "pickup",
+              "pickup_issue"
+            ],
+            "default": "full"
+          }
+        },
+        {
+          "name": "tenant_id",
+          "in": "query",
+          "required": false,
+          "description": "Required for execution, pickup and pickup_issue views. Filter only; live authorization is mandatory.",
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "city_id",
+          "in": "query",
+          "required": false,
+          "description": "Required for execution, pickup and pickup_issue views. Filter only; live authorization is mandatory.",
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "X-Rounds-Device-Session",
+          "in": "header",
+          "required": false,
+          "description": "Required for execution, pickup and pickup_issue views; revocable ADR-A02 device capability.",
+          "schema": {
+            "type": "string",
+            "maxLength": 2048
+          }
+        },
+        {
+          "name": "issue_id",
+          "in": "query",
+          "required": false,
+          "description": "Required only for pickup_issue view; issue ID from the original committed ReportIssue receipt. entity_id remains the original Round. Read only; no instruction authorizes custody movement.",
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Authorized projection",
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/DriverRoundQueryResult"
+                  },
+                  {
+                    "$ref": "#/components/schemas/DriverRoundExecutionQueryResult"
+                  },
+                  {
+                    "$ref": "#/components/schemas/DriverRoundPickupQueryResult"
+                  },
+                  {
+                    "$ref": "#/components/schemas/DriverPickupIssueQueryResult"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "403": {
+          "description": "Not permitted",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Typed execution query rejection; no partial work projection.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        },
+        "401": {
+          "description": "Typed execution query rejection; no partial work projection.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        },
+        "404": {
+          "description": "Typed execution query rejection; no partial work projection.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        },
+        "422": {
+          "description": "Typed execution query rejection; no partial work projection.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        },
+        "429": {
+          "description": "Typed execution query rejection; no partial work projection.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        },
+        "503": {
+          "description": "Typed execution query rejection; no partial work projection.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        }
+      },
+      "description": "Minimal authorized projection. ADR-Q02 adds explicit view=execution for acknowledged own-team local work, with tenant_id/city_id filters and a current device session. The default full view is unchanged and not implemented by the isolated execution increment. Execution view is a coherent bounded snapshot, not execution permission or a command receipt; no commercial acceptance or physical receipt is fabricated."
+    },
+    "implementation": "NOT_CERTIFIED_V23",
+    "build_spec": "BS-00.md; domain owner per BS-INDEX.md"
+  },
+  {
+    "name": "GetReturnTasks",
+    "method": "get",
+    "path": "/v1/queries/ReturnTasks",
+    "definition": {
+      "operationId": "GetReturnTasks",
+      "tags": [
+        "P06"
+      ],
+      "summary": "Authenticated job/receiver scoped ReturnTasks",
+      "parameters": [
+        {
+          "name": "cursor",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/string"
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Authorized projection",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReturnTasksQueryResult"
+              }
+            }
+          }
+        },
+        "403": {
+          "description": "Not permitted",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        }
+      },
+      "description": "Minimal authorized projection. State/action codes are governed by the owning product state machine. Supplemental detail endpoints may extend this contract only through a reviewed compatible schema revision. Filter values never grant access."
+    },
+    "implementation": "NOT_CERTIFIED_V23",
+    "build_spec": "BS-00.md; domain owner per BS-INDEX.md"
+  },
+  {
+    "name": "GetTransfers",
+    "method": "get",
+    "path": "/v1/queries/Transfers",
+    "definition": {
+      "operationId": "GetTransfers",
+      "tags": [
+        "P06"
+      ],
+      "summary": "Authenticated job/receiver scoped Transfers",
+      "parameters": [
+        {
+          "name": "cursor",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/string"
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Authorized projection",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransfersQueryResult"
+              }
+            }
+          }
+        },
+        "403": {
+          "description": "Not permitted",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        }
+      },
+      "description": "Minimal authorized projection. State/action codes are governed by the owning product state machine. Supplemental detail endpoints may extend this contract only through a reviewed compatible schema revision. Filter values never grant access."
+    },
+    "implementation": "NOT_CERTIFIED_V23",
+    "build_spec": "BS-00.md; domain owner per BS-INDEX.md"
+  },
+  {
+    "name": "ReceiveIntegrationEvent",
+    "method": "post",
+    "path": "/v1/integrations/{connection_id}/events",
+    "definition": {
+      "operationId": "ReceiveIntegrationEvent",
+      "tags": [
+        "P12"
+      ],
+      "security": [
+        {
+          "ProviderSignature": []
+        }
+      ],
+      "parameters": [
+        {
+          "name": "connection_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/uuid"
+          }
+        },
+        {
+          "name": "X-Rounds-Event-Id",
+          "in": "header",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/string"
+          }
+        },
+        {
+          "name": "X-Rounds-Timestamp",
+          "in": "header",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/instant"
+          }
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/octet-stream": {
+            "schema": {
+              "type": "string",
+              "format": "binary",
+              "maxLength": 20971520
+            }
+          }
+        }
+      },
+      "responses": {
+        "202": {
+          "description": "Authenticated raw event persisted",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebhookReceipt"
+              }
+            }
+          }
+        },
+        "409": {
+          "description": "Same event identity with changed hash",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        },
+        "401": {
+          "description": "Signature invalid",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        }
+      }
+    },
+    "implementation": "NOT_CERTIFIED_V23",
+    "build_spec": "BS-00.md; domain owner per BS-INDEX.md"
+  },
+  {
+    "name": "ExchangeTrackingToken",
+    "method": "post",
+    "path": "/v1/tracking/exchange",
+    "definition": {
+      "operationId": "ExchangeTrackingToken",
+      "security": [],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/TrackingExchangePayload"
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Scoped HttpOnly Secure SameSite session cookie; remove source URL token",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TrackingSession"
+              }
+            }
+          }
+        },
+        "410": {
+          "description": "Expired/revoked/disabled link",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        },
+        "403": {
+          "description": "Invalid token",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        }
+      }
+    },
+    "implementation": "NOT_CERTIFIED_V23",
+    "build_spec": "BS-00.md; domain owner per BS-INDEX.md"
+  }
+]

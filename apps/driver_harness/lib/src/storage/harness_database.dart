@@ -1,12 +1,15 @@
 import 'package:path/path.dart' as path;
 import 'package:sqflite/sqflite.dart';
 
+import 'legacy_startup_gate.dart';
+
 class HarnessDatabase {
   HarnessDatabase._(this.database);
 
   final Database database;
 
   static Future<HarnessDatabase> open() async {
+    LegacyStartupGate.process.claimLegacyUse();
     final databaseRoot = await getDatabasesPath();
     final database = await openDatabase(
       path.join(databaseRoot, 'rounds_phase_zero.db'),
